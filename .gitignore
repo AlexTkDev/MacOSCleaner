@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtualenv
+venv/
+.venv/
+env/
+ENV/
+
+# PyInstaller
+*.spec
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS app artifacts
+*.app
+*.dmg
+*.pkg
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Temporary
+tmp/
+temp/
+
+# Node
+node_modules/
+
+# Build cache
+.cache/
+
+# Shell
+*.swp
+*.swo
+
+# Secrets
+*.pem
+*.key
+*.crt
+
+# Local config
+local_settings.py
+config.local.py
