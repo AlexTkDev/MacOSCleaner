@@ -1,86 +1,113 @@
+# ============================================================
+# macOS
+# ============================================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ============================================================
+# Xcode / Swift
+# ============================================================
+
+.build/
+DerivedData/
+
+*.xcworkspace
+!default.xcworkspace
+
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# Xcode archives
+*.xcarchive
+
+# ============================================================
+# macOS app artifacts
+# ============================================================
+
+*.app
+*.dmg
+*.pkg
+
+# ============================================================
+# IDE
+# ============================================================
+
+.idea/
+.vscode/
+
+# ============================================================
 # Python
+# ============================================================
+
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Virtualenv
+.Python
+
 venv/
 .venv/
 env/
 ENV/
 
-# PyInstaller
-*.spec
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# macOS app artifacts
-*.app
-*.dmg
-*.pkg
-
-# IDE
-.idea/
-.vscode/
-
-# Logs
-*.log
-
-# Environment
-.env
-.env.*
-
-# Testing
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 .coverage
 htmlcov/
 
-# Mypy
-.mypy_cache/
-
-# Ruff
-.ruff_cache/
-
-# Temporary
-tmp/
-temp/
-
+# ============================================================
 # Node
+# ============================================================
+
 node_modules/
 
-# Build cache
+# ============================================================
+# Logs
+# ============================================================
+
+*.log
+
+# ============================================================
+# Env files
+# ============================================================
+
+.env
+.env.*
+
+# ============================================================
+# Temp
+# ============================================================
+
+tmp/
+temp/
 .cache/
 
-# Shell
 *.swp
 *.swo
 
+# ============================================================
 # Secrets
+# ============================================================
+
 *.pem
 *.key
 *.crt
 
-# Local config
+# ============================================================
+# Local configs
+# ============================================================
+
 local_settings.py
 config.local.py
