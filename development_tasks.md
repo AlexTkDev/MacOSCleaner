@@ -267,7 +267,7 @@ Checks:
 
 ---
 
-# TASK-006
+# TASK-006 [x]
 
 ## Title
 
@@ -296,7 +296,7 @@ FileManager.trashItem(at:)
 
 ---
 
-# TASK-007
+# TASK-007 [x]
 
 ## Title
 
