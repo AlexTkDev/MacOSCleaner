@@ -2,7 +2,9 @@ import SwiftUI
 
 public struct CleanupView: View {
     @State private var viewModel: CleanupViewModel
+    @State private var showLogs = false
     @State private var showCopiedHint = false
+    @State private var logHeight: CGFloat = 160
     @State private var expandedItems: Set<UUID> = []
     @Environment(\.colorScheme) private var colorScheme
     
@@ -269,7 +271,8 @@ public struct CleanupView: View {
                 .frame(width: 300, height: 8)
             }
             
-            if !viewModel.scriptLogs.isEmpty {
+            if showLogs && !viewModel.scriptLogs.isEmpty {
+                Divider()
                 logPanel
             }
         }
@@ -317,12 +320,10 @@ public struct CleanupView: View {
             }
             .listStyle(.inset)
             
-            if !viewModel.scriptLogs.isEmpty {
+            if showLogs && !viewModel.scriptLogs.isEmpty {
                 Divider()
                 logPanel
                     .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
             }
         }
     }
@@ -348,10 +349,56 @@ public struct CleanupView: View {
     
     @ViewBuilder
     private var logPanel: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Debug Log (\(viewModel.scriptLogs.count) lines)")
-                .font(.caption)
+        VStack(alignment: .leading, spacing: 0) {
+            // Resize handle & Header
+            HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: "terminal")
+                    Text("Debug Log (\(viewModel.scriptLogs.count) lines)")
+                }
+                .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Button(action: { showLogs = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color(NSColor.controlBackgroundColor))
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color(NSColor.separatorColor)),
+                alignment: .bottom
+            )
+            .overlay(
+                // Resize Handle Area
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: 4)
+                    .contentShape(Rectangle())
+                    .onHover { inside in
+                        if inside {
+                            NSCursor.resizeUpDown.set()
+                        } else {
+                            NSCursor.arrow.set()
+                        }
+                    }
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let delta = value.location.y - value.startLocation.y
+                                logHeight = max(100, min(600, logHeight - delta))
+                            }
+                    ),
+                alignment: .top
+            )
+            
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
@@ -364,11 +411,10 @@ public struct CleanupView: View {
                                 .id(idx)
                         }
                     }
-                    .padding(6)
+                    .padding(8)
                 }
-                .frame(height: 120)
-                .background(Color.black.opacity(0.08))
-                .cornerRadius(6)
+                .frame(height: logHeight)
+                .background(Color.black.opacity(0.12))
                 .onChange(of: viewModel.scriptLogs.count) { _, _ in
                     if let last = viewModel.scriptLogs.indices.last {
                         proxy.scrollTo(last, anchor: .bottom)
@@ -387,26 +433,39 @@ public struct CleanupView: View {
             }
             
             if !viewModel.scriptLogs.isEmpty {
-                Button(action: {
-                    let text = viewModel.scriptLogs.joined(separator: "\n")
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(text, forType: .string)
-                    
-                    withAnimation {
-                        showCopiedHint = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation {
-                            showCopiedHint = false
+                HStack(spacing: 16) {
+                    Button(action: { showLogs.toggle() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: showLogs ? "chevron.down.square" : "chevron.up.square")
+                            Text(showLogs ? "Hide Logs" : "Show Logs")
                         }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     }
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: showCopiedHint ? "checkmark.circle.fill" : "doc.on.clipboard")
-                        Text(showCopiedHint ? "Copied!" : "Copy Logs")
+                    .buttonStyle(.plain)
+
+                    Button(action: {
+                        let text = viewModel.scriptLogs.joined(separator: "\n")
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(text, forType: .string)
+                        
+                        withAnimation {
+                            showCopiedHint = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation {
+                                showCopiedHint = false
+                            }
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: showCopiedHint ? "checkmark.circle.fill" : "doc.on.clipboard")
+                            Text(showCopiedHint ? "Copy Logs" : "Copy")
+                        }
+                        .font(.caption)
+                        .foregroundColor(showCopiedHint ? .green : .secondary)
                     }
-                    .font(.caption)
-                    .foregroundColor(showCopiedHint ? .green : .secondary)
+                    .buttonStyle(.plain)
                 }
             }
             
