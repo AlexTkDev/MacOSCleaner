@@ -39,15 +39,13 @@ SPINNER_CHARS='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
 # ARGUMENT PARSING
 # Flags: --dry-run, --clean-modcache, --clean-maven, --scan
 # ============================================================
-DRY_RUN=false
-CLEAN_MODCACHE=false
-CLEAN_MAVEN=false
-CLEAN_PROJECTS=false
-CLEAN_DS_STORE=false
-SCAN_ONLY=false   # --scan: deep discovery report, no deletion
+JSON_MODE=false
+GUI_MODE=false
 
 for arg in "$@"; do
     case "$arg" in
+        --json)           JSON_MODE=true; GUI_MODE=true ;;
+        --gui)            GUI_MODE=true ;;
         --dry-run)        DRY_RUN=true ;;
         --clean-modcache) CLEAN_MODCACHE=true ;;
         --clean-maven)    CLEAN_MAVEN=true ;;
@@ -151,6 +149,11 @@ print_step() {
     local total=$2
     local title=$3
 
+    if [[ "$JSON_MODE" == true ]]; then
+        printf "{\"type\": \"step\", \"current\": %d, \"total\": %d, \"title\": \"%s\"}\n" "$current" "$total" "$title"
+        return
+    fi
+
     local progress=$((current * 100 / total))
     local filled=$((progress / 5))
     local empty=$((20 - filled))
@@ -169,6 +172,11 @@ print_result() {
     local label=$1
     local freed=$2
 
+    if [[ "$JSON_MODE" == true ]]; then
+        printf "{\"type\": \"result\", \"label\": \"%s\", \"freed\": %d}\n" "$label" "$freed"
+        return
+    fi
+
     if [[ $freed -gt 0 ]]; then
         printf "  ${GREEN}✓${NC} %s: ${GREEN}%d MB${NC} freed\n" "$label" "$freed"
     else
@@ -180,6 +188,11 @@ print_result() {
 print_dry() {
     local label=$1
     local size=$2
+
+    if [[ "$JSON_MODE" == true ]]; then
+        printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$label" "$size"
+        return
+    fi
 
     if [[ $size -gt 0 ]]; then
         printf "  ${YELLOW}⊘${NC} %s: ${YELLOW}%d MB${NC} (would clean)\n" "$label" "$size"

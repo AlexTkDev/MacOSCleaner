@@ -1,19 +1,27 @@
 import Foundation
 
-struct CommandResult: Sendable {
-    let stdout: String
-    let stderr: String
-    let exitCode: Int32
+public struct CommandResult: Sendable {
+    public let stdout: String
+    public let stderr: String
+    public let exitCode: Int32
+    
+    public init(stdout: String, stderr: String, exitCode: Int32) {
+        self.stdout = stdout
+        self.stderr = stderr
+        self.exitCode = exitCode
+    }
 }
 
-enum CommandRunnerError: Error {
+public enum CommandRunnerError: Error {
     case invalidExecutable
     case timeout
+    case executionFailed(Int32)
 }
 
-actor CommandRunner {
+public actor CommandRunner {
+    public init() {}
 
-    func run(
+    public func run(
         command: String,
         arguments: [String] = [],
         timeout: Duration = .seconds(30)
@@ -76,6 +84,48 @@ actor CommandRunner {
         } onCancel: {
             if process.isRunning {
                 process.terminate()
+            }
+        }
+    }
+
+    public nonisolated func runStreaming(
+        command: String,
+        arguments: [String] = []
+    ) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: command)
+            process.arguments = arguments
+
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+
+            process.terminationHandler = { p in
+                if p.terminationStatus == 0 {
+                    continuation.finish()
+                } else {
+                    continuation.finish(throwing: CommandRunnerError.executionFailed(p.terminationStatus))
+                }
+            }
+
+            do {
+                try process.run()
+                
+                Task.detached {
+                    let reader = pipe.fileHandleForReading
+                    for try await line in reader.bytes.lines {
+                        continuation.yield(line)
+                    }
+                }
+            } catch {
+                continuation.finish(throwing: error)
+            }
+            
+            continuation.onTermination = { @Sendable _ in
+                if process.isRunning {
+                    process.terminate()
+                }
             }
         }
     }

@@ -10,10 +10,19 @@ import SwiftUI
 @main
 struct MacOSCleanerApp: App {
     @Environment(\.openWindow) private var openWindow
+    
+    private let commandRunner = CommandRunner()
+    private let journal = TransactionJournal()
+    private let cleanupViewModel: CleanupViewModel
+    
+    init() {
+        let adapter = ShellCleanupAdapter(commandRunner: commandRunner)
+        self.cleanupViewModel = CleanupViewModel(adapter: adapter, journal: journal)
+    }
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(cleanupViewModel: cleanupViewModel)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {

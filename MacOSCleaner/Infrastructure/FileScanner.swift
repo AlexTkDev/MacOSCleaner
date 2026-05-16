@@ -1,11 +1,7 @@
 import Foundation
 
 public actor FileScanner {
-    private let fileManager: FileManager
-
-    public init(fileManager: FileManager = .default) {
-        self.fileManager = fileManager
-    }
+    public init() {}
 
     /// Scans directories recursively and returns URLs in batches.
     /// - Parameters:
@@ -16,6 +12,7 @@ public actor FileScanner {
     public nonisolated func scan(urls: [URL], batchSize: Int = 100, throttleInterval: TimeInterval = 0.05) -> AsyncStream<[URL]> {
         AsyncStream { continuation in
             let task = Task {
+                let fm = FileManager.default
                 var currentBatch: [URL] = []
                 currentBatch.reserveCapacity(batchSize)
                 
@@ -24,9 +21,8 @@ public actor FileScanner {
                 for url in urls {
                     if Task.isCancelled { break }
                     
-                    // We only scan directories; if it's a file, we just yield it directly.
                     var isDirectory: ObjCBool = false
-                    guard self.fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
+                    guard fm.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
                         continue
                     }
                     
@@ -35,7 +31,7 @@ public actor FileScanner {
                         continue
                     }
                     
-                    guard let enumerator = self.fileManager.enumerator(
+                    guard let enumerator = fm.enumerator(
                         at: url,
                         includingPropertiesForKeys: [.isDirectoryKey],
                         options: []
@@ -43,7 +39,7 @@ public actor FileScanner {
                         continue
                     }
                     
-                    for case let fileURL as URL in enumerator {
+                    while let fileURL = enumerator.nextObject() as? URL {
                         if Task.isCancelled { break }
                         
                         currentBatch.append(fileURL)
@@ -54,7 +50,6 @@ public actor FileScanner {
                             currentBatch.removeAll(keepingCapacity: true)
                             lastYieldTime = now
                             
-                            // Yield to the system to avoid blocking the thread for too long
                             await Task.yield()
                         }
                     }

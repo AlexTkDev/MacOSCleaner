@@ -4,7 +4,7 @@ public enum TrashError: Error, Equatable {
     case trashOperationFailed(String)
 }
 
-public struct TrashManager: Sendable {
+public actor TrashManager {
     private let safetyManager: SafetyManager
     private let fileManager: FileManager
     

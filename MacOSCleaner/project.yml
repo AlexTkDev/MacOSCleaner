@@ -7,7 +7,7 @@ targets:
   MacOSCleaner:
     type: application
     platform: macOS
-    deploymentTarget: "26.5"
+    deploymentTarget: "14.0"
     sources:
       - App
       - Domains
@@ -22,7 +22,7 @@ targets:
         MARKETING_VERSION: 1.0
         CURRENT_PROJECT_VERSION: 1
         ENABLE_HARDENED_RUNTIME: YES
-        SWIFT_VERSION: 5.0
+        SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -30,7 +30,7 @@ targets:
   MacOSCleanerTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "26.5"
+    deploymentTarget: "14.0"
     sources:
       - MacOSCleanerTests
     dependencies:
@@ -38,6 +38,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleanerTests
-        SWIFT_VERSION: 5.0
+        SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES

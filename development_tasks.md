@@ -327,7 +327,7 @@ Features:
 
 ---
 
-# TASK-008
+# TASK-008 [x]
 
 ## Title
 
@@ -390,7 +390,7 @@ Supported flags:
 
 ---
 
-# TASK-010
+# TASK-010 [x]
 
 ## Title
 
@@ -412,7 +412,7 @@ JSON append-only journal.
 
 ---
 
-# TASK-011
+# TASK-011 [x]
 
 ## Title
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @State private var selectedItem: NavigationItem? = .dashboard
+    let cleanupViewModel: CleanupViewModel
 
     var body: some View {
         NavigationSplitView {
@@ -18,7 +19,7 @@ struct RootView: View {
                 case .dashboard:
                     DashboardView()
                 case .cleanup:
-                    CleanupView()
+                    CleanupView(viewModel: cleanupViewModel)
                 case .startupServices:
                     StartupServicesView()
                 case .uninstaller:
@@ -35,5 +36,8 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(cleanupViewModel: CleanupViewModel(
+        adapter: ShellCleanupAdapter(commandRunner: CommandRunner()),
+        journal: TransactionJournal()
+    ))
 }
