@@ -1,85 +1,98 @@
-# 🧹 macOS Cache Cleanup
+# macOS Cleaner GUI
 
-A high-performance shell script for safely cleaning up caches, temporary files, and application remnants on macOS. 
-It uses an intelligent **whitelist and app-discovery approach**: only known-safe directories are targeted, and leftover files are detected based on the currently installed applications.
+Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents management, and application removal.
 
-> **IMPORTANT:** This script is designed for safety. It **DOES NOT** touch system root directories (`/System`), critical SDK components, AVD images, user documents, or active application settings.
+## Features (MVP)
 
----
+- **Cleanup:** Safely remove user caches, logs, temporary files, Xcode DerivedData, Android Studio caches, Homebrew cache, and more.
+- **Startup Services:** Manage (scan, enable, disable) `~/Library/LaunchAgents`.
+- **Application Removal:** Drag-and-drop `.app` bundles to remove them along with their related files (moves everything safely to the Trash).
 
-## 🚀 Launch Modes
+## Safety First
 
-Before the first run, make the script executable:
-```bash
-chmod +x macos-cache-cleanup.sh
+- **Reversible Operations:** No permanent deletion. All files are moved to the Trash (`trashItem(at:)`).
+- **Protected Paths:** Built-in safeguards prevent accidental deletion of system directories (`/System`, `/Library`), Apple services, and critical data.
+- **Transactions:** JSON append-only journal for tracking all operations and supporting rollback/recovery.
+
+## Architecture
+
+- **Platform:** macOS (Native)
+- **Language:** Swift 6
+- **UI:** SwiftUI (State-driven)
+- **Concurrency:** Swift Concurrency (async/await, actors)
+- **Design:** Pragmatic MVP (no plugin frameworks, no dynamic policy engines, no unnecessary abstractions)
+
+## Project Structure
+
+```text
+MacOSCleaner/
+├── App/
+│   ├── MacOSCleanerApp.swift     # Точка входа в приложение
+│   ├── RootView.swift            # Главный экран с навигацией
+│   └── ContentView.swift         # Вспомогательный View
+├── Features/                     # Функциональные модули (UI)
+│   ├── Cleanup/
+│   │   └── CleanupView.swift     # Модуль очистки
+│   ├── Dashboard/
+│   │   └── DashboardView.swift   # Панель состояния
+│   ├── Settings/
+│   │   └── SettingsView.swift    # Настройки
+│   ├── StartupServices/
+│   │   └── StartupServicesView.swift # Автозагрузка
+│   └── Uninstaller/
+│       └── UninstallerView.swift # Удаление приложений
+├── Infrastructure/               # Инфраструктурный слой
+│   ├── CommandRunner.swift       # Запуск внешних процессов (Actor)
+│   └── SafetyManager.swift        # Проверка безопасности путей
+├── Models/                       # Модели данных
+│   ├── CleanupItem.swift         # Элемент очистки
+│   ├── CleanupTransaction.swift  # Транзакция очистки
+│   ├── NavigationItem.swift      # Модель навигации
+│   ├── OperationRecord.swift     # Запись об операции
+│   ├── OperationRisk.swift       # Уровни риска
+│   ├── ScanResult.swift          # Результат сканирования
+│   └── StartupService.swift      # Служба автозагрузки
+├── Resources/                    # Ресурсы
+│   ├── Assets.xcassets           # Медиа-файлы
+│   └── Scripts/                  # Скрипты-адаптеры
+│       ├── macos-cache-cleanup.sh # Скрипт очистки (legacy/adapter)
+│       └── README.md             # Документация скрипта
+├── MacOSCleanerTests/            # Тесты
+│   ├── CommandRunnerTests.swift  # Тесты CommandRunner
+│   └── SafetyManagerTests.swift  # Тесты SafetyManager
+└── MacOSCleaner.xcodeproj        # Проект Xcode
 ```
 
-**Standard cleanup:**
-```bash
-./macos-cache-cleanup.sh
-```
+## Building the Project
 
-**Dry Run Mode — preview only, nothing is deleted:**
-```bash
-./macos-cache-cleanup.sh --dry-run
-```
+### Requirements
+- Xcode 16+
+- macOS (as specified in the Xcode project)
 
-**Scan Mode — deep discovery report (includes orphaned app remnants and large files):**
-```bash
-./macos-cache-cleanup.sh --scan
-```
+### Build Instructions
+1. Open `MacOSCleaner.xcodeproj` in Xcode.
+2. Select the `MacOSCleaner` scheme.
+3. Build and Run (`Cmd + R`).
 
-**Cleanup with additional flags:**
-```bash
-# Clean module caches (Go, Maven) and deep-clean project artifacts (.dart_tool)
-./macos-cache-cleanup.sh --clean-modcache --clean-maven --clean-projects
+### Running Tests
+To run the unit tests:
+- **In Xcode:** Press `Cmd + U` or go to `Product` -> `Test`.
+- **In Terminal:** 
+  ```bash
+  cd MacOSCleaner
+  xcodebuild test -scheme MacOSCleaner -destination 'platform=macOS'
+  ```
 
-# Clean .DS_Store and scattered junk (Finder metadata)
-./macos-cache-cleanup.sh --clean-ds-store
-```
+*(Note: The core cleanup script and its original README can be found in `MacOSCleaner/Resources/Scripts/`)*
 
----
+## Recovery & Diagnostics
 
-## 📋 What the script cleans (20 steps)
+- **File Recovery:** Since all deleted files are moved to the macOS Trash, you can restore them simply by opening the Trash, right-clicking the file, and selecting "Put Back".
+- **LaunchAgents Recovery:** Disabled services can be re-enabled through the "Startup Services" interface.
+- **Diagnostics:** The application uses `OSLog` for internal logging. Errors and operation states can be monitored via the `Console.app`.
 
-The script performs a comprehensive 20-step cleanup:
+## Security
 
-1. **User app caches (whitelist)**: Google, CocoaPods, Homebrew, Playwright, Spotify, Xcode, SwiftPM, JetBrains, etc.
-2. **Package managers (native)**: `brew`, `npm`, `yarn`, `pnpm`, `pod` native cleanup commands.
-3. **Gradle + Maven caches**: Gradle daemons/wrappers and optional Maven repo cleanup.
-4. **Flutter / Dart / pub-cache**: Package caches and optional project `.dart_tool` removal.
-5. **Xcode (Build Data)**: DerivedData, DeviceSupport, and archives older than 90 days.
-6. **iOS Simulators**: Caches, unavailable devices, and old iOS runtimes (keeps the latest stable version).
-7. **Android SDK**: Build caches and intelligent removal of old `build-tools` and `platforms`.
-8. **IDE & AI Caches**: Caches for Cursor, VS Code, JetBrains, Claude, ChatGPT, etc. (settings preserved).
-9. **Browser caches**: Safari, Chrome, Firefox, Edge, Brave, Opera.
-10. **Media & Messaging**: Telegram, Slack, Discord, Spotify, Zoom, iMessage attachments.
-11. **Docker cleanup**: `system prune` and `builder prune` (if Docker is running).
-12. **Language & Runtimes**: Go, Rust, Node (Bun, Deno), Python, Ruby, PHP, JVM, etc.
-13. **Logs & Diagnostics**: User logs (>7 days) and macOS crash reports.
-14. **System Caches (User-space)**: QuickLook, fontd, helpd, iconservices.
-15. **App Container Caches**: Caches inside `~/Library/Containers` and `~/Library/Group Containers`.
-16. **AI CLI Tools**: Caches for opencode, Claude CLI, Ollama logs, etc.
-17. **Scattered Junk Files**: `.DS_Store`, `__MACOSX`, and stray log files (Optional: `--clean-ds-store`).
-18. **Dynamic Cache Discovery**: Intelligent scan of `~/Library/Caches` for unknown safe entries > 50 MB.
-19. **Orphaned App Remnants**: **Deep scan** for leftover files from uninstalled apps in `Application Support`, `Containers`, `Group Containers`, `Cookies`, `Preferences`, and `/Users/Shared`.
-20. **System & Large Files Scanner**: Detects old iOS updates (`.ipsw`), external drive trashes, huge Mail storage, and large installers (>100 MB).
-
----
-
-## 🛡 Safety Features
-
-* **App-Aware Logic**: Detects currently installed apps to avoid deleting data for programs you still use.
-* **Intelligent Whitelisting**: Specifically ignores high-value data like LLM models (Ollama, HuggingFace).
-* **Auto-Close**: Gracefully closes IDEs and browsers before cleanup to prevent database corruption.
-* **Non-Destructive**: For system directories, it only cleans contents or reports size without deletion.
-* **No `sudo` Required**: Operates safely within user-space permissions.
-
----
-
-## 🛠 Advanced Customization
-
-The script is built with modular helper functions:
-- `clean_contents`: Safely empties a directory while preserving the folder itself.
-- `_is_installed`: Cross-references folder names with the list of installed applications.
-- `print_step`: Displays a beautiful progress bar and formatted status for each stage.
+- Runs with Hardened Runtime enabled.
+- Uses path standardization and symlink validation to prevent escaping the safe bounds.
+- Refuse list denies access to critical system files.

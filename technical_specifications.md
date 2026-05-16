@@ -748,3 +748,35 @@ Disabled by default.
    * recovery
    * diagnostics
    * build instructions
+
+## Local Code Signing (Personal Usage)
+For personal/local usage, Apple Developer Program subscription is not required.
+
+Application can be signed using:
+
+* ad-hoc signing (`codesign --sign -`)
+* or self-signed local Code Signing certificate created via Keychain Access.
+
+Recommended for development:
+
+```bash
+codesign --force --deep --sign - "/Applications/MacOSCleaner.app"
+```
+
+Recommended for stable local builds:
+
+* create self-signed "Code Signing" certificate
+* use named certificate instead of ad-hoc signing
+
+Not required for:
+
+* local execution
+* internal usage
+* development/testing
+
+Required only for:
+
+* notarization
+* public distribution
+* trusted execution on external machines
+* App Store / Developer ID distribution

@@ -96,7 +96,7 @@ Each task must:
 
 ---
 
-# TASK-001
+# TASK-001 [x]
 
 ## Title
 
@@ -129,7 +129,7 @@ Initialize native macOS SwiftUI application.
 
 ---
 
-# TASK-002
+# TASK-002 [x]
 
 ## Title
 
@@ -162,7 +162,7 @@ Sidebar items:
 
 ---
 
-# TASK-003
+# TASK-003 [x]
 
 ## Title
 
@@ -194,7 +194,7 @@ StartupService
 
 ---
 
-# TASK-004
+# TASK-004 [x]
 
 ## Title
 
@@ -226,7 +226,7 @@ Features:
 
 ---
 
-# TASK-005
+# TASK-005 [x]
 
 ## Title
 

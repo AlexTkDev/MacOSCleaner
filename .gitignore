@@ -42,6 +42,8 @@ Package.resolved
 
 .idea/
 .vscode/
+.agent/
+DS_Store
 
 # ============================================================
 # Python
@@ -52,17 +54,6 @@ __pycache__/
 *.pyo
 *.pyd
 *.so
-
-.Python
-
-venv/
-.venv/
-env/
-ENV/
-
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
 
 .coverage
 htmlcov/
