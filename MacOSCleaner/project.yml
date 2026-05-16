@@ -1,0 +1,43 @@
+name: MacOSCleaner
+options:
+  bundleIdPrefix: input
+  developmentLanguage: en
+
+targets:
+  MacOSCleaner:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.5"
+    sources:
+      - App
+      - Domains
+      - Features
+      - Infrastructure
+      - Models
+      - State
+      - Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
+        MARKETING_VERSION: 1.0
+        CURRENT_PROJECT_VERSION: 1
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: 5.0
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+
+  MacOSCleanerTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "26.5"
+    sources:
+      - MacOSCleanerTests
+    dependencies:
+      - target: MacOSCleaner
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleanerTests
+        SWIFT_VERSION: 5.0
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES

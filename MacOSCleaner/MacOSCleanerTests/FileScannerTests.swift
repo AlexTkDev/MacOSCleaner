@@ -73,18 +73,18 @@ final class FileScannerTests: XCTestCase {
             FileManager.default.createFile(atPath: fileURL.path, contents: nil)
         }
         
-        let task = Task {
+        let task = Task<Int, Never> {
             var count = 0
             let stream = scanner.scan(urls: [tempDirectory], batchSize: 10)
             for await batch in stream {
                 count += batch.count
-                if count > 50 {
-                    // This task cancels itself
-                    Task.cancel()
-                }
             }
             return count
         }
+        
+        // Give it a tiny bit of time to start, then cancel
+        try? await Task.sleep(nanoseconds: 10_000_000)
+        task.cancel()
         
         let count = await task.value
         // If cancellation worked, it shouldn't have scanned all 1000 items
