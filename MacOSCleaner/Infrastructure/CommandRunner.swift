@@ -97,35 +97,51 @@ public actor CommandRunner {
             process.executableURL = URL(fileURLWithPath: command)
             process.arguments = arguments
 
-            let pipe = Pipe()
-            process.standardOutput = pipe
-            process.standardError = pipe
+            let fullCmd = ([command] + arguments).joined(separator: " ")
+            continuation.yield("[debug] Running: \(fullCmd)")
 
-            process.terminationHandler = { p in
-                if p.terminationStatus == 0 {
-                    continuation.finish()
-                } else {
-                    continuation.finish(throwing: CommandRunnerError.executionFailed(p.terminationStatus))
-                }
-            }
+            let stdoutPipe = Pipe()
+            let stderrPipe = Pipe()
+            process.standardOutput = stdoutPipe
+            process.standardError = stderrPipe
 
             do {
                 try process.run()
-                
-                Task.detached {
-                    let reader = pipe.fileHandleForReading
-                    for try await line in reader.bytes.lines {
-                        continuation.yield(line)
+                continuation.yield("[debug] Process started (pid=\(process.processIdentifier))")
+            } catch {
+                continuation.yield("[debug] process.run() threw: \(error)")
+                continuation.finish(throwing: error)
+                return
+            }
+
+            // Читаем stdout и stderr параллельно, потом дожидаемся завершения
+            Task.detached {
+                // Читаем stderr асинхронно параллельно с stdout
+                let stderrTask = Task.detached {
+                    for try await line in stderrPipe.fileHandleForReading.bytes.lines {
+                        continuation.yield("[stderr] \(line)")
                     }
                 }
-            } catch {
-                continuation.finish(throwing: error)
-            }
-            
-            continuation.onTermination = { @Sendable _ in
-                if process.isRunning {
-                    process.terminate()
+                for try await line in stdoutPipe.fileHandleForReading.bytes.lines {
+                    continuation.yield(line)
                 }
+                _ = await stderrTask.result // дожидаемся stderr
+
+                // Оба pipe прочитаны — теперь проверяем код завершения
+                process.waitUntilExit()
+                let code = process.terminationStatus
+                continuation.yield("[debug] Exited with code: \(code)")
+                if code == 0 {
+                    continuation.finish()
+                } else {
+                    continuation.finish(
+                        throwing: CommandRunnerError.executionFailed(code)
+                    )
+                }
+            }
+
+            continuation.onTermination = { @Sendable _ in
+                if process.isRunning { process.terminate() }
             }
         }
     }

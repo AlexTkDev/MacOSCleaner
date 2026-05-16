@@ -41,9 +41,17 @@ SPINNER_CHARS='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
 # ============================================================
 JSON_MODE=false
 GUI_MODE=false
+DRY_RUN=false
+SCAN_ONLY=false
+CLEAN_MODCACHE=false
+CLEAN_MAVEN=false
+CLEAN_PROJECTS=false
+CLEAN_DS_STORE=false
+PATHS_FILE=""
+CURRENT_PARENT=""
 
-for arg in "$@"; do
-    case "$arg" in
+while [[ $# -gt 0 ]]; do
+    case "$1" in
         --json)           JSON_MODE=true; GUI_MODE=true ;;
         --gui)            GUI_MODE=true ;;
         --dry-run)        DRY_RUN=true ;;
@@ -52,8 +60,36 @@ for arg in "$@"; do
         --clean-projects) CLEAN_PROJECTS=true ;;
         --clean-ds-store) CLEAN_DS_STORE=true ;;
         --scan)           SCAN_ONLY=true; DRY_RUN=true ;;
+        --paths-file)     shift; PATHS_FILE="$1" ;;
     esac
+    shift
 done
+
+# If paths-file is provided, we only clean those specific paths
+if [[ -n "$PATHS_FILE" && -f "$PATHS_FILE" ]]; then
+    if [[ "$JSON_MODE" == true ]]; then
+        # In selective mode, we report progress based on the file count
+        total_items=$(wc -l < "$PATHS_FILE" | xargs)
+        current=0
+        print_step 1 1 "Selective Cleanup"
+        
+        while IFS= read -r path; do
+            current=$((current + 1))
+            if [[ -d "$path" || -f "$path" ]]; then
+                size=$(get_size_mb "$path")
+                # Remove
+                rm -rf "$path" 2>/dev/null || true
+                print_result "$path" "$size"
+            fi
+        done < "$PATHS_FILE"
+    else
+        # CLI mode selective cleanup
+        while IFS= read -r path; do
+            [[ -e "$path" ]] && rm -rfv "$path"
+        done < "$PATHS_FILE"
+    fi
+    exit 0
+fi
 
 # ============================================================
 # HELPER FUNCTIONS
@@ -145,16 +181,17 @@ get_size_mb() {
 
 # Print step header with progress bar
 print_step() {
-    local current=$1
+    local step=$1
     local total=$2
-    local title=$3
-
+    local msg=$3
+    CURRENT_PARENT=""  # Reset parent group at the start of each step
+    
     if [[ "$JSON_MODE" == true ]]; then
-        printf "{\"type\": \"step\", \"current\": %d, \"total\": %d, \"title\": \"%s\"}\n" "$current" "$total" "$title"
+        printf "{\"type\": \"step\", \"current\": %d, \"total\": %d, \"title\": \"%s\"}\n" "$step" "$total" "$msg" >&2
         return
     fi
 
-    local progress=$((current * 100 / total))
+    local progress=$((step * 100 / total))
     local filled=$((progress / 5))
     local empty=$((20 - filled))
 
@@ -163,7 +200,7 @@ print_step() {
     for ((i=0; i<empty; i++)); do bar+="░"; done
 
     echo
-    printf "${BOLD}${BLUE}[%d/%d]${NC} ${BOLD}%s${NC}\n" "$current" "$total" "$title"
+    printf "${BOLD}${BLUE}[%d/%d]${NC} ${BOLD}%s${NC}\n" "$step" "$total" "$msg"
     printf "${DIM}[%s] %d%%${NC}\n" "$bar" "$progress"
 }
 
@@ -184,18 +221,28 @@ print_result() {
     fi
 }
 
-# Print dry-run estimate line
+# Print summary line (terminal ONLY, no JSON)
+# Used when details are already emitted via clean_contents
+print_summary() {
+    local label=$1
+    local size=$2
+    if [[ $size -gt 0 ]]; then
+        printf "  ${YELLOW}⊘${NC} %-40s ${YELLOW}%4d MB${NC} (would clean)\n" "$label" "$size"
+    else
+        printf "  ${DIM}○ %s: nothing to clean${NC}\n" "$label"
+    fi
+}
+
+# Print dry-run item (terminal + JSON)
+# Used for standalone items like brew cleanup, docker, etc.
 print_dry() {
     local label=$1
     local size=$2
-
     if [[ "$JSON_MODE" == true ]]; then
-        printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$label" "$size"
-        return
+        printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$label" "$size" >&2
     fi
-
     if [[ $size -gt 0 ]]; then
-        printf "  ${YELLOW}⊘${NC} %s: ${YELLOW}%d MB${NC} (would clean)\n" "$label" "$size"
+        printf "  ${YELLOW}⊘${NC} %-40s ${YELLOW}%4d MB${NC} (would clean)\n" "$label" "$size"
     else
         printf "  ${DIM}○ %s: nothing to clean${NC}\n" "$label"
     fi
@@ -222,9 +269,9 @@ clean_contents() {
         return
     fi
 
-    # Extra safety: refuse system directories
+    # Extra safety: refuse only the most critical system paths
     case "$path" in
-        /System/*|/Library/*|/private/var/*|/Users)
+        /System/*)
             echo 0
             return
             ;;
@@ -232,7 +279,15 @@ clean_contents() {
 
     if [[ -d "$path" ]]; then
         before=$(get_size_mb "$path")
-        if [[ "$DRY_RUN" == true ]]; then
+        if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+            # Output detailed preview for the UI (redirect to stderr so it doesn't break variable capture)
+            if [[ $before -gt 0 ]]; then
+                if [[ -n "$CURRENT_PARENT" ]]; then
+                    printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d, \"parent\": \"%s\"}\n" "$path" "$before" "$CURRENT_PARENT" >&2
+                else
+                    printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$path" "$before" >&2
+                fi
+            fi
             echo "$before"
             return
         fi
@@ -266,16 +321,32 @@ clean_old_files() {
     local before after freed
 
     if [[ -d "$path" ]]; then
-        before=$(get_size_mb "$path")
         if [[ "$DRY_RUN" == true ]]; then
-            echo "$before"
+            # Calculate size and emit JSON for each old file/dir
+            local total=0
+            # Use find to get list of files/dirs older than N days
+            while IFS= read -r f; do
+                local sz
+                sz=$(get_size_mb "$f")
+                if [[ $sz -gt 0 ]]; then
+                    total=$((total + sz))
+                    if [[ "$JSON_MODE" == true ]]; then
+                        if [[ -n "$CURRENT_PARENT" ]]; then
+                            printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d, \"parent\": \"%s\"}\n" "$f" "$sz" "$CURRENT_PARENT" >&2
+                        else
+                            # If no parent, use the directory name as parent for grouping
+                            printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d, \"parent\": \"%s\"}\n" "$f" "$sz" "$(basename "$path")" >&2
+                        fi
+                    fi
+                fi
+            done < <(find "$path" -mindepth 1 -maxdepth 3 -mtime +"$days" 2>/dev/null)
+            echo "$total"
             return
         fi
         find "$path" -mindepth 1 -mtime +"$days" -exec rm -rf {} + 2>/dev/null || true
         after=$(get_size_mb "$path")
-        freed=$((before - after))
-        [[ $freed -lt 0 ]] && freed=0
-        echo "$freed"
+        # In actual clean mode, we just return 0 for simplicity or calculate freed
+        echo 0 
     else
         echo 0
     fi
@@ -285,7 +356,7 @@ clean_old_files() {
 # MAIN SCRIPT
 # ============================================================
 
-clear
+clear 2>/dev/null || true
 echo
 printf "${BOLD}${CYAN}╔════════════════════════════════════════════════════════╗${NC}\n"
 printf "${BOLD}${CYAN}║${NC}        ${BOLD}🧹 macOS SAFE CLEANUP ${NC}               ${BOLD}${CYAN}║${NC}\n"
@@ -321,6 +392,7 @@ TOTAL_FREED=0
 # ============================================================
 print_step 1 $TOTAL_STEPS "User app caches (whitelist)"
 # ============================================================
+CURRENT_PARENT="Selected app caches"
 FREED=$(clean_selected_contents \
     "$HOME/Library/Caches/Google" \
     "$HOME/Library/Caches/com.google.SoftwareUpdate" \
@@ -336,11 +408,12 @@ FREED=$(clean_selected_contents \
     "$HOME/Library/Caches/com.plausiblelabs.crashreporter.data" \
     "$HOME/Library/Caches/JetBrains")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Selected app caches" "$FREED"
+    print_summary "Selected app caches" "$FREED"
 else
     print_result "Selected app caches" "$FREED"
 fi
 TOTAL_FREED=$((TOTAL_FREED + FREED))
+CURRENT_PARENT=""
 
 # ============================================================
 print_step 2 $TOTAL_STEPS "Package managers (native cleanup)"
@@ -438,7 +511,7 @@ fi
 print_step 3 $TOTAL_STEPS "Gradle + Maven caches"
 # ============================================================
 
-# Gradle: caches, wrapper downloads, daemon logs
+CURRENT_PARENT="Gradle caches + wrapper + daemon"
 FREED=$(clean_selected_contents \
     "$HOME/.gradle/caches" \
     "$HOME/.gradle/wrapper/dists" \
@@ -449,12 +522,13 @@ if [[ "$DRY_RUN" == true ]]; then
 else
     print_result "Gradle caches + wrapper + daemon" "$FREED"
 fi
+CURRENT_PARENT=""
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 
 # Kotlin compiler daemon caches
 F=$(clean_contents "$HOME/.kotlin")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Kotlin compiler cache" "$F"
+    print_summary "Kotlin compiler cache" "$F"
 else
     print_result "Kotlin compiler cache" "$F"
 fi
@@ -466,7 +540,7 @@ MAVEN_SIZE=$(get_size_mb "$MAVEN_REPO")
 if [[ -d "$MAVEN_REPO" ]]; then
     if [[ "$CLEAN_MAVEN" == true ]]; then
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "Maven local repository (~/.m2/repository)" "$MAVEN_SIZE"
+            print_summary "Maven local repository (~/.m2/repository)" "$MAVEN_SIZE"
         else
             F=$(clean_contents "$MAVEN_REPO")
             print_result "Maven local repository (~/.m2/repository)" "$F"
@@ -486,7 +560,7 @@ FREED=$(clean_selected_contents \
     "$HOME/.pub-cache/git" \
     "$HOME/.dartServer")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Dart/Flutter package caches" "$FREED"
+    print_summary "Dart/Flutter package caches" "$FREED"
 else
     print_result "Dart/Flutter package caches" "$FREED"
 fi
@@ -502,7 +576,7 @@ if [[ "$CLEAN_PROJECTS" == true ]]; then
         while IFS= read -r -d '' dir; do
             sz=$(get_size_mb "$dir")
             if [[ "$DRY_RUN" == true ]]; then
-                print_dry ".dart_tool ($(basename "$(dirname "$dir")"))" "$sz"
+                print_summary ".dart_tool ($(basename "$(dirname "$dir")"))" "$sz"
             else
                 f=$(clean_contents "$dir")
                 DT_FREED=$((DT_FREED + f))
@@ -523,7 +597,7 @@ FREED=0
 # DerivedData — build artifacts, fully rebuildable
 F=$(clean_contents "$HOME/Library/Developer/Xcode/DerivedData")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Xcode DerivedData" "$F"
+    print_summary "Xcode DerivedData" "$F"
 else
     print_result "Xcode DerivedData" "$F"
 fi
@@ -532,7 +606,7 @@ FREED=$((FREED + F))
 # iOS DeviceSupport — re-downloaded when device connects
 F=$(clean_contents "$HOME/Library/Developer/Xcode/iOS DeviceSupport")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "iOS DeviceSupport" "$F"
+    print_summary "iOS DeviceSupport" "$F"
 else
     print_result "iOS DeviceSupport" "$F"
 fi
@@ -541,7 +615,7 @@ FREED=$((FREED + F))
 # watchOS DeviceSupport
 F=$(clean_contents "$HOME/Library/Developer/Xcode/watchOS DeviceSupport")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "watchOS DeviceSupport" "$F"
+    print_summary "watchOS DeviceSupport" "$F"
 else
     print_result "watchOS DeviceSupport" "$F"
 fi
@@ -550,25 +624,27 @@ FREED=$((FREED + F))
 # visionOS DeviceSupport
 F=$(clean_contents "$HOME/Library/Developer/Xcode/visionOS DeviceSupport")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "visionOS DeviceSupport" "$F"
+    print_summary "visionOS DeviceSupport" "$F"
 else
     print_result "visionOS DeviceSupport" "$F"
 fi
 FREED=$((FREED + F))
 
 # Xcode Archives older than 90 days
+CURRENT_PARENT="Xcode Archives (>90 days)"
 F=$(clean_old_files "$HOME/Library/Developer/Xcode/Archives" 90)
 if [[ "$DRY_RUN" == true ]]; then
     print_dry "Xcode Archives (>90 days)" "$F"
 else
     print_result "Xcode Archives (>90 days)" "$F"
 fi
+CURRENT_PARENT=""
 FREED=$((FREED + F))
 
 # Documentation cache — re-downloaded on demand
 F=$(clean_contents "$HOME/Library/Developer/Xcode/DocumentationCache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Xcode DocumentationCache" "$F"
+    print_summary "Xcode DocumentationCache" "$F"
 else
     print_result "Xcode DocumentationCache" "$F"
 fi
@@ -577,7 +653,7 @@ FREED=$((FREED + F))
 # Interface Builder caches
 F=$(clean_contents "$HOME/Library/Developer/Xcode/UserData/IB Support")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Xcode IB Support cache" "$F"
+    print_summary "Xcode IB Support cache" "$F"
 else
     print_result "Xcode IB Support cache" "$F"
 fi
@@ -593,7 +669,7 @@ FREED=0
 # Simulator build caches
 F=$(clean_contents "$HOME/Library/Developer/CoreSimulator/Caches")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Simulator caches" "$F"
+    print_summary "Simulator caches" "$F"
 else
     print_result "Simulator caches" "$F"
 fi
@@ -671,7 +747,7 @@ FREED=$(clean_selected_contents \
     "$HOME/.android/build-cache" \
     "$HOME/Library/Android/sdk/.temp")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Android build caches" "$FREED"
+    print_summary "Android build caches" "$FREED"
 else
     print_result "Android build caches" "$FREED"
 fi
@@ -688,7 +764,7 @@ if [[ ${#AS_CACHE_DIRS[@]} -gt 0 ]]; then
         name=$(basename "$dir")
         F=$(clean_contents "$dir")
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "Android Studio cache: $name" "$F"
+            print_summary "Android Studio cache: $name" "$F"
         else
             print_result "Android Studio cache: $name" "$F"
         fi
@@ -717,6 +793,11 @@ if [[ -z "$SDKMANAGER" ]] && [[ -d "$ANDROID_SDK/cmdline-tools" ]]; then
     done < <(find "$ANDROID_SDK/cmdline-tools" -name "sdkmanager" -type f -print0 2>/dev/null)
 fi
 
+# ============================================================
+print_step 10 $TOTAL_STEPS "Android SDK (build-tools, platforms, images)"
+# ============================================================
+CURRENT_PARENT="Android SDK"
+
 # ---- SDK cleanup: build-tools ----
 # Keep only the latest STABLE version (no rc/alpha/beta/preview suffix)
 if [[ -d "$ANDROID_SDK/build-tools" ]]; then
@@ -733,24 +814,26 @@ if [[ -d "$ANDROID_SDK/build-tools" ]]; then
         fi
     done
 
-    # Latest stable = last in sorted list; fallback to last overall
     if [[ ${#BT_STABLE[@]} -gt 0 ]]; then
-        KEEP_BT="${BT_STABLE[${#BT_STABLE[@]}-1]}"
+        LATEST_BT="${BT_STABLE[${#BT_STABLE[@]}-1]}"
     else
-        KEEP_BT="${BT_VERSIONS[${#BT_VERSIONS[@]}-1]}"
+        LATEST_BT="none"
     fi
 
-    echo
     printf "  ${CYAN}╌╌╌ Android SDK: build-tools (%d versions) ╌╌╌${NC}\n" "${#BT_VERSIONS[@]}"
     for ver in "${BT_VERSIONS[@]}"; do
         sz=$(get_size_mb "$ANDROID_SDK/build-tools/$ver")
-        if [[ "$ver" == "$KEEP_BT" ]]; then
-            printf "  ${GREEN}  ✓ build-tools/%-15s %4d MB (keep — latest stable)${NC}\n" "$ver" "$sz"
-        else
-            if [[ "$DRY_RUN" == true ]]; then
-                printf "  ${YELLOW}  ⊘ build-tools/%-15s %4d MB (would remove)${NC}\n" "$ver" "$sz"
+        if [[ $sz -gt 0 ]]; then
+            if [[ "$ver" == "$LATEST_BT" ]]; then
+                printf "  ${GREEN}  ✓ build-tools/%-15s %4d MB (keep — latest stable)${NC}\n" "$ver" "$sz"
             else
-                if [[ -n "$SDKMANAGER" ]]; then
+                if [[ "$DRY_RUN" == true ]]; then
+                    printf "  ${YELLOW}  ⊘ build-tools/%-15s %4d MB (would remove)${NC}\n" "$ver" "$sz"
+                    if [[ "$JSON_MODE" == true ]]; then
+                        printf "{\"type\": \"preview\", \"label\": \"build-tools/%s\", \"size\": %d, \"parent\": \"Android SDK\"}\n" "$ver" "$sz" >&2
+                    fi
+                    TOTAL_FREED=$((TOTAL_FREED + sz))
+                else
                     printf "    ${CYAN}…${NC} Removing build-tools/%s (%d MB)..." "$ver" "$sz"
                     echo "y" | "$SDKMANAGER" --uninstall "build-tools;$ver" > /tmp/cleanup_cmd.log 2>&1 || true
                     if [[ ! -d "$ANDROID_SDK/build-tools/$ver" ]]; then
@@ -759,8 +842,6 @@ if [[ -d "$ANDROID_SDK/build-tools" ]]; then
                     else
                         printf "\r  ${YELLOW}  ○ build-tools/%-15s could not remove — use SDK Manager${NC}\n" "$ver"
                     fi
-                else
-                    printf "  ${YELLOW}  ○ build-tools/%-15s %4d MB — sdkmanager not found, remove via SDK Manager${NC}\n" "$ver" "$sz"
                 fi
             fi
         fi
@@ -786,6 +867,9 @@ if [[ -d "$ANDROID_SDK/platforms" ]]; then
         else
             if [[ "$DRY_RUN" == true ]]; then
                 printf "  ${YELLOW}  ⊘ platforms/%-22s %4d MB (would remove)${NC}\n" "$plat" "$sz"
+                if [[ "$JSON_MODE" == true ]]; then
+                    printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$ANDROID_SDK/platforms/$plat" "$sz" >&2
+                fi
             else
                 if [[ -n "$SDKMANAGER" ]]; then
                     api_num="${plat#android-}"
@@ -808,6 +892,9 @@ fi
 # ---- system-images: always protected (AVD emulator OS images) ----
 if [[ -d "$ANDROID_SDK/system-images" ]]; then
     SI_SIZE=$(get_size_mb "$ANDROID_SDK/system-images")
+    if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+        printf "{\"type\": \"preview\", \"label\": \"Android System Images (protected)\", \"size\": %d, \"deletable\": false}\n" "$SI_SIZE" >&2
+    fi
     echo
     printf "  ${CYAN}ℹ${NC}  system-images (AVD emulator OS): ${BOLD}%d MB${NC} — ${GREEN}protected${NC}\n" "$SI_SIZE"
     printf "  ${DIM}  → To free: Android Studio → Device Manager → delete unused AVDs${NC}\n"
@@ -993,7 +1080,7 @@ for dir in "${IDE_DIRS[@]}"; do
         parent=$(basename "$(dirname "$dir")")
         F=$(clean_contents "$dir")
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "$parent/$name" "$F"
+            print_summary "$parent/$name" "$F"
         else
             print_result "$parent/$name" "$F"
         fi
@@ -1019,18 +1106,18 @@ while IFS= read -r dir; do
     sz=$(get_size_mb "$dir")
     [[ $sz -lt 5 ]] && continue
 
-    F=$(clean_contents "$dir")
-    if [[ "$DRY_RUN" == true ]]; then
-        print_dry "$parent/Cache" "$F"
-    else
-        print_result "$parent/Cache" "$F"
-    fi
-    TOTAL_FREED=$((TOTAL_FREED + F))
+        if [[ "$DRY_RUN" == true ]]; then
+            print_summary "$parent/Cache" "$sz"
+        else
+            print_result "$parent/Cache" "$sz"
+        fi
+        TOTAL_FREED=$((TOTAL_FREED + sz))
 done < <(find "$HOME/Library/Application Support" -maxdepth 2 -name "Cache" -type d 2>/dev/null | sort)
 
 # ============================================================
 print_step 9 $TOTAL_STEPS "Browser caches"
 # ============================================================
+CURRENT_PARENT="Browser Caches"
 BROWSER_DIRS=(
     "$HOME/Library/Caches/com.apple.Safari"
     "$HOME/Library/Safari/Favicon Cache"
@@ -1043,28 +1130,33 @@ BROWSER_DIRS=(
     "$HOME/Library/Caches/com.google.Chrome.beta"
 )
 
+# ============================================================
+print_step 9 $TOTAL_STEPS "Browser caches"
+# ============================================================
+CURRENT_PARENT="Browser Caches"
 for dir in "${BROWSER_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
         name=$(basename "$dir")
         F=$(clean_contents "$dir")
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "$name" "$F"
+            print_summary "$name" "$F"
         else
             print_result "$name" "$F"
         fi
         TOTAL_FREED=$((TOTAL_FREED + F))
     fi
 done
+CURRENT_PARENT=""
 
 # ============================================================
-print_step 10 $TOTAL_STEPS "Messaging / media app caches"
+print_step 11 $TOTAL_STEPS "Messaging / media app caches"
 # ============================================================
+CURRENT_PARENT="Messaging & Media"
 APP_DIRS=(
     "$HOME/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/appstore/account-*"
     "$HOME/Library/Caches/ru.keepcoder.Telegram"
     "$HOME/Library/Caches/com.tinyspeck.slackmacgap"
     "$HOME/Library/Caches/com.hnc.Discord"
-    "$HOME/Library/Caches/com.spotify.client"
     "$HOME/Library/Caches/us.zoom.xos"
     "$HOME/Library/Messages/Attachments"
 )
@@ -1079,7 +1171,7 @@ for pattern in "${APP_DIRS[@]}"; do
             parent=$(basename "$(dirname "$dir")")
             F=$(clean_contents "$dir")
             if [[ "$DRY_RUN" == true ]]; then
-                print_dry "$parent/$name" "$F"
+                print_summary "$parent/$name" "$F"
             else
                 print_result "$parent/$name" "$F"
             fi
@@ -1090,12 +1182,15 @@ done
 shopt -u nullglob
 
 # ============================================================
-print_step 11 $TOTAL_STEPS "Docker cleanup"
+print_step 12 $TOTAL_STEPS "Docker cleanup"
 # ============================================================
 if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
     if [[ "$DRY_RUN" == true ]]; then
         docker_usage=$(docker system df 2>/dev/null | tail -n +2 | awk '{sum+=$4} END {print sum"MB"}' || echo "unknown")
-        printf "  ${YELLOW}⊘${NC} Docker reclaimable space: ${YELLOW}%s${NC}\n" "$docker_usage"
+        # Extract numeric MB for JSON
+        docker_mb=$(echo "$docker_usage" | grep -oE '^[0-9.]+' | awk '{print int($1)}')
+        [[ -z "$docker_mb" ]] && docker_mb=0
+        print_dry "Docker cleanup" "$docker_mb"
         docker system df 2>/dev/null | head -6 || true
     else
         run_with_spinner "Docker system prune" docker system prune -f 2>/dev/null
@@ -1107,7 +1202,7 @@ else
 fi
 
 # ============================================================
-print_step 12 $TOTAL_STEPS "Language & runtime caches (Go, Rust, Node, Python, Ruby, JVM, more)"
+print_step 13 $TOTAL_STEPS "Language & runtime caches"
 # ============================================================
 
 # ── Go ────────────────────────────────────────────────────────
@@ -1115,7 +1210,7 @@ if command -v go &>/dev/null; then
     GO_CACHE=$(go env GOCACHE 2>/dev/null || echo "$HOME/Library/Caches/go-build")
     before_go_cache=$(get_size_mb "$GO_CACHE")
     if [[ "$DRY_RUN" == true ]]; then
-        print_dry "Go build cache" "$before_go_cache"
+        print_summary "Go build cache" "$before_go_cache"
     else
         run_with_spinner "Go build cache clean" go clean -cache 2>/dev/null
         after_go_cache=$(get_size_mb "$GO_CACHE")
@@ -1128,7 +1223,7 @@ if command -v go &>/dev/null; then
     GOMOD_SIZE=$(get_size_mb "$GO_MOD_CACHE")
     if [[ "$CLEAN_MODCACHE" == true ]]; then
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "Go module cache (GOMODCACHE)" "$GOMOD_SIZE"
+            print_summary "Go module cache (GOMODCACHE)" "$GOMOD_SIZE"
         else
             run_with_spinner "Go module cache clean" go clean -modcache 2>/dev/null
             after_gomod=$(get_size_mb "$GO_MOD_CACHE")
@@ -1150,7 +1245,7 @@ F=$(clean_selected_contents \
     "$HOME/.cargo/registry/src" \
     "$HOME/.cargo/.package-cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Cargo registry cache" "$F"
+    print_summary "Cargo registry cache" "$F"
 else
     print_result "Cargo registry cache" "$F"
 fi
@@ -1160,7 +1255,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # Bun
 F=$(clean_contents "$HOME/.bun/install/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Bun install cache" "$F"
+    print_summary "Bun install cache" "$F"
 else
     print_result "Bun install cache" "$F"
 fi
@@ -1171,7 +1266,7 @@ F=$(clean_selected_contents \
     "$HOME/.deno/cache" \
     "$HOME/Library/Caches/deno")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Deno cache" "$F"
+    print_summary "Deno cache" "$F"
 else
     print_result "Deno cache" "$F"
 fi
@@ -1180,7 +1275,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # Volta tool download cache (not the Node installs, only downloaded archives)
 F=$(clean_contents "$HOME/.volta/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Volta download cache" "$F"
+    print_summary "Volta download cache" "$F"
 else
     print_result "Volta download cache" "$F"
 fi
@@ -1189,7 +1284,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # NVM downloads cache (not installed Node versions)
 F=$(clean_contents "$HOME/.nvm/.cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "nvm download cache" "$F"
+    print_summary "nvm download cache" "$F"
 else
     print_result "nvm download cache" "$F"
 fi
@@ -1200,7 +1295,7 @@ F=$(clean_selected_contents \
     "$HOME/.cache/node-gyp" \
     "$HOME/.node-gyp")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "node-gyp build cache" "$F"
+    print_summary "node-gyp build cache" "$F"
 else
     print_result "node-gyp build cache" "$F"
 fi
@@ -1211,7 +1306,7 @@ F=$(clean_selected_contents \
     "$HOME/.cache/Cypress" \
     "$HOME/Library/Caches/Cypress")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Cypress binary cache" "$F"
+    print_summary "Cypress binary cache" "$F"
 else
     print_result "Cypress binary cache" "$F"
 fi
@@ -1219,10 +1314,9 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 
 # Playwright browsers (ms-playwright)
 F=$(clean_selected_contents \
-    "$HOME/.cache/ms-playwright" \
-    "$HOME/Library/Caches/ms-playwright-go")
+    "$HOME/.cache/ms-playwright")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Playwright cache" "$F"
+    print_summary "Playwright cache" "$F"
 else
     print_result "Playwright cache" "$F"
 fi
@@ -1231,7 +1325,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # Puppeteer downloaded browsers
 F=$(clean_contents "$HOME/.cache/puppeteer")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Puppeteer browser cache" "$F"
+    print_summary "Puppeteer browser cache" "$F"
 else
     print_result "Puppeteer browser cache" "$F"
 fi
@@ -1249,7 +1343,7 @@ if [[ -d "$HOME/.gem/ruby" ]]; then
     done
 fi
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Ruby gem download cache (~/.gem/ruby/*/cache)" "$RUBY_FREED"
+    print_summary "Ruby gem download cache (~/.gem/ruby/*/cache)" "$RUBY_FREED"
 else
     print_result "Ruby gem download cache" "$RUBY_FREED"
 fi
@@ -1257,7 +1351,7 @@ TOTAL_FREED=$((TOTAL_FREED + RUBY_FREED))
 
 F=$(clean_contents "$HOME/.bundle/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Bundler cache" "$F"
+    print_summary "Bundler cache" "$F"
 else
     print_result "Bundler cache" "$F"
 fi
@@ -1266,7 +1360,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # ── PHP / Composer ────────────────────────────────────────────
 F=$(clean_contents "$HOME/.composer/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Composer cache" "$F"
+    print_summary "Composer cache" "$F"
 else
     print_result "Composer cache" "$F"
 fi
@@ -1282,7 +1376,7 @@ F=$(clean_selected_contents \
     "$HOME/.cache/hatch" \
     "$HOME/.rye/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Python tools cache (pip, poetry, uv, hatch, rye)" "$F"
+    print_summary "Python tools cache (pip, poetry, uv, hatch, rye)" "$F"
 else
     print_result "Python tools cache (pip, poetry, uv, hatch, rye)" "$F"
 fi
@@ -1296,7 +1390,7 @@ F=$(clean_selected_contents \
     "$HOME/.ammonite/cache" \
     "$HOME/.cache/metals")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "JVM caches (SBT, Ivy, Coursier, Metals)" "$F"
+    print_summary "JVM caches (SBT, Ivy, Coursier, Metals)" "$F"
 else
     print_result "JVM caches (SBT, Ivy, Coursier, Metals)" "$F"
 fi
@@ -1308,7 +1402,7 @@ MAVEN_SIZE=$(get_size_mb "$MAVEN_REPO")
 if [[ -d "$MAVEN_REPO" ]]; then
     if [[ "$CLEAN_MAVEN" == true ]]; then
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "Maven repository (~/.m2/repository)" "$MAVEN_SIZE"
+            print_summary "Maven repository (~/.m2/repository)" "$MAVEN_SIZE"
         else
             F=$(clean_contents "$MAVEN_REPO")
             print_result "Maven repository" "$F"
@@ -1325,7 +1419,7 @@ F=$(clean_selected_contents \
     "$HOME/.julia/compiled" \
     "$HOME/.julia/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Julia compiled cache + logs" "$F"
+    print_summary "Julia compiled cache + logs" "$F"
 else
     print_result "Julia compiled cache + logs" "$F"
 fi
@@ -1334,7 +1428,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # ── Elixir / Hex ──────────────────────────────────────────────
 F=$(clean_contents "$HOME/.hex/packages")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Hex (Elixir) package cache" "$F"
+    print_summary "Hex (Elixir) package cache" "$F"
 else
     print_result "Hex (Elixir) package cache" "$F"
 fi
@@ -1346,7 +1440,7 @@ F=$(clean_selected_contents \
     "$HOME/.cabal/packages" \
     "$HOME/.cabal/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Cabal package cache + logs" "$F"
+    print_summary "Cabal package cache + logs" "$F"
 else
     print_result "Cabal package cache + logs" "$F"
 fi
@@ -1362,10 +1456,9 @@ fi
 
 # ── Swift Package Manager ─────────────────────────────────────
 F=$(clean_selected_contents \
-    "$HOME/.cache/org.swift.swiftpm" \
-    "$HOME/Library/Caches/org.swift.swiftpm")
+    "$HOME/.cache/org.swift.swiftpm")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Swift PM cache" "$F"
+    print_summary "Swift PM cache" "$F"
 else
     print_result "Swift PM cache" "$F"
 fi
@@ -1376,30 +1469,32 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 F=$(clean_selected_contents \
     "$TMPDIR/../T/org.R-project.R")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "R session temp files" "$F"
+    print_summary "R session temp files" "$F"
 else
     print_result "R session temp files" "$F"
 fi
 TOTAL_FREED=$((TOTAL_FREED + F))
 
 # ============================================================
-print_step 13 $TOTAL_STEPS "User logs and diagnostic reports"
+print_step 14 $TOTAL_STEPS "User logs and diagnostic reports"
 # ============================================================
 FREED=0
 
 # User logs older than 7 days (keep recent ones for debugging)
+CURRENT_PARENT="User logs (>7 days)"
 F=$(clean_old_files "$HOME/Library/Logs" 7)
 if [[ "$DRY_RUN" == true ]]; then
     print_dry "User logs (>7 days)" "$F"
 else
     print_result "User logs (>7 days)" "$F"
 fi
+CURRENT_PARENT=""
 FREED=$((FREED + F))
 
 # Diagnostic reports
 F=$(clean_contents "$HOME/Library/Logs/DiagnosticReports")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "DiagnosticReports" "$F"
+    print_summary "DiagnosticReports" "$F"
 else
     print_result "DiagnosticReports" "$F"
 fi
@@ -1408,7 +1503,7 @@ FREED=$((FREED + F))
 # Crash reporter logs
 F=$(clean_contents "$HOME/Library/Logs/CrashReporter")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "CrashReporter logs" "$F"
+    print_summary "CrashReporter logs" "$F"
 else
     print_result "CrashReporter logs" "$F"
 fi
@@ -1417,14 +1512,14 @@ FREED=$((FREED + F))
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 
 # ============================================================
-print_step 14 $TOTAL_STEPS "macOS system caches (user-space)"
+print_step 15 $TOTAL_STEPS "macOS system caches (user-space)"
 # ============================================================
 FREED=0
 
 # QuickLook thumbnail cache
 F=$(clean_contents "$HOME/Library/Caches/com.apple.QuickLook.thumbnailcache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "QuickLook thumbnails" "$F"
+    print_summary "QuickLook thumbnails" "$F"
 else
     print_result "QuickLook thumbnails" "$F"
 fi
@@ -1433,7 +1528,7 @@ FREED=$((FREED + F))
 # Font cache (user space — regenerated automatically)
 F=$(clean_contents "$HOME/Library/Caches/com.apple.fontd")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Font cache" "$F"
+    print_summary "Font cache" "$F"
 else
     print_result "Font cache" "$F"
 fi
@@ -1442,7 +1537,7 @@ FREED=$((FREED + F))
 # Apple Help cache
 F=$(clean_contents "$HOME/Library/Caches/com.apple.helpd")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Help cache" "$F"
+    print_summary "Help cache" "$F"
 else
     print_result "Help cache" "$F"
 fi
@@ -1451,7 +1546,7 @@ FREED=$((FREED + F))
 # Icon services cache
 F=$(clean_contents "$HOME/Library/Caches/com.apple.iconservices.store")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Icon services cache" "$F"
+    print_summary "Icon services cache" "$F"
 else
     print_result "Icon services cache" "$F"
 fi
@@ -1460,7 +1555,7 @@ FREED=$((FREED + F))
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 
 # ============================================================
-print_step 15 $TOTAL_STEPS "App container caches (Containers)"
+print_step 16 $TOTAL_STEPS "App container caches (Containers)"
 # ============================================================
 # Sandboxed apps write their caches to ~/Library/Containers/
 # We dynamically target known, safe cache subdirectories
@@ -1480,7 +1575,7 @@ while IFS= read -r dir; do
         label="Container: $app_name"
         F=$(clean_contents "$dir")
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "$label" "$F"
+            print_summary "$label" "$F"
         else
             print_result "$label" "$F"
         fi
@@ -1501,7 +1596,7 @@ while IFS= read -r dir; do
         label="Group: $app_name"
         F=$(clean_contents "$dir")
         if [[ "$DRY_RUN" == true ]]; then
-            print_dry "$label" "$F"
+            print_summary "$label" "$F"
         else
             print_result "$label" "$F"
         fi
@@ -1517,7 +1612,7 @@ fi
 TOTAL_FREED=$((TOTAL_FREED + CONTAINER_FREED))
 
 # ============================================================
-print_step 16 $TOTAL_STEPS "AI CLI tools & dotfile caches (~/.cache, ~/.config)"
+print_step 17 $TOTAL_STEPS "AI CLI tools & dotfile caches (~/.cache, ~/.config)"
 # ============================================================
 
 # ── Generic ~/.cache directory (Linux-style, used on macOS too) ─
@@ -1539,7 +1634,7 @@ DOTCACHE_DIRS=(
 )
 F=$(clean_selected_contents "${DOTCACHE_DIRS[@]}")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "~/.cache/* (cross-platform tool caches)" "$F"
+    print_summary "~/.cache/* (cross-platform tool caches)" "$F"
 else
     print_result "~/.cache/* (cross-platform tool caches)" "$F"
 fi
@@ -1552,7 +1647,7 @@ F=$(clean_selected_contents \
     "$HOME/.config/opencode/cache" \
     "$HOME/.local/share/opencode/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "opencode cache + logs" "$F"
+    print_summary "opencode cache + logs" "$F"
 else
     print_result "opencode cache + logs" "$F"
 fi
@@ -1566,7 +1661,7 @@ F=$(clean_selected_contents \
     "$HOME/.config/claude/cache" \
     "$HOME/.config/claude/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Claude CLI cache + logs" "$F"
+    print_summary "Claude CLI cache + logs" "$F"
 else
     print_result "Claude CLI cache + logs" "$F"
 fi
@@ -1579,7 +1674,7 @@ F=$(clean_selected_contents \
     "$HOME/.config/gemini/cache" \
     "$HOME/.config/gemini/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Gemini CLI cache + logs" "$F"
+    print_summary "Gemini CLI cache + logs" "$F"
 else
     print_result "Gemini CLI cache + logs" "$F"
 fi
@@ -1591,7 +1686,7 @@ F=$(clean_selected_contents \
     "$HOME/.codex/logs" \
     "$HOME/.config/codex/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Codex CLI cache + logs" "$F"
+    print_summary "Codex CLI cache + logs" "$F"
 else
     print_result "Codex CLI cache + logs" "$F"
 fi
@@ -1602,7 +1697,7 @@ F=$(clean_selected_contents \
     "$HOME/.aider/cache" \
     "$HOME/.cache/aider")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Aider cache" "$F"
+    print_summary "Aider cache" "$F"
 else
     print_result "Aider cache" "$F"
 fi
@@ -1613,7 +1708,7 @@ F=$(clean_selected_contents \
     "$HOME/.continue/logs" \
     "$HOME/.continue/index/cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Continue.dev logs + index cache" "$F"
+    print_summary "Continue.dev logs + index cache" "$F"
 else
     print_result "Continue.dev logs + index cache" "$F"
 fi
@@ -1624,7 +1719,7 @@ F=$(clean_selected_contents \
     "$HOME/.config/cody/cache" \
     "$HOME/.config/cody/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Cody cache + logs" "$F"
+    print_summary "Cody cache + logs" "$F"
 else
     print_result "Cody cache + logs" "$F"
 fi
@@ -1635,7 +1730,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # Only clean logs
 F=$(clean_contents "$HOME/.ollama/logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Ollama logs" "$F"
+    print_summary "Ollama logs" "$F"
 else
     print_result "Ollama logs" "$F"
 fi
@@ -1657,7 +1752,7 @@ fi
 # ── npm CLI logs ──────────────────────────────────────────────
 F=$(clean_contents "$HOME/.npm/_logs")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "npm CLI logs (~/.npm/_logs)" "$F"
+    print_summary "npm CLI logs (~/.npm/_logs)" "$F"
 else
     print_result "npm CLI logs (~/.npm/_logs)" "$F"
 fi
@@ -1668,7 +1763,7 @@ F=$(clean_selected_contents \
     "$HOME/.cache/git-credential-manager" \
     "$HOME/Library/Caches/GitHubDesktop")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Git tool caches" "$F"
+    print_summary "Git tool caches" "$F"
 else
     print_result "Git tool caches" "$F"
 fi
@@ -1677,7 +1772,7 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # ── Terraform ─────────────────────────────────────────────────
 F=$(clean_contents "$HOME/.terraform.d/plugin-cache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Terraform plugin cache" "$F"
+    print_summary "Terraform plugin cache" "$F"
 else
     print_result "Terraform plugin cache" "$F"
 fi
@@ -1688,7 +1783,7 @@ F=$(clean_selected_contents \
     "$HOME/.cache/helm" \
     "$HOME/Library/Caches/helm")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Helm cache" "$F"
+    print_summary "Helm cache" "$F"
 else
     print_result "Helm cache" "$F"
 fi
@@ -1703,14 +1798,14 @@ F=$(clean_selected_contents \
     "$HOME/.ccache" \
     "$HOME/.cache/ccache")
 if [[ "$DRY_RUN" == true ]]; then
-    print_dry "Misc tool caches (httpie, bazel, ccache, vcpkg...)" "$F"
+    print_summary "Misc tool caches (httpie, bazel, ccache, vcpkg...)" "$F"
 else
     print_result "Misc tool caches (httpie, bazel, ccache, vcpkg...)" "$F"
 fi
 TOTAL_FREED=$((TOTAL_FREED + F))
 
 # ============================================================
-print_step 17 $TOTAL_STEPS "Scattered junk files (.DS_Store, __MACOSX, stray logs)"
+print_step 18 $TOTAL_STEPS "Scattered junk files"
 # ============================================================
 if [[ "$CLEAN_DS_STORE" == true ]]; then
     # ── .DS_Store files (macOS Finder metadata) ───────────────────
@@ -1826,7 +1921,7 @@ fi
 # Shows every item >= 5 MB, auto-cleans in non-dry-run if >= 50 MB
 # and matches a known-safe reverse-DNS pattern (com.* / org.*).
 # ============================================================
-print_step 18 $TOTAL_STEPS "Dynamic cache discovery (full ~/Library/Caches scan)"
+print_step 19 $TOTAL_STEPS "Dynamic cache discovery"
 
 # Paths already handled in step 1 — skip them here to avoid double-counting
 KNOWN_CACHES=(
@@ -1896,7 +1991,7 @@ fi
 TOTAL_FREED=$((TOTAL_FREED + DYNAMIC_FREED))
 
 # ============================================================
-print_step 19 $TOTAL_STEPS "Orphaned app remnants (uninstalled apps)"
+print_step 20 $TOTAL_STEPS "Orphaned app remnants"
 # ============================================================
 
 # Build flat list of installed bundle IDs and app names
@@ -1990,6 +2085,10 @@ ORPHAN_TOTAL=0
 ORPHAN_COUNT=0
 ORPHAN_FREED=0
 
+# ============================================================
+print_step 21 $TOTAL_STEPS "Orphaned application files"
+# ============================================================
+CURRENT_PARENT="Orphaned Files"
 # Collect orphaned entries into plain arrays
 ORPHAN_LIST_PATHS=()
 ORPHAN_LIST_SIZES=()
@@ -2083,6 +2182,10 @@ else
         oparent="${ORPHAN_LIST_PARENTS[$i]}"
         if [[ "$DRY_RUN" == true ]]; then
             printf "  ${YELLOW}⊘${NC} %-50s ${YELLOW}%4d MB${NC}  [%s]\n" "$oname" "$osz" "$oparent"
+            if [[ "$JSON_MODE" == true ]]; then
+                printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d, \"parent\": \"Orphaned App Remnants\"}\n" "$opath" "$osz" >&2
+            fi
+            ORPHAN_FREED=$((ORPHAN_FREED + osz))
         else
             F=$(clean_contents "$opath")
             ORPHAN_FREED=$((ORPHAN_FREED + F))
@@ -2097,8 +2200,9 @@ else
 fi
 
 # ============================================================
-print_step 20 $TOTAL_STEPS "Large files scanner (installers, backups, node_modules)"
+print_step 22 $TOTAL_STEPS "Large files scanner"
 # ============================================================
+CURRENT_PARENT="Large Files & Backups"
 
 LARGE_FOUND=0
 
@@ -2110,6 +2214,9 @@ while IFS= read -r f; do
     fsz=$(get_size_mb "$f")
     if [[ $fsz -ge 100 ]]; then
         printf "  ${YELLOW}  ◆${NC} %-60s ${YELLOW}%4d MB${NC}\n" "$(echo "$f" | sed "s|$HOME|~|")" "$fsz"
+        if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+            printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$f" "$fsz" >&2
+        fi
         INSTALLER_TOTAL=$((INSTALLER_TOTAL + fsz))
         LARGE_FOUND=$((LARGE_FOUND + 1))
     fi
@@ -2240,6 +2347,9 @@ if [[ -d "$SIM_DEVICES_DIR" ]]; then
     if [[ $sim_total -gt 500 ]]; then
         echo
         printf "  ${CYAN}ℹ${NC}  Simulator device images: ${BOLD}%d MB${NC} — clean via ${BOLD}Xcode → Devices and Simulators${NC}\n" "$sim_total"
+        if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+            printf "{\"type\": \"preview\", \"label\": \"Simulator device images (Xcode)\", \"size\": %d, \"deletable\": false}\n" "$sim_total" >&2
+        fi
     fi
 fi
 

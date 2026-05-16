@@ -10,10 +10,11 @@ public final class ShellCleanupAdapter: Sendable {
         
         if let providedPath = scriptPath {
             self.scriptPath = providedPath
-        } else if let bundlePath = Bundle.main.path(forResource: "macos-cache-cleanup", ofType: "sh", inDirectory: "Scripts") {
+        } else if let bundlePath = Bundle.main.path(forResource: "macos-cache-cleanup", ofType: "sh") {
+            // Xcode кладёт скрипт плоско в Contents/Resources (без подпапки)
             self.scriptPath = bundlePath
         } else {
-            // Путь по умолчанию для разработки
+            // Путь для запуска из Xcode в режиме разработки
             self.scriptPath = "/Users/alex/Documents/my/macos-cleaner/MacOSCleaner/Resources/Scripts/macos-cache-cleanup.sh"
         }
     }
@@ -22,20 +23,51 @@ public final class ShellCleanupAdapter: Sendable {
     public enum CleanupEvent: Sendable {
         case step(current: Int, total: Int, title: String)
         case result(label: String, freed: Int)
-        case preview(label: String, size: Int)
+        case preview(label: String, size: Int, deletable: Bool, parent: String?)
+        case log(String)
+    }
+    
+    public struct CleanupOptions: Sendable, Equatable {
+        public var cleanModCache: Bool = false
+        public var cleanMaven: Bool = false
+        public var cleanProjects: Bool = false
+        public var cleanDSStore: Bool = false
+        public init() {}
     }
     
     /// Запускает очистку.
     /// - Parameters:
-    ///   - dryRun: Если true, запускает в режиме превью.
+    ///   - scanOnly: Если true, запускает глубокое сканирование без удаления (--scan).
+    ///   - dryRun: Если true, запускает в режиме превью (--dry-run).
+    ///   - options: Дополнительные опции очистки.
     /// - Returns: Стрим событий очистки.
-    public func runCleanup(dryRun: Bool = false) -> AsyncThrowingStream<CleanupEvent, Error> {
-        let args = dryRun ? ["--json", "--dry-run"] : ["--json"]
-        let path = self.scriptPath
+    public func runCleanup(
+        scanOnly: Bool = false,
+        dryRun: Bool = false,
+        options: CleanupOptions = .init(),
+        selectedPaths: [String]? = nil
+    ) -> AsyncThrowingStream<CleanupEvent, Error> {
+        let scriptPath = self.scriptPath
         let runner = self.commandRunner
+        let path = "/bin/bash"
+        
+        var baseArgs = Self.buildArgs(scanOnly: scanOnly, dryRun: dryRun, options: options)
+        
+        var tempFile: URL? = nil
+        if let selected = selectedPaths, !selected.isEmpty {
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = "cleanup_paths_\(UUID().uuidString).txt"
+            let fileURL = tempDir.appendingPathComponent(fileName)
+            try? selected.joined(separator: "\n").write(to: fileURL, atomically: true, encoding: .utf8)
+            tempFile = fileURL
+            baseArgs.append("--paths-file")
+            baseArgs.append(fileURL.path)
+        }
+        
+        let args = [scriptPath] + baseArgs
         
         return AsyncThrowingStream { continuation in
-            let task = Task {
+            let task = Task { [args, runner, path, tempFile] in
                 do {
                     let stream = runner.runStreaming(command: path, arguments: args)
                     for try await line in stream {
@@ -43,8 +75,17 @@ public final class ShellCleanupAdapter: Sendable {
                             continuation.yield(event)
                         }
                     }
+                    
+                    // Cleanup temp file
+                    if let file = tempFile {
+                        try? FileManager.default.removeItem(at: file)
+                    }
+                    
                     continuation.finish()
                 } catch {
+                    if let file = tempFile {
+                        try? FileManager.default.removeItem(at: file)
+                    }
                     continuation.finish(throwing: error)
                 }
             }
@@ -55,12 +96,34 @@ public final class ShellCleanupAdapter: Sendable {
         }
     }
     
+    private static func buildArgs(scanOnly: Bool, dryRun: Bool, options: CleanupOptions) -> [String] {
+        var args = ["--json"]
+        if scanOnly {
+            args.append("--scan")
+        } else if dryRun {
+            args.append("--dry-run")
+        }
+        if options.cleanModCache { args.append("--clean-modcache") }
+        if options.cleanMaven { args.append("--clean-maven") }
+        if options.cleanProjects { args.append("--clean-projects") }
+        if options.cleanDSStore { args.append("--clean-ds-store") }
+        return args
+    }
+    
     private static func parseLine(_ line: String) -> CleanupEvent? {
-        // Убираем возможные пробелы
-        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed.hasPrefix("{") else { return nil }
+        // Убираем возможные префиксы от CommandRunner
+        var processedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        if processedLine.hasPrefix("[stderr] ") {
+            processedLine = String(processedLine.dropFirst(9))
+        } else if processedLine.hasPrefix("[debug] ") {
+            processedLine = String(processedLine.dropFirst(8))
+        }
         
-        guard let data = trimmed.data(using: .utf8) else { return nil }
+        let trimmed = processedLine.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        guard trimmed.hasPrefix("{") else { return .log(line) }
+        
+        guard let data = trimmed.data(using: .utf8) else { return .log(line) }
         
         struct RawEvent: Codable {
             let type: String
@@ -70,6 +133,8 @@ public final class ShellCleanupAdapter: Sendable {
             let label: String?
             let freed: Int?
             let size: Int?
+            let deletable: Bool?
+            let parent: String?
         }
         
         do {
@@ -85,14 +150,14 @@ public final class ShellCleanupAdapter: Sendable {
                 }
             case "preview":
                 if let l = raw.label, let s = raw.size {
-                    return .preview(label: l, size: s)
+                    return .preview(label: l, size: s, deletable: raw.deletable ?? true, parent: raw.parent)
                 }
             default:
-                return nil
+                return .log(line)
             }
         } catch {
-            return nil
+            return .log(line)
         }
-        return nil
+        return .log(line)
     }
 }

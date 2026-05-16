@@ -26,61 +26,48 @@ Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents
 
 ```text
 MacOSCleaner/
-├── App/
-│   ├── MacOSCleanerApp.swift     # Точка входа в приложение
-│   ├── RootView.swift            # Главный экран с навигацией
-│   └── ContentView.swift         # Вспомогательный View
-├── Features/                     # Функциональные модули (UI)
+├── App/                          # Точка входа и навигация
+├── Domains/                      # Бизнес-логика и адаптеры
+│   └── Cleanup/
+│       └── ShellCleanupAdapter.swift # Адаптер для shell-скрипта
+├── Features/                     # UI модули (SwiftUI)
 │   ├── Cleanup/
-│   │   └── CleanupView.swift     # Модуль очистки
-│   ├── Dashboard/
-│   │   └── DashboardView.swift   # Панель состояния
-│   ├── Settings/
-│   │   └── SettingsView.swift    # Настройки
-│   ├── StartupServices/
-│   │   └── StartupServicesView.swift # Автозагрузка
-│   └── Uninstaller/
-│       └── UninstallerView.swift # Удаление приложений
-├── Infrastructure/               # Инфраструктурный слой
-│   ├── CommandRunner.swift       # Запуск внешних процессов (Actor)
-│   └── SafetyManager.swift        # Проверка безопасности путей
-├── Models/                       # Модели данных
-│   ├── CleanupItem.swift         # Элемент очистки
-│   ├── CleanupTransaction.swift  # Транзакция очистки
-│   ├── NavigationItem.swift      # Модель навигации
-│   ├── OperationRecord.swift     # Запись об операции
-│   ├── OperationRisk.swift       # Уровни риска
-│   ├── ScanResult.swift          # Результат сканирования
-│   └── StartupService.swift      # Служба автозагрузки
-├── Resources/                    # Ресурсы
-│   ├── Assets.xcassets           # Медиа-файлы
-│   └── Scripts/                  # Скрипты-адаптеры
-│       ├── macos-cache-cleanup.sh # Скрипт очистки (legacy/adapter)
-│       └── README.md             # Документация скрипта
-├── MacOSCleanerTests/            # Тесты
-│   ├── CommandRunnerTests.swift  # Тесты CommandRunner
-│   └── SafetyManagerTests.swift  # Тесты SafetyManager
-└── MacOSCleaner.xcodeproj        # Проект Xcode
+│   │   ├── CleanupView.swift     # Экран очистки (иерархический список)
+│   │   └── CleanupViewModel.swift
+│   └── ...
+├── Infrastructure/               # Системные сервисы (CommandRunner, SafetyManager)
+├── Models/                       # DTO и доменные модели
+├── State/                        # Стейт-машины и управление состоянием
+├── Resources/                    # Ассеты и shell-скрипты
+├── MacOSCleanerTests/            # Юнит-тесты
+├── project.yml                   # Конфигурация XcodeGen
+└── MacOSCleaner.xcodeproj        # Генерируемый проект
 ```
 
-## Building the Project
+## Development & Building
 
 ### Requirements
 - Xcode 16+
-- macOS (as specified in the Xcode project)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (для управления проектом)
+
+### Project Generation (XcodeGen)
+Этот проект использует **XcodeGen** для управления `.xcodeproj`. Не редактируйте настройки проекта напрямую в Xcode, так как они будут перезаписаны при следующей генерации. Все изменения вносятся в `project.yml`.
+
+Для генерации или обновления проекта выполните в корневой папке проекта:
+```bash
+xcodegen
+```
 
 ### Build Instructions
-1. Open `MacOSCleaner.xcodeproj` in Xcode.
-2. Select the `MacOSCleaner` scheme.
-3. Build and Run (`Cmd + R`).
+1. Сгенерируйте проект с помощью `xcodegen`.
+2. Откройте `MacOSCleaner.xcodeproj`.
+3. Соберите и запустите (`Cmd + R`).
 
 ### Running Tests
-To run the unit tests:
-- **In Xcode:** Press `Cmd + U` or go to `Product` -> `Test`.
+- **In Xcode:** `Cmd + U`.
 - **In Terminal:** 
   ```bash
-  cd MacOSCleaner
-  xcodebuild test -scheme MacOSCleaner -destination 'platform=macOS'
+  xcodegen && xcodebuild test -scheme MacOSCleaner -destination 'platform=macOS'
   ```
 
 *(Note: The core cleanup script and its original README can be found in `MacOSCleaner/Resources/Scripts/`)*
