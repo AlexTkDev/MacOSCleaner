@@ -506,7 +506,7 @@ Visual management of LaunchAgents.
 
 ---
 
-# TASK-014
+# TASK-014 [x]
 
 ## Title
 
@@ -531,7 +531,7 @@ Remove applications safely.
 
 ---
 
-# TASK-015
+# TASK-015 [x]
 
 ## Title
 
