@@ -1,5 +1,7 @@
 # macOS Cleaner GUI
 
+[![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
+
 Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents management, and application removal.
 
 ## Features (MVP)
@@ -83,3 +85,12 @@ xcodegen
 - Runs with Hardened Runtime enabled.
 - Uses path standardization and symlink validation to prevent escaping the safe bounds.
 - Refuse list denies access to critical system files.
+
+## License
+
+Licensed under a custom **Non-Commercial and Non-Embedding License**.
+
+* **Permitted:** Running the application for personal, educational, and non-commercial purposes. Viewing, studying, and forking the code.
+* **Prohibited:** Selling or commercializing the application or its code; using it for revenue-generating activities; embedding or integrating the code into other products, libraries, or services.
+
+See [LICENSE](LICENSE) for full details.
