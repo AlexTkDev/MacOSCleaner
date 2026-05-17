@@ -14,9 +14,7 @@ set -euo pipefail
 #   ./macos-cache-cleanup.sh                  # Standard cleanup
 #   ./macos-cache-cleanup.sh --dry-run        # Preview what would be deleted
 #   ./macos-cache-cleanup.sh --scan           # Full discovery report, no deletion
-#   ./macos-cache-cleanup.sh --clean-modcache # Clean Go module cache
-#   ./macos-cache-cleanup.sh --clean-maven    # Clean Maven local repo
-#   ./macos-cache-cleanup.sh --clean-projects # Clean project-specific caches (.dart_tool)
+#   ./macos-cache-cleanup.sh --clean-dev-caches # Clean all language/dev caches
 #   ./macos-cache-cleanup.sh --clean-ds-store # Clean .DS_Store and scattered junk
 # ==============================================================================
 
@@ -47,6 +45,7 @@ CLEAN_MODCACHE=false
 CLEAN_MAVEN=false
 CLEAN_PROJECTS=false
 CLEAN_DS_STORE=false
+CLEAN_DEV_CACHES=false
 PATHS_FILE=""
 CURRENT_PARENT=""
 
@@ -59,6 +58,7 @@ while [[ $# -gt 0 ]]; do
         --clean-maven)    CLEAN_MAVEN=true ;;
         --clean-projects) CLEAN_PROJECTS=true ;;
         --clean-ds-store) CLEAN_DS_STORE=true ;;
+        --clean-dev-caches) CLEAN_DEV_CACHES=true; CLEAN_MODCACHE=true; CLEAN_MAVEN=true; CLEAN_PROJECTS=true ;;
         --scan)           SCAN_ONLY=true; DRY_RUN=true ;;
         --paths-file)     shift; PATHS_FILE="$1" ;;
     esac

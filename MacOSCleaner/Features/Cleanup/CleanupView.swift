@@ -73,28 +73,27 @@ public struct CleanupView: View {
     private var idleView: some View {
         @Bindable var vm = viewModel
         
-        VStack(spacing: 20) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 72, weight: .thin))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.accentColor, .accentColor.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: .accentColor.opacity(0.3), radius: 10, x: 0, y: 5)
+        VStack(spacing: 32) {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.accentColor.opacity(0.1), .clear], startPoint: .top, endPoint: .bottom))
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "sparkles")
+                    .font(.system(size: 64, weight: .light))
+                    .foregroundStyle(Color.accentColor)
+            }
+            .padding(.bottom, 8)
             
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Text("Ready to Clean")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(.title, design: .rounded, weight: .bold))
                 
                 Text("Scan your system to find safe-to-remove caches and temporary files.")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
+                    .frame(maxWidth: 360)
             }
             
             VStack(alignment: .leading, spacing: 12) {
@@ -102,10 +101,17 @@ public struct CleanupView: View {
                     .font(.headline)
                     .padding(.bottom, 4)
                 
-                Toggle("Clean Go Module Cache", isOn: $vm.options.cleanModCache)
-                Toggle("Clean Maven Local Repository", isOn: $vm.options.cleanMaven)
-                Toggle("Clean Project Caches (e.g. .dart_tool)", isOn: $vm.options.cleanProjects)
+                Toggle("Clean All Development Caches", isOn: $vm.options.cleanDevCaches)
+                Text("Clears Go, Maven, and project-specific build caches at once.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 20)
+                
                 Toggle("Clean .DS_Store files", isOn: $vm.options.cleanDSStore)
+                Text("Removes system generated metadata files from directories.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 20)
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -115,14 +121,12 @@ public struct CleanupView: View {
             
             Button(action: { viewModel.startScan() }) {
                 Text("Start Scan")
-                    .fontWeight(.semibold)
-                    .frame(width: 150, height: 32)
+                    .font(.headline)
+                    .frame(width: 180, height: 40)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .padding(.top, 10)
         }
-        .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
     
     @ViewBuilder
@@ -201,39 +205,37 @@ public struct CleanupView: View {
         buttonTitle: String,
         action: @escaping () -> Void
     ) -> some View {
-        VStack(spacing: 20) {
-            Image(systemName: icon)
-                .font(.system(size: 72, weight: .thin))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [iconColor, iconColor.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: iconColor.opacity(0.3), radius: 10, x: 0, y: 5)
+        VStack(spacing: 32) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.1))
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 64, weight: .light))
+                    .foregroundStyle(iconColor)
+            }
             
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Text(title)
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(.title, design: .rounded, weight: .bold))
                 
                 Text(subtitle)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
+                    .frame(maxWidth: 360)
             }
             
             Button(action: action) {
                 Text(buttonTitle)
                     .fontWeight(.semibold)
-                    .frame(width: 150, height: 32)
+                    .frame(width: 150)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
         }
-        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
     
     private func progressView(title: String, subtitle: String) -> some View {
@@ -324,10 +326,18 @@ public struct CleanupView: View {
             if let selected = viewModel.selectedItem, let desc = selected.description {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.accentColor)
-                        Text("Manual Cleanup Instructions")
-                            .font(.headline)
+                        HStack {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.accentColor)
+                            Text("Manual Cleanup Instructions")
+                                .font(.headline)
+                        }
+                        Spacer()
+                        Button(action: { viewModel.selectedItemId = nil }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
                     
                     Text(desc)

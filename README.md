@@ -2,19 +2,19 @@
 
 [![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
 
-Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents management, and application removal.
+Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents management, and application uninstallation.
 
-## Features (MVP)
+## Features
 
 - **Cleanup:** Safely remove user caches, logs, temporary files, Xcode DerivedData, Android Studio caches, Homebrew cache, and more.
 - **Startup Services:** Manage (scan, enable, disable) `~/Library/LaunchAgents`.
-- **Application Removal:** Drag-and-drop `.app` bundles to remove them along with their related files (moves everything safely to the Trash).
+- **Application Uninstallation:** Drag-and-drop `.app` bundles to remove them along with associated files (everything is moved safely to the Trash).
 
 ## Safety First
 
-- **Reversible Operations:** No permanent deletion. All files are moved to the Trash (`trashItem(at:)`).
+- **Reversible Operations:** No permanent deletion. All files are moved to the system Trash (`trashItem(at:)`).
 - **Protected Paths:** Built-in safeguards prevent accidental deletion of system directories (`/System`, `/Library`), Apple services, and critical data.
-- **Transactions:** JSON append-only journal for tracking all operations and supporting rollback/recovery.
+- **Transactions:** JSON append-only journal for tracking all operations and supporting state recovery.
 
 ## Architecture
 
@@ -22,48 +22,46 @@ Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents
 - **Language:** Swift 6
 - **UI:** SwiftUI (State-driven)
 - **Concurrency:** Swift Concurrency (async/await, actors)
-- **Design:** Pragmatic MVP (no plugin frameworks, no dynamic policy engines, no unnecessary abstractions)
+- **Design:** Pragmatic MVP (no heavy frameworks, minimal abstractions)
 
 ## Project Structure
 
 ```text
 MacOSCleaner/
-├── App/                          # Точка входа и навигация
-├── Domains/                      # Бизнес-логика и адаптеры
-│   └── Cleanup/
-│       └── ShellCleanupAdapter.swift # Адаптер для shell-скрипта
-├── Features/                     # UI модули (SwiftUI)
+├── App/                          # App entry point and navigation
+├── Domains/                      # Business logic and adapters
+├── Features/                     # UI modules (SwiftUI)
 │   ├── Cleanup/
-│   │   ├── CleanupView.swift     # Экран очистки (иерархический список)
-│   │   └── CleanupViewModel.swift
+│   ├── Dashboard/
+│   ├── Settings/
 │   └── ...
-├── Infrastructure/               # Системные сервисы (CommandRunner, SafetyManager)
-├── Models/                       # DTO и доменные модели
-├── State/                        # Стейт-машины и управление состоянием
-├── Resources/                    # Ассеты и shell-скрипты
-├── MacOSCleanerTests/            # Юнит-тесты
-├── project.yml                   # Конфигурация XcodeGen
-└── MacOSCleaner.xcodeproj        # Генерируемый проект
+├── Infrastructure/               # System services (CommandRunner, SafetyManager)
+├── Models/                       # Domain models and DTOs
+├── State/                        # State machines
+├── Resources/                    # Assets and scripts
+├── MacOSCleanerTests/            # Unit tests
+├── project.yml                   # XcodeGen configuration
+└── MacOSCleaner.xcodeproj        # Generated project file
 ```
 
 ## Development & Building
 
 ### Requirements
 - Xcode 16+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (для управления проектом)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 
-### Project Generation (XcodeGen)
-Этот проект использует **XcodeGen** для управления `.xcodeproj`. Не редактируйте настройки проекта напрямую в Xcode, так как они будут перезаписаны при следующей генерации. Все изменения вносятся в `project.yml`.
+### Project Generation
+This project uses **XcodeGen** to manage the `.xcodeproj`. Do not edit project settings directly in Xcode as they will be overwritten upon regeneration. Make changes in `project.yml` instead.
 
-Для генерации или обновления проекта выполните в корневой папке проекта:
+To generate or update the project, run the following in the project root:
 ```bash
 xcodegen
 ```
 
 ### Build Instructions
-1. Сгенерируйте проект с помощью `xcodegen`.
-2. Откройте `MacOSCleaner.xcodeproj`.
-3. Соберите и запустите (`Cmd + R`).
+1. Generate the project: `xcodegen`.
+2. Open `MacOSCleaner.xcodeproj`.
+3. Build and Run (`Cmd + R`).
 
 ### Running Tests
 - **In Xcode:** `Cmd + U`.
@@ -72,18 +70,16 @@ xcodegen
   xcodegen && xcodebuild test -scheme MacOSCleaner -destination 'platform=macOS'
   ```
 
-*(Note: The core cleanup script and its original README can be found in `MacOSCleaner/Resources/Scripts/`)*
-
 ## Recovery & Diagnostics
 
-- **File Recovery:** Since all deleted files are moved to the macOS Trash, you can restore them simply by opening the Trash, right-clicking the file, and selecting "Put Back".
+- **File Recovery:** Since all deleted files are moved to the macOS Trash, you can restore them by opening the Trash, right-clicking the file, and selecting "Put Back".
 - **LaunchAgents Recovery:** Disabled services can be re-enabled through the "Startup Services" interface.
-- **Diagnostics:** The application uses `OSLog` for internal logging. Errors and operation states can be monitored via the `Console.app`.
+- **Diagnostics:** The application uses `OSLog` for internal logging. Monitor via `Console.app`.
 
 ## Security
 
 - Runs with Hardened Runtime enabled.
-- Uses path standardization and symlink validation to prevent escaping the safe bounds.
+- Uses path standardization and symlink validation to prevent directory traversal outside of safe boundaries.
 - Refuse list denies access to critical system files.
 
 ## License

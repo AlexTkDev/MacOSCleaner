@@ -31,8 +31,8 @@ chmod +x macos-cache-cleanup.sh
 
 **Cleanup with additional flags:**
 ```bash
-# Clean module caches (Go, Maven) and deep-clean project artifacts (.dart_tool)
-./macos-cache-cleanup.sh --clean-modcache --clean-maven --clean-projects
+# Clean all language/dev caches (Go, Maven, project artifacts)
+./macos-cache-cleanup.sh --clean-dev-caches
 
 # Clean .DS_Store and scattered junk (Finder metadata)
 ./macos-cache-cleanup.sh --clean-ds-store

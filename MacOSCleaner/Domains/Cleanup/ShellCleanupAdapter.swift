@@ -32,6 +32,7 @@ public final class ShellCleanupAdapter: Sendable {
         public var cleanMaven: Bool = false
         public var cleanProjects: Bool = false
         public var cleanDSStore: Bool = false
+        public var cleanDevCaches: Bool = false
         public init() {}
     }
     
@@ -107,6 +108,7 @@ public final class ShellCleanupAdapter: Sendable {
         if options.cleanMaven { args.append("--clean-maven") }
         if options.cleanProjects { args.append("--clean-projects") }
         if options.cleanDSStore { args.append("--clean-ds-store") }
+        if options.cleanDevCaches { args.append("--clean-dev-caches") }
         return args
     }
     
