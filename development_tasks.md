@@ -442,7 +442,7 @@ Implement full cleanup flow.
 
 ---
 
-# TASK-012
+# TASK-012 [x]
 
 ## Title
 
@@ -478,7 +478,7 @@ Only:
 
 ---
 
-# TASK-013
+# TASK-013 [x]
 
 ## Title
 

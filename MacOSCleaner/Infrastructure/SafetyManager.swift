@@ -8,6 +8,7 @@ public enum SafetyError: Error, Equatable {
 
 public struct SafetyManager: Sendable {
     private let refuseList: [String]
+    private let allowedExceptions: [String]
 
     public init() {
         let home = NSHomeDirectory()
@@ -25,6 +26,11 @@ public struct SafetyManager: Sendable {
             "\(home)/.ssh",
             "\(home)/.gnupg",
             "\(home)/Documents"
+        ]
+        
+        self.allowedExceptions = [
+            "/Library/LaunchAgents",
+            "/Library/LaunchDaemons"
         ]
     }
 
@@ -45,6 +51,15 @@ public struct SafetyManager: Sendable {
         let pathsToCheck = [path, resolvedPath]
         
         for p in pathsToCheck {
+            // Check if path is explicitly allowed
+            let isException = allowedExceptions.contains { exception in
+                p == exception || p.hasPrefix(exception + "/")
+            }
+            
+            if isException {
+                continue
+            }
+
             for refused in refuseList {
                 let isExactMatch = (p == refused)
                 let isSubdirectory = p.hasPrefix(refused == "/" ? "//" : refused + "/")

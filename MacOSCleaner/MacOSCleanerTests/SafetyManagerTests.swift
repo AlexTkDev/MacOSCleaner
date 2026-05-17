@@ -64,8 +64,13 @@ final class SafetyManagerTests: XCTestCase {
     }
 
     func testSymlinkEscape() throws {
-        // Create a symlink pointing to a protected directory
-        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        // Create a symlink pointing to a protected directory in a safe location
+        let home = NSHomeDirectory()
+        let tempDir = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/MacOSCleanerTests_Safety")
+        
+        if FileManager.default.fileExists(atPath: tempDir.path) {
+            try? FileManager.default.removeItem(at: tempDir)
+        }
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         
         let symlinkURL = tempDir.appendingPathComponent("fake_cache")

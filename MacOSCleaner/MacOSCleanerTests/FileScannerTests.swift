@@ -5,13 +5,18 @@ final class FileScannerTests: XCTestCase {
     var scanner: FileScanner!
     var tempDirectory: URL!
     
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         scanner = FileScanner()
-        tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let home = NSHomeDirectory()
+        tempDirectory = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/MacOSCleanerTests_Scanner")
+        
+        if FileManager.default.fileExists(atPath: tempDirectory.path) {
+            try? FileManager.default.removeItem(at: tempDirectory)
+        }
         try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
     }
     
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         if FileManager.default.fileExists(atPath: tempDirectory.path) {
             try? FileManager.default.removeItem(at: tempDirectory)
         }
@@ -36,10 +41,12 @@ final class FileScannerTests: XCTestCase {
             foundURLs.formUnion(batch)
         }
         
-        XCTAssertTrue(foundURLs.contains(dir1))
-        XCTAssertTrue(foundURLs.contains(dir2))
-        XCTAssertTrue(foundURLs.contains(file1))
-        XCTAssertTrue(foundURLs.contains(file2))
+        let foundPaths = Set(foundURLs.map { $0.standardizedFileURL.path })
+        
+        XCTAssertTrue(foundPaths.contains(dir1.standardizedFileURL.path))
+        XCTAssertTrue(foundPaths.contains(dir2.standardizedFileURL.path))
+        XCTAssertTrue(foundPaths.contains(file1.standardizedFileURL.path))
+        XCTAssertTrue(foundPaths.contains(file2.standardizedFileURL.path))
     }
     
     func testBatching() async throws {
@@ -67,15 +74,17 @@ final class FileScannerTests: XCTestCase {
     }
     
     func testCancellation() async throws {
-        // Create 1000 files to ensure scan takes enough time to cancel
-        for i in 0..<1000 {
+        // Create 5000 files to ensure scan takes enough time to cancel
+        for i in 0..<5000 {
             let fileURL = tempDirectory.appendingPathComponent("file\(i).txt")
             FileManager.default.createFile(atPath: fileURL.path, contents: nil)
         }
         
+        let scanner = self.scanner!
+        let tempDir = self.tempDirectory!
         let task = Task<Int, Never> {
             var count = 0
-            let stream = scanner.scan(urls: [tempDirectory], batchSize: 10)
+            let stream = scanner.scan(urls: [tempDir], batchSize: 5)
             for await batch in stream {
                 count += batch.count
             }
@@ -83,11 +92,11 @@ final class FileScannerTests: XCTestCase {
         }
         
         // Give it a tiny bit of time to start, then cancel
-        try? await Task.sleep(nanoseconds: 10_000_000)
+        try? await Task.sleep(nanoseconds: 1_000_000)
         task.cancel()
         
         let count = await task.value
-        // If cancellation worked, it shouldn't have scanned all 1000 items
-        XCTAssertLessThan(count, 1000)
+        // If cancellation worked, it shouldn't have scanned all 5000 items
+        XCTAssertLessThan(count, 5000)
     }
 }

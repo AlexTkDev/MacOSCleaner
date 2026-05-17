@@ -34,6 +34,7 @@ final class ShellCleanupAdapterTests: XCTestCase {
         
         let stream = adapter.runCleanup(dryRun: true)
         for try await event in stream {
+            if case .log = event { continue }
             events.append(event)
         }
         
@@ -51,9 +52,11 @@ final class ShellCleanupAdapterTests: XCTestCase {
         
         // Проверка второго события
         switch events[1] {
-        case .preview(let label, let size):
+        case .preview(let label, let size, let deletable, let parent):
             XCTAssertEqual(label, "Test Preview")
             XCTAssertEqual(size, 100)
+            XCTAssertTrue(deletable)
+            XCTAssertNil(parent)
         default:
             XCTFail("Second event should be a preview")
         }

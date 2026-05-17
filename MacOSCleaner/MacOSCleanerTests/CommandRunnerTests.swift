@@ -39,8 +39,9 @@ final class CommandRunnerTests: XCTestCase {
     }
 
     func testCancellation() async {
+        let runner = commandRunner!
         let task = Task {
-            try await commandRunner.run(command: "/bin/sleep", arguments: ["5"])
+            try await runner.run(command: "/bin/sleep", arguments: ["5"])
         }
         
         // Wait a bit to ensure process started
