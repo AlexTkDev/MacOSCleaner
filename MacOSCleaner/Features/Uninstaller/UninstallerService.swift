@@ -2,19 +2,33 @@ import Foundation
 import SwiftUI
 import AppKit
 
+@Observable
+public final class ScanProgress: @unchecked Sendable {
+    public var currentStep: Int = 0
+    public var totalSteps: Int = 1
+    public var message: String = ""
+    public var percentage: Double = 0.0
+    
+    public init() {}
+}
+
 public actor UninstallerService {
+    public let progress = ScanProgress()
     private let fileManager: FileManager
     private let safetyManager: SafetyManager
     private let trashManager: TrashManager
+    private let commandRunner: CommandRunner
 
     public init(
         fileManager: FileManager = .default,
         safetyManager: SafetyManager = SafetyManager(),
-        trashManager: TrashManager = TrashManager()
+        trashManager: TrashManager = TrashManager(),
+        commandRunner: CommandRunner = CommandRunner()
     ) {
         self.fileManager = fileManager
         self.safetyManager = safetyManager
         self.trashManager = trashManager
+        self.commandRunner = commandRunner
     }
 
     public struct RelatedFile: Identifiable, Sendable, Hashable {
@@ -54,13 +68,30 @@ public actor UninstallerService {
             fileManager.urls(for: .applicationDirectory, in: .userDomainMask)[0]
         ]
         
+        // Count apps first for progress
+        var allAppURLs: [URL] = []
+        for dir in appDirs {
+            if let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+                allAppURLs.append(contentsOf: contents.filter { $0.pathExtension == "app" })
+            }
+        }
+        
+        await MainActor.run {
+            progress.currentStep = 0
+            progress.totalSteps = allAppURLs.count
+            progress.message = "Scanning applications..."
+            progress.percentage = 0.0
+        }
+        
         return try await withThrowingTaskGroup(of: AppInfo?.self) { group in
-            for dir in appDirs {
-                guard let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { continue }
-                for url in contents where url.pathExtension == "app" {
-                    group.addTask {
-                        return try? await self.scan(appURL: url)
+            for url in allAppURLs {
+                group.addTask {
+                    let app = try? await self.scan(appURL: url)
+                    await MainActor.run {
+                        self.progress.currentStep += 1
+                        self.progress.percentage = Double(self.progress.currentStep) / Double(self.progress.totalSteps)
                     }
+                    return app
                 }
             }
             
@@ -70,6 +101,12 @@ public actor UninstallerService {
                     apps.append(app)
                 }
             }
+            
+            await MainActor.run {
+                progress.message = "Scan complete"
+                progress.percentage = 1.0
+            }
+            
             return apps.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         }
     }
@@ -90,44 +127,93 @@ public actor UninstallerService {
         let mdItem = MDItemCreate(nil, appURL.path as CFString)
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
         
-        var related: [RelatedFile] = []
-        let searchPatterns = [bundleID, appName].compactMap { $0 }.filter { !$0.isEmpty }
+        var relatedURLs = Set<URL>()
+        let searchPatterns = createSearchPatterns(bundleID: bundleID, appName: appName)
         
-        if !searchPatterns.isEmpty {
-            let libraryPaths = [
-                "~/Library/Application Support",
-                "~/Library/Caches",
-                "~/Library/Containers",
-                "~/Library/Cookies",
-                "~/Library/Logs",
-                "~/Library/Preferences",
-                "~/Library/Saved Application State",
-                "~/Library/LaunchAgents",
-                "/Library/Application Support",
-                "/Library/Caches",
-                "/Library/LaunchAgents",
-                "/Library/LaunchDaemons",
-                "/Library/Preferences",
-                "/Library/PrivilegedHelperTools"
-            ]
+        // Pass 1: mdfind (Spotlight)
+        let mdfindResults = await runMdfind(bundleID: bundleID, appName: appName)
+        relatedURLs.formUnion(mdfindResults)
+        
+        // Pass 2: pkgutil (Receipts)
+        relatedURLs.formUnion(await getPkgFiles(bundleID: bundleID))
+        
+        // Pass 3: Manual scanning of expanded paths (Depth search)
+        let libraryPaths = [
+            "~/Library/Application Support",
+            "~/Library/Caches",
+            "~/Library/Containers",
+            "~/Library/Group Containers",
+            "~/Library/Cookies",
+            "~/Library/Logs",
+            "~/Library/Preferences",
+            "~/Library/Saved Application State",
+            "~/Library/LaunchAgents",
+            "~/Library/Application Scripts",
+            "~/Library/HTTPStorages",
+            "~/Library/WebKit",
+            "/Library/Application Support",
+            "/Library/Caches",
+            "/Library/LaunchAgents",
+            "/Library/LaunchDaemons",
+            "/Library/Preferences",
+            "/Library/PrivilegedHelperTools",
+            "~/Library",
+            "/tmp",
+            "/private/tmp",
+            "/usr/local/bin",
+            "/usr/local/share",
+            "/Library/Frameworks",
+            "/Library/Internet Plug-Ins"
+        ]
+        
+        let teamID = await getTeamIdentifier(url: appURL)
+        
+        for path in libraryPaths {
+            let expandedPath = (path as NSString).expandingTildeInPath
+            let folderURL = URL(fileURLWithPath: expandedPath)
             
-            for path in libraryPaths {
-                let expandedPath = (path as NSString).expandingTildeInPath
-                let folderURL = URL(fileURLWithPath: expandedPath)
+            // Shallow scan first level
+            let contents = (try? fileManager.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [])) ?? []
+            
+            for fileURL in contents {
+                if fileURL.path == appURL.path { continue }
                 
-                guard let contents = try? fileManager.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) else { continue }
+                let fileName = fileURL.lastPathComponent
                 
-                for fileURL in contents {
-                    let fileName = fileURL.lastPathComponent
-                    let matches = searchPatterns.contains { pattern in
-                        fileName.localizedCaseInsensitiveContains(pattern)
-                    }
-                    
-                    if matches {
-                        let fileSize = await getDirectorySize(url: fileURL)
-                        related.append(RelatedFile(url: fileURL, size: fileSize))
+                // Check by pattern
+                if matches(fileName: fileName, patterns: searchPatterns) {
+                    relatedURLs.insert(fileURL)
+                } 
+                // Check by Team ID for binaries/kexts in specific folders
+                else if (path.contains("Launch") || path.contains("Privileged") || path.contains("Extensions")) {
+                    let fileTeamID = await getTeamIdentifier(url: fileURL)
+                    if fileTeamID == teamID && teamID != nil {
+                        relatedURLs.insert(fileURL)
                     }
                 }
+                // 2-level recursive check for vendor folders
+                else if ["Application Support", "Caches", "Logs"].contains(folderURL.lastPathComponent) {
+                    let subContents = (try? fileManager.contentsOfDirectory(at: fileURL, includingPropertiesForKeys: nil, options: [])) ?? []
+                    for subURL in subContents {
+                        if matches(fileName: subURL.lastPathComponent, patterns: searchPatterns) {
+                            relatedURLs.insert(subURL)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Verification & Size Calculation
+        var related: [RelatedFile] = []
+        for url in relatedURLs {
+            // Safety check
+            if (try? safetyManager.validate(url: url)) == nil { continue }
+            if url.path == appURL.path || appURL.path.hasPrefix(url.path + "/") { continue }
+            
+            var isDir: ObjCBool = false
+            if fileManager.fileExists(atPath: url.path, isDirectory: &isDir) {
+                let fileSize = await getDirectorySize(url: url)
+                related.append(RelatedFile(url: url, size: fileSize))
             }
         }
         
@@ -135,7 +221,7 @@ public actor UninstallerService {
             url: appURL,
             bundleID: bundleID,
             name: appName,
-            relatedFiles: related,
+            relatedFiles: related.sorted { $0.url.path < $1.url.path },
             size: size,
             version: version,
             lastUsed: lastUsed,
@@ -143,20 +229,122 @@ public actor UninstallerService {
         )
     }
 
-    public func uninstall(app: AppInfo) async throws {
-        _ = try await trashManager.trashItem(at: app.url)
-        for file in app.relatedFiles where file.isSelected {
-            try? _ = await trashManager.trashItem(at: file.url)
-        }
-    }
-    
     private func getDirectorySize(url: URL) async -> Int64 {
         var size: Int64 = 0
-        let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey], options: [])
+        let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [])
         while let fileURL = enumerator?.nextObject() as? URL {
+            // Skip OrbStack sparse files to avoid massive false positive sizes
+            if fileURL.path.contains("HUAQ24HBR6.dev.orbstack") {
+                continue
+            }
             let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])
             size += Int64(resourceValues?.fileSize ?? 0)
         }
         return size
+    }
+
+    private func createSearchPatterns(bundleID: String?, appName: String) -> [String] {
+        var patterns = Set<String>()
+        if let bundleID = bundleID {
+            patterns.insert(bundleID)
+            let parts = bundleID.components(separatedBy: ".")
+            if parts.count > 2 {
+                patterns.insert(parts.dropFirst().joined(separator: "."))
+                patterns.insert(parts.last!)
+            }
+        }
+        patterns.insert(appName)
+        patterns.insert(appName.replacingOccurrences(of: " ", with: ""))
+        patterns.insert(appName.replacingOccurrences(of: " ", with: "-"))
+        
+        // Specific app keywords (Android Studio case)
+        if appName.localizedCaseInsensitiveContains("Android Studio") {
+            patterns.insert("Android")
+        }
+        
+        return Array(patterns).filter { $0.count > 3 }
+    }
+
+    private func matches(fileName: String, patterns: [String]) -> Bool {
+        for pattern in patterns {
+            if fileName.localizedCaseInsensitiveContains(pattern) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func runMdfind(bundleID: String?, appName: String) async -> Set<URL> {
+        var urls = Set<URL>()
+        let query = bundleID ?? appName
+        
+        do {
+            let result = try await commandRunner.run(command: "/usr/bin/mdfind", arguments: [query])
+            let paths = result.stdout.components(separatedBy: .newlines)
+            for path in paths where !path.isEmpty {
+                let url = URL(fileURLWithPath: path)
+                let pathStr = url.path
+                if pathStr.contains("/Library/") || pathStr.contains("/tmp/") || pathStr.hasPrefix("/private/var/folders/") {
+                    urls.insert(url)
+                }
+            }
+        } catch {
+            print("mdfind failed: \(error)")
+        }
+        
+        return urls
+    }
+
+    private func getPkgFiles(bundleID: String?) async -> Set<URL> {
+        guard let bundleID = bundleID else { return [] }
+        let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--files", bundleID])
+        guard let output = result?.stdout else { return [] }
+        
+        var urls = Set<URL>()
+        let lines = output.components(separatedBy: .newlines)
+        for line in lines where !line.isEmpty {
+            let path = "/\(line)"
+            let url = URL(fileURLWithPath: path)
+            if FileManager.default.fileExists(atPath: path) {
+                urls.insert(url)
+            }
+        }
+        return urls
+    }
+
+    private func getTeamIdentifier(url: URL) async -> String? {
+        let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-dv", "--verbose=4", url.path])
+        guard let output = result?.stderr else { return nil }
+        
+        if let range = output.range(of: "TeamIdentifier=") {
+            let start = range.upperBound
+            let end = output[start...].firstIndex(where: { $0.isWhitespace || $0.isNewline }) ?? output.endIndex
+            return String(output[start..<end])
+        }
+        return nil
+    }
+
+    public func uninstall(app: AppInfo) async throws {
+        // 1. Try to unload launch agents/daemons
+        for file in app.relatedFiles where file.isSelected {
+            let path = file.url.path
+            if path.contains("LaunchAgents") || path.contains("LaunchDaemons") {
+                if path.hasSuffix(".plist") {
+                    // Try to unload. We don't fail if it's not loaded.
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
+                }
+            }
+        }
+
+        // 2. Move files to trash
+        _ = try await trashManager.trashItem(at: app.url)
+        for file in app.relatedFiles where file.isSelected {
+            try? _ = await trashManager.trashItem(at: file.url)
+        }
+
+        // 3. Forget package if applicable
+        if let bundleID = app.bundleID {
+            _ = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--forget", bundleID])
+        }
     }
 }

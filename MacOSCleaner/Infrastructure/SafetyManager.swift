@@ -29,8 +29,13 @@ public struct SafetyManager: Sendable {
         ]
         
         self.allowedExceptions = [
+            "\(home)/Library",
             "/Library/LaunchAgents",
-            "/Library/LaunchDaemons"
+            "/Library/LaunchDaemons",
+            "/private/var/folders",
+            "/private/tmp",
+            "/tmp",
+            "/usr/local"
         ]
     }
 

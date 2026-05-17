@@ -14,8 +14,15 @@ public final class ShellCleanupAdapter: Sendable {
             // Xcode кладёт скрипт плоско в Contents/Resources (без подпапки)
             self.scriptPath = bundlePath
         } else {
-            // Путь для запуска из Xcode в режиме разработки
-            self.scriptPath = "/Users/alex/Documents/my/macos-cleaner/MacOSCleaner/Resources/Scripts/macos-cache-cleanup.sh"
+            // Поиск скрипта относительно текущей директории для разработки
+            let fm = FileManager.default
+            let relativePath = "MacOSCleaner/Resources/Scripts/macos-cache-cleanup.sh"
+            if fm.fileExists(atPath: relativePath) {
+                self.scriptPath = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent(relativePath).path
+            } else {
+                // Фолбек на имя файла, если не нашли (ожидаем ошибку при запуске, если файл отсутствует)
+                self.scriptPath = "macos-cache-cleanup.sh"
+            }
         }
     }
     

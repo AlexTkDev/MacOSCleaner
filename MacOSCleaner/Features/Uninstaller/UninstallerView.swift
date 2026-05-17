@@ -32,9 +32,16 @@ struct UninstallerView: View {
             HStack(spacing: 0) {
                 // Apps List
                 VStack(spacing: 0) {
-                    if isLoading && allApps.isEmpty {
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if isLoading {
+                        VStack(spacing: 16) {
+                            ProgressView(value: service.progress.percentage)
+                                .progressViewStyle(.linear)
+                                .padding(.horizontal)
+                            Text(service.progress.message)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         List(filteredApps, selection: $selectedApp) { app in
                             AppRowView(app: app, formatter: formatter)
@@ -246,7 +253,7 @@ struct UninstallerView: View {
     @ViewBuilder
     private func badges(for app: UninstallerService.AppInfo) -> some View {
         DetailBadge(title: "Version", value: app.version)
-        DetailBadge(title: "Size", value: formatter.string(fromByteCount: app.size))
+        DetailBadge(title: "Size", value: formatter.string(fromByteCount: app.totalSize))
         if let lastUsed = app.lastUsed {
             DetailBadge(title: "Last Used", value: lastUsed.formatted(.dateTime.year().month().day()))
         }
@@ -343,7 +350,7 @@ struct AppRowView: View {
                 Text(app.name)
                     .font(.body)
                     .fontWeight(.medium)
-                Text(formatter.string(fromByteCount: app.size))
+                Text(formatter.string(fromByteCount: app.totalSize))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

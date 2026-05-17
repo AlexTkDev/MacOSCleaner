@@ -8,13 +8,15 @@ Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents
 
 - **Cleanup:** Safely remove user caches, logs, temporary files, Xcode DerivedData, Android Studio caches, Homebrew cache, and more.
 - **Startup Services:** Manage (scan, enable, disable) `~/Library/LaunchAgents`.
-- **Application Uninstallation:** Drag-and-drop or browse installed applications. Includes an expert mode to manually select related files, caches, and logs for removal, with detailed app analytics (size, version, and last launch date).
+- **Application Uninstallation:** Multi-pass deep scanning for residuals. Drag-and-drop or browse installed applications. Includes an expert mode to manually select related files, caches, and logs for removal, with detailed app analytics. Progress indicators for long-running scans ensure transparency and responsiveness.
+- **Portability:** No hardcoded user-specific paths; the application works out-of-the-box on any macOS installation.
 
 ## Safety First
 
 - **Reversible Operations:** No permanent deletion. All files are moved to the system Trash (`trashItem(at:)`).
 - **Protected Paths:** Built-in safeguards prevent accidental deletion of system directories (`/System`, `/Library`), Apple services, and critical data.
 - **Transactions:** JSON append-only journal for tracking all operations and supporting state recovery.
+- **SafetyManager:** Rigorous path validation ensures all scanning and deletion operations remain within allowed boundaries.
 
 ## Architecture
 

@@ -102,3 +102,11 @@ temp/
 
 local_settings.py
 config.local.py
+
+# ============================================================
+# Other
+# ============================================================
+GEMINI.md
+.gemini/
+.claude/
+scan_algoritm.md

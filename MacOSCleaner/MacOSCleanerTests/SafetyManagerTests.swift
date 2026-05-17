@@ -21,7 +21,8 @@ final class SafetyManagerTests: XCTestCase {
         let safePaths = [
             "\(home!)/Library/Caches/com.example.app",
             "\(home!)/Downloads/test_file.txt",
-            "/Users/Shared/cache_folder"
+            "/Users/Shared/cache_folder",
+            "/usr/local/bin/app_tool"
         ]
 
         for path in safePaths {
@@ -35,7 +36,6 @@ final class SafetyManagerTests: XCTestCase {
             ("/", "/"),
             ("/System/Library/CoreServices", "/System"),
             ("/Library/Preferences/SystemConfiguration", "/Library"),
-            ("/usr/local/bin", "/usr"),
             ("/bin/ls", "/bin"),
             ("/private/etc/hosts", "/etc") // On macOS /private/etc resolves to /etc when standardized
         ]
