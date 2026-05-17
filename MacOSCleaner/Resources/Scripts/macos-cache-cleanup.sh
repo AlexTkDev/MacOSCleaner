@@ -238,8 +238,11 @@ print_summary() {
 print_dry() {
     local label=$1
     local size=$2
+    local deletable=${3:-true}
+    local description=${4:-""}
     if [[ "$JSON_MODE" == true ]]; then
-        printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d}\n" "$label" "$size" >&2
+        local escaped_desc=$(echo "$description" | sed 's/"/\\"/g')
+        printf "{\"type\": \"preview\", \"label\": \"%s\", \"size\": %d, \"deletable\": %s, \"description\": \"%s\"}\n" "$label" "$size" "$deletable" "$escaped_desc" >&2
     fi
     if [[ $size -gt 0 ]]; then
         printf "  ${YELLOW}⊘${NC} %-40s ${YELLOW}%4d MB${NC} (would clean)\n" "$label" "$size"
@@ -892,12 +895,14 @@ fi
 # ---- system-images: always protected (AVD emulator OS images) ----
 if [[ -d "$ANDROID_SDK/system-images" ]]; then
     SI_SIZE=$(get_size_mb "$ANDROID_SDK/system-images")
-    if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
-        printf "{\"type\": \"preview\", \"label\": \"Android System Images (protected)\", \"size\": %d, \"deletable\": false}\n" "$SI_SIZE" >&2
+    if [[ "$DRY_RUN" == true ]]; then
+        if [[ "$JSON_MODE" == true ]]; then
+            printf "{\"type\": \"preview\", \"label\": \"Android System Images\", \"size\": %d, \"deletable\": false, \"description\": \"To free: Android Studio → Device Manager → delete unused AVDs\"}\n" "$SI_SIZE" >&2
+        fi
+        echo
+        printf "  ${CYAN}ℹ${NC}  system-images (AVD emulator OS): ${BOLD}%d MB${NC} — ${GREEN}protected${NC}\n" "$SI_SIZE"
+        printf "  ${DIM}  → To free: Android Studio → Device Manager → delete unused AVDs${NC}\n"
     fi
-    echo
-    printf "  ${CYAN}ℹ${NC}  system-images (AVD emulator OS): ${BOLD}%d MB${NC} — ${GREEN}protected${NC}\n" "$SI_SIZE"
-    printf "  ${DIM}  → To free: Android Studio → Device Manager → delete unused AVDs${NC}\n"
 fi
 
 # ============================================================
@@ -1739,6 +1744,9 @@ TOTAL_FREED=$((TOTAL_FREED + F))
 # Show Ollama model sizes (info only)
 if [[ -d "$HOME/.ollama/models" ]]; then
     ollama_sz=$(get_size_mb "$HOME/.ollama/models")
+    if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+        printf "{\"type\": \"preview\", \"label\": \"Ollama models\", \"size\": %d, \"deletable\": false, \"description\": \"To free space, delete models via CLI: ollama rm <model_name>\"}\n" "$ollama_sz" >&2
+    fi
     printf "  ${CYAN}ℹ${NC}  Ollama models: ${BOLD}%d MB${NC} — ${GREEN}protected${NC} (delete via ${BOLD}ollama rm <model>${NC})\n" "$ollama_sz"
 fi
 
@@ -2335,6 +2343,13 @@ printf "  ${CYAN}╌╌╌ System Library Junk (/Library) ╌╌╌${NC}\n"
 SYS_CACHES=$(get_size_mb "/Library/Caches")
 SYS_LOGS=$(get_size_mb "/Library/Logs")
 SYS_APPSUPP=$(get_size_mb "/Library/Application Support")
+
+if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+    printf "{\"type\": \"preview\", \"label\": \"/Library/Caches\", \"size\": %d, \"deletable\": false, \"description\": \"Mostly shared files; clean only via specialized tools or manually\"}\n" "$SYS_CACHES" >&2
+    printf "{\"type\": \"preview\", \"label\": \"/Library/Logs\", \"size\": %d, \"deletable\": false, \"description\": \"Mostly shared files; clean only via specialized tools or manually\"}\n" "$SYS_LOGS" >&2
+    printf "{\"type\": \"preview\", \"label\": \"/Library/Application Support\", \"size\": %d, \"deletable\": false, \"description\": \"Mostly shared files; clean only via specialized tools or manually\"}\n" "$SYS_APPSUPP" >&2
+fi
+
 printf "  ${CYAN}  ℹ /Library/Caches:              ${CYAN}%d MB${NC}\n" "$SYS_CACHES"
 printf "  ${CYAN}  ℹ /Library/Logs:                ${CYAN}%d MB${NC}\n" "$SYS_LOGS"
 printf "  ${CYAN}  ℹ /Library/Application Support: ${CYAN}%d MB${NC}\n" "$SYS_APPSUPP"
@@ -2348,7 +2363,7 @@ if [[ -d "$SIM_DEVICES_DIR" ]]; then
         echo
         printf "  ${CYAN}ℹ${NC}  Simulator device images: ${BOLD}%d MB${NC} — clean via ${BOLD}Xcode → Devices and Simulators${NC}\n" "$sim_total"
         if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
-            printf "{\"type\": \"preview\", \"label\": \"Simulator device images (Xcode)\", \"size\": %d, \"deletable\": false}\n" "$sim_total" >&2
+            printf "{\"type\": \"preview\", \"label\": \"Simulator device images (Xcode)\", \"size\": %d, \"deletable\": false, \"description\": \"To free space, open Xcode → Window → Devices and Simulators → Simulators, and delete unused ones.\"}\n" "$sim_total" >&2
         fi
     fi
 fi
@@ -2379,6 +2394,9 @@ if command -v tmutil &>/dev/null; then
         echo
         printf "  ${CYAN}ℹ${NC}  Time Machine local snapshots: ${BOLD}%d${NC} found\n" "$snapshot_count"
         printf "  ${DIM}  → To delete: ${NC}${BOLD}tmutil deletelocalsnapshots /${NC}\n"
+        if [[ "$JSON_MODE" == true && "$DRY_RUN" == true ]]; then
+            printf "{\"type\": \"preview\", \"label\": \"Time Machine Snapshots\", \"size\": 0, \"deletable\": false, \"description\": \"To delete all local snapshots, run this command in Terminal: sudo tmutil deletelocalsnapshots /\"}\n" >&2
+        fi
     fi
 fi
 

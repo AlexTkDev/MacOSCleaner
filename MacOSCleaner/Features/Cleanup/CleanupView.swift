@@ -295,7 +295,6 @@ public struct CleanupView: View {
                     }
                 ) {
                     ForEach(viewModel.items) { item in
-                        // Передаем признак раскрытости и действие для переключения
                         rowView(for: item, isExpanded: expandedItems.contains(item.id)) {
                             if !item.children.isEmpty {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -307,18 +306,45 @@ public struct CleanupView: View {
                                 }
                             }
                         }
+                        .listRowBackground(viewModel.selectedItemId == item.id ? Color.accentColor.opacity(0.1) : Color.clear)
                         
                         // Дети (показываем только если категория раскрыта)
                         if !item.children.isEmpty && expandedItems.contains(item.id) {
                             ForEach(item.children) { child in
                                 rowView(for: child, isExpanded: false, onToggleExpand: nil)
                                     .padding(.leading, 24)
+                                    .listRowBackground(viewModel.selectedItemId == child.id ? Color.accentColor.opacity(0.1) : Color.clear)
                             }
                         }
                     }
                 }
             }
             .listStyle(.inset)
+            
+            if let selected = viewModel.selectedItem, let desc = selected.description {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.accentColor)
+                        Text("Manual Cleanup Instructions")
+                            .font(.headline)
+                    }
+                    
+                    Text(desc)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                .overlay(
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(Color(NSColor.separatorColor)),
+                    alignment: .top
+                )
+            }
             
             if showLogs && !viewModel.scriptLogs.isEmpty {
                 Divider()
@@ -493,55 +519,62 @@ public struct CleanupView: View {
         isExpanded: Bool,
         onToggleExpand: (() -> Void)? = nil
     ) -> some View {
-        HStack(spacing: 8) {
+        let isSelected = viewModel.selectedItemId == item.id
+        
+        return HStack(spacing: 8) {
             // Чекбокс (отдельный тап-таргет)
-            Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
-                .font(.system(size: 14))
-                .foregroundColor(item.isDeletable ? (item.isSelected ? .accentColor : .secondary) : .secondary.opacity(0.3))
-                .frame(width: 20, height: 20)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if item.isDeletable {
+            if item.isDeletable {
+                Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 14))
+                    .foregroundColor(item.isSelected ? .accentColor : .secondary)
+                    .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
                         viewModel.toggleSelection(for: item.id)
                     }
-                }
+            } else {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .frame(width: 20, height: 20)
+            }
             
             // Основная часть строки (шеврон + текст + размер)
-            Button(action: {
-                onToggleExpand?()
-            }) {
-                HStack(spacing: 8) {
-                    if !item.children.isEmpty {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.secondary)
-                            .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                            .frame(width: 12)
-                    } else {
-                        Spacer().frame(width: 12)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.label)
-                            .font(.system(.subheadline, design: .monospaced))
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                        riskBadge(for: item.risk)
-                    }
-                    
-                    Spacer()
-                    
-                    Text("\(item.sizeMB) MB")
-                        .font(.system(.body, design: .monospaced))
+            HStack(spacing: 8) {
+                if !item.children.isEmpty {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .frame(width: 12)
+                        .onTapGesture {
+                            onToggleExpand?()
+                        }
+                } else {
+                    Spacer().frame(width: 12)
                 }
-                .contentShape(Rectangle())
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.label)
+                        .font(.system(.subheadline, design: .monospaced))
+                        .foregroundColor(isSelected ? .accentColor : .primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    riskBadge(for: item.risk)
+                }
+                
+                Spacer()
+                
+                Text("\(item.sizeMB) MB")
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.secondary)
             }
-            .buttonStyle(PlainButtonStyle())
-            .disabled(onToggleExpand == nil && item.children.isEmpty)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.selectItem(item.id)
+            }
         }
         .padding(.vertical, 4)
-        .padding(.horizontal, 4)
     }
 }
 

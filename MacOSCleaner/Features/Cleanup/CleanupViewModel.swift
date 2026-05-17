@@ -16,6 +16,7 @@ public final class CleanupViewModel {
     public var options = ShellCleanupAdapter.CleanupOptions()
     public var lastError: String? = nil
     public var scriptLogs: [String] = []
+    public var selectedItemId: UUID? = nil
     
     public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
         public let id: UUID
@@ -24,15 +25,17 @@ public final class CleanupViewModel {
         public let risk: OperationRisk
         public var isSelected: Bool
         public let isDeletable: Bool
+        public let description: String?
         public var children: [CleanupPreviewItem]
         
-        public init(id: UUID = UUID(), label: String, sizeMB: Int, risk: OperationRisk, isSelected: Bool = true, isDeletable: Bool, children: [CleanupPreviewItem] = []) {
+        public init(id: UUID = UUID(), label: String, sizeMB: Int, risk: OperationRisk, isSelected: Bool = true, isDeletable: Bool, description: String? = nil, children: [CleanupPreviewItem] = []) {
             self.id = id
             self.label = label
             self.sizeMB = sizeMB
             self.risk = risk
             self.isSelected = isSelected
             self.isDeletable = isDeletable
+            self.description = description
             self.children = children
         }
         
@@ -40,7 +43,8 @@ public final class CleanupViewModel {
             lhs.id == rhs.id && 
             lhs.sizeMB == rhs.sizeMB && 
             lhs.isSelected == rhs.isSelected && 
-            lhs.children == rhs.children
+            lhs.children == rhs.children &&
+            lhs.description == rhs.description
         }
     }
     
@@ -89,6 +93,21 @@ public final class CleanupViewModel {
         }
     }
     
+    public func selectItem(_ itemId: UUID?) {
+        self.selectedItemId = itemId
+    }
+    
+    public var selectedItem: CleanupPreviewItem? {
+        guard let id = selectedItemId else { return nil }
+        for item in items {
+            if item.id == id { return item }
+            if let child = item.children.first(where: { $0.id == id }) {
+                return child
+            }
+        }
+        return nil
+    }
+    
     public func updateAllSelection(isSelected: Bool) {
         for i in items.indices {
             updateItemSelection(&items[i], isSelected: isSelected)
@@ -116,6 +135,7 @@ public final class CleanupViewModel {
                 self.items = []
                 self.lastError = nil
                 self.scriptLogs = []
+                self.selectedItemId = nil
                 
                 let stream = adapter.runCleanup(scanOnly: true, options: options)
                 for try await event in stream {
@@ -124,15 +144,16 @@ public final class CleanupViewModel {
                         self.currentStep = current
                         self.totalSteps = total
                         self.stepTitle = title
-                    case .preview(let label, let size, let deletable, let parentName):
-                        print("[debug] Preview event: label=\(label), size=\(size), parent=\(parentName ?? "none")")
-                        let risk = determineRisk(for: label)
+                    case .preview(let label, let size, let deletable, let parentName, let description):
+                        print("[debug] Preview event: label=\(label), size=\(size), parent=\(parentName ?? "none"), description=\(description ?? "none")")
+                        let risk = deletable ? determineRisk(for: label) : .protected
                         let newItem = CleanupPreviewItem(
                             label: label,
                             sizeMB: size,
                             risk: risk,
                             isSelected: deletable,
-                            isDeletable: deletable
+                            isDeletable: deletable,
+                            description: description
                         )
                         
                         if let parentName = parentName, !parentName.isEmpty {

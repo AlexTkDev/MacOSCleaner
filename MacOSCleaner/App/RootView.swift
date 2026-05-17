@@ -32,6 +32,7 @@ struct RootView: View {
                     .foregroundColor(.secondary)
             }
         }
+        .frame(minWidth: 800, minHeight: 600)
     }
 }
 

@@ -23,7 +23,7 @@ public final class ShellCleanupAdapter: Sendable {
     public enum CleanupEvent: Sendable {
         case step(current: Int, total: Int, title: String)
         case result(label: String, freed: Int)
-        case preview(label: String, size: Int, deletable: Bool, parent: String?)
+        case preview(label: String, size: Int, deletable: Bool, parent: String?, description: String?)
         case log(String)
     }
     
@@ -135,6 +135,7 @@ public final class ShellCleanupAdapter: Sendable {
             let size: Int?
             let deletable: Bool?
             let parent: String?
+            let description: String?
         }
         
         do {
@@ -150,7 +151,7 @@ public final class ShellCleanupAdapter: Sendable {
                 }
             case "preview":
                 if let l = raw.label, let s = raw.size {
-                    return .preview(label: l, size: s, deletable: raw.deletable ?? true, parent: raw.parent)
+                    return .preview(label: l, size: s, deletable: raw.deletable ?? true, parent: raw.parent, description: raw.description)
                 }
             default:
                 return .log(line)
