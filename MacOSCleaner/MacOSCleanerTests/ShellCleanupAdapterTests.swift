@@ -52,11 +52,12 @@ final class ShellCleanupAdapterTests: XCTestCase {
         
         // Проверка второго события
         switch events[1] {
-        case .preview(let label, let size, let deletable, let parent):
+        case .preview(let label, let size, let deletable, let parent, let description):
             XCTAssertEqual(label, "Test Preview")
             XCTAssertEqual(size, 100)
             XCTAssertTrue(deletable)
             XCTAssertNil(parent)
+            XCTAssertNil(description)
         default:
             XCTFail("Second event should be a preview")
         }

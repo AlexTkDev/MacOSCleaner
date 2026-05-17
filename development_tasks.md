@@ -544,15 +544,18 @@ Visual uninstall workflow.
 ## Features
 
 * drag-and-drop area
-* related files tree
+* related files tree (Expert Mode)
 * risk indicators
 * confirmation dialogs
+* App Analytics (size, version, last used date)
 
 ## Acceptance Criteria
 
 * Drag-and-drop stable
 * Preview accurate
 * Cleanup reversible
+* Expert mode allows manual file selection
+* Analytics visible for all applications
 
 ---
 

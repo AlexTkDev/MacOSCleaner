@@ -11,28 +11,33 @@ struct RootView: View {
                     Label(item.rawValue, systemImage: item.systemImage)
                 }
             }
-            .navigationTitle("macOS Cleaner")
-            .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
+            .navigationTitle("Cleaner")
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 280)
         } detail: {
             if let selectedItem {
-                switch selectedItem {
-                case .dashboard:
-                    DashboardView()
-                case .cleanup:
-                    CleanupView(viewModel: cleanupViewModel)
-                case .startupServices:
-                    StartupServicesView()
-                case .uninstaller:
-                    UninstallerView()
-                case .settings:
-                    SettingsView()
-                }
+                contentView(for: selectedItem)
             } else {
                 Text("Select an item from the sidebar")
                     .foregroundColor(.secondary)
             }
         }
-        .frame(minWidth: 800, minHeight: 600)
+        .frame(minWidth: 900, minHeight: 600)
+    }
+
+    @ViewBuilder
+    private func contentView(for item: NavigationItem) -> some View {
+        switch item {
+        case .dashboard:
+            DashboardView()
+        case .cleanup:
+            CleanupView(viewModel: cleanupViewModel)
+        case .startupServices:
+            StartupServicesView()
+        case .uninstaller:
+            UninstallerView()
+        case .settings:
+            SettingsView()
+        }
     }
 }
 
