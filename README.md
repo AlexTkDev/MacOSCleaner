@@ -8,15 +8,15 @@ Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents
 
 - **Cleanup:** Safely remove user caches, logs, temporary files, Xcode DerivedData, Android Studio caches, Homebrew cache, and more.
 - **Startup Services:** Manage (scan, enable, disable) `~/Library/LaunchAgents`.
-- **Application Uninstallation:** Multi-pass deep scanning for residuals. Drag-and-drop or browse installed applications. Includes an expert mode to manually select related files, caches, and logs for removal, with detailed app analytics. Progress indicators for long-running scans ensure transparency and responsiveness.
-- **Portability:** No hardcoded user-specific paths; the application works out-of-the-box on any macOS installation.
+- **Application Uninstallation:** Multi-pass deep scanning for residuals using bundle ID suffixes, name-splitting patterns, and 3-level recursive discovery in vendor subfolders. Specialized support for developer tools (Xcode, Android Studio, Flutter). Includes an expert mode to manually select related files, caches, and logs for removal.
+- **Portability:** Zero hardcoded machine-specific paths. Uses dynamic resolution for system temporary directories and tilde expansion for user paths, ensuring seamless operation on any macOS installation.
 
 ## Safety First
 
-- **Reversible Operations:** No permanent deletion. All files are moved to the system Trash (`trashItem(at:)`).
-- **Protected Paths:** Built-in safeguards prevent accidental deletion of system directories (`/System`, `/Library`), Apple services, and critical data.
-- **Transactions:** JSON append-only journal for tracking all operations and supporting state recovery.
-- **SafetyManager:** Rigorous path validation ensures all scanning and deletion operations remain within allowed boundaries.
+- **Reversible Operations:** All files are moved to the system Trash (`trashItem(at:)`) instead of permanent deletion.
+- **Protected Paths:** Rigorous path validation via `SafetyManager` prevents accidental modification of system directories (`/System`, `/Library`), critical user data (`~/.ssh`, `~/Documents`), and system-managed temporary folders.
+- **OrbStack Awareness:** Specifically handles sparse files to prevent inflated size reports.
+- **Transactions:** Append-only JSON journal for operation tracking and state recovery.
 
 ## Architecture
 

@@ -138,7 +138,7 @@ public actor UninstallerService {
         relatedURLs.formUnion(await getPkgFiles(bundleID: bundleID))
         
         // Pass 3: Manual scanning of expanded paths (Depth search)
-        let libraryPaths = [
+        var libraryPaths = [
             "~/Library/Application Support",
             "~/Library/Caches",
             "~/Library/Containers",
@@ -158,6 +158,9 @@ public actor UninstallerService {
             "/Library/Preferences",
             "/Library/PrivilegedHelperTools",
             "~/Library",
+            "~/Library/Developer",
+            "~/Library/Android",
+            "~/",
             "/tmp",
             "/private/tmp",
             "/usr/local/bin",
@@ -166,7 +169,10 @@ public actor UninstallerService {
             "/Library/Internet Plug-Ins"
         ]
         
+        libraryPaths.append(contentsOf: getSystemSearchPaths())
+        
         let teamID = await getTeamIdentifier(url: appURL)
+        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit"]
         
         for path in libraryPaths {
             let expandedPath = (path as NSString).expandingTildeInPath
@@ -180,6 +186,13 @@ public actor UninstallerService {
                 
                 let fileName = fileURL.lastPathComponent
                 
+                // If scanning HOME, only look at hidden files or if it matches a pattern exactly
+                if path == "~/" || path == "~" {
+                    if !fileName.hasPrefix(".") && !matches(fileName: fileName, patterns: searchPatterns) {
+                        continue
+                    }
+                }
+
                 // Check by pattern
                 if matches(fileName: fileName, patterns: searchPatterns) {
                     relatedURLs.insert(fileURL)
@@ -191,12 +204,20 @@ public actor UninstallerService {
                         relatedURLs.insert(fileURL)
                     }
                 }
-                // 2-level recursive check for vendor folders
-                else if ["Application Support", "Caches", "Logs"].contains(folderURL.lastPathComponent) {
+                // 3-level recursive check for vendor folders
+                else if deepScanFolders.contains(folderURL.lastPathComponent) {
                     let subContents = (try? fileManager.contentsOfDirectory(at: fileURL, includingPropertiesForKeys: nil, options: [])) ?? []
                     for subURL in subContents {
                         if matches(fileName: subURL.lastPathComponent, patterns: searchPatterns) {
                             relatedURLs.insert(subURL)
+                        } else {
+                            // Try one more level for possible vendor folders (e.g. Google/AndroidStudio)
+                            let vendorSubContents = (try? fileManager.contentsOfDirectory(at: subURL, includingPropertiesForKeys: nil, options: [])) ?? []
+                            for vendorSubURL in vendorSubContents {
+                                if matches(fileName: vendorSubURL.lastPathComponent, patterns: searchPatterns) {
+                                    relatedURLs.insert(vendorSubURL)
+                                }
+                            }
                         }
                     }
                 }
@@ -234,7 +255,7 @@ public actor UninstallerService {
         let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [])
         while let fileURL = enumerator?.nextObject() as? URL {
             // Skip OrbStack sparse files to avoid massive false positive sizes
-            if fileURL.path.contains("HUAQ24HBR6.dev.orbstack") {
+            if fileURL.path.contains(".dev.orbstack") {
                 continue
             }
             let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])
@@ -243,26 +264,73 @@ public actor UninstallerService {
         return size
     }
 
-    private func createSearchPatterns(bundleID: String?, appName: String) -> [String] {
+    func getSystemSearchPaths() -> [String] {
+        var paths = [String]()
+        
+        // DARWIN_USER_CACHE_DIR and TEMP_DIR are under /var/folders/
+        // NSTemporaryDirectory() usually points to the 'T' directory
+        let tmpDir = NSTemporaryDirectory()
+        if !tmpDir.isEmpty {
+            paths.append(tmpDir)
+            // Replace /T/ with /C/ for cache directory
+            let cacheDir = tmpDir.replacingOccurrences(of: "/T/", with: "/C/")
+            if fileManager.fileExists(atPath: cacheDir) {
+                paths.append(cacheDir)
+            }
+        }
+        
+        return paths
+    }
+
+    func createSearchPatterns(bundleID: String?, appName: String) -> [String] {
         var patterns = Set<String>()
         if let bundleID = bundleID {
             patterns.insert(bundleID)
             let parts = bundleID.components(separatedBy: ".")
-            if parts.count > 2 {
-                patterns.insert(parts.dropFirst().joined(separator: "."))
-                patterns.insert(parts.last!)
+            if parts.count >= 2 {
+                // Add all suffixes: com.apple.dt.Xcode -> apple.dt.Xcode, dt.Xcode, Xcode
+                for i in 1..<parts.count {
+                    patterns.insert(parts.dropFirst(i).joined(separator: "."))
+                }
             }
         }
+        
+        let cleanedAppName = appName.replacingOccurrences(of: " ", with: "")
         patterns.insert(appName)
-        patterns.insert(appName.replacingOccurrences(of: " ", with: ""))
+        patterns.insert(cleanedAppName)
         patterns.insert(appName.replacingOccurrences(of: " ", with: "-"))
         
-        // Specific app keywords (Android Studio case)
-        if appName.localizedCaseInsensitiveContains("Android Studio") {
-            patterns.insert("Android")
+        // Split app name into words (e.g., "Android Studio" -> "Android", "Studio")
+        let words = appName.components(separatedBy: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "-.")))
+        for word in words where word.count >= 4 {
+            patterns.insert(word)
         }
         
-        return Array(patterns).filter { $0.count > 3 }
+        // Add extra patterns for known apps
+        patterns.formUnion(getExtraPatterns(appName: appName, bundleID: bundleID))
+        
+        return Array(patterns).filter { $0.count >= 3 }
+    }
+
+    func getExtraPatterns(appName: String, bundleID: String?) -> [String] {
+        var extra: [String] = []
+        let lowerName = appName.lowercased()
+        let lowerID = bundleID?.lowercased() ?? ""
+        
+        if lowerName.contains("xcode") || lowerID.contains("com.apple.dt.xcode") {
+            extra.append(contentsOf: ["Instruments", "Simulator", "iphonesimulator", "llvm", "clang"])
+        }
+        if lowerName.contains("android") || lowerID.contains("android") {
+            extra.append(contentsOf: ["android", "emulator", "gradle", "jetbrains", "studio"])
+        }
+        if lowerName.contains("flutter") || lowerID.contains("flutter") {
+            extra.append(contentsOf: ["mobileinstallation", "flutter", "dart"])
+        }
+        if lowerName.contains("cleaner") || lowerID.contains("cleaner") {
+            extra.append("macoscleaner")
+        }
+        
+        return extra
     }
 
     private func matches(fileName: String, patterns: [String]) -> Bool {

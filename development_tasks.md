@@ -559,6 +559,33 @@ Visual uninstall workflow.
 
 ---
 
+# TASK-015.1 [x]
+
+## Title
+
+Implement score-based filtering for Uninstaller
+
+## Goal
+
+Improve detection accuracy of related files in Uninstaller.
+
+## Requirements
+
+* Add `score` field to `RelatedFile`
+* Implement `calculateScore` in `UninstallerService`
+* Filter related files based on a confidence threshold (0.85)
+* Support scoring methods: BundleID, TeamID, Containers path match
+
+## Acceptance Criteria
+
+* False positives reduced
+* Related files are properly scored
+* Threshold logic works correctly
+
+
+
+---
+
 # PHASE 6 — DASHBOARD
 
 ---
