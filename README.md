@@ -15,7 +15,7 @@ Native macOS application (Swift + SwiftUI) for safe cache cleaning, LaunchAgents
 
 - **Reversible Operations:** All files are moved to the system Trash (`trashItem(at:)`) instead of permanent deletion.
 - **Protected Paths:** Rigorous path validation via `SafetyManager` prevents accidental modification of system directories (`/System`, `/Library`), critical user data (`~/.ssh`, `~/Documents`), and system-managed temporary folders.
-- **OrbStack Awareness:** Specifically handles sparse files to prevent inflated size reports.
+- **Files Awareness:** Specifically handles sparse files to prevent inflated size reports.
 - **Transactions:** Append-only JSON journal for operation tracking and state recovery.
 
 ## Architecture
@@ -83,6 +83,37 @@ xcodegen
 - Runs with Hardened Runtime enabled.
 - Uses path standardization and symlink validation to prevent directory traversal outside of safe boundaries.
 - Refuse list denies access to critical system files.
+
+
+## Local Code Signing (Personal Usage)
+For personal/local usage, Apple Developer Program subscription is not required.
+
+Application can be signed using:
+
+* ad-hoc signing (`codesign --sign -`)
+* or self-signed local Code Signing certificate created via Keychain Access.
+
+Recommended for development:
+
+```bash
+codesign --force --deep --sign - "/Applications/MacOSCleaner.app"
+```
+
+Recommended for stable local builds:
+* create self-signed "Code Signing" certificate
+* use named certificate instead of ad-hoc signing
+
+Not required for:
+* local execution
+* internal usage
+* development/testing
+
+Required only for:
+* notarization
+* public distribution
+* trusted execution on external machines
+* App Store / Developer ID distribution
+
 
 ## License
 
