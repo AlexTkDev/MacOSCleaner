@@ -109,4 +109,4 @@ config.local.py
 GEMINI.md
 .gemini/
 .claude/
-scan_algoritm.md
+#scan_algoritm.md
