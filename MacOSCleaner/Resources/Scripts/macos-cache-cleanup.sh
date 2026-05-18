@@ -65,32 +65,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# If paths-file is provided, we only clean those specific paths
-if [[ -n "$PATHS_FILE" && -f "$PATHS_FILE" ]]; then
-    if [[ "$JSON_MODE" == true ]]; then
-        # In selective mode, we report progress based on the file count
-        total_items=$(wc -l < "$PATHS_FILE" | xargs)
-        current=0
-        print_step 1 1 "Selective Cleanup"
-        
-        while IFS= read -r path; do
-            current=$((current + 1))
-            if [[ -d "$path" || -f "$path" ]]; then
-                size=$(get_size_mb "$path")
-                # Remove
-                rm -rf "$path" 2>/dev/null || true
-                print_result "$path" "$size"
-            fi
-        done < "$PATHS_FILE"
-    else
-        # CLI mode selective cleanup
-        while IFS= read -r path; do
-            [[ -e "$path" ]] && rm -rfv "$path"
-        done < "$PATHS_FILE"
-    fi
-    exit 0
-fi
-
 # ============================================================
 # HELPER FUNCTIONS
 # ============================================================
@@ -354,6 +328,32 @@ clean_old_files() {
         echo 0
     fi
 }
+
+# If paths-file is provided, we only clean those specific paths
+if [[ -n "$PATHS_FILE" && -f "$PATHS_FILE" ]]; then
+    if [[ "$JSON_MODE" == true ]]; then
+        # In selective mode, we report progress based on the file count
+        total_items=$(wc -l < "$PATHS_FILE" | xargs)
+        current=0
+        print_step 1 1 "Selective Cleanup"
+        
+        while IFS= read -r path; do
+            current=$((current + 1))
+            if [[ -d "$path" || -f "$path" ]]; then
+                size=$(get_size_mb "$path")
+                # Remove
+                rm -rf "$path" 2>/dev/null || true
+                print_result "$path" "$size"
+            fi
+        done < "$PATHS_FILE"
+    else
+        # CLI mode selective cleanup
+        while IFS= read -r path; do
+            [[ -e "$path" ]] && rm -rfv "$path"
+        done < "$PATHS_FILE"
+    fi
+    exit 0
+fi
 
 # ============================================================
 # MAIN SCRIPT

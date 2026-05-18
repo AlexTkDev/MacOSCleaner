@@ -13,7 +13,14 @@ public final class CleanupViewModel {
     public var stepTitle: String = ""
     public var items: [CleanupPreviewItem] = []
     public var totalFreedMB: Int = 0
+    public var cleanedItems: [CleanupResultItem] = []
     public var options = ShellCleanupAdapter.CleanupOptions()
+    
+    public struct CleanupResultItem: Identifiable, Sendable {
+        public let id: UUID = UUID()
+        public let label: String
+        public let freedMB: Int
+    }
     public var lastError: String? = nil
     public var scriptLogs: [String] = []
     public var selectedItemId: UUID? = nil
@@ -208,6 +215,7 @@ public final class CleanupViewModel {
             do {
                 try stateMachine.transition(to: .executing)
                 self.totalFreedMB = 0
+                self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
                 
@@ -223,6 +231,7 @@ public final class CleanupViewModel {
                         self.stepTitle = title
                     case .result(let label, let freed):
                         self.totalFreedMB += freed
+                        self.cleanedItems.append(CleanupResultItem(label: label, freedMB: freed))
                         records.append(OperationRecord(id: UUID(), itemPath: label, status: "success", bytesFreed: Int64(freed * 1024 * 1024)))
                     case .log(let message):
                         self.scriptLogs.append(message)
@@ -245,6 +254,7 @@ public final class CleanupViewModel {
     public func reset() {
         stateMachine.reset()
         items = []
+        cleanedItems = []
         totalFreedMB = 0
         currentStep = 0
         stepTitle = ""

@@ -43,18 +43,22 @@ public struct CleanupView: View {
         case .scanning:
             progressView(title: "Scanning System...", subtitle: viewModel.stepTitle)
         case .preview:
-            previewListView
+            if viewModel.items.isEmpty {
+                statusView(
+                    icon: "checkmark.circle.fill",
+                    iconColor: .green,
+                    title: "System is Clean",
+                    subtitle: "No unnecessary files were found during the scan.",
+                    buttonTitle: "Rescan",
+                    action: { viewModel.startScan() }
+                )
+            } else {
+                previewListView
+            }
         case .executing:
             progressView(title: "Cleaning Up...", subtitle: viewModel.stepTitle)
         case .completed:
-            statusView(
-                icon: "checkmark.seal.fill",
-                iconColor: .green,
-                title: "Cleanup Complete",
-                subtitle: "Successfully freed \(viewModel.totalFreedMB) MB of disk space.",
-                buttonTitle: "Done",
-                action: { viewModel.reset() }
-            )
+            completionReportView
         case .failed:
             failedView
         case .cancelled:
@@ -197,6 +201,73 @@ public struct CleanupView: View {
         .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
     
+    @ViewBuilder
+    private var completionReportView: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Color.green.opacity(0.1))
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 40, weight: .light))
+                        .foregroundStyle(.green)
+                }
+                
+                VStack(spacing: 8) {
+                    Text("Cleanup Complete")
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                    
+                    Text("Successfully freed \(viewModel.totalFreedMB) MB of disk space.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.top, 40)
+            .padding(.bottom, 24)
+            
+            Divider()
+            
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Deleted Items Summary")
+                    .font(.headline)
+                    .padding(.horizontal)
+                    .padding(.top, 16)
+                
+                List {
+                    ForEach(viewModel.cleanedItems) { item in
+                        HStack {
+                            Text(item.label)
+                                .font(.system(.subheadline, design: .monospaced))
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            
+                            Spacer()
+                            
+                            Text("\(item.freedMB) MB")
+                                .font(.system(.subheadline, design: .monospaced))
+                                .foregroundColor(.green)
+                        }
+                    }
+                }
+                .listStyle(.inset)
+            }
+            
+            Spacer()
+            
+            Button(action: { viewModel.reset() }) {
+                Text("Done")
+                    .fontWeight(.semibold)
+                    .frame(width: 150, height: 32)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.bottom, 40)
+        }
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+    }
+    
     private func statusView(
         icon: String,
         iconColor: Color = .accentColor,
@@ -283,6 +354,38 @@ public struct CleanupView: View {
     private var previewListView: some View {
         @Bindable var vm = viewModel
         return VStack(spacing: 0) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Scan Results")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text("Select items you want to remove and click 'Clean Now'.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                
+                Button(action: { viewModel.startScan() }) {
+                    Label("Rescan", systemImage: "arrow.clockwise")
+                        .fontWeight(.medium)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                
+                Button(action: { viewModel.executeCleanup() }) {
+                    Text("Clean Now")
+                        .fontWeight(.bold)
+                        .frame(width: 100)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(viewModel.selectedSizeMB == 0)
+            }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+            
+            Divider()
+            
             List {
                 Section(header: 
                     HStack {
@@ -518,6 +621,7 @@ public struct CleanupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
+                .disabled(viewModel.selectedSizeMB == 0)
             }
         }
         .padding()
