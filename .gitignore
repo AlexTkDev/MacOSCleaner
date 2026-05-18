@@ -107,6 +107,7 @@ config.local.py
 # Other
 # ============================================================
 GEMINI.md
-.gemini/
 .claude/
 #scan_algoritm.md
+.geminiignore
+.gemini

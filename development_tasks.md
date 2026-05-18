@@ -590,7 +590,7 @@ Improve detection accuracy of related files in Uninstaller.
 
 ---
 
-# TASK-016
+# TASK-016 [x]
 
 ## Title
 

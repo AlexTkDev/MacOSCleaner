@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @State private var selectedItem: NavigationItem? = .dashboard
     let cleanupViewModel: CleanupViewModel
+    let journal: TransactionJournal
 
     var body: some View {
         NavigationSplitView {
@@ -28,7 +29,7 @@ struct RootView: View {
     private func contentView(for item: NavigationItem) -> some View {
         switch item {
         case .dashboard:
-            DashboardView()
+            DashboardView(journal: journal)
         case .cleanup:
             CleanupView(viewModel: cleanupViewModel)
         case .startupServices:
@@ -42,8 +43,12 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(cleanupViewModel: CleanupViewModel(
-        adapter: ShellCleanupAdapter(commandRunner: CommandRunner()),
-        journal: TransactionJournal()
-    ))
+    let journal = TransactionJournal()
+    RootView(
+        cleanupViewModel: CleanupViewModel(
+            adapter: ShellCleanupAdapter(commandRunner: CommandRunner()),
+            journal: journal
+        ),
+        journal: journal
+    )
 }

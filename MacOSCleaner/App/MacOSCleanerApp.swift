@@ -22,7 +22,7 @@ struct MacOSCleanerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(cleanupViewModel: cleanupViewModel)
+            RootView(cleanupViewModel: cleanupViewModel, journal: journal)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
