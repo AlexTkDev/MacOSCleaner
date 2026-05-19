@@ -23,10 +23,10 @@ struct AboutView: View {
                 Text("Developed by AlexTkDev")
                     .font(.headline)
                 
-                Link(destination: URL(string: "https://github.com/AlexTkDev")!) {
+                Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                     HStack {
                         Image(systemName: "link.circle.fill")
-                        Text("GitHub Profile")
+                        Text("If you have a problem with the app, let me know here")
                     }
                 }
                 
