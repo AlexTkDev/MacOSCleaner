@@ -10,30 +10,30 @@ struct AboutView: View {
                 .frame(width: 128, height: 128)
             
             VStack(spacing: 4) {
-                Text("MacOS Cleaner")
+                Text("app_title".localized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
-                Text("Version 0.0.2")
+                Text("about_version".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             
             VStack(spacing: 12) {
-                Text("Developed by AlexTkDev")
+                Text("about_developer".localized)
                     .font(.headline)
                 
                 Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                     HStack {
                         Image(systemName: "link.circle.fill")
-                        Text("If you have a problem with the app, let me know here")
+                        Text("about_problem_link".localized)
                     }
                 }
                 
                 Link(destination: URL(string: "https://www.linkedin.com/in/aleksandrtk/")!) {
                     HStack {
                         Image(systemName: "person.crop.circle.fill")
-                        Text("LinkedIn Profile")
+                        Text("about_linkedin".localized)
                     }
                 }
             }
@@ -41,11 +41,11 @@ struct AboutView: View {
             .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             
-            Text("© 2026 AlexTkDev. All rights reserved.")
+            Text("about_copyright".localized)
                 .font(.footnote)
                 .foregroundColor(.secondary)
             
-            Button("Close") {
+            Button("close".localized) {
                 dismiss()
             }
             .keyboardShortcut(.defaultAction)

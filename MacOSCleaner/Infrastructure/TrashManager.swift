@@ -31,4 +31,27 @@ public actor TrashManager {
             throw TrashError.trashOperationFailed(error.localizedDescription)
         }
     }
+    
+    /// Empties the user's Recycle Bin (~/.Trash) by deleting all its contents.
+    /// Returns the number of bytes freed.
+    @discardableResult
+    public func emptyTrash() async throws -> Int64 {
+        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        guard fileManager.fileExists(atPath: trashURL.path) else { return 0 }
+        
+        var totalFreed: Int64 = 0
+        let contents = try fileManager.contentsOfDirectory(at: trashURL, includingPropertiesForKeys: [.fileSizeKey], options: [])
+        
+        for url in contents {
+            do {
+                try safetyManager.validate(url: url)
+                let size = fileManager.getDirectorySize(url: url)
+                try fileManager.removeItem(at: url)
+                totalFreed += size
+            } catch {
+                continue
+            }
+        }
+        return totalFreed
+    }
 }

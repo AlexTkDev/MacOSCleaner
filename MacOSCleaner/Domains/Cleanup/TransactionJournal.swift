@@ -51,6 +51,14 @@ public actor TransactionJournal {
         }
     }
     
+    
+    /// Очищает журнал транзакций.
+    public func clear() throws {
+        if FileManager.default.fileExists(atPath: journalURL.path) {
+            try FileManager.default.removeItem(at: journalURL)
+        }
+    }
+    
     public enum JournalError: Error {
         case encodingFailed
     }

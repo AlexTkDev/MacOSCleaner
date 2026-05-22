@@ -392,7 +392,7 @@ public actor UninstallerService {
         return nil
     }
 
-    public func uninstall(app: AppInfo) async throws {
+    public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
         // 1. Try to unload launch agents/daemons
         for file in app.relatedFiles where file.isSelected {
             let path = file.url.path
@@ -404,15 +404,31 @@ public actor UninstallerService {
             }
         }
 
-        // 2. Move files to trash
-        _ = try await trashManager.trashItem(at: app.url)
-        for file in app.relatedFiles where file.isSelected {
-            try? _ = await trashManager.trashItem(at: file.url)
+        // 2. Move files to trash or remove permanently (bypassTrash)
+        if bypassTrash {
+            try safetyManager.validate(url: app.url)
+            try fileManager.removeItem(at: app.url)
+            
+            for file in app.relatedFiles where file.isSelected {
+                if (try? safetyManager.validate(url: file.url)) != nil {
+                    try? fileManager.removeItem(at: file.url)
+                }
+            }
+        } else {
+            _ = try await trashManager.trashItem(at: app.url)
+            for file in app.relatedFiles where file.isSelected {
+                try? _ = await trashManager.trashItem(at: file.url)
+            }
         }
 
         // 3. Forget package if applicable
         if let bundleID = app.bundleID {
             _ = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--forget", bundleID])
+        }
+        
+        // 4. Empty Recycle Bin Immediately
+        if emptyTrashImmediately {
+            try? await trashManager.emptyTrash()
         }
     }
 }

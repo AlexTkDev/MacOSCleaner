@@ -6,6 +6,8 @@ public final class CleanupViewModel {
     private let stateMachine = CleanupStateMachine()
     private let adapter: ShellCleanupAdapter
     private let journal: TransactionJournal
+    public let settings: AppSettings
+    private let trashManager: TrashManager
     
     public var state: CleanupState { stateMachine.state }
     public var currentStep: Int = 0
@@ -129,9 +131,11 @@ public final class CleanupViewModel {
         }
     }
     
-    public init(adapter: ShellCleanupAdapter, journal: TransactionJournal) {
+    public init(adapter: ShellCleanupAdapter, journal: TransactionJournal, settings: AppSettings, trashManager: TrashManager = TrashManager()) {
         self.adapter = adapter
         self.journal = journal
+        self.settings = settings
+        self.trashManager = trashManager
     }
     
     @MainActor
@@ -201,7 +205,35 @@ public final class CleanupViewModel {
                     }
                 }
                 
+                if self.settings.emptyTrashDuringCleanup {
+                    let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+                    let trashSizeBytes = FileManager.default.getDirectorySize(url: trashURL)
+                    let trashSizeMB = Int(max(0, trashSizeBytes / (1024 * 1024)))
+                    
+                    let localizedLabel = self.settings.language == .russian ? "Пользовательская корзина" : "User Recycle Bin"
+                    let description = self.settings.language == .russian ? "Содержимое вашей корзины. Включает удаленные файлы." : "Contents of your system Recycle Bin. Contains deleted files."
+                    
+                    let trashItem = CleanupPreviewItem(
+                        label: localizedLabel,
+                        sizeMB: trashSizeMB,
+                        risk: .safe,
+                        isSelected: true,
+                        isDeletable: true,
+                        description: description
+                    )
+                    self.items.append(trashItem)
+                }
+                
                 try stateMachine.transition(to: .preview)
+                
+                if settings.showNotifications {
+                    let title = settings.language == .russian ? "Сканирование завершено" : "Scan Complete"
+                    let selectedSize = self.selectedSizeMB
+                    let body = settings.language == .russian
+                        ? "Найдено файлов для удаления: \(selectedSize) МБ."
+                        : "Found \(selectedSize) MB of files to clean."
+                    NotificationManager.shared.sendNotification(title: title, body: body)
+                }
             } catch let error {
                 self.lastError = error.localizedDescription
                 try? stateMachine.transition(to: .failed)
@@ -218,8 +250,11 @@ public final class CleanupViewModel {
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
+                                let isTrashSelected = items.contains { item in
+                    item.isSelected && (item.label == "User Recycle Bin" || item.label == "Пользовательская корзина")
+                }
                 
-                let selectedPaths = items.filter { $0.isSelected }.map { $0.label }
+                let selectedPaths = items.filter { $0.isSelected && $0.label != "User Recycle Bin" && $0.label != "Пользовательская корзина" }.map { $0.label }
                 let stream = adapter.runCleanup(options: options, selectedPaths: selectedPaths)
                 var records: [OperationRecord] = []
                 
@@ -227,7 +262,7 @@ public final class CleanupViewModel {
                     switch event {
                     case .step(let current, let total, let title):
                         self.currentStep = current
-                        self.totalSteps = total
+                        self.totalSteps = total + (isTrashSelected ? 1 : 0)
                         self.stepTitle = title
                     case .result(let label, let freed):
                         self.totalFreedMB += freed
@@ -239,8 +274,29 @@ public final class CleanupViewModel {
                     }
                 }
                 
+                if isTrashSelected {
+                    self.totalSteps = self.currentStep + 1
+                    self.currentStep += 1
+                    self.stepTitle = settings.language == .russian ? "Очистка корзины..." : "Emptying Recycle Bin..."
+                    let deletedBytes = try await trashManager.emptyTrash()
+                    let deletedMB = Int(deletedBytes / (1024 * 1024))
+                    
+                    let trashLabel = settings.language == .russian ? "Пользовательская корзина" : "User Recycle Bin"
+                    self.totalFreedMB += deletedMB
+                    self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB))
+                    records.append(OperationRecord(id: UUID(), itemPath: "~/.Trash", status: "success", bytesFreed: deletedBytes))
+                }
+                
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
                 try await journal.log(transaction: transaction)
+                
+                if settings.showNotifications {
+                    let title = settings.language == .russian ? "Очистка завершена" : "Cleanup Complete"
+                    let body = settings.language == .russian
+                        ? "Успешно освобождено \(self.totalFreedMB) МБ."
+                        : "Successfully freed \(self.totalFreedMB) MB."
+                    NotificationManager.shared.sendNotification(title: title, body: body)
+                }
                 
                 try stateMachine.transition(to: .completed)
             } catch let error {

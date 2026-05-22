@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 import AppKit
 
 struct UninstallerView: View {
+    let settings: AppSettings
     @State private var service = UninstallerService()
     @State private var allApps: [UninstallerService.AppInfo] = []
     @State private var selectedApp: UninstallerService.AppInfo?
@@ -37,7 +38,7 @@ struct UninstallerView: View {
                             ProgressView(value: service.progress.percentage)
                                 .progressViewStyle(.linear)
                                 .padding(.horizontal)
-                            Text(service.progress.message)
+                        Text("uninstaller_scanning_apps".localized)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -68,31 +69,42 @@ struct UninstallerView: View {
                 .layoutPriority(1) // Occupy remaining space
             }
         }
-        .navigationTitle("Uninstaller")
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search Apps")
+        .navigationTitle("uninstaller_title".localized)
+        .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button(action: loadApps) {
                     Image(systemName: "arrow.clockwise")
                 }
-                .help("Reload Applications")
+                .help("uninstaller_reload".localized)
             }
         }
         .onAppear(perform: loadApps)
         .confirmationDialog(
-            "Move to Trash?",
+            settings.bypassTrashOnUninstall
+                ? "uninstaller_confirm_perm_delete".localized
+                : "uninstaller_confirm_move_trash".localized,
             isPresented: $showingConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Move to Trash", role: .destructive) {
+            Button(
+                settings.bypassTrashOnUninstall
+                    ? "uninstaller_delete_permanently".localized
+                    : "uninstaller_move_trash".localized,
+                role: .destructive
+            ) {
                 if let app = selectedApp {
                     uninstall(app)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button("cancel".localized, role: .cancel) { }
         } message: {
             if let app = selectedApp {
-                Text("This will move \(app.name) and \(app.relatedFiles.filter(\.isSelected).count) related files to the Trash.")
+                if settings.bypassTrashOnUninstall {
+                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(app.relatedFiles.filter(\.isSelected).count)))
+                } else {
+                    Text(String(format: "uninstaller_uninstall_app_warning_trash".localized, app.name, Int64(app.relatedFiles.filter(\.isSelected).count)))
+                }
             }
         }
     }
@@ -108,7 +120,18 @@ struct UninstallerView: View {
     private func uninstall(_ app: UninstallerService.AppInfo) {
         Task {
             do {
-                try await service.uninstall(app: app)
+                try await service.uninstall(
+                    app: app,
+                    bypassTrash: settings.bypassTrashOnUninstall,
+                    emptyTrashImmediately: settings.emptyTrashImmediately
+                )
+                
+                if settings.showNotifications {
+                    let title = "uninstaller_complete_title".localized
+                    let body = String(format: "uninstaller_complete_body".localized, app.name)
+                    NotificationManager.shared.sendNotification(title: title, body: body)
+                }
+                
                 loadApps()
                 selectedApp = nil
             } catch {
@@ -133,7 +156,7 @@ struct UninstallerView: View {
                         .font(.system(size: 40, weight: .light))
                         .foregroundColor(isTargeted ? .accentColor : .secondary)
                     
-                    Text("Drag .app here to scan")
+                    Text("uninstaller_drag_drop".localized)
                         .font(.headline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -145,7 +168,7 @@ struct UninstallerView: View {
             .scaleEffect(isTargeted ? 1.05 : 1.0)
             .animation(.spring(), value: isTargeted)
             
-            Text("OR SELECT FROM THE LIST")
+            Text("uninstaller_or_select".localized)
                 .font(.caption2)
                 .fontWeight(.bold)
                 .foregroundColor(.secondary.opacity(0.6))
@@ -189,7 +212,7 @@ struct UninstallerView: View {
                             .lineLimit(2)
                             .minimumScaleFactor(0.8)
                         
-                        Text(app.bundleID ?? "Unknown Bundle ID")
+                        Text(app.bundleID ?? "uninstaller_unknown_bundle".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
@@ -209,22 +232,26 @@ struct UninstallerView: View {
                 
                 Divider()
                 
-                // Expert Mode Toggle
-                Toggle(isOn: $isExpertMode.animation()) {
-                    HStack {
-                        Text("Expert Mode")
-                            .font(.headline)
-                        Text("(select related files)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                // Expert Mode Toggle (respect settings.showRelatedFiles & skipExpertMode)
+                if settings.showRelatedFiles {
+                    if !settings.skipExpertMode {
+                        Toggle(isOn: $isExpertMode.animation()) {
+                            HStack {
+                                Text("uninstaller_expert_mode".localized)
+                                    .font(.headline)
+                                Text("uninstaller_select_files".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .toggleStyle(.switch)
                     }
-                }
-                .toggleStyle(.switch)
-                
-                if isExpertMode {
-                    relatedFilesSection(app)
-                } else {
-                    simpleFilesSection(app)
+                    
+                    if isExpertMode && !settings.skipExpertMode {
+                        relatedFilesSection(app)
+                    } else {
+                        simpleFilesSection(app)
+                    }
                 }
                 
                 Spacer(minLength: 40)
@@ -252,31 +279,41 @@ struct UninstallerView: View {
 
     @ViewBuilder
     private func badges(for app: UninstallerService.AppInfo) -> some View {
-        DetailBadge(title: "Version", value: app.version)
-        DetailBadge(title: "Size", value: formatter.string(fromByteCount: app.totalSize))
+        DetailBadge(title: "version".localized, value: app.version)
+        DetailBadge(title: "size".localized, value: formatter.string(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size))
         if let lastUsed = app.lastUsed {
-            DetailBadge(title: "Last Used", value: lastUsed.formatted(.dateTime.year().month().day()))
+            DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day()))
         }
     }
 
     private var actionInfo: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Label("Reversible Action", systemImage: "arrow.uturn.backward.circle")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text("Files are moved to the Trash and can be restored.")
-                .font(.caption2)
-                .foregroundColor(.secondary.opacity(0.8))
+            if settings.bypassTrashOnUninstall {
+                Label("uninstaller_action_info_perm".localized, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                Text("uninstaller_action_info_perm_sub".localized)
+                    .font(.caption2)
+                    .foregroundColor(.secondary.opacity(0.8))
+            } else {
+                Label("uninstaller_action_info_trash".localized, systemImage: "arrow.uturn.backward.circle")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text("uninstaller_action_info_trash_sub".localized)
+                    .font(.caption2)
+                    .foregroundColor(.secondary.opacity(0.8))
+            }
         }
     }
 
     private func actionButton(for app: UninstallerService.AppInfo) -> some View {
-        VStack(alignment: .trailing, spacing: 8) {
-            Text("Total Space to Reclaim: \(formatter.string(fromByteCount: app.totalSize))")
+        let sizeToReclaim = settings.showRelatedFiles ? app.totalSize : app.size
+        return VStack(alignment: .trailing, spacing: 8) {
+            Text(String(format: "uninstaller_space_reclaim".localized, formatter.string(fromByteCount: sizeToReclaim)))
                 .font(.headline)
             
             Button(action: { showingConfirmation = true }) {
-                Text("Uninstall Application")
+                Text("uninstaller_button_uninstall".localized)
                     .font(.headline)
                     .frame(maxWidth: 300)
                     .frame(height: 32)
@@ -289,10 +326,13 @@ struct UninstallerView: View {
 
     private func simpleFilesSection(_ app: UninstallerService.AppInfo) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("\(app.relatedFiles.count) Related Files Found", systemImage: "doc.on.doc")
-                .font(.headline)
+            Label(
+                String(format: "uninstaller_related_files_count".localized, Int64(app.relatedFiles.count)),
+                systemImage: "doc.on.doc"
+            )
+            .font(.headline)
             
-            Text("In Expert Mode you can selectively remove leftovers like caches and preferences.")
+            Text("uninstaller_expert_tip".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -300,7 +340,7 @@ struct UninstallerView: View {
 
     private func relatedFilesSection(_ app: UninstallerService.AppInfo) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Cleanup Items", systemImage: "list.bullet.indent")
+            Label("uninstaller_cleanup_items".localized, systemImage: "list.bullet.indent")
                 .font(.headline)
             
             VStack(spacing: 1) {

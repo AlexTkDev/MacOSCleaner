@@ -41,22 +41,22 @@ public struct CleanupView: View {
         case .idle:
             idleView
         case .scanning:
-            progressView(title: "Scanning System...", subtitle: viewModel.stepTitle)
+            progressView(title: "cleanup_scanning".localized, subtitle: viewModel.stepTitle)
         case .preview:
             if viewModel.items.isEmpty {
                 statusView(
                     icon: "checkmark.circle.fill",
                     iconColor: .green,
-                    title: "System is Clean",
-                    subtitle: "No unnecessary files were found during the scan.",
-                    buttonTitle: "Rescan",
+                    title: "cleanup_clean".localized,
+                    subtitle: "cleanup_clean_sub".localized,
+                    buttonTitle: "cleanup_rescan".localized,
                     action: { viewModel.startScan() }
                 )
             } else {
                 previewListView
             }
         case .executing:
-            progressView(title: "Cleaning Up...", subtitle: viewModel.stepTitle)
+            progressView(title: "cleanup_cleaning".localized, subtitle: viewModel.stepTitle)
         case .completed:
             completionReportView
         case .failed:
@@ -65,9 +65,9 @@ public struct CleanupView: View {
             statusView(
                 icon: "xmark.circle.fill",
                 iconColor: .secondary,
-                title: "Cancelled",
-                subtitle: "The operation was cancelled by user.",
-                buttonTitle: "Back",
+                title: "cancel".localized,
+                subtitle: "cancel_description".localized,
+                buttonTitle: "close".localized,
                 action: { viewModel.reset() }
             )
         }
@@ -90,10 +90,10 @@ public struct CleanupView: View {
             .padding(.bottom, 8)
             
             VStack(spacing: 12) {
-                Text("Ready to Clean")
+                Text("cleanup_ready".localized)
                     .font(.system(.title, design: .rounded, weight: .bold))
                 
-                Text("Scan your system to find safe-to-remove caches and temporary files.")
+                Text("cleanup_ready_sub".localized)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -101,18 +101,18 @@ public struct CleanupView: View {
             }
             
             VStack(alignment: .leading, spacing: 12) {
-                Text("Additional Cleanup Options")
+                Text("cleanup_additional_options".localized)
                     .font(.headline)
                     .padding(.bottom, 4)
                 
-                Toggle("Clean All Development Caches", isOn: $vm.options.cleanDevCaches)
-                Text("Clears Go, Maven, and project-specific build caches at once.")
+                Toggle("cleanup_option_dev_caches".localized, isOn: $vm.options.cleanDevCaches)
+                Text("cleanup_option_dev_caches_sub".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.leading, 20)
                 
-                Toggle("Clean .DS_Store files", isOn: $vm.options.cleanDSStore)
-                Text("Removes system generated metadata files from directories.")
+                Toggle("cleanup_option_ds_store".localized, isOn: $vm.options.cleanDSStore)
+                Text("cleanup_option_ds_store_sub".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.leading, 20)
@@ -124,7 +124,7 @@ public struct CleanupView: View {
             .padding(.top, 10)
             
             Button(action: { viewModel.startScan() }) {
-                Text("Start Scan")
+                Text("cleanup_start_scan".localized)
                     .font(.headline)
                     .frame(width: 180, height: 40)
             }
@@ -148,7 +148,7 @@ public struct CleanupView: View {
                 .shadow(color: .red.opacity(0.3), radius: 10, x: 0, y: 5)
             
             VStack(spacing: 8) {
-                Text("Cleanup Failed")
+                Text("cleanup_failed".localized)
                     .font(.title)
                     .fontWeight(.bold)
                 
@@ -159,7 +159,7 @@ public struct CleanupView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 } else {
-                    Text("An error occurred during the cleanup process.")
+                    Text("cleanup_failed_default".localized)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -168,7 +168,7 @@ public struct CleanupView: View {
             
             if !viewModel.scriptLogs.isEmpty {
                 VStack(alignment: .leading) {
-                    Text("Script Logs:")
+                    Text("cleanup_script_logs".localized)
                         .font(.headline)
                         .padding(.bottom, 4)
                     
@@ -191,7 +191,7 @@ public struct CleanupView: View {
             }
             
             Button(action: { viewModel.reset() }) {
-                Text("Try Again")
+                Text("try_again".localized)
                     .fontWeight(.semibold)
                     .frame(width: 150, height: 32)
             }
@@ -216,10 +216,10 @@ public struct CleanupView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text("Cleanup Complete")
+                    Text("cleanup_complete".localized)
                         .font(.system(.title2, design: .rounded, weight: .bold))
                     
-                    Text("Successfully freed \(viewModel.totalFreedMB) MB of disk space.")
+                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedMB))
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
@@ -230,7 +230,7 @@ public struct CleanupView: View {
             Divider()
             
             VStack(alignment: .leading, spacing: 12) {
-                Text("Deleted Items Summary")
+                Text("cleanup_summary".localized)
                     .font(.headline)
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -257,7 +257,7 @@ public struct CleanupView: View {
             Spacer()
             
             Button(action: { viewModel.reset() }) {
-                Text("Done")
+                Text("done".localized)
                     .fontWeight(.semibold)
                     .frame(width: 150, height: 32)
             }
@@ -356,24 +356,24 @@ public struct CleanupView: View {
         return VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Scan Results")
+                    Text("cleanup_scan_results".localized)
                         .font(.title2)
                         .fontWeight(.bold)
-                    Text("Select items you want to remove and click 'Clean Now'.")
+                    Text("cleanup_scan_results_sub".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
                 Spacer()
                 
                 Button(action: { viewModel.startScan() }) {
-                    Label("Rescan", systemImage: "arrow.clockwise")
+                    Label("cleanup_rescan".localized, systemImage: "arrow.clockwise")
                         .fontWeight(.medium)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
                 
                 Button(action: { viewModel.executeCleanup() }) {
-                    Text("Clean Now")
+                    Text("cleanup_now".localized)
                         .fontWeight(.bold)
                         .frame(width: 100)
                 }
@@ -389,9 +389,9 @@ public struct CleanupView: View {
             List {
                 Section(header: 
                     HStack {
-                        Text("Recommended for removal")
+                        Text("cleanup_recommended".localized)
                         Spacer()
-                        Button(viewModel.items.allSatisfy { $0.isSelected } ? "Deselect All" : "Select All") {
+                        Button(viewModel.items.allSatisfy { $0.isSelected } ? "cleanup_deselect_all".localized : "cleanup_select_all".localized) {
                             let allSelected = viewModel.items.allSatisfy { $0.isSelected }
                             viewModel.updateAllSelection(isSelected: !allSelected)
                         }
@@ -432,7 +432,7 @@ public struct CleanupView: View {
                         HStack {
                             Image(systemName: "info.circle.fill")
                                 .foregroundColor(.accentColor)
-                            Text("Manual Cleanup Instructions")
+                            Text("cleanup_manual_instructions".localized)
                                 .font(.headline)
                         }
                         Spacer()
@@ -493,7 +493,7 @@ public struct CleanupView: View {
             HStack {
                 HStack(spacing: 4) {
                     Image(systemName: "terminal")
-                    Text("Debug Log (\(viewModel.scriptLogs.count) lines)")
+                    Text(String(format: "cleanup_debug_log".localized, viewModel.scriptLogs.count))
                 }
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
@@ -566,7 +566,7 @@ public struct CleanupView: View {
     private var footer: some View {
         HStack(spacing: 12) {
             if viewModel.state == .preview {
-                Text("Selected: \(viewModel.selectedSizeMB) MB")
+                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeMB))
                     .fontWeight(.semibold)
                     .foregroundColor(.accentColor)
             }
@@ -576,7 +576,7 @@ public struct CleanupView: View {
                     Button(action: { showLogs.toggle() }) {
                         HStack(spacing: 4) {
                             Image(systemName: showLogs ? "chevron.down.square" : "chevron.up.square")
-                            Text(showLogs ? "Hide Logs" : "Show Logs")
+                            Text(showLogs ? "cleanup_hide_logs".localized : "cleanup_show_logs".localized)
                         }
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -599,7 +599,7 @@ public struct CleanupView: View {
                     }) {
                         HStack(spacing: 4) {
                             Image(systemName: showCopiedHint ? "checkmark.circle.fill" : "doc.on.clipboard")
-                            Text(showCopiedHint ? "Copy Logs" : "Copy")
+                            Text(showCopiedHint ? "cleanup_copy_logs".localized : "cleanup_copy".localized)
                         }
                         .font(.caption)
                         .foregroundColor(showCopiedHint ? .green : .secondary)
@@ -611,12 +611,12 @@ public struct CleanupView: View {
             Spacer()
             
             if viewModel.state == .preview {
-                Button("Reset") {
+                Button("reset".localized) {
                     viewModel.reset()
                 }
                 .keyboardShortcut(.cancelAction)
                 
-                Button("Clean Now") {
+                Button("cleanup_now".localized) {
                     viewModel.executeCleanup()
                 }
                 .buttonStyle(.borderedProminent)

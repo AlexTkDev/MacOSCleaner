@@ -1,0 +1,166 @@
+// Common
+"welcome_msg" = "Welcome back!";
+"app_title" = "Cleaner";
+"sidebar_select_item" = "Select an item from the sidebar";
+"close" = "Close";
+"cancel_description" = "The operation was cancelled by user.";
+"reset" = "Reset";
+"cancel" = "Cancel";
+"done" = "Done";
+"try_again" = "Try Again";
+"error" = "Error";
+"version" = "Version";
+"size" = "Size";
+"last_used" = "Last Used";
+
+// Sidebar / Navigation Menu
+"menu_dashboard" = "Dashboard";
+"menu_cleanup" = "Cleanup";
+"menu_startup_services" = "Startup Services";
+"menu_uninstaller" = "Uninstaller";
+"menu_settings" = "Settings";
+
+// About View
+"about_title" = "About MacOS Cleaner";
+"about_version" = "Version 0.0.2";
+"about_developer" = "Developed by AlexTkDev";
+"about_problem_link" = "If you have a problem with the app, let me know here";
+"about_linkedin" = "LinkedIn Profile";
+"about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
+
+// Dashboard View
+"dashboard_title" = "Dashboard";
+"dashboard_system_info" = "System Information";
+"dashboard_model" = "Model";
+"dashboard_os_version" = "OS Version";
+"dashboard_processor" = "Processor";
+"dashboard_memory" = "Memory";
+"dashboard_disk_usage" = "Disk Usage";
+"dashboard_used" = "Used";
+"dashboard_free" = "Free";
+"dashboard_total" = "Total";
+"dashboard_statistics" = "Statistics";
+"dashboard_total_freed" = "Total Freed";
+"dashboard_cleanups" = "Cleanups";
+"dashboard_status" = "Status";
+"dashboard_healthy" = "Healthy";
+"dashboard_recent_operations" = "Recent Operations";
+"dashboard_no_recent_operations" = "No recent operations";
+
+// Settings View
+"settings_title" = "Settings";
+"settings_subtitle" = "Configure app preferences";
+"settings_general" = "General";
+"settings_language" = "Language";
+"settings_theme" = "Theme";
+"theme_system" = "System";
+"theme_light" = "Light";
+"theme_dark" = "Dark";
+"settings_notifications" = "Notifications";
+"settings_tooltips" = "Tooltips";
+"settings_auto_scan" = "Automatic Scan on Startup";
+"settings_cleanup" = "Cleanup";
+"settings_empty_trash" = "Empty Recycle Bin During Scan";
+"settings_uninstaller" = "Uninstaller";
+"settings_bypass_trash" = "Bypass Recycle Bin on Uninstall";
+"settings_advanced" = "Advanced";
+"settings_show_related" = "Show Associated Files in Uninstaller";
+"settings_empty_trash_immediately" = "Empty Recycle Bin Immediately";
+"settings_skip_expert" = "Skip Expert Mode in Uninstaller";
+"settings_data" = "Data";
+"settings_forget_everything" = "Forget Everything";
+"settings_forget_description" = "Clear all saved data and reset settings to their defaults.";
+"settings_reset_button" = "Reset All Settings";
+
+// Settings Tooltips
+"settings_tooltip_language" = "Select the interface language for the application.";
+"settings_tooltip_theme" = "Choose the visual appearance of the application. System follows your macOS settings.";
+"settings_tooltip_notifications" = "Display system notifications when scans and cleanup operations complete.";
+"settings_tooltip_tooltips" = "Show helpful tooltip descriptions when hovering over interface elements.";
+"settings_tooltip_auto_scan" = "Automatically begin scanning for cleanup items when the application launches.";
+"settings_tooltip_empty_trash" = "When enabled, the system Recycle Bin will be emptied as part of the cleanup scan process. Disabled by default for safety.";
+"settings_tooltip_bypass_trash" = "When uninstalling an app and its associated files, permanently delete them instead of moving to the Recycle Bin. WARNING: This makes uninstallation irreversible.";
+"settings_tooltip_show_related" = "Display the list of associated files (caches, preferences, logs) found for each application in the Uninstaller view.";
+"settings_tooltip_empty_trash_immediately" = "After moving items to the Recycle Bin, immediately empty it. This makes the cleanup operation irreversible.";
+"settings_tooltip_skip_expert" = "Skip the Expert Mode file selection step and immediately uninstall applications with all associated files selected.";
+"settings_tooltip_forget" = "Remove all saved preferences and restore factory defaults.";
+
+// Settings Reset Dialog
+"settings_reset_confirm_title" = "Reset All Settings?";
+"settings_reset_confirm_button" = "Reset All";
+"settings_reset_confirm_message" = "This will clear all saved data and reset every setting to its default value. This action cannot be undone.";
+
+// Startup Services View
+"startup_title" = "Startup Services";
+"startup_subtitle" = "Manage agents that start automatically.";
+"startup_refresh" = "Refresh list";
+"startup_scanning" = "Scanning services...";
+"startup_no_agents" = "No Startup Agents";
+"startup_no_agents_sub" = "No agents found in ~/Library/LaunchAgents.";
+"startup_scan_failed" = "Scan Failed";
+"startup_status_loaded" = "Loaded";
+"startup_status_unloaded" = "Unloaded";
+"startup_disable" = "Disable";
+"startup_enable" = "Enable";
+
+// Cleanup View
+"cleanup_scanning" = "Scanning System...";
+"cleanup_clean" = "System is Clean";
+"cleanup_clean_sub" = "No unnecessary files were found during the scan.";
+"cleanup_rescan" = "Rescan";
+"cleanup_cleaning" = "Cleaning Up...";
+"cleanup_ready" = "Ready to Clean";
+"cleanup_ready_sub" = "Scan your system to find safe-to-remove caches and temporary files.";
+"cleanup_additional_options" = "Additional Cleanup Options";
+"cleanup_option_dev_caches" = "Clean All Development Caches";
+"cleanup_option_dev_caches_sub" = "Clears Go, Maven, and project-specific build caches at once.";
+"cleanup_option_ds_store" = "Clean .DS_Store files";
+"cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";
+"cleanup_start_scan" = "Start Scan";
+"cleanup_failed" = "Cleanup Failed";
+"cleanup_failed_default" = "An error occurred during the cleanup process.";
+"cleanup_script_logs" = "Script Logs:";
+"cleanup_complete" = "Cleanup Complete";
+"cleanup_complete_sub" = "Successfully freed %lld MB of disk space.";
+"cleanup_summary" = "Deleted Items Summary";
+"cleanup_selected" = "Selected: %lld MB";
+"cleanup_hide_logs" = "Hide Logs";
+"cleanup_show_logs" = "Show Logs";
+"cleanup_copy" = "Copy";
+"cleanup_copy_logs" = "Copy Logs";
+"cleanup_now" = "Clean Now";
+"cleanup_manual_instructions" = "Manual Cleanup Instructions";
+"cleanup_scan_results" = "Scan Results";
+"cleanup_scan_results_sub" = "Select items you want to remove and click 'Clean Now'.";
+"cleanup_recommended" = "Recommended for removal";
+"cleanup_deselect_all" = "Deselect All";
+"cleanup_select_all" = "Select All";
+"cleanup_debug_log" = "Debug Log (%lld lines)";
+
+// Uninstaller View
+"uninstaller_title" = "Uninstaller";
+"uninstaller_search" = "Search Apps";
+"uninstaller_reload" = "Reload Applications";
+"uninstaller_confirm_perm_delete" = "Permanently Delete?";
+"uninstaller_confirm_move_trash" = "Move to Trash?";
+"uninstaller_delete_permanently" = "Delete Permanently";
+"uninstaller_move_trash" = "Move to Trash";
+"uninstaller_uninstall_app_warning_perm" = "This will permanently delete %@ and %lld related files. This action cannot be undone.";
+"uninstaller_uninstall_app_warning_trash" = "This will move %@ and %lld related files to the Trash.";
+"uninstaller_drag_drop" = "Drag .app here to scan";
+"uninstaller_or_select" = "OR SELECT FROM THE LIST";
+"uninstaller_unknown_bundle" = "Unknown Bundle ID";
+"uninstaller_expert_mode" = "Expert Mode";
+"uninstaller_select_files" = "(select related files)";
+"uninstaller_action_info_perm" = "Permanent Action";
+"uninstaller_action_info_perm_sub" = "Files are permanently deleted, bypassing the Trash.";
+"uninstaller_action_info_trash" = "Reversible Action";
+"uninstaller_action_info_trash_sub" = "Files are moved to the Trash and can be restored.";
+"uninstaller_space_reclaim" = "Total Space to Reclaim: %@";
+"uninstaller_button_uninstall" = "Uninstall Application";
+"uninstaller_related_files_count" = "%lld Related Files Found";
+"uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
+"uninstaller_cleanup_items" = "Cleanup Items";
+"uninstaller_scanning_apps" = "Scanning Applications...";
+"uninstaller_complete_title" = "Uninstallation Complete";
+"uninstaller_complete_body" = "Application %@ was successfully removed.";

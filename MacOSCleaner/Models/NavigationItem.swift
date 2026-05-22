@@ -9,6 +9,16 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
     
     var id: String { rawValue }
     
+    var localizedTitle: String {
+        switch self {
+        case .dashboard:      return "menu_dashboard".localized
+        case .cleanup:        return "menu_cleanup".localized
+        case .startupServices: return "menu_startup_services".localized
+        case .uninstaller:    return "menu_uninstaller".localized
+        case .settings:       return "menu_settings".localized
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .dashboard: return "gauge.medium"

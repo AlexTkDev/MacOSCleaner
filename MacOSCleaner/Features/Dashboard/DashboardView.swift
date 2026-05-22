@@ -11,7 +11,7 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                Text("Dashboard")
+                Text("dashboard_title".localized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
@@ -33,14 +33,14 @@ struct DashboardView: View {
     
     private var systemInfoSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("System Information")
+            Text("dashboard_system_info".localized)
                 .font(.headline)
             
             HStack(spacing: 40) {
-                SystemInfoItem(title: "Model", value: viewModel.systemInfo.model, icon: "laptopcomputer")
-                SystemInfoItem(title: "OS Version", value: viewModel.systemInfo.osVersion, icon: "info.circle")
-                SystemInfoItem(title: "Processor", value: viewModel.systemInfo.processor, icon: "cpu")
-                SystemInfoItem(title: "Memory", value: viewModel.systemInfo.memory, icon: "memorychip")
+                SystemInfoItem(title: "dashboard_model".localized, value: viewModel.systemInfo.model, icon: "laptopcomputer")
+                SystemInfoItem(title: "dashboard_os_version".localized, value: viewModel.systemInfo.osVersion, icon: "info.circle")
+                SystemInfoItem(title: "dashboard_processor".localized, value: viewModel.systemInfo.processor, icon: "cpu")
+                SystemInfoItem(title: "dashboard_memory".localized, value: viewModel.systemInfo.memory, icon: "memorychip")
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -51,7 +51,7 @@ struct DashboardView: View {
     
     private var diskUsageCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Disk Usage")
+            Text("dashboard_disk_usage".localized)
                 .font(.headline)
             
             ZStack {
@@ -76,18 +76,18 @@ struct DashboardView: View {
                     Text("\(Int(viewModel.usedDiskPercentage * 100))%")
                         .font(.system(size: 28, weight: .bold))
                         .minimumScaleFactor(0.5)
-                    Text("Used")
+                    Text("dashboard_used".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
             
             HStack(spacing: 0) {
-                DiskStatItem(title: "Used", value: viewModel.usedDiskSpace, color: .accentColor)
+                DiskStatItem(title: "dashboard_used".localized, value: viewModel.usedDiskSpace, color: .accentColor)
                 Spacer()
-                DiskStatItem(title: "Free", value: viewModel.freeDiskSpace, color: .secondary.opacity(0.4))
+                DiskStatItem(title: "dashboard_free".localized, value: viewModel.freeDiskSpace, color: .secondary.opacity(0.4))
                 Spacer()
-                DiskStatItem(title: "Total", value: viewModel.totalDiskSpace, color: nil, alignment: .trailing)
+                DiskStatItem(title: "dashboard_total".localized, value: viewModel.totalDiskSpace, color: nil, alignment: .trailing)
             }
         }
         .padding()
@@ -98,13 +98,13 @@ struct DashboardView: View {
     
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Statistics")
+            Text("dashboard_statistics".localized)
                 .font(.headline)
             
             VStack(spacing: 20) {
-                StatRow(title: "Total Freed", value: ByteCountFormatter.string(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
-                StatRow(title: "Cleanups", value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
-                StatRow(title: "Status", value: "Healthy", icon: "checkmark.circle", color: .green)
+                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.string(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
+                StatRow(title: "dashboard_cleanups".localized, value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
+                StatRow(title: "dashboard_status".localized, value: "dashboard_healthy".localized, icon: "checkmark.circle", color: .green)
             }
             Spacer()
         }
@@ -116,11 +116,11 @@ struct DashboardView: View {
     
     private var recentOperationsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Recent Operations")
+            Text("dashboard_recent_operations".localized)
                 .font(.headline)
             
             if viewModel.recentTransactions.isEmpty {
-                Text("No recent operations")
+                Text("dashboard_no_recent_operations".localized)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)

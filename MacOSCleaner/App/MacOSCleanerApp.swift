@@ -1,10 +1,3 @@
-//
-//  MacOSCleanerApp.swift
-//  MacOSCleaner
-//
-//  Created by Alex on 14.05.2026.
-//
-
 import SwiftUI
 
 @main
@@ -14,15 +7,16 @@ struct MacOSCleanerApp: App {
     private let commandRunner = CommandRunner()
     private let journal = TransactionJournal()
     private let cleanupViewModel: CleanupViewModel
+    private let appSettings = AppSettings()
     
     init() {
         let adapter = ShellCleanupAdapter(commandRunner: commandRunner)
-        self.cleanupViewModel = CleanupViewModel(adapter: adapter, journal: journal)
+        self.cleanupViewModel = CleanupViewModel(adapter: adapter, journal: journal, settings: appSettings)
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(cleanupViewModel: cleanupViewModel, journal: journal)
+            RootView(cleanupViewModel: cleanupViewModel, journal: journal, appSettings: appSettings)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {

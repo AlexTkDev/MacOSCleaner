@@ -613,54 +613,41 @@ Show cleanup statistics.
 
 ---
 
-# PHASE 7 — TESTING
+# PHASE 7 — SETTINGS
 
----
-
-# TASK-017
+# TASK-017 [x]
 
 ## Title
 
-Create infrastructure test suite
+Implement Settings
 
 ## Goal
 
-Ensure infrastructure reliability.
+Implement settings.
 
-## Coverage
+## Features
 
-* CommandRunner
-* SafetyManager
-* TrashManager
-* FileScanner
+* General Settings
+* Language
+* Theme
+* Notification Display
+* Tooltip Display
+* Automatic Scan on Startup
+* Enable Empty Recycle Bin during Scan in the "CLEANUP" System Scanning section (default: disabled)
+* When Uninstalling an app and its associated files, you can completely bypass the Recycle Bin in the "UNINSTALLER" section (default: disabled)
+* Advanced Options
+* Show Associated Files in Uninstaller (default: enabled)
+* Empty Recycle Bin Immediately (default: disabled)
+* Skip Expert Mode in Uninstaller (default: disabled)
+* "Forget" Button to Clear All Data and Reset State
 
-## Acceptance Criteria
-
-* High coverage
-* Sandbox-only tests
-
----
-
-# TASK-018
-
-## Title
-
-Create integration tests
-
-## Goal
-
-Validate real workflows.
-
-## Coverage
-
-* cleanup flow
-* launchctl flow
-* uninstall flow
+Each menu item should have a tooltip so the user knows and understands what it is configuring.
 
 ## Acceptance Criteria
-
-* Runs on clean macOS install
-* No destructive operations
+* Settings are saved correctly
+* Settings can be reset
+* Responsive Settings Interface
+* The Settings Interface does not block file system operations
 
 ---
 

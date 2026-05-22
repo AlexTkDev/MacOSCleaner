@@ -1,0 +1,165 @@
+// Common
+"welcome_msg" = "С возвращением!";
+"app_title" = "Очистка";
+"sidebar_select_item" = "Выберите элемент в боковом меню";
+"close" = "Закрыть";
+"reset" = "Сбросить";
+"cancel" = "Отмена";
+"done" = "Готово";
+"try_again" = "Повторить";
+"error" = "Ошибка";
+"version" = "Версия";
+"size" = "Размер";
+"last_used" = "Последний запуск";
+
+// Sidebar / Navigation Menu
+"menu_dashboard" = "Обзор";
+"menu_cleanup" = "Очистка";
+"menu_startup_services" = "Автозапуск";
+"menu_uninstaller" = "Деинсталлятор";
+"menu_settings" = "Настройки";
+
+// About View
+"about_title" = "О программе MacOS Cleaner";
+"about_version" = "Версия 0.0.2";
+"about_developer" = "Разработчик: AlexTkDev";
+"about_problem_link" = "Если возникла проблема с приложением, сообщите мне здесь";
+"about_linkedin" = "Профиль LinkedIn";
+"about_copyright" = "© 2026 AlexTkDev. Все права защищены.";
+
+// Dashboard View
+"dashboard_title" = "Обзор";
+"dashboard_system_info" = "Информация о системе";
+"dashboard_model" = "Модель";
+"dashboard_os_version" = "Версия ОС";
+"dashboard_processor" = "Процессор";
+"dashboard_memory" = "Память";
+"dashboard_disk_usage" = "Использование диска";
+"dashboard_used" = "Использовано";
+"dashboard_free" = "Свободно";
+"dashboard_total" = "Всего";
+"dashboard_statistics" = "Статистика";
+"dashboard_total_freed" = "Всего очищено";
+"dashboard_cleanups" = "Очистки";
+"dashboard_status" = "Статус";
+"dashboard_healthy" = "В норме";
+"dashboard_recent_operations" = "Недавние операции";
+"dashboard_no_recent_operations" = "Нет недавних операций";
+
+// Settings View
+"settings_title" = "Настройки";
+"settings_subtitle" = "Настройка параметров приложения";
+"settings_general" = "Общие";
+"settings_language" = "Язык";
+"settings_theme" = "Тема";
+"theme_system" = "Системная";
+"theme_light" = "Светлая";
+"theme_dark" = "Тёмная";
+"settings_notifications" = "Уведомления";
+"settings_tooltips" = "Подсказки";
+"settings_auto_scan" = "Автосканирование при запуске";
+"settings_cleanup" = "Очистка";
+"settings_empty_trash" = "Очищать Корзину при сканировании";
+"settings_uninstaller" = "Деинсталлятор";
+"settings_bypass_trash" = "Удалять файлы навсегда в деинсталляторе";
+"settings_advanced" = "Дополнительно";
+"settings_show_related" = "Показывать связанные файлы в деинсталляторе";
+"settings_empty_trash_immediately" = "Сразу же очищать Корзину";
+"settings_skip_expert" = "Пропускать Экспертный режим в деинсталляторе";
+"settings_data" = "Данные";
+"settings_forget_everything" = "Сбросить все данные";
+"settings_forget_description" = "Очистить все сохраненные данные и восстановить настройки по умолчанию.";
+"settings_reset_button" = "Сбросить все настройки";
+
+// Settings Tooltips
+"settings_tooltip_language" = "Выберите язык интерфейса приложения.";
+"settings_tooltip_theme" = "Выберите тему оформления приложения. 'Системная' соответствует настройкам macOS.";
+"settings_tooltip_notifications" = "Показывать системные уведомления по завершении сканирования и очистки.";
+"settings_tooltip_tooltips" = "Показывать всплывающие подсказки при наведении на элементы интерфейса.";
+"settings_tooltip_auto_scan" = "Автоматически начинать сканирование для очистки при запуске приложения.";
+"settings_tooltip_empty_trash" = "Если включено, системная Корзина будет очищена в процессе сканирования. Отключено по умолчанию для безопасности.";
+"settings_tooltip_bypass_trash" = "При удалении приложения и его связанных файлов удалять их безвозвратно, минуя Корзину. ВНИМАНИЕ: Это действие необратимо.";
+"settings_tooltip_show_related" = "Отображать список связанных файлов (кэши, настройки, логи) для каждого приложения в окне деинсталлятора.";
+"settings_tooltip_empty_trash_immediately" = "Сразу же очищать Корзину после перемещения файлов. Это делает операцию очистки необратимой.";
+"settings_tooltip_skip_expert" = "Пропускать выбор файлов в Экспертном режиме и сразу удалять приложения со всеми найденными связанными файлами.";
+"settings_tooltip_forget" = "Удалить все сохраненные настройки и восстановить параметры по умолчанию.";
+
+// Settings Reset Dialog
+"settings_reset_confirm_title" = "Сбросить все настройки?";
+"settings_reset_confirm_button" = "Сбросить всё";
+"settings_reset_confirm_message" = "Это приведет к очистке всех сохраненных данных и сбросу всех настроек до значений по умолчанию. Это действие нельзя отменить.";
+
+// Startup Services View
+"startup_title" = "Автозапуск";
+"startup_subtitle" = "Управление агентами автозагрузки.";
+"startup_refresh" = "Обновить список";
+"startup_scanning" = "Сканирование служб...";
+"startup_no_agents" = "Нет агентов автозапуска";
+"startup_no_agents_sub" = "Агенты в папке ~/Library/LaunchAgents не найдены.";
+"startup_scan_failed" = "Ошибка сканирования";
+"startup_status_loaded" = "Загружен";
+"startup_status_unloaded" = "Выгружен";
+"startup_disable" = "Отключить";
+"startup_enable" = "Включить";
+
+// Cleanup View
+"cleanup_scanning" = "Сканирование системы...";
+"cleanup_clean" = "Система чиста";
+"cleanup_clean_sub" = "В ходе сканирования не было найдено ненужных файлов.";
+"cleanup_rescan" = "Повторить сканирование";
+"cleanup_cleaning" = "Очистка...";
+"cleanup_ready" = "Готов к очистке";
+"cleanup_ready_sub" = "Просканируйте систему для поиска безопасных к удалению файлов кэша и временных файлов.";
+"cleanup_additional_options" = "Дополнительные параметры";
+"cleanup_option_dev_caches" = "Очистить кэши разработки";
+"cleanup_option_dev_caches_sub" = "Одновременно очищает кэши Go, Maven и кэши сборки конкретных проектов.";
+"cleanup_option_ds_store" = "Удалить файлы .DS_Store";
+"cleanup_option_ds_store_sub" = "Удаляет сгенерированные системой файлы метаданных из каталогов.";
+"cleanup_start_scan" = "Начать сканирование";
+"cleanup_failed" = "Ошибка очистки";
+"cleanup_failed_default" = "Произошла ошибка в процессе очистки.";
+"cleanup_script_logs" = "Логи выполнения:";
+"cleanup_complete" = "Очистка завершена";
+"cleanup_complete_sub" = "Успешно освобождено %lld МБ дискового пространства.";
+"cleanup_summary" = "Сводка удаленных файлов";
+"cleanup_selected" = "Выбрано: %lld МБ";
+"cleanup_hide_logs" = "Скрыть логи";
+"cleanup_show_logs" = "Показать логи";
+"cleanup_copy" = "Копировать";
+"cleanup_copy_logs" = "Копировать логи";
+"cleanup_now" = "Очистить сейчас";
+"cleanup_manual_instructions" = "Инструкции для ручной очистки";
+"cleanup_scan_results" = "Результаты сканирования";
+"cleanup_scan_results_sub" = "Выберите элементы для удаления и нажмите 'Очистить сейчас'.";
+"cleanup_recommended" = "Рекомендуется к удалению";
+"cleanup_deselect_all" = "Снять выделение";
+"cleanup_select_all" = "Выбрать все";
+"cleanup_debug_log" = "Отладочный лог (%lld строк)";
+
+// Uninstaller View
+"uninstaller_title" = "Деинсталлятор";
+"uninstaller_search" = "Поиск приложений";
+"uninstaller_reload" = "Обновить список";
+"uninstaller_confirm_perm_delete" = "Удалить безвозвратно?";
+"uninstaller_confirm_move_trash" = "Переместить в Корзину?";
+"uninstaller_delete_permanently" = "Удалить безвозвратно";
+"uninstaller_move_trash" = "Переместить в Корзину";
+"uninstaller_uninstall_app_warning_perm" = "Это приведет к безвозвратному удалению приложения %@ и его связанных файлов (%lld). Это действие нельзя отменить.";
+"uninstaller_uninstall_app_warning_trash" = "Это переместит приложение %@ и его связанные файлы (%lld) в Корзину.";
+"uninstaller_drag_drop" = "Перетащите .app сюда для сканирования";
+"uninstaller_or_select" = "ИЛИ ВЫБЕРИТЕ ИЗ СПИСКА";
+"uninstaller_unknown_bundle" = "Неизвестный Bundle ID";
+"uninstaller_expert_mode" = "Экспертный режим";
+"uninstaller_select_files" = "(выбрать связанные файлы)";
+"uninstaller_action_info_perm" = "Безвозвратное действие";
+"uninstaller_action_info_perm_sub" = "Файлы удаляются навсегда в обход Корзины.";
+"uninstaller_action_info_trash" = "Обратимое действие";
+"uninstaller_action_info_trash_sub" = "Файлы перемещаются в Корзину и могут быть восстановлены.";
+"uninstaller_space_reclaim" = "Всего места к освобождению: %@";
+"uninstaller_button_uninstall" = "Удалить приложение";
+"uninstaller_related_files_count" = "Найдено связанных файлов: %lld";
+"uninstaller_expert_tip" = "В Экспертном режиме вы можете выборочно удалять остаточные файлы, такие как кэши и настройки.";
+"uninstaller_cleanup_items" = "Элементы для очистки";
+"uninstaller_scanning_apps" = "Сканирование приложений...";
+"uninstaller_complete_title" = "Удаление завершено";
+"uninstaller_complete_body" = "Приложение %@ было успешно удалено.";

@@ -12,7 +12,7 @@ public struct StartupServicesView: View {
             header
             
             if viewModel.isLoading {
-                ProgressView("Scanning services...")
+                ProgressView("startup_scanning".localized)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = viewModel.lastError {
                 errorView(error)
@@ -33,10 +33,10 @@ public struct StartupServicesView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Startup Services")
+                Text("startup_title".localized)
                     .font(.title2)
                     .fontWeight(.bold)
-                Text("Manage agents that start automatically.")
+                Text("startup_subtitle".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -48,7 +48,7 @@ public struct StartupServicesView: View {
                     .font(.system(size: 14, weight: .semibold))
             }
             .buttonStyle(.bordered)
-            .help("Refresh list")
+            .help("startup_refresh".localized)
         }
         .padding()
         .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
@@ -77,9 +77,9 @@ public struct StartupServicesView: View {
                 .foregroundColor(.secondary.opacity(0.5))
             
             VStack(spacing: 8) {
-                Text("No Startup Agents")
+                Text("startup_no_agents".localized)
                     .font(.headline)
-                Text("No agents found in ~/Library/LaunchAgents.")
+                Text("startup_no_agents_sub".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -94,7 +94,7 @@ public struct StartupServicesView: View {
                 .foregroundColor(.orange)
             
             VStack(spacing: 8) {
-                Text("Scan Failed")
+                Text("startup_scan_failed".localized)
                     .font(.headline)
                 Text(error)
                     .font(.subheadline)
@@ -103,7 +103,7 @@ public struct StartupServicesView: View {
                     .padding(.horizontal, 40)
             }
             
-            Button("Try Again") {
+            Button("try_again".localized) {
                 Task { await viewModel.scan() }
             }
             .buttonStyle(.borderedProminent)
@@ -133,7 +133,7 @@ struct ServiceRow: View {
             
             StatusBadge(isEnabled: service.isEnabled)
             
-            Button(service.isEnabled ? "Disable" : "Enable") {
+            Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
                 onToggle()
             }
             .buttonStyle(.bordered)
@@ -148,7 +148,7 @@ struct StatusBadge: View {
     let isEnabled: Bool
     
     var body: some View {
-        Text(isEnabled ? "Loaded" : "Unloaded")
+        Text(isEnabled ? "startup_status_loaded".localized : "startup_status_unloaded".localized)
             .font(.system(size: 10, weight: .bold))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
