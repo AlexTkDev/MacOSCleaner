@@ -1,4 +1,4 @@
-# 🧼 macOS Cleaner GUI
+# macOS Cleaner
 
 [![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS-000000.svg?logo=apple&logoColor=white)](https://apple.com)
@@ -6,71 +6,84 @@
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF.svg?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
 
-A gorgeous, lightweight, and super fast native macOS app 🚀 built with **Swift 6 & SwiftUI** to keep your Mac clean and running like new! 🌟 Zero permanent deletions by default — we move everything safely to the Trash! 🛡️
+Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep your Mac tidy. Nothing is permanently deleted — everything goes to Trash, so you can always restore it.
 
 ---
 
-## ✨ Features at a Glance
+## Features
 
-- 📊 **Dashboard:** Real-time disk charts, system specs (Mac Model, RAM, CPU), and history.
-- 🧹 **Smart Cleanup:** Safely purges logs, user/app caches, Xcode DerivedData, Android Studio, and Homebrew caches.
-- 🚀 **Startup Services:** Scan and manage LaunchAgents (`~/Library/LaunchAgents`) to boost boot times.
-- 📦 **App Uninstaller:** Multi-pass deep scanning for application leftovers with an **Expert Mode** and size statistics.
-- 🧳 **Safety First:** Driven by `SafetyManager` to block accidental modifications of critical directories (`/System`, `~/.ssh`). Uses `trashItem(at:)` for easy restore. 🔄
+**Dashboard** — disk usage chart, system info (model, CPU, RAM, OS version), cleanup history and statistics.
+
+**Smart Cleanup** — scans and removes user caches, app logs, Xcode DerivedData, Android Studio caches, Go/Maven build artifacts, Homebrew cache, and `.DS_Store` files. You pick what to delete, then confirm.
+
+**Startup Services** — lists all LaunchAgents from `~/Library/LaunchAgents`, shows their load status, and lets you enable or disable them without touching system agents.
+
+**App Uninstaller** — finds installed apps, scans for residual files across known support directories (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode lets you cherry-pick which leftovers to remove.
+
+**Settings** — light/dark/system theme, language switcher (English, Русский, Українська), notification toggles, scan-on-startup, Trash behavior, and more.
+
+**Multilingual UI** — runtime language switching without restart, using a custom `LanguageManager` backed by `Localizable.strings` for `en`, `ru`, `uk`.
 
 ---
 
-## 🏗️ Tech Stack & Structure
+## Safety
 
-```text
-- Swift 6, SwiftUI, Async/Await & Actors (Strict Concurrency 🧵)
-- Pragmatic MVP Architecture (No heavy external frameworks 🚫)
+- All deletions go through `trashItem(at:)` — recoverable from Trash by default.
+- `SafetyManager` blocks writes to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths.
+- Permanent deletion (bypassing Trash) is opt-in and clearly marked in the UI.
+
+---
+
+## Tech Stack
+
+- **Swift 6** — strict concurrency, actors, `async/await`, structured task groups
+- **SwiftUI** — declarative UI, `@Observable`, `NavigationSplitView`, Charts
+- **Architecture** — pragmatic MVP, feature-oriented folders, no third-party UI frameworks
+- **Build** — XcodeGen (`project.yml` as single source of truth)
+- **Logging** — OSLog with structured subsystems
+
+---
+
+## Project Structure
+
 ```
-
-```text
 MacOSCleaner/
-├── App/                        # App entry point, Main window & Sidebar navigation
-├── Domains/                    # Business logic adapters (LaunchServiceManager, Uninstaller Engine)
-├── Features/                   # Beautiful SwiftUI views & modules (Dashboard, Cleanup, Settings)
-├── Infrastructure/             # Low-level system services (CommandRunner, SafetyManager, TrashManager)
-├── Models/                     # Value types, operational state objects, and shared models
-└── Resources/                  # Local assets, helper bash scripts, and configs
+├── App/          # Entry point, RootView, sidebar navigation
+├── Domains/      # Business logic (CleanupStateMachine, LaunchServiceManager, UninstallerService)
+├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Uninstaller, Settings, About)
+├── Infrastructure/  # System services (CommandRunner, SafetyManager, TrashManager, LanguageManager)
+├── Models/       # Shared value types and enums
+└── Resources/    # Localizable.strings (en/ru/uk), shell scripts, assets
 ```
 
 ---
 
-## 🛠️ Quick Start & Build
+## Quick Start
 
-### Requirements
-- Xcode 16+ 🛠️
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) 📦
+**Requirements:** Xcode 16+, [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 
-### Commands
-Generate and run the project:
 ```bash
+cd MacOSCleaner
 xcodegen
 open MacOSCleaner.xcodeproj
-# Press Cmd + R to run, Cmd + U to test! 🧪
+# Cmd+R to run, Cmd+U to run tests
 ```
 
----
+**Ad-hoc signing** (for local use without a developer account):
+```bash
+codesign --force --deep --sign - "/Applications/MacOSCleaner.app"
+```
 
-## ✍️ Code Signing & Diagnostics
-- **Personal Use:** Ad-hoc signing is perfectly fine! Run:
-  ```bash
-  codesign --force --deep --sign - "/Applications/MacOSCleaner.app"
-  ```
-- **Diagnostics:** View live app logs in macOS native `Console.app` under subsystem `OSLog`. 📑
-- **Recovery:** Just "Put Back" from system Trash if you deleted something by mistake! 🗑️
+**Logs:** open `Console.app` and filter by subsystem `com.alextkdev.macos-cleaner`.
 
 ---
 
-## 🤝 Feedback & Contributions
-Found a bug 🐛 or want to suggest a cool new feature 💡? Feel free to [open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues)! Let's build a better cleaner together! ✨
+## Feedback
+
+Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues) — contributions are welcome.
 
 ---
 
-## 📄 License
-Licensed under **Custom Non-Commercial & Non-Embedding License** 🚫💼
-* **Yes:** Study, fork, and run for personal, educational, non-commercial use.
-* **No:** Commercial use, sale, or embedding into other libraries/products. See [LICENSE](LICENSE) for details. 📖
+## License
+
+Custom Non-Commercial License — free to use, study, and fork for personal or educational purposes. Commercial use and redistribution are not permitted. See [LICENSE](LICENSE) for details.
