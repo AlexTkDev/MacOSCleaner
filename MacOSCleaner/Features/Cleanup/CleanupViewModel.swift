@@ -1,5 +1,10 @@
 import Foundation
 import Observation
+import OSLog
+
+private extension Logger {
+    static let cleanup = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "CleanupViewModel")
+}
 
 @Observable
 public final class CleanupViewModel {
@@ -142,6 +147,10 @@ public final class CleanupViewModel {
     public func startScan() {
         Task {
             do {
+                if self.settings.emptyTrashDuringCleanup {
+                    try await trashManager.requestTrashAccess()
+                }
+                
                 try stateMachine.transition(to: .scanning)
                 self.items = []
                 self.lastError = nil
@@ -235,6 +244,7 @@ public final class CleanupViewModel {
                     NotificationManager.shared.sendNotification(title: title, body: body)
                 }
             } catch let error {
+                Logger.cleanup.error("startScan failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 try? stateMachine.transition(to: .failed)
             }
@@ -252,6 +262,10 @@ public final class CleanupViewModel {
                 self.scriptLogs = []
                                 let isTrashSelected = items.contains { item in
                     item.isSelected && (item.label == "User Recycle Bin" || item.label == "Пользовательская корзина")
+                }
+                
+                if isTrashSelected {
+                    try await trashManager.requestTrashAccess()
                 }
                 
                 let selectedPaths = items.filter { $0.isSelected && $0.label != "User Recycle Bin" && $0.label != "Пользовательская корзина" }.map { $0.label }
@@ -300,6 +314,7 @@ public final class CleanupViewModel {
                 
                 try stateMachine.transition(to: .completed)
             } catch let error {
+                Logger.cleanup.error("executeCleanup failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 try? stateMachine.transition(to: .failed)
             }

@@ -26,7 +26,8 @@ public struct SystemInfo: Sendable {
         sysctlbyname("hw.model", nil, &size, nil, 0)
         var model = [CChar](repeating: 0, count: size)
         sysctlbyname("hw.model", &model, &size, nil, 0)
-        return String(cString: model)
+        let bytes = model.prefix(while: { $0 != 0 }).map { UInt8(bitPattern: $0) }
+        return String(decoding: bytes, as: UTF8.self)
     }
     
     private static func getProcessorName() -> String {
@@ -34,13 +35,15 @@ public struct SystemInfo: Sendable {
         sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0)
         var brand = [CChar](repeating: 0, count: size)
         sysctlbyname("machdep.cpu.brand_string", &brand, &size, nil, 0)
-        let brandString = String(cString: brand)
+        let brandBytes = brand.prefix(while: { $0 != 0 }).map { UInt8(bitPattern: $0) }
+        let brandString = String(decoding: brandBytes, as: UTF8.self)
         if !brandString.isEmpty { return brandString }
         
         // Fallback for Apple Silicon
         sysctlbyname("hw.machine", nil, &size, nil, 0)
         var machine = [CChar](repeating: 0, count: size)
         sysctlbyname("hw.machine", &machine, &size, nil, 0)
-        return String(cString: machine)
+        let machineBytes = machine.prefix(while: { $0 != 0 }).map { UInt8(bitPattern: $0) }
+        return String(decoding: machineBytes, as: UTF8.self)
     }
 }

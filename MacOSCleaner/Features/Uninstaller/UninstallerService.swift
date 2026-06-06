@@ -1,6 +1,11 @@
 import Foundation
 import SwiftUI
 import AppKit
+import OSLog
+
+private extension Logger {
+    static let uninstaller = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "UninstallerService")
+}
 
 @Observable
 public final class ScanProgress: @unchecked Sendable {
@@ -69,12 +74,28 @@ public actor UninstallerService {
         ]
         
         // Count apps first for progress
-        var allAppURLs: [URL] = []
+        var allAppURLsBuilder: [URL] = []
         for dir in appDirs {
             if let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
-                allAppURLs.append(contentsOf: contents.filter { $0.pathExtension == "app" })
+                allAppURLsBuilder.append(contentsOf: contents.filter { $0.pathExtension == "app" })
             }
         }
+        
+        // Also find apps in Application Support (like Google Updater)
+        if let home = ProcessInfo.processInfo.environment["HOME"] {
+            let appSupportDir = home + "/Library/Application Support"
+            do {
+                let result = try await commandRunner.run(command: "/usr/bin/find", arguments: [appSupportDir, "-maxdepth", "4", "-name", "*.app", "-type", "d", "-prune"])
+                let paths = result.stdout.components(separatedBy: .newlines)
+                for path in paths where !path.isEmpty {
+                    allAppURLsBuilder.append(URL(fileURLWithPath: path))
+                }
+            } catch {
+                Logger.uninstaller.warning("Failed to search Application Support for apps: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        
+        let allAppURLs = Array(Set(allAppURLsBuilder)) // Remove duplicates
         
         await MainActor.run {
             progress.currentStep = 0
@@ -393,42 +414,82 @@ public actor UninstallerService {
     }
 
     public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
-        // 1. Try to unload launch agents/daemons
+        Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
+
+        // 1. Unload launch agents/daemons
         for file in app.relatedFiles where file.isSelected {
             let path = file.url.path
-            if path.contains("LaunchAgents") || path.contains("LaunchDaemons") {
-                if path.hasSuffix(".plist") {
-                    // Try to unload. We don't fail if it's not loaded.
-                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
+            if (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") {
+                do {
+                    _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
+                    Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
+                } catch {
+                    Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                 }
             }
         }
 
-        // 2. Move files to trash or remove permanently (bypassTrash)
+        // 2. Move files to trash or remove permanently
         if bypassTrash {
             try safetyManager.validate(url: app.url)
-            try fileManager.removeItem(at: app.url)
-            
+            do {
+                try fileManager.removeItem(at: app.url)
+                Logger.uninstaller.info("Permanently removed: \(app.url.path, privacy: .public)")
+            } catch {
+                Logger.uninstaller.error("removeItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
+
             for file in app.relatedFiles where file.isSelected {
-                if (try? safetyManager.validate(url: file.url)) != nil {
-                    try? fileManager.removeItem(at: file.url)
+                do {
+                    try safetyManager.validate(url: file.url)
+                    try fileManager.removeItem(at: file.url)
+                    Logger.uninstaller.debug("Removed related: \(file.url.path, privacy: .public)")
+                } catch {
+                    Logger.uninstaller.warning("removeItem related '\(file.url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                    // Non-fatal: continue with remaining related files
                 }
             }
         } else {
-            _ = try await trashManager.trashItem(at: app.url)
+            do {
+                _ = try await trashManager.trashItem(at: app.url)
+                Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
+            } catch {
+                Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
+
             for file in app.relatedFiles where file.isSelected {
-                try? _ = await trashManager.trashItem(at: file.url)
+                do {
+                    _ = try await trashManager.trashItem(at: file.url)
+                    Logger.uninstaller.debug("Trashed related: \(file.url.path, privacy: .public)")
+                } catch {
+                    Logger.uninstaller.warning("trashItem related '\(file.url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                    // Non-fatal: continue with remaining related files
+                }
             }
         }
 
         // 3. Forget package if applicable
         if let bundleID = app.bundleID {
-            _ = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--forget", bundleID])
+            do {
+                _ = try await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--forget", bundleID])
+                Logger.uninstaller.debug("pkgutil --forget \(bundleID, privacy: .public)")
+            } catch {
+                Logger.uninstaller.warning("pkgutil --forget '\(bundleID, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+            }
         }
-        
-        // 4. Empty Recycle Bin Immediately
+
+        // 4. Empty Trash immediately if requested
         if emptyTrashImmediately {
-            try? await trashManager.emptyTrash()
+            do {
+                try await trashManager.requestTrashAccess()
+                _ = try await trashManager.emptyTrash()
+            } catch {
+                Logger.uninstaller.error("emptyTrash failed: \(error.localizedDescription, privacy: .public)")
+            }
         }
+
+        Logger.uninstaller.info("Uninstall complete: '\(app.name, privacy: .public)'")
     }
 }

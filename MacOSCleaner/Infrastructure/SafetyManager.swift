@@ -35,7 +35,10 @@ public struct SafetyManager: Sendable {
             "/private/var/folders",
             "/private/tmp",
             "/tmp",
-            "/usr/local"
+            "/usr/local",
+            "\(home)/Documents/my/macos-cleaner/build",
+            "\(home)/Library/Application Support/MacOSCleaner",
+            "\(home)/Library/Application Scripts/input.MacOSCleaner"
         ]
     }
 

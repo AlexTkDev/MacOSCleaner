@@ -112,3 +112,4 @@ GEMINI.md
 .geminiignore
 .gemini
 .antigravitycli
+build/

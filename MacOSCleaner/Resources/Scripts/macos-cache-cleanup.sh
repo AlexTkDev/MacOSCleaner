@@ -399,6 +399,10 @@ CURRENT_PARENT="Selected app caches"
 FREED=$(clean_selected_contents \
     "$HOME/Library/Caches/Google" \
     "$HOME/Library/Caches/com.google.SoftwareUpdate" \
+    "$HOME/Library/Caches/com.google.GoogleUpdater" \
+    "$HOME/Library/Application Support/Google/GoogleUpdater" \
+    "$HOME/Library/Google/GoogleSoftwareUpdate" \
+    "$HOME/Library/HTTPStorages/com.google.GoogleUpdater" \
     "$HOME/Library/Caches/org.carthage.CarthageKit" \
     "$HOME/Library/Caches/CocoaPods" \
     "$HOME/Library/Caches/pip" \
@@ -415,6 +419,28 @@ if [[ "$DRY_RUN" == true ]]; then
 else
     print_result "Selected app caches" "$FREED"
 fi
+
+# Google Updater Plists
+GOOGLE_PLISTS_FREED=0
+for plist in "$HOME/Library/Preferences/com.google.Keystone.Agent.plist" \
+             "$HOME/Library/LaunchAgents/com.google.keystone.xpcservice.plist" \
+             "$HOME/Library/LaunchAgents/com.google.keystone.agent.plist" \
+             "$HOME/Library/LaunchAgents/com.google.GoogleUpdater.wake.plist"; do
+    if [[ -f "$plist" ]]; then
+        sz=$(get_size_mb "$plist")
+        if [[ "$DRY_RUN" == true ]]; then
+            print_summary "Google Plist: $(basename "$plist")" "$sz"
+        else
+            rm -f "$plist" 2>/dev/null || true
+            GOOGLE_PLISTS_FREED=$((GOOGLE_PLISTS_FREED + sz))
+        fi
+    fi
+done
+if [[ "$DRY_RUN" == false && $GOOGLE_PLISTS_FREED -gt 0 ]]; then
+    print_result "Google Updater Plists" "$GOOGLE_PLISTS_FREED"
+fi
+FREED=$((FREED + GOOGLE_PLISTS_FREED))
+
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 CURRENT_PARENT=""
 
@@ -662,6 +688,49 @@ else
 fi
 FREED=$((FREED + F))
 
+# Xcode Previews Simulator Devices
+F=$(clean_contents "$HOME/Library/Developer/Xcode/UserData/Previews/Simulator Devices")
+if [[ "$DRY_RUN" == true ]]; then
+    print_summary "Xcode Previews Simulator Devices" "$F"
+else
+    print_result "Xcode Previews Simulator Devices" "$F"
+fi
+FREED=$((FREED + F))
+
+# Xcode Products (Previews Cache)
+F=$(clean_contents "$HOME/Library/Developer/Xcode/Products")
+if [[ "$DRY_RUN" == true ]]; then
+    print_summary "Xcode Products" "$F"
+else
+    print_result "Xcode Products" "$F"
+fi
+FREED=$((FREED + F))
+
+# Xcode clangd index cache
+F=$(clean_contents "$HOME/Library/Developer/Xcode/clangd")
+if [[ "$DRY_RUN" == true ]]; then
+    print_summary "Xcode clangd cache" "$F"
+else
+    print_result "Xcode clangd cache" "$F"
+fi
+FREED=$((FREED + F))
+
+# SwiftPM package metadata lock files
+SWIFTPM_FREED=0
+while IFS= read -r lock_file; do
+    sz=$(get_size_mb "$lock_file")
+    if [[ "$DRY_RUN" == true ]]; then
+        print_summary "SwiftPM Lock: $(basename "$lock_file")" "$sz"
+    else
+        rm -f "$lock_file" 2>/dev/null || true
+        SWIFTPM_FREED=$((SWIFTPM_FREED + sz))
+    fi
+done < <(find /private/var/folders -maxdepth 4 -type f -name "*index-package-metadata.db.lock" 2>/dev/null)
+if [[ "$DRY_RUN" == false ]]; then
+    print_result "SwiftPM Lock Files" "$SWIFTPM_FREED"
+fi
+FREED=$((FREED + SWIFTPM_FREED))
+
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 
 # ============================================================
@@ -736,6 +805,38 @@ if command -v xcrun &>/dev/null; then
             FREED=$((FREED + freed_rt))
         fi
     fi
+    
+    # Clean simulator applications (unused)
+    SIM_APPS_FREED=0
+    while IFS= read -r app_path; do
+        sz=$(get_size_mb "$app_path")
+        if [[ "$DRY_RUN" == true ]]; then
+            print_summary "Simulator App: $(basename "$app_path")" "$sz"
+        else
+            rm -rf "$app_path" 2>/dev/null || true
+            SIM_APPS_FREED=$((SIM_APPS_FREED + sz))
+        fi
+    done < <(find "$HOME/Library/Developer/CoreSimulator/Devices" -type d -path "*/Containers/Bundle/Application/*/*.app" 2>/dev/null)
+    if [[ "$DRY_RUN" == false ]]; then
+        print_result "Simulator Installed Apps" "$SIM_APPS_FREED"
+    fi
+    FREED=$((FREED + SIM_APPS_FREED))
+    
+    # Clean simulator device data (Caches, Tmp, Trash)
+    SIM_DATA_FREED=0
+    while IFS= read -r sim_dir; do
+        sz=$(get_size_mb "$sim_dir")
+        if [[ "$DRY_RUN" == true ]]; then
+            print_summary "Simulator $(basename "$sim_dir")" "$sz"
+        else
+            rm -rf "$sim_dir"/* 2>/dev/null || true
+            SIM_DATA_FREED=$((SIM_DATA_FREED + sz))
+        fi
+    done < <(find "$HOME/Library/Developer/CoreSimulator/Devices" -type d \( -path "*/data/Library/Caches" -o -path "*/data/tmp" -o -path "*/data/.Trash" \) 2>/dev/null)
+    if [[ "$DRY_RUN" == false ]]; then
+        print_result "Simulator Caches/Tmp/Trash" "$SIM_DATA_FREED"
+    fi
+    FREED=$((FREED + SIM_DATA_FREED))
 fi
 
 TOTAL_FREED=$((TOTAL_FREED + FREED))
@@ -1514,6 +1615,15 @@ else
 fi
 FREED=$((FREED + F))
 
+# CrashReporter Application Support
+F=$(clean_contents "$HOME/Library/Application Support/CrashReporter")
+if [[ "$DRY_RUN" == true ]]; then
+    print_summary "CrashReporter (App Support)" "$F"
+else
+    print_result "CrashReporter (App Support)" "$F"
+fi
+FREED=$((FREED + F))
+
 TOTAL_FREED=$((TOTAL_FREED + FREED))
 
 # ============================================================
@@ -1536,6 +1646,25 @@ if [[ "$DRY_RUN" == true ]]; then
     print_summary "Font cache" "$F"
 else
     print_result "Font cache" "$F"
+fi
+FREED=$((FREED + F))
+
+# General macOS caches (nsurlsessiond, WebKit, CoreSpotlight, CloudKit, etc)
+F=$(clean_selected_contents \
+    "$HOME/Library/Caches/com.apple.nsurlsessiond" \
+    "$HOME/Library/Metadata/CoreSpotlight" \
+    "$HOME/Library/WebKit" \
+    "$HOME/Library/Saved Application State" \
+    "$HOME/Library/Caches/CloudKit" \
+    "$HOME/Library/Caches/com.apple.ap.adprivacyd" \
+    "$HOME/Library/Caches/com.apple.DiskManagement" \
+    "$HOME/Library/Application Support/AddressBook/Sources" \
+    "$HOME/Library/Application Support/SyncServices" \
+    "$HOME/Library/Receipts")
+if [[ "$DRY_RUN" == true ]]; then
+    print_summary "macOS general caches (WebKit, CloudKit, Spotlight...)" "$F"
+else
+    print_result "macOS general caches (WebKit, CloudKit, Spotlight...)" "$F"
 fi
 FREED=$((FREED + F))
 
@@ -1902,6 +2031,18 @@ if [[ $WIN_COUNT -gt 0 ]]; then
     else
         printf "\n  ${GREEN}✓${NC} Windows metadata files: ${GREEN}%d deleted${NC}\n" "$WIN_COUNT"
     fi
+fi
+
+# ── DARWIN_USER_CACHE_DIR (macOS internal user cache) ─────────────
+DARWIN_CACHE=$(getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+if [[ -n "$DARWIN_CACHE" && -d "$DARWIN_CACHE" ]]; then
+    DARWIN_FREED=$(clean_old_files "$DARWIN_CACHE" 30)
+    if [[ "$DRY_RUN" == true ]]; then
+        printf "  ${YELLOW}⊘${NC} Internal User Cache (>30 days): ${YELLOW}%d MB${NC}\n" "$DARWIN_FREED"
+    else
+        printf "  ${GREEN}✓${NC} Internal User Cache (>30 days): ${GREEN}%d MB freed${NC}\n" "$DARWIN_FREED"
+    fi
+    TOTAL_FREED=$((TOTAL_FREED + DARWIN_FREED))
 fi
 
 # ── Broken symlinks in common project dirs ────────────────────
