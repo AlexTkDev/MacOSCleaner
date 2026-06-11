@@ -637,7 +637,7 @@ public struct CleanupView: View {
     }
     
     private func rowView(
-        for item: CleanupViewModel.CleanupPreviewItem,
+        for item: CleanupPreviewItem,
         isExpanded: Bool,
         onToggleExpand: (() -> Void)? = nil
     ) -> some View {
