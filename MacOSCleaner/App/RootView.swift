@@ -40,6 +40,8 @@ struct RootView: View {
             DashboardView(journal: journal)
         case .cleanup:
             CleanupView(viewModel: cleanupViewModel)
+        case .processes:
+            ProcessesView()
         case .startupServices:
             StartupServicesView()
         case .uninstaller:

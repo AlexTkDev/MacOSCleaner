@@ -378,7 +378,7 @@ public actor UninstallerService {
                 }
             }
         } catch {
-            print("mdfind failed: \(error)")
+            Logger.uninstaller.error("mdfind failed: \(error.localizedDescription, privacy: .public)")
         }
         
         return urls

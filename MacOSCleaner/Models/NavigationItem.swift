@@ -3,6 +3,7 @@ import Foundation
 enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
     case dashboard = "Dashboard"
     case cleanup = "Cleanup"
+    case processes = "Processes"
     case startupServices = "Startup Services"
     case uninstaller = "Uninstaller"
     case settings = "Settings"
@@ -13,6 +14,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .dashboard:      return "menu_dashboard".localized
         case .cleanup:        return "menu_cleanup".localized
+        case .processes:      return "menu_processes".localized
         case .startupServices: return "menu_startup_services".localized
         case .uninstaller:    return "menu_uninstaller".localized
         case .settings:       return "menu_settings".localized
@@ -23,6 +25,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .dashboard: return "gauge.medium"
         case .cleanup: return "sparkles"
+        case .processes: return "cpu"
         case .startupServices: return "bolt.horizontal"
         case .uninstaller: return "trash"
         case .settings: return "gear"

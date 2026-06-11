@@ -137,6 +137,17 @@
 "cleanup_select_all" = "Select All";
 "cleanup_debug_log" = "Debug Log (%lld lines)";
 
+// Cleanup Notifications
+"cleanup_scan_complete_title" = "Scan Complete";
+"cleanup_scan_complete_body" = "Found %lld MB of files to clean.";
+"cleanup_emptying_trash" = "Emptying Recycle Bin...";
+"cleanup_complete_title" = "Cleanup Complete";
+"cleanup_complete_body" = "Successfully freed %lld MB.";
+
+// Trash
+"trash_user_label" = "User Recycle Bin";
+"trash_user_description" = "Contents of your system Recycle Bin. Contains deleted files.";
+
 // Uninstaller View
 "uninstaller_title" = "Uninstaller";
 "uninstaller_search" = "Search Apps";
@@ -164,3 +175,29 @@
 "uninstaller_scanning_apps" = "Scanning Applications...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
+
+// Processes View
+"menu_processes" = "Processes";
+"processes_title" = "Processes";
+"processes_subtitle" = "Manage running system processes.";
+"processes_search" = "Search processes...";
+"processes_scanning" = "Scanning processes...";
+"processes_terminate" = "Terminate";
+"processes_force_kill" = "Force Kill";
+"processes_protected" = "Protected";
+"processes_refresh" = "Refresh list";
+"processes_confirm_terminate" = "Terminate Process?";
+"processes_confirm_terminate_message" = "Are you sure you want to terminate %@ (PID %lld)?";
+"processes_confirm_force" = "Force Kill?";
+"processes_confirm_force_message" = "Force killing may cause data loss. Kill %@ (PID %lld)?";
+"processes_no_results" = "No matching processes found.";
+"processes_no_processes" = "No Processes Found";
+"processes_no_processes_sub" = "No running processes detected.";
+"processes_scan_failed" = "Scan Failed";
+"processes_manage_blacklist" = "Manage blacklist";
+"processes_manage_whitelist" = "Manage whitelist";
+"processes_blacklist_title" = "Blacklist";
+"processes_blacklist_placeholder" = "Process name to block...";
+"processes_whitelist_title" = "Whitelist";
+"processes_whitelist_placeholder" = "Process name to protect...";
+"add" = "Add";

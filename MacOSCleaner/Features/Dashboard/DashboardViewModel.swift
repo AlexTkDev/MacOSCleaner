@@ -1,5 +1,10 @@
 import SwiftUI
 import Foundation
+import OSLog
+
+private extension Logger {
+    static let dashboard = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "DashboardViewModel")
+}
 
 @MainActor
 class DashboardViewModel: ObservableObject {
@@ -30,8 +35,7 @@ class DashboardViewModel: ObservableObject {
             totalDiskSpace = Int64(values.volumeTotalCapacity ?? 0)
             freeDiskSpace = Int64(values.volumeAvailableCapacity ?? 0)
         } catch {
-            // Handle error
-            print("Failed to fetch disk usage: \(error)")
+            Logger.dashboard.error("Failed to fetch disk usage: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -44,7 +48,7 @@ class DashboardViewModel: ObservableObject {
             }
             cleanupCount = allTransactions.count
         } catch {
-            print("Failed to load history: \(error)")
+            Logger.dashboard.error("Failed to load history: \(error.localizedDescription, privacy: .public)")
         }
     }
     

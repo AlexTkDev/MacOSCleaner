@@ -1,6 +1,11 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import AppKit
+import OSLog
+
+private extension Logger {
+    static let uninstallerView = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "UninstallerView")
+}
 
 struct UninstallerView: View {
     let settings: AppSettings
@@ -135,7 +140,7 @@ struct UninstallerView: View {
                 loadApps()
                 selectedApp = nil
             } catch {
-                print("Uninstall failed: \(error)")
+                Logger.uninstallerView.error("Uninstall failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

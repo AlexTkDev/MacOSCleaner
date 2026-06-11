@@ -344,6 +344,14 @@ public struct CleanupView: View {
                 .frame(width: 300, height: 8)
             }
             
+            Button(action: { viewModel.cancel() }) {
+                Text("cancel".localized)
+                    .fontWeight(.medium)
+                    .frame(width: 120, height: 32)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            
             if showLogs && !viewModel.scriptLogs.isEmpty {
                 Divider()
                 logPanel

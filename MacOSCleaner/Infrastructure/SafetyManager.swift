@@ -10,7 +10,7 @@ public struct SafetyManager: Sendable {
     private let refuseList: [String]
     private let allowedExceptions: [String]
 
-    public init() {
+    public init(allowedExceptions: [String] = []) {
         let home = NSHomeDirectory()
         self.refuseList = [
             "/",
@@ -28,7 +28,7 @@ public struct SafetyManager: Sendable {
             "\(home)/Documents"
         ]
         
-        self.allowedExceptions = [
+        let defaultExceptions = [
             "\(home)/Library",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
@@ -36,10 +36,11 @@ public struct SafetyManager: Sendable {
             "/private/tmp",
             "/tmp",
             "/usr/local",
-            "\(home)/Documents/my/macos-cleaner/build",
             "\(home)/Library/Application Support/MacOSCleaner",
             "\(home)/Library/Application Scripts/input.MacOSCleaner"
         ]
+        
+        self.allowedExceptions = defaultExceptions + allowedExceptions
     }
 
     public func validate(url: URL) throws {

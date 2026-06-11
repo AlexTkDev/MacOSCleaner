@@ -93,4 +93,31 @@ final class SafetyManagerTests: XCTestCase {
             XCTAssertEqual(error as? SafetyError, SafetyError.protectedPath("/System"))
         }
     }
+
+    func testNoHardcodedDeveloperPaths() {
+        let home = NSHomeDirectory()
+        let developerPath = "\(home)/Documents/my/macos-cleaner/build"
+        let url = URL(fileURLWithPath: developerPath)
+        
+        XCTAssertThrowsError(try safetyManager.validate(url: url), "Developer path should not be allowed by default") { error in
+            XCTAssertEqual(error as? SafetyError, SafetyError.protectedPath("\(home)/Documents"))
+        }
+    }
+
+    func testCustomAllowedExceptions() {
+        let home = NSHomeDirectory()
+        let customPath = "\(home)/Documents/my/macos-cleaner/build"
+        let managerWithException = SafetyManager(allowedExceptions: [customPath])
+        let url = URL(fileURLWithPath: customPath)
+        
+        XCTAssertNoThrow(try managerWithException.validate(url: url), "Custom exception should allow the path")
+    }
+
+    func testDefaultExceptionsStillWork() {
+        let home = NSHomeDirectory()
+        let defaultExceptionPath = "\(home)/Library/Caches/test"
+        let url = URL(fileURLWithPath: defaultExceptionPath)
+        
+        XCTAssertNoThrow(try safetyManager.validate(url: url), "Default exceptions should still work")
+    }
 }

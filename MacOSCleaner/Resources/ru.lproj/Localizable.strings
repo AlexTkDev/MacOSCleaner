@@ -136,6 +136,17 @@
 "cleanup_select_all" = "Выбрать все";
 "cleanup_debug_log" = "Отладочный лог (%lld строк)";
 
+// Cleanup Notifications
+"cleanup_scan_complete_title" = "Сканирование завершено";
+"cleanup_scan_complete_body" = "Найдено файлов для удаления: %lld МБ.";
+"cleanup_emptying_trash" = "Очистка корзины...";
+"cleanup_complete_title" = "Очистка завершена";
+"cleanup_complete_body" = "Успешно освобождено %lld МБ.";
+
+// Trash
+"trash_user_label" = "Пользовательская корзина";
+"trash_user_description" = "Содержимое вашей корзины. Включает удаленные файлы.";
+
 // Uninstaller View
 "uninstaller_title" = "Деинсталлятор";
 "uninstaller_search" = "Поиск приложений";
@@ -163,3 +174,29 @@
 "uninstaller_scanning_apps" = "Сканирование приложений...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
+
+// Processes View
+"menu_processes" = "Процессы";
+"processes_title" = "Процессы";
+"processes_subtitle" = "Управление запущенными системными процессами.";
+"processes_search" = "Поиск процессов...";
+"processes_scanning" = "Сканирование процессов...";
+"processes_terminate" = "Завершить";
+"processes_force_kill" = "Принудительно убить";
+"processes_protected" = "Защищён";
+"processes_refresh" = "Обновить список";
+"processes_confirm_terminate" = "Завершить процесс?";
+"processes_confirm_terminate_message" = "Вы уверены, что хотите завершить %@ (PID %lld)?";
+"processes_confirm_force" = "Принудительно убить?";
+"processes_confirm_force_message" = "Принудительное завершение может привести к потере данных. Убить %@ (PID %lld)?";
+"processes_no_results" = "Подходящих процессов не найдено.";
+"processes_no_processes" = "Процессы не найдены";
+"processes_no_processes_sub" = "Запущенные процессы не обнаружены.";
+"processes_scan_failed" = "Ошибка сканирования";
+"processes_manage_blacklist" = "Управление блэклистом";
+"processes_manage_whitelist" = "Управление вайтлистом";
+"processes_blacklist_title" = "Блэклист";
+"processes_blacklist_placeholder" = "Имя процесса для блокировки...";
+"processes_whitelist_title" = "Вайтлист";
+"processes_whitelist_placeholder" = "Имя процесса для защиты...";
+"add" = "Добавить";

@@ -137,6 +137,17 @@
 "cleanup_select_all" = "Вибрати все";
 "cleanup_debug_log" = "Блокнот відладки (%lld рядків)";
 
+// Cleanup Notifications
+"cleanup_scan_complete_title" = "Сканування завершено";
+"cleanup_scan_complete_body" = "Знайдено файлів для видалення: %lld МБ.";
+"cleanup_emptying_trash" = "Очищення смітника...";
+"cleanup_complete_title" = "Очищення завершено";
+"cleanup_complete_body" = "Успішно звільнено %lld МБ.";
+
+// Trash
+"trash_user_label" = "Користувацький смітник";
+"trash_user_description" = "Вміст вашого смітника. Включає видалені файли.";
+
 // Uninstaller View
 "uninstaller_title" = "Деінсталятор";
 "uninstaller_search" = "Пошук додатків";
@@ -164,3 +175,29 @@
 "uninstaller_scanning_apps" = "Сканування додатків...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
+
+// Processes View
+"menu_processes" = "Процеси";
+"processes_title" = "Процеси";
+"processes_subtitle" = "Керування запущеними системними процесами.";
+"processes_search" = "Пошук процесів...";
+"processes_scanning" = "Сканування процесів...";
+"processes_terminate" = "Завершити";
+"processes_force_kill" = "Примусово вбити";
+"processes_protected" = "Захищений";
+"processes_refresh" = "Оновити список";
+"processes_confirm_terminate" = "Завершити процес?";
+"processes_confirm_terminate_message" = "Ви впевнені, що хочете завершити %@ (PID %lld)?";
+"processes_confirm_force" = "Примусово вбити?";
+"processes_confirm_force_message" = "Примусове завершення може призвести до втрати даних. Вбити %@ (PID %lld)?";
+"processes_no_results" = "Відповідних процесів не знайдено.";
+"processes_no_processes" = "Процеси не знайдені";
+"processes_no_processes_sub" = "Запущені процеси не виявлені.";
+"processes_scan_failed" = "Помилка сканування";
+"processes_manage_blacklist" = "Керування блеклістом";
+"processes_manage_whitelist" = "Керування вайтлістом";
+"processes_blacklist_title" = "Блекліст";
+"processes_blacklist_placeholder" = "Ім'я процесу для блокування...";
+"processes_whitelist_title" = "Вайтліст";
+"processes_whitelist_placeholder" = "Ім'я процесу для захисту...";
+"add" = "Додати";
