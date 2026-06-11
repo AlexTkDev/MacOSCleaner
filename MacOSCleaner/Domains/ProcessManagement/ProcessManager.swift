@@ -20,7 +20,7 @@ public actor ProcessManager {
     public func listProcesses() async throws -> [RunningProcess] {
         let result = try await commandRunner.run(
             command: "/bin/ps",
-            arguments: ["-axo", "pid,comm,path"],
+            arguments: ["-axo", "pid,comm,args"],
             timeout: .seconds(10)
         )
 
@@ -176,7 +176,7 @@ public actor ProcessManager {
                   let pid = pid_t(parts[0]) else { continue }
 
             let name = parts[1]
-            let path = parts.count >= 3 ? parts[2] : nil
+            let path = extractPath(from: Array(parts.dropFirst(2)))
 
             processes.append(
                 RunningProcess(pid: pid, name: name, path: path)
@@ -184,6 +184,15 @@ public actor ProcessManager {
         }
 
         return processes
+    }
+
+    private func extractPath(from args: [String]) -> String? {
+        for arg in args {
+            if arg.hasPrefix("/") && FileManager.default.fileExists(atPath: arg) {
+                return arg
+            }
+        }
+        return args.first
     }
 }
 

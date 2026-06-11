@@ -90,7 +90,7 @@ struct ProcessRow: View {
         switch permission {
         case .blocked: return "lock.shield"
         case .needsConfirmation: return "questionmark.circle"
-        case .allowed: return "app.circle"
+        case .allowed: return "checkmark.circle"
         }
     }
 
