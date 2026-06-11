@@ -14,7 +14,9 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 **Dashboard** — disk usage chart, system info (model, CPU, RAM, OS version), cleanup history and statistics.
 
-**Smart Cleanup** — scans and removes user caches, app logs, Xcode DerivedData, Android Studio caches, Go/Maven build artifacts, Homebrew cache, and `.DS_Store` files. You pick what to delete, then confirm.
+**Smart Cleanup** — scans and removes user caches, app logs, Xcode DerivedData, Android Studio caches, Go/Maven build artifacts, Homebrew cache, and `.DS_Store` files. You pick what to delete, then confirm. Architecture: `CleanupCoordinator` orchestrates the scan/cleanup flow, `CleanupItemManager` manages the item tree and selection, `CleanupViewModel` is a thin UI layer.
+
+**Process Manager** — lists running processes, lets you terminate or force-kill them with built-in safety (protected system processes cannot be killed).
 
 **Startup Services** — lists all LaunchAgents from `~/Library/LaunchAgents`, shows their load status, and lets you enable or disable them without touching system agents.
 
@@ -30,6 +32,7 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 - All deletions go through `trashItem(at:)` — recoverable from Trash by default.
 - `SafetyManager` blocks writes to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths.
+- `ProcessSafetyPolicy` protects critical system processes (kernel_task, launchd, WindowServer) from termination.
 - Permanent deletion (bypassing Trash) is opt-in and clearly marked in the UI.
 
 ---
@@ -38,7 +41,7 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 - **Swift 6** — strict concurrency, actors, `async/await`, structured task groups
 - **SwiftUI** — declarative UI, `@Observable`, `NavigationSplitView`, Charts
-- **Architecture** — pragmatic MVP, feature-oriented folders, no third-party UI frameworks
+- **Architecture** — feature-oriented folders, component-based cleanup (Coordinator, ItemManager, Notifier), no third-party UI frameworks
 - **Build** — XcodeGen (`project.yml` as single source of truth)
 - **Logging** — OSLog with structured subsystems
 
@@ -49,10 +52,14 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 ```
 MacOSCleaner/
 ├── App/          # Entry point, RootView, sidebar navigation
-├── Domains/      # Business logic (CleanupStateMachine, LaunchServiceManager, UninstallerService)
-├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Uninstaller, Settings, About)
+├── Domains/
+│   ├── Cleanup/  # CleanupStateMachine, CleanupCoordinator, CleanupItemManager,
+│   │             # CleanupNotifier, CleanupModels, ShellCleanupAdapter, TransactionJournal
+│   ├── ProcessManagement/  # ProcessManager, ProcessSafetyPolicy
+│   └── StartupServices/    # LaunchServiceManager
+├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, About)
 ├── Infrastructure/  # System services (CommandRunner, SafetyManager, TrashManager, LanguageManager)
-├── Models/       # Shared value types and enums
+├── Models/       # Shared value types and enums (CleanupItem, OperationRisk, RunningProcess, etc.)
 └── Resources/    # Localizable.strings (en/ru/uk), shell scripts, assets
 ```
 
