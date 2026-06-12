@@ -25,7 +25,24 @@ public struct SafetyManager: Sendable {
             "/tmp",
             "\(home)/.ssh",
             "\(home)/.gnupg",
-            "\(home)/Documents"
+            "\(home)/Documents",
+            // Sensitive user data - never clean
+            "\(home)/Library/Keychains",
+            "\(home)/Library/Mail",
+            "\(home)/Library/Safari",
+            "\(home)/Library/Calendars",
+            "\(home)/Library/Reminders",
+            "\(home)/Library/Contacts",
+            "\(home)/Library/Group Containers",
+            "\(home)/Library/Containers/com.apple.mail",
+            // Passwords and credentials
+            "\(home)/Library/Application Support/Chrome/Default/Login Data",
+            "\(home)/Library/Application Support/Chrome/Default/Cookies",
+            "\(home)/Library/Application Support/Google/Chrome/Default/Login Data",
+            "\(home)/Library/Application Support/Firefox/Profiles",
+            // Critical system-level user data
+            "\(home)/Library/Preferences",
+            "\(home)/Library/WebKit",
         ]
         
         let defaultExceptions = [
@@ -37,7 +54,21 @@ public struct SafetyManager: Sendable {
             "/tmp",
             "/usr/local",
             "\(home)/Library/Application Support/MacOSCleaner",
-            "\(home)/Library/Application Scripts/input.MacOSCleaner"
+            "\(home)/Library/Application Scripts/input.MacOSCleaner",
+            // Safe cache directories
+            "\(home)/Library/Caches",
+            "\(home)/Library/Developer",
+            "\(home)/Library/Logs",
+            "\(home)/Library/Application Support",
+            "\(home)/Library/Containers",
+            "\(home)/.cache",
+            "\(home)/.config",
+            "\(home)/.local",
+            "\(home)/.gradle",
+            "\(home)/.pub-cache",
+            "\(home)/.dartServer",
+            "\(home)/.android",
+            "\(home)/Library/Android",
         ]
         
         self.allowedExceptions = defaultExceptions + allowedExceptions
@@ -60,7 +91,6 @@ public struct SafetyManager: Sendable {
         let pathsToCheck = [path, resolvedPath]
         
         for p in pathsToCheck {
-            // Check if path is explicitly allowed
             let isException = allowedExceptions.contains { exception in
                 p == exception || p.hasPrefix(exception + "/")
             }

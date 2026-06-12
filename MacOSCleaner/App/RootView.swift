@@ -5,6 +5,7 @@ struct RootView: View {
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
+    @Bindable var permissionsManager: PermissionsManager
 
     var body: some View {
         NavigationSplitView {
@@ -24,12 +25,13 @@ struct RootView: View {
             }
         }
         .frame(minWidth: 900, minHeight: 600)
+        .sheet(isPresented: $permissionsManager.showGuidance) {
+            PermissionsView(permissionsManager: permissionsManager)
+        }
         .onAppear {
             appSettings.applyTheme()
-            if appSettings.autoScanOnStartup {
-                selectedItem = .cleanup
-                cleanupViewModel.startScan()
-            }
+            permissionsManager.refresh()
+            permissionsManager.showGuidanceIfNeeded()
         }
     }
 
@@ -47,11 +49,15 @@ struct RootView: View {
         case .uninstaller:
             UninstallerView(settings: appSettings)
         case .settings:
-            SettingsView(settings: appSettings) {
-                Task {
-                    try? await journal.clear()
+            SettingsView(
+                settings: appSettings,
+                permissionsManager: permissionsManager,
+                onForget: {
+                    Task {
+                        try? await journal.clear()
+                    }
                 }
-            }
+            )
         }
     }
 }
@@ -66,6 +72,7 @@ struct RootView: View {
             settings: settings
         ),
         journal: journal,
-        appSettings: settings
+        appSettings: settings,
+        permissionsManager: PermissionsManager()
     )
 }

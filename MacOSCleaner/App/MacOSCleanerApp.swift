@@ -8,6 +8,7 @@ struct MacOSCleanerApp: App {
     private let journal = TransactionJournal()
     private let cleanupViewModel: CleanupViewModel
     private let appSettings = AppSettings()
+    private let permissionsManager = PermissionsManager()
     
     init() {
         let adapter = ShellCleanupAdapter(commandRunner: commandRunner)
@@ -16,7 +17,12 @@ struct MacOSCleanerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(cleanupViewModel: cleanupViewModel, journal: journal, appSettings: appSettings)
+            RootView(
+                cleanupViewModel: cleanupViewModel,
+                journal: journal,
+                appSettings: appSettings,
+                permissionsManager: permissionsManager
+            )
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -28,6 +34,12 @@ struct MacOSCleanerApp: App {
         
         Window("About MacOS Cleaner", id: "about") {
             AboutView()
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+        
+        Window("permissions_window_title".localized, id: "permissions") {
+            PermissionsView(permissionsManager: permissionsManager)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

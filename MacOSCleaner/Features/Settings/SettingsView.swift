@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var settings: AppSettings
+    let permissionsManager: PermissionsManager
     let onForget: () -> Void
     @State private var showResetConfirmation = false
 
@@ -11,6 +12,8 @@ struct SettingsView: View {
                 header
                     .padding(.bottom, 24)
 
+                permissionsSection
+                Divider().padding(.vertical, 16)
                 generalSection
                 Divider().padding(.vertical, 16)
                 cleanupSection
@@ -54,6 +57,49 @@ struct SettingsView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
+        }
+    }
+
+    // MARK: - Permissions
+
+    private var permissionsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(title: "settings_permissions".localized, icon: "lock.shield")
+
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Full Disk Access")
+                        .font(.body)
+                    Text("settings_fda_description".localized)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                HStack(spacing: 8) {
+                    statusBadge(isGranted: permissionsManager.hasFullDiskAccess)
+
+                    Button {
+                        permissionsManager.openFullDiskAccessSettings()
+                    } label: {
+                        Label("settings_open_settings".localized, systemImage: "arrow.up.right")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            Button {
+                permissionsManager.refresh()
+            } label: {
+                Label("settings_check_permissions".localized, systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .padding(.horizontal, 12)
         }
     }
 
@@ -236,6 +282,22 @@ struct SettingsView: View {
             .padding(.vertical, 4)
             .conditionalHelp(tooltip, enabled: settings.showTooltips)
     }
+
+    private func statusBadge(isGranted: Bool) -> some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(isGranted ? Color.green : Color.orange)
+                .frame(width: 8, height: 8)
+
+            Text(isGranted ? "permissions_status_granted".localized : "permissions_status_required".localized)
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(isGranted ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+        .cornerRadius(6)
+    }
 }
 
 // MARK: - Conditional Tooltip Modifier
@@ -252,6 +314,6 @@ private extension View {
 }
 
 #Preview {
-    SettingsView(settings: AppSettings(), onForget: {})
+    SettingsView(settings: AppSettings(), permissionsManager: PermissionsManager(), onForget: {})
         .frame(width: 700, height: 700)
 }

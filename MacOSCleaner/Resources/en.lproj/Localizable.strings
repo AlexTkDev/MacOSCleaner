@@ -208,3 +208,26 @@
 "processes_whitelist_title" = "Whitelist";
 "processes_whitelist_placeholder" = "Process name to protect...";
 "add" = "Add";
+
+// Permissions
+"permissions_title" = "Permissions Required";
+"permissions_subtitle" = "MacOSCleaner needs access to system folders for cleanup.";
+"permissions_fda_description" = "Required to access ~/Library/Caches, ~/Library/Application Support, and other system folders.";
+"permissions_instructions_title" = "How to grant Full Disk Access:";
+"permissions_step1" = "Click 'Open System Settings' below.";
+"permissions_step2" = "Find MacOSCleaner in the list.";
+"permissions_step3" = "Toggle the switch to ON.";
+"permissions_step4" = "Return to MacOSCleaner and click 'Check Status'.";
+"permissions_open_settings" = "Open System Settings";
+"permissions_check_status" = "Check Status";
+"permissions_dismiss_temp" = "Skip for now";
+"permissions_dismiss_permanent" = "Don't show again";
+"permissions_status_granted" = "Granted";
+"permissions_status_required" = "Required";
+"permissions_window_title" = "Permissions";
+
+// Settings Permissions
+"settings_permissions" = "Permissions";
+"settings_fda_description" = "Required for cleaning system caches and application data.";
+"settings_open_settings" = "Open Settings";
+"settings_check_permissions" = "Check Permissions";

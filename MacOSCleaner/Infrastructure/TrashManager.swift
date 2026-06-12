@@ -13,15 +13,13 @@ public enum TrashError: Error, Equatable {
 public actor TrashManager {
     private let safetyManager: SafetyManager
     private let fileManager: FileManager
+    private let bookmarkKey = "com.macoscleaner.trashBookmark"
     
     public init(safetyManager: SafetyManager = SafetyManager(), fileManager: FileManager = .default) {
         self.safetyManager = safetyManager
         self.fileManager = fileManager
     }
     
-    /// Trashes the item at the specified URL after validating it with SafetyManager.
-    /// - Parameter url: The URL of the file or directory to trash.
-    /// - Returns: The URL of the item in the Trash, which can be used for restore operations.
     @discardableResult
     public func trashItem(at url: URL) throws -> URL {
         try safetyManager.validate(url: url)
@@ -40,11 +38,12 @@ public actor TrashManager {
         }
     }
     
-    /// Empties the user's Recycle Bin (~/.Trash) by deleting all its contents.
-    /// Logs every failure but always continues — returns total bytes freed.
     @discardableResult
     public func emptyTrash() async throws -> Int64 {
         let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        
+        try await ensureAccess()
+        
         guard fileManager.fileExists(atPath: trashURL.path) else {
             Logger.trash.info("Trash folder not found, nothing to empty")
             return 0
@@ -70,7 +69,6 @@ public actor TrashManager {
                 Logger.trash.debug("Deleted from Trash: \(url.path, privacy: .public) (\(size) bytes)")
             } catch {
                 failedCount += 1
-                // Log error but continue — never abort mid-loop
                 Logger.trash.error("Failed to delete '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }
         }
@@ -84,12 +82,12 @@ public actor TrashManager {
         return totalFreed
     }
     
-    nonisolated public func requestTrashAccess() async throws {
+    nonisolated public func ensureAccess() async throws {
         let fileManager = FileManager.default
         let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
         
-        let hasAccess = (try? fileManager.contentsOfDirectory(atPath: trashURL.path)) != nil
-        if hasAccess { return }
+        if hasAccess() { return }
+        if loadBookmark() { return }
         
         Logger.trash.info("No Trash access — requesting via NSOpenPanel")
         
@@ -104,17 +102,73 @@ public actor TrashManager {
             panel.allowsMultipleSelection = false
             
             let response = panel.runModal()
-            if response != .OK {
+            if response == .OK, let url = panel.url {
+                self.saveBookmark(for: url)
+            } else if response != .OK {
                 Logger.trash.error("User denied Trash access via NSOpenPanel")
                 throw TrashError.trashOperationFailed("Permission to access Trash was denied.")
             }
         }
         
-        let granted = (try? fileManager.contentsOfDirectory(atPath: trashURL.path)) != nil
+        let granted = hasAccess()
         if !granted {
             Logger.trash.error("Trash access still not available after NSOpenPanel confirmation")
             throw TrashError.trashOperationFailed("Permission to access Trash was not granted.")
         }
         Logger.trash.info("Trash access granted")
+    }
+    
+    nonisolated public func requestTrashAccess() async throws {
+        try await ensureAccess()
+    }
+    
+    nonisolated private func hasAccess() -> Bool {
+        let fileManager = FileManager.default
+        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        return (try? fileManager.contentsOfDirectory(atPath: trashURL.path)) != nil
+    }
+    
+    nonisolated private func saveBookmark(for url: URL) {
+        do {
+            let bookmarkData = try url.bookmarkData(
+                options: .withSecurityScope,
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            UserDefaults.standard.set(bookmarkData, forKey: bookmarkKey)
+            Logger.trash.info("Saved security-scoped bookmark for Trash")
+        } catch {
+            Logger.trash.error("Failed to save bookmark: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+    
+    nonisolated private func loadBookmark() -> Bool {
+        guard let bookmarkData = UserDefaults.standard.data(forKey: bookmarkKey) else {
+            return false
+        }
+        
+        var isStale = false
+        do {
+            let url = try URL(
+                resolvingBookmarkData: bookmarkData,
+                options: .withSecurityScope,
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            )
+            
+            if isStale {
+                UserDefaults.standard.removeObject(forKey: bookmarkKey)
+                Logger.trash.warning("Stale bookmark detected, will re-request access")
+                return false
+            }
+            
+            let _ = url.startAccessingSecurityScopedResource()
+            Logger.trash.info("Successfully loaded security-scoped bookmark for Trash")
+            return true
+        } catch {
+            Logger.trash.error("Failed to load bookmark: \(error.localizedDescription, privacy: .public)")
+            UserDefaults.standard.removeObject(forKey: bookmarkKey)
+            return false
+        }
     }
 }

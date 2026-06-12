@@ -16,6 +16,8 @@ targets:
       - Models
       - State
       - Resources
+    entitlements:
+      path: MacOSCleaner.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
@@ -26,6 +28,8 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches."
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 MacOSCleaner. All rights reserved."
 
   MacOSCleanerTests:
     type: bundle.unit-test

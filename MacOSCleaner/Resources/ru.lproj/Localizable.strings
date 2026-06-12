@@ -207,3 +207,26 @@
 "processes_whitelist_title" = "Вайтлист";
 "processes_whitelist_placeholder" = "Имя процесса для защиты...";
 "add" = "Добавить";
+
+// Permissions
+"permissions_title" = "Требуются разрешения";
+"permissions_subtitle" = "MacOSCleaner нужен доступ к системным папкам для очистки.";
+"permissions_fda_description" = "Необходим для доступа к ~/Library/Caches, ~/Library/Application Support и другим системным папкам.";
+"permissions_instructions_title" = "Как предоставить Full Disk Access:";
+"permissions_step1" = "Нажмите 'Открыть System Settings' ниже.";
+"permissions_step2" = "Найдите MacOSCleaner в списке.";
+"permissions_step3" = "Включите переключатель.";
+"permissions_step4" = "Вернитесь в MacOSCleaner и нажмите 'Проверить статус'.";
+"permissions_open_settings" = "Открыть System Settings";
+"permissions_check_status" = "Проверить статус";
+"permissions_dismiss_temp" = "Пропустить";
+"permissions_dismiss_permanent" = "Больше не показывать";
+"permissions_status_granted" = "Предоставлено";
+"permissions_status_required" = "Требуется";
+"permissions_window_title" = "Разрешения";
+
+// Settings Permissions
+"settings_permissions" = "Разрешения";
+"settings_fda_description" = "Необходим для очистки системных кэшей и данных приложений.";
+"settings_open_settings" = "Открыть настройки";
+"settings_check_permissions" = "Проверить разрешения";
