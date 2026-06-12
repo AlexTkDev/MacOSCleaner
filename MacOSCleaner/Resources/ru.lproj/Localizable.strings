@@ -195,6 +195,13 @@
 "processes_scan_failed" = "Ошибка сканирования";
 "processes_manage_blacklist" = "Управление блэклистом";
 "processes_manage_whitelist" = "Управление вайтлистом";
+"processes_tooltip_blacklist" = "Процессы, которые можно всегда убить — добавьте тяжёлые приложения вроде Docker или OrbStack";
+"processes_tooltip_whitelist" = "Процессы, которые нельзя убить — защитите критичные приложения от случайного завершения";
+"processes_tooltip_refresh" = "Обновить список запущенных процессов";
+"processes_section_user" = "Ваши процессы";
+"processes_section_system" = "Системные процессы";
+"processes_badge_blacklist" = "Блэклист (%lld)";
+"processes_badge_whitelist" = "Вайтлист (%lld)";
 "processes_blacklist_title" = "Блэклист";
 "processes_blacklist_placeholder" = "Имя процесса для блокировки...";
 "processes_whitelist_title" = "Вайтлист";

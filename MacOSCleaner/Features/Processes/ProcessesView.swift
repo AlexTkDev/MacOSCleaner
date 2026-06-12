@@ -107,20 +107,32 @@ public struct ProcessesView: View {
             Button(action: {
                 viewModel.showBlacklistAlert = true
             }) {
-                Image(systemName: "xmark.circle")
-                    .font(.system(size: 14, weight: .semibold))
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 14, weight: .semibold))
+                    if !viewModel.blacklist.isEmpty {
+                        Text("\(viewModel.blacklist.count)")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                }
             }
             .buttonStyle(.bordered)
-            .help("processes_manage_blacklist".localized)
+            .help("processes_tooltip_blacklist".localized)
 
             Button(action: {
                 viewModel.showWhitelistAlert = true
             }) {
-                Image(systemName: "lock.circle")
-                    .font(.system(size: 14, weight: .semibold))
+                HStack(spacing: 4) {
+                    Image(systemName: "lock.circle")
+                        .font(.system(size: 14, weight: .semibold))
+                    if !viewModel.whitelist.isEmpty {
+                        Text("\(viewModel.whitelist.count)")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                }
             }
             .buttonStyle(.bordered)
-            .help("processes_manage_whitelist".localized)
+            .help("processes_tooltip_whitelist".localized)
 
             Button(action: {
                 Task { await viewModel.scan() }
@@ -129,7 +141,7 @@ public struct ProcessesView: View {
                     .font(.system(size: 14, weight: .semibold))
             }
             .buttonStyle(.bordered)
-            .help("processes_refresh".localized)
+            .help("processes_tooltip_refresh".localized)
         }
         .padding()
         .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
@@ -150,18 +162,53 @@ public struct ProcessesView: View {
     private var processList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.filteredProcesses) { process in
-                    ProcessRow(
-                        process: process,
-                        permission: viewModel.checkPermission(process),
-                        onTerminate: { viewModel.confirmKill = process },
-                        onForceKill: { viewModel.confirmForceKill = process }
-                    )
+                if !viewModel.userProcesses.isEmpty {
+                    sectionHeader("processes_section_user".localized, count: viewModel.userProcesses.count)
+                    ForEach(viewModel.userProcesses) { process in
+                        processRow(process)
+                        Divider()
+                    }
+                }
+
+                if !viewModel.userProcesses.isEmpty && !viewModel.systemProcesses.isEmpty {
                     Divider()
+                        .padding(.horizontal)
+                }
+
+                if !viewModel.systemProcesses.isEmpty {
+                    sectionHeader("processes_section_system".localized, count: viewModel.systemProcesses.count)
+                    ForEach(viewModel.systemProcesses) { process in
+                        processRow(process)
+                        Divider()
+                    }
                 }
             }
             .padding(.horizontal)
         }
+    }
+
+    private func sectionHeader(_ title: String, count: Int) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            Spacer()
+            Text("\(count)")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
+    }
+
+    private func processRow(_ process: RunningProcess) -> some View {
+        ProcessRow(
+            process: process,
+            permission: viewModel.checkPermission(process),
+            onTerminate: { viewModel.confirmKill = process },
+            onForceKill: { viewModel.confirmForceKill = process }
+        )
     }
 
     private var emptyView: some View {
@@ -218,6 +265,11 @@ public struct ProcessesView: View {
             Text("processes_blacklist_title".localized)
                 .font(.headline)
 
+            Text("processes_tooltip_blacklist".localized)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
             HStack {
                 TextField("processes_blacklist_placeholder".localized, text: $viewModel.newBlacklistEntry)
                     .textFieldStyle(.roundedBorder)
@@ -251,13 +303,18 @@ public struct ProcessesView: View {
             .buttonStyle(.borderedProminent)
         }
         .padding()
-        .frame(width: 400, height: 350)
+        .frame(width: 420, height: 380)
     }
 
     private var whitelistSheet: some View {
         VStack(spacing: 16) {
             Text("processes_whitelist_title".localized)
                 .font(.headline)
+
+            Text("processes_tooltip_whitelist".localized)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
 
             HStack {
                 TextField("processes_whitelist_placeholder".localized, text: $viewModel.newWhitelistEntry)
@@ -292,7 +349,7 @@ public struct ProcessesView: View {
             .buttonStyle(.borderedProminent)
         }
         .padding()
-        .frame(width: 400, height: 350)
+        .frame(width: 420, height: 380)
     }
 }
 

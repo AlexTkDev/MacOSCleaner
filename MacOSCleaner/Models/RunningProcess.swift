@@ -15,6 +15,13 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         self.user = user
     }
 
+    public var isUserProcess: Bool {
+        guard let user else { return false }
+        let currentUser = ProcessInfo.processInfo.environment["USER"]
+            ?? String(cString: getenv("USER"))
+        return user == currentUser
+    }
+
     public static func == (lhs: RunningProcess, rhs: RunningProcess) -> Bool {
         lhs.pid == rhs.pid
     }

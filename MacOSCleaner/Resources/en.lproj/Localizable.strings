@@ -196,6 +196,13 @@
 "processes_scan_failed" = "Scan Failed";
 "processes_manage_blacklist" = "Manage blacklist";
 "processes_manage_whitelist" = "Manage whitelist";
+"processes_tooltip_blacklist" = "Processes you can always kill — add heavy apps like Docker or OrbStack here";
+"processes_tooltip_whitelist" = "Processes that can never be killed — protect critical apps from accidental termination";
+"processes_tooltip_refresh" = "Refresh the list of running processes";
+"processes_section_user" = "Your Processes";
+"processes_section_system" = "System Processes";
+"processes_badge_blacklist" = "Blacklist (%lld)";
+"processes_badge_whitelist" = "Whitelist (%lld)";
 "processes_blacklist_title" = "Blacklist";
 "processes_blacklist_placeholder" = "Process name to block...";
 "processes_whitelist_title" = "Whitelist";

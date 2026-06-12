@@ -196,6 +196,13 @@
 "processes_scan_failed" = "Помилка сканування";
 "processes_manage_blacklist" = "Керування блеклістом";
 "processes_manage_whitelist" = "Керування вайтлістом";
+"processes_tooltip_blacklist" = "Процеси, які можна завжди вбити — додайте важкі додатки на кшталт Docker або OrbStack";
+"processes_tooltip_whitelist" = "Процеси, які не можна вбити — захистіть критичні додатки від випадкового завершення";
+"processes_tooltip_refresh" = "Оновити список запущених процесів";
+"processes_section_user" = "Ваші процеси";
+"processes_section_system" = "Системні процеси";
+"processes_badge_blacklist" = "Блекліст (%lld)";
+"processes_badge_whitelist" = "Вайтліст (%lld)";
 "processes_blacklist_title" = "Блекліст";
 "processes_blacklist_placeholder" = "Ім'я процесу для блокування...";
 "processes_whitelist_title" = "Вайтліст";

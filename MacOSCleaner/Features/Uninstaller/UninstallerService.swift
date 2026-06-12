@@ -95,6 +95,10 @@ public actor UninstallerService {
             }
         }
         
+        // Find developer build products (Xcode DerivedData, Flutter build dirs)
+        let devBuildApps = await scanDeveloperBuildProducts()
+        allAppURLsBuilder.append(contentsOf: devBuildApps.map(\.url))
+        
         let allAppURLs = Array(Set(allAppURLsBuilder)) // Remove duplicates
         
         await MainActor.run {
@@ -130,6 +134,80 @@ public actor UninstallerService {
             
             return apps.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         }
+    }
+
+    private func scanDeveloperBuildProducts() async -> [AppInfo] {
+        guard let home = ProcessInfo.processInfo.environment["HOME"] else { return [] }
+        
+        var devApps: [AppInfo] = []
+        
+        // 1. Scan Xcode DerivedData for build products
+        let derivedDataPath = "\(home)/Library/Developer/Xcode/DerivedData"
+        do {
+            let result = try await commandRunner.run(
+                command: "/usr/bin/find",
+                arguments: [derivedDataPath, "-maxdepth", "5", "-name", "*.app", "-type", "d", "-prune"]
+            )
+            let paths = result.stdout.components(separatedBy: .newlines)
+            for path in paths where !path.isEmpty {
+                let url = URL(fileURLWithPath: path)
+                // Skip if already found in standard app dirs
+                if url.path.contains("/Applications/") || url.path.contains("/Application Support/") {
+                    continue
+                }
+                if let scanned = try? await scan(appURL: url) {
+                    devApps.append(scanned)
+                }
+            }
+        } catch {
+            Logger.uninstaller.warning("Failed to scan DerivedData: \(error.localizedDescription, privacy: .public)")
+        }
+        
+        // 2. Scan Flutter project build directories (common locations)
+        let flutterPaths = [
+            "\(home)/Documents",
+            "\(home)/Desktop",
+            "\(home)/Projects",
+            "\(home)/Development",
+            "\(home)/dev",
+            "\(home)/repos"
+        ]
+        
+        for basePath in flutterPaths {
+            guard fileManager.fileExists(atPath: basePath) else { continue }
+            do {
+                // Find flutter project build dirs with .app products
+                let result = try await commandRunner.run(
+                    command: "/usr/bin/find",
+                    arguments: [basePath, "-maxdepth", "5", "-path", "*/build/ios/iphoneos/*.app", "-type", "d", "-prune"]
+                )
+                let paths = result.stdout.components(separatedBy: .newlines)
+                for path in paths where !path.isEmpty {
+                    let url = URL(fileURLWithPath: path)
+                    if let scanned = try? await scan(appURL: url) {
+                        devApps.append(scanned)
+                    }
+                }
+                
+                // Also find macOS Flutter build products
+                let macResult = try await commandRunner.run(
+                    command: "/usr/bin/find",
+                    arguments: [basePath, "-maxdepth", "5", "-path", "*/build/macos/Build/Products/*/*.app", "-type", "d", "-prune"]
+                )
+                let macPaths = macResult.stdout.components(separatedBy: .newlines)
+                for path in macPaths where !path.isEmpty {
+                    let url = URL(fileURLWithPath: path)
+                    if let scanned = try? await scan(appURL: url) {
+                        devApps.append(scanned)
+                    }
+                }
+            } catch {
+                // Skip directories we can't access
+                continue
+            }
+        }
+        
+        return devApps
     }
 
     public func scan(appURL: URL) async throws -> AppInfo {
@@ -172,6 +250,11 @@ public actor UninstallerService {
             "~/Library/Application Scripts",
             "~/Library/HTTPStorages",
             "~/Library/WebKit",
+            "~/Library/Developer/Xcode",
+            "~/Library/Developer/CoreSimulator",
+            "~/Library/Caches/CocoaPods",
+            "~/Library/Caches/com.apple.dt.Xcode",
+            "~/Library/Caches/org.swift.swiftpm",
             "/Library/Application Support",
             "/Library/Caches",
             "/Library/LaunchAgents",
@@ -241,6 +324,50 @@ public actor UninstallerService {
                             }
                         }
                     }
+                }
+            }
+        }
+        
+        // Pass 4: Developer build product specific related files
+        // If app is inside DerivedData, add the project folder and dev caches
+        if let home = ProcessInfo.processInfo.environment["HOME"] {
+            let derivedDataPath = "\(home)/Library/Developer/Xcode/DerivedData"
+            if appURL.path.hasPrefix(derivedDataPath + "/") {
+                // Find the project folder in DerivedData (e.g., DerivedData/ProjectName-xyz/)
+                let pathAfterDerived = String(appURL.path.dropFirst(derivedDataPath.count + 1))
+                if let firstComponent = pathAfterDerived.components(separatedBy: "/").first {
+                    let projectFolder = URL(fileURLWithPath: derivedDataPath).appendingPathComponent(firstComponent)
+                    if fileManager.fileExists(atPath: projectFolder.path) {
+                        relatedURLs.insert(projectFolder)
+                    }
+                }
+                
+                // Add common Xcode dev caches
+                let devCachePaths = [
+                    "\(home)/Library/Caches/CocoaPods",
+                    "\(home)/Library/Caches/com.apple.dt.Xcode",
+                    "\(home)/Library/Caches/org.swift.swiftpm"
+                ]
+                for cachePath in devCachePaths {
+                    let cacheURL = URL(fileURLWithPath: cachePath)
+                    if fileManager.fileExists(atPath: cachePath) {
+                        relatedURLs.insert(cacheURL)
+                    }
+                }
+            }
+            
+            // If app is in a Flutter project build dir, add the build folder
+            let flutterBuildPatterns = ["/build/ios/iphoneos/", "/build/macos/Build/Products/"]
+            for pattern in flutterBuildPatterns {
+                if appURL.path.contains(pattern) {
+                    // Find the project root (go up from build/)
+                    var projectRoot = appURL.deletingLastPathComponent() // Products/
+                    projectRoot = projectRoot.deletingLastPathComponent() // Build/
+                    projectRoot = projectRoot.deletingLastPathComponent() // build/
+                    if fileManager.fileExists(atPath: projectRoot.path) {
+                        relatedURLs.insert(projectRoot)
+                    }
+                    break
                 }
             }
         }
@@ -350,6 +477,14 @@ public actor UninstallerService {
         if lowerName.contains("cleaner") || lowerID.contains("cleaner") {
             extra.append("macoscleaner")
         }
+        
+        // Developer build artifact patterns
+        extra.append(contentsOf: [
+            "DerivedData", "Build", "Products", "Intermediates",
+            "Pods", "Podfile", "CocoaPods",
+            ".dart_tool", "build", "flutter",
+            "SwiftPM", "swiftpm", "Package.resolved"
+        ])
         
         return extra
     }

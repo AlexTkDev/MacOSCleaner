@@ -27,12 +27,30 @@ public final class ProcessesViewModel {
     )
 
     public var filteredProcesses: [RunningProcess] {
-        guard !searchText.isEmpty else { return processes }
-        let query = searchText.lowercased()
-        return processes.filter {
-            $0.name.lowercased().contains(query) ||
-            $0.path?.lowercased().contains(query) == true
+        let result: [RunningProcess]
+        if searchText.isEmpty {
+            result = processes
+        } else {
+            let query = searchText.lowercased()
+            result = processes.filter {
+                $0.name.lowercased().contains(query) ||
+                $0.path?.lowercased().contains(query) == true
+            }
         }
+        return result.sorted { a, b in
+            if a.isUserProcess != b.isUserProcess {
+                return a.isUserProcess
+            }
+            return a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
+        }
+    }
+
+    public var userProcesses: [RunningProcess] {
+        filteredProcesses.filter { $0.isUserProcess }
+    }
+
+    public var systemProcesses: [RunningProcess] {
+        filteredProcesses.filter { !$0.isUserProcess }
     }
 
     public init(processManager: ProcessManager = ProcessManager()) {
