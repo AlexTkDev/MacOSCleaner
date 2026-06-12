@@ -86,13 +86,13 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
 /// - Graceful cancellation via Task
 /// - Safety checks via SafetyManager
 public actor CleanupEngine {
-    private let commandRunner: CommandRunner
+    private let commandRunner: any CommandRunning
     private let safetyManager: SafetyManager
     private let timeouts: CleanupTimeouts
     private let fm = FileManager.default
 
     public init(
-        commandRunner: CommandRunner = CommandRunner(),
+        commandRunner: any CommandRunning = CommandRunner(),
         safetyManager: SafetyManager = SafetyManager(),
         timeouts: CleanupTimeouts = .default
     ) {
@@ -1068,11 +1068,4 @@ extension CleanupEngine {
     }
 }
 
-// MARK: - CommandRunner Extension
 
-private extension CommandRunner {
-    func commandExists(_ command: String) async -> Bool {
-        let result = try? await run(command: "/bin/bash", arguments: ["-c", "command -v \(command) 2>/dev/null"])
-        return result?.exitCode == 0
-    }
-}

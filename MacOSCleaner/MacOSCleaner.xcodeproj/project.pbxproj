@@ -22,6 +22,11 @@
 		370555A1E46A82B05D6374B0 /* CleanupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16400AE1862B76A844B01CFC /* CleanupView.swift */; };
 		3A9F6B68130F3DAF5916234B /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8526E6E523335A441DE17858 /* AppSettingsTests.swift */; };
 		4BC8DDBA6B51777F46BC4BA0 /* CommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1DD590DCE0D34A3129D242 /* CommandRunner.swift */; };
+		AA000001AAAA0001AA000001 /* CommandRunning.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA0001AA000002 /* CommandRunning.swift */; };
+		AA000002AAAA0001AA000001 /* MockCommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002AAAA0001AA000002 /* MockCommandRunner.swift */; };
+		BB000001BBBB0001BB000001 /* RetryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000001BBBB0001BB000002 /* RetryPolicy.swift */; };
+		BB000002BBBB0001BB000001 /* CleanupIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002BBBB0001BB000002 /* CleanupIntegrationTests.swift */; };
+		BB000003BBBB0001BB000001 /* RetryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003BBBB0001BB000002 /* RetryPolicyTests.swift */; };
 		4E95B67B22946FA1B8D60565 /* StartupServicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12280699D34818A47785336 /* StartupServicesView.swift */; };
 		4EB7F53ABB85EDB76E342E2B /* ProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C7373D2284E648D835B122 /* ProcessManager.swift */; };
 		4F36E18C78A15EADBF60C039 /* FileManager+Size.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EEF9CB2BE762A51083464F /* FileManager+Size.swift */; };
@@ -118,6 +123,11 @@
 		779BE716C48F3D16DAB0257D /* MacOSCleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacOSCleaner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78EEF9CB2BE762A51083464F /* FileManager+Size.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+Size.swift"; sourceTree = "<group>"; };
 		7B1DD590DCE0D34A3129D242 /* CommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunner.swift; sourceTree = "<group>"; };
+		AA000001AAAA0001AA000002 /* CommandRunning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunning.swift; sourceTree = "<group>"; };
+		AA000002AAAA0001AA000002 /* MockCommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCommandRunner.swift; sourceTree = "<group>"; };
+		BB000001BBBB0001BB000002 /* RetryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryPolicy.swift; sourceTree = "<group>"; };
+		BB000002BBBB0001BB000002 /* CleanupIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupIntegrationTests.swift; sourceTree = "<group>"; };
+		BB000003BBBB0001BB000002 /* RetryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryPolicyTests.swift; sourceTree = "<group>"; };
 		817EB9AE4524A850962213CB /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		82BA7708FC54410A6643A7E2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		8526E6E523335A441DE17858 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
@@ -223,6 +233,9 @@
 				966FFAFDB46A9A4BD17A38C0 /* FileScannerTests.swift */,
 				4C881B157A7F5ACBF84D7E64 /* LanguageManagerTests.swift */,
 				B8F86A55A2FB7771CD468CEC /* LaunchServiceManagerTests.swift */,
+				AA000002AAAA0001AA000002 /* MockCommandRunner.swift */,
+				BB000002BBBB0001BB000002 /* CleanupIntegrationTests.swift */,
+				BB000003BBBB0001BB000002 /* RetryPolicyTests.swift */,
 				36158099B9A85FFD8B5536BA /* SafetyManagerTests.swift */,
 				9CADD66050743885E1AD3FBF /* ShellCleanupAdapterTests.swift */,
 				0BB6DE85A7D910E1F0424CEF /* TransactionJournalTests.swift */,
@@ -344,6 +357,8 @@
 			isa = PBXGroup;
 			children = (
 				7B1DD590DCE0D34A3129D242 /* CommandRunner.swift */,
+				AA000001AAAA0001AA000002 /* CommandRunning.swift */,
+				BB000001BBBB0001BB000002 /* RetryPolicy.swift */,
 				78EEF9CB2BE762A51083464F /* FileManager+Size.swift */,
 				91A11C06D6D12353C59E09EF /* FileScanner.swift */,
 				08402BF5E1C6101310B2B476 /* LanguageManager.swift */,
@@ -491,6 +506,9 @@
 			files = (
 				3A9F6B68130F3DAF5916234B /* AppSettingsTests.swift in Sources */,
 				546A45B9B4E4879BAD95CB97 /* CleanupEngineTests.swift in Sources */,
+				AA000002AAAA0001AA000001 /* MockCommandRunner.swift in Sources */,
+				BB000002BBBB0001BB000001 /* CleanupIntegrationTests.swift in Sources */,
+				BB000003BBBB0001BB000001 /* RetryPolicyTests.swift in Sources */,
 				1BC98E1954D1AFBBCC49050D /* CleanupStateMachineTests.swift in Sources */,
 				775D5D2C093A529875939FC9 /* CommandRunnerTests.swift in Sources */,
 				977AD64777E29D8DE44620DD /* DashboardViewModelTests.swift in Sources */,
@@ -522,6 +540,8 @@
 				370555A1E46A82B05D6374B0 /* CleanupView.swift in Sources */,
 				5665E32E91F5C6C213D3AAEA /* CleanupViewModel.swift in Sources */,
 				4BC8DDBA6B51777F46BC4BA0 /* CommandRunner.swift in Sources */,
+				AA000001AAAA0001AA000001 /* CommandRunning.swift in Sources */,
+				BB000001BBBB0001BB000001 /* RetryPolicy.swift in Sources */,
 				BE3FBA22FA22D8E3A69F5A34 /* DashboardView.swift in Sources */,
 				9655F1D4887A095D052C9271 /* DashboardViewModel.swift in Sources */,
 				4F36E18C78A15EADBF60C039 /* FileManager+Size.swift in Sources */,
