@@ -17,6 +17,7 @@
 "menu_dashboard" = "Огляд";
 "menu_cleanup" = "Очищення";
 "menu_startup_services" = "Автозапуск";
+"menu_startup_vendors" = "Вендори автозапуску";
 "menu_uninstaller" = "Деінсталятор";
 "menu_settings" = "Налаштування";
 
@@ -59,14 +60,17 @@
 "settings_notifications" = "Сповіщення";
 "settings_tooltips" = "Підказки";
 "settings_auto_scan" = "Автосканування при запуску";
-"settings_cleanup" = "Очищення";
-"settings_empty_trash" = "Очищати Смітник при скануванні";
-"settings_uninstaller" = "Деінсталятор";
-"settings_bypass_trash" = "Видаляти файли назавжди в деінсталяторі";
+"settings_processes" = "Процеси";
+"settings_refresh_interval" = "Інтервал оновлення";
+"settings_sort_by" = "Сортування";
+"settings_startup" = "Автозапуск";
+"settings_trash_deletion" = "Смітник і видалення";
+"settings_empty_trash_during_cleanup" = "Очищати Смітник при очищенні";
+"settings_bypass_trash_on_uninstall" = "Обходити Смітник при видаленні";
+"settings_empty_trash_immediately" = "Одразу очищати Смітник";
 "settings_advanced" = "Додатково";
 "settings_show_related" = "Показувати пов'язані файли в деінсталяторі";
-"settings_empty_trash_immediately" = "Одразу очищати Смітник";
-"settings_skip_expert" = "Пропускать Експертний режим у деінсталяторі";
+"settings_skip_expert" = "Пропускати Експертний режим у деінсталяторі";
 "settings_data" = "Дані";
 "settings_forget_everything" = "Скинути всі дані";
 "settings_forget_description" = "Очистити всі збережені дані та відновити налаштування за замовчуванням.";
@@ -78,6 +82,8 @@
 "settings_tooltip_notifications" = "Показувати системні сповіщення після завершення сканування та очищення.";
 "settings_tooltip_tooltips" = "Показувати спливаючі підказки при наведенні на елементи інтерфейсу.";
 "settings_tooltip_auto_scan" = "Автоматично починати сканування для очищення при запуску додатка.";
+"settings_tooltip_refresh_interval" = "Як часто оновлювати список процесів. «Вручну» вимикає автоматичне оновлення.";
+"settings_tooltip_sort_by" = "Порядок сортування списку процесів за замовчуванням.";
 "settings_tooltip_empty_trash" = "Якщо увімкнено, системний Смітник буде очищено в процесі сканування. Вимкнено за замовчуванням задля безпеки.";
 "settings_tooltip_bypass_trash" = "При видаленні додатка та його пов'язаних файлів видаляти їх безповоротно, минаючи Смітник. УВАГА: Ця дія є незворотною.";
 "settings_tooltip_show_related" = "Відображати список пов'язаних файлів (кеші, налаштування, логи) для кожного додатка у вікні деінсталятора.";
@@ -89,6 +95,9 @@
 "settings_reset_confirm_title" = "Скинути всі налаштування?";
 "settings_reset_confirm_button" = "Скинути все";
 "settings_reset_confirm_message" = "Це призведе до очищення всіх збережених даних і скидання всіх налаштувань до значень за замовчуванням. Цю дію не можна скасувати.";
+
+// Trash & Deletion Warning
+"settings_trash_warning" = "Ці налаштування роблять видалення незворотним. Файли, що обходять Смітник або видаляються з нього одразу, відновити неможливо.";
 
 // Startup Services View
 "startup_title" = "Автозапуск";
@@ -233,3 +242,15 @@
 
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "РОЗРОБ";
+
+// Refresh Interval (Settings -> Processes)
+"refresh_manual" = "Вручну";
+"refresh_5s" = "Кожні 5 секунд";
+"refresh_10s" = "Кожні 10 секунд";
+"refresh_30s" = "Кожні 30 секунд";
+
+// Sort By (Settings -> Processes)
+"sort_cpu" = "CPU";
+"sort_memory" = "Пам'ять";
+"sort_name" = "Ім'я";
+"sort_threads" = "К-сть потоків";

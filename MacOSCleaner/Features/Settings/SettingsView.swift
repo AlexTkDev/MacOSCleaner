@@ -17,11 +17,11 @@ struct SettingsView: View {
                 Divider().padding(.vertical, 16)
                 generalSection
                 Divider().padding(.vertical, 16)
-                cleanupSection
+                processesSection
                 Divider().padding(.vertical, 16)
-                startupVendorsSection
+                startupSection
                 Divider().padding(.vertical, 16)
-                uninstallerSection
+                trashDeletionSection
                 Divider().padding(.vertical, 16)
                 advancedSection
                 Divider().padding(.vertical, 16)
@@ -118,7 +118,7 @@ struct SettingsView: View {
             ) {
                 Picker("", selection: $settings.language) {
                     ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.rawValue).tag(lang)
+                        Text(lang.displayName).tag(lang)
                     }
                 }
                 .labelsHidden()
@@ -159,14 +159,68 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Cleanup
+    // MARK: - Processes
 
-    private var cleanupSection: some View {
+    private var processesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "settings_cleanup".localized, icon: "sparkles")
+            sectionHeader(title: "settings_processes".localized, icon: "cpu")
+
+            settingRow(
+                title: "settings_refresh_interval".localized,
+                tooltip: "settings_tooltip_refresh_interval".localized
+            ) {
+                Picker("", selection: $settings.processRefreshInterval) {
+                    ForEach(RefreshInterval.allCases) { interval in
+                        Text(interval.localizedName).tag(interval)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 160)
+            }
+
+            settingRow(
+                title: "settings_sort_by".localized,
+                tooltip: "settings_tooltip_sort_by".localized
+            ) {
+                Picker("", selection: $settings.processSortOption) {
+                    ForEach(ProcessSortOption.allCases) { option in
+                        Text(option.localizedName).tag(option)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 160)
+            }
+        }
+    }
+
+    // MARK: - Startup
+
+    private var startupSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(title: "settings_startup".localized, icon: "bolt.horizontal.circle")
+            StartupVendorSettingsView()
+        }
+    }
+
+    // MARK: - Trash & Deletion
+
+    private var trashDeletionSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(title: "settings_trash_deletion".localized, icon: "trash")
+
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.orange)
+                Text("settings_trash_warning".localized)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .background(Color.orange.opacity(0.1))
+            .cornerRadius(8)
 
             settingToggle(
-                title: "settings_empty_trash".localized,
+                title: "settings_empty_trash_during_cleanup".localized,
                 isOn: $settings.emptyTrashDuringCleanup,
                 tooltip: "settings_tooltip_empty_trash".localized
             )
@@ -181,28 +235,17 @@ struct SettingsView: View {
                     }
                 }
             }
-        }
-    }
-
-    // MARK: - Startup Vendors
-
-    private var startupVendorsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "settings_startup_vendors".localized, icon: "bolt.horizontal.circle")
-            StartupVendorSettingsView()
-        }
-    }
-
-    // MARK: - Uninstaller
-
-    private var uninstallerSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "settings_uninstaller".localized, icon: "trash")
 
             settingToggle(
-                title: "settings_bypass_trash".localized,
+                title: "settings_bypass_trash_on_uninstall".localized,
                 isOn: $settings.bypassTrashOnUninstall,
                 tooltip: "settings_tooltip_bypass_trash".localized
+            )
+
+            settingToggle(
+                title: "settings_empty_trash_immediately".localized,
+                isOn: $settings.emptyTrashImmediately,
+                tooltip: "settings_tooltip_empty_trash_immediately".localized
             )
         }
     }
@@ -217,12 +260,6 @@ struct SettingsView: View {
                 title: "settings_show_related".localized,
                 isOn: $settings.showRelatedFiles,
                 tooltip: "settings_tooltip_show_related".localized
-            )
-
-            settingToggle(
-                title: "settings_empty_trash_immediately".localized,
-                isOn: $settings.emptyTrashImmediately,
-                tooltip: "settings_tooltip_empty_trash_immediately".localized
             )
 
             settingToggle(

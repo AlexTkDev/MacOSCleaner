@@ -17,6 +17,7 @@
 "menu_dashboard" = "Dashboard";
 "menu_cleanup" = "Cleanup";
 "menu_startup_services" = "Startup Services";
+"menu_startup_vendors" = "Startup Vendors";
 "menu_uninstaller" = "Uninstaller";
 "menu_settings" = "Settings";
 
@@ -59,13 +60,16 @@
 "settings_notifications" = "Notifications";
 "settings_tooltips" = "Tooltips";
 "settings_auto_scan" = "Automatic Scan on Startup";
-"settings_cleanup" = "Cleanup";
-"settings_empty_trash" = "Empty Recycle Bin During Scan";
-"settings_uninstaller" = "Uninstaller";
-"settings_bypass_trash" = "Bypass Recycle Bin on Uninstall";
+"settings_processes" = "Processes";
+"settings_refresh_interval" = "Refresh Interval";
+"settings_sort_by" = "Sort By";
+"settings_startup" = "Startup";
+"settings_trash_deletion" = "Trash & Deletion";
+"settings_empty_trash_during_cleanup" = "Empty Trash During Cleanup";
+"settings_bypass_trash_on_uninstall" = "Bypass Trash on Uninstall";
+"settings_empty_trash_immediately" = "Empty Trash Immediately";
 "settings_advanced" = "Advanced";
 "settings_show_related" = "Show Associated Files in Uninstaller";
-"settings_empty_trash_immediately" = "Empty Recycle Bin Immediately";
 "settings_skip_expert" = "Skip Expert Mode in Uninstaller";
 "settings_data" = "Data";
 "settings_forget_everything" = "Forget Everything";
@@ -78,10 +82,12 @@
 "settings_tooltip_notifications" = "Display system notifications when scans and cleanup operations complete.";
 "settings_tooltip_tooltips" = "Show helpful tooltip descriptions when hovering over interface elements.";
 "settings_tooltip_auto_scan" = "Automatically begin scanning for cleanup items when the application launches.";
-"settings_tooltip_empty_trash" = "When enabled, the system Recycle Bin will be emptied as part of the cleanup scan process. Disabled by default for safety.";
-"settings_tooltip_bypass_trash" = "When uninstalling an app and its associated files, permanently delete them instead of moving to the Recycle Bin. WARNING: This makes uninstallation irreversible.";
+"settings_tooltip_refresh_interval" = "How often to refresh the process list. Manual disables automatic refresh.";
+"settings_tooltip_sort_by" = "Default sort order for the process list.";
+"settings_tooltip_empty_trash" = "When enabled, the system Trash will be emptied as part of the cleanup scan process. Disabled by default for safety.";
+"settings_tooltip_bypass_trash" = "When uninstalling an app and its associated files, permanently delete them instead of moving to the Trash. WARNING: This makes uninstallation irreversible.";
 "settings_tooltip_show_related" = "Display the list of associated files (caches, preferences, logs) found for each application in the Uninstaller view.";
-"settings_tooltip_empty_trash_immediately" = "After moving items to the Recycle Bin, immediately empty it. This makes the cleanup operation irreversible.";
+"settings_tooltip_empty_trash_immediately" = "After moving items to the Trash, immediately empty it. This makes the cleanup operation irreversible.";
 "settings_tooltip_skip_expert" = "Skip the Expert Mode file selection step and immediately uninstall applications with all associated files selected.";
 "settings_tooltip_forget" = "Remove all saved preferences and restore factory defaults.";
 
@@ -89,6 +95,9 @@
 "settings_reset_confirm_title" = "Reset All Settings?";
 "settings_reset_confirm_button" = "Reset All";
 "settings_reset_confirm_message" = "This will clear all saved data and reset every setting to its default value. This action cannot be undone.";
+
+// Trash & Deletion Warning
+"settings_trash_warning" = "These settings make deletion irreversible. Files bypassing or immediately emptied from the Trash cannot be recovered.";
 
 // Startup Services View
 "startup_title" = "Startup Services";
@@ -259,3 +268,15 @@
 
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "DEV";
+
+// Refresh Interval (Settings -> Processes)
+"refresh_manual" = "Manual";
+"refresh_5s" = "Every 5 seconds";
+"refresh_10s" = "Every 10 seconds";
+"refresh_30s" = "Every 30 seconds";
+
+// Sort By (Settings -> Processes)
+"sort_cpu" = "CPU Usage";
+"sort_memory" = "Memory Usage";
+"sort_name" = "Name";
+"sort_threads" = "Thread Count";

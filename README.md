@@ -94,10 +94,120 @@ open MacOSCleaner.xcodeproj
 # Cmd+R to run, Cmd+U to run tests
 ```
 
-**Ad-hoc signing** (for local use without a developer account):
+---
+
+## Building a Distributable .app
+
+To create a standalone `.app` bundle you can share with others (no Xcode required on their end):
+
+### Option 1: Using Xcode (Recommended)
+
+1. Open the project in Xcode:
+   ```bash
+   cd MacOSCleaner
+   xcodegen
+   open MacOSCleaner.xcodeproj
+   ```
+
+2. In Xcode:
+   - Select **Product → Archive** (or `Cmd+Shift+Cmd+A`)
+   - Wait for archiving to complete → **Distribute App** → **Copy App**
+   - Choose a destination folder
+
+3. The resulting `MacOSCleaner.app` is ready to share
+
+### Option 2: Command Line (CI-friendly)
+
 ```bash
-codesign --force --deep --sign - "/Applications/MacOSCleaner.app"
+cd MacOSCleaner
+xcodegen
+
+# Build Release configuration
+xcodebuild -project MacOSCleaner.xcodeproj \
+  -scheme MacOSCleaner \
+  -configuration Release \
+  -derivedDataPath build \
+  -archivePath build/MacOSCleaner.xcarchive \
+  archive
+
+# Export .app from archive
+xcodebuild -exportArchive \
+  -archivePath build/MacOSCleaner.xcarchive \
+  -exportPath build/Export \
+  -exportOptionsPlist ExportOptions.plist
 ```
+
+Create `ExportOptions.plist` in the `MacOSCleaner` folder:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>mac-application</string>
+    <key>destination</key>
+    <string>export</string>
+    <key>signingStyle</key>
+    <string>automatic</string>
+</dict>
+</plist>
+```
+
+The `.app` will be at `build/Export/MacOSCleaner.app`.
+
+### Option 3: Quick Debug Build (for testing)
+
+```bash
+cd MacOSCleaner
+xcodebuild -project MacOSCleaner.xcodeproj \
+  -scheme MacOSCleaner \
+  -configuration Debug \
+  -derivedDataPath build
+```
+
+The app will be at `build/Build/Products/Debug/MacOSCleaner.app`.
+
+---
+
+### Code Signing for Distribution
+
+**Without Apple Developer ID** (ad-hoc, for local testing only):
+```bash
+codesign --force --deep --sign - "/path/to/MacOSCleaner.app"
+```
+⚠️ Gatekeeper will block this on other Macs unless they right-click → Open.
+
+**With Apple Developer ID** (recommended for sharing):
+```bash
+codesign --force --deep --options runtime \
+  --sign "Developer ID Application: Your Name (TEAM_ID)" \
+  "/path/to/MacOSCleaner.app"
+
+# Notarize (required for macOS 10.15+)
+xcrun notarytool submit "/path/to/MacOSCleaner.app" \
+  --apple-id "your@email.com" \
+  --team-id "TEAM_ID" \
+  --password "app-specific-password" \
+  --wait
+
+# Staple notarization ticket
+xcrun stapler staple "/path/to/MacOSCleaner.app"
+```
+
+---
+
+### Verify the Build
+
+```bash
+# Check code signature
+codesign --verify --deep --strict --verbose=2 "/path/to/MacOSCleaner.app"
+
+# Check notarization
+spctl --assess --type execute --verbose "/path/to/MacOSCleaner.app"
+```
+
+---
 
 **Logs:** open `Console.app` and filter by subsystem `com.alextkdev.macos-cleaner`.
 

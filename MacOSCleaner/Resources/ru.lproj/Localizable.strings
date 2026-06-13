@@ -16,6 +16,7 @@
 "menu_dashboard" = "Обзор";
 "menu_cleanup" = "Очистка";
 "menu_startup_services" = "Автозапуск";
+"menu_startup_vendors" = "Вендоры автозапуска";
 "menu_uninstaller" = "Деинсталлятор";
 "menu_settings" = "Настройки";
 
@@ -58,13 +59,16 @@
 "settings_notifications" = "Уведомления";
 "settings_tooltips" = "Подсказки";
 "settings_auto_scan" = "Автосканирование при запуске";
-"settings_cleanup" = "Очистка";
-"settings_empty_trash" = "Очищать Корзину при сканировании";
-"settings_uninstaller" = "Деинсталлятор";
-"settings_bypass_trash" = "Удалять файлы навсегда в деинсталляторе";
+"settings_processes" = "Процессы";
+"settings_refresh_interval" = "Интервал обновления";
+"settings_sort_by" = "Сортировка";
+"settings_startup" = "Автозапуск";
+"settings_trash_deletion" = "Корзина и удаление";
+"settings_empty_trash_during_cleanup" = "Очищать Корзину при очистке";
+"settings_bypass_trash_on_uninstall" = "Обходить Корзину при удалении";
+"settings_empty_trash_immediately" = "Сразу же очищать Корзину";
 "settings_advanced" = "Дополнительно";
 "settings_show_related" = "Показывать связанные файлы в деинсталляторе";
-"settings_empty_trash_immediately" = "Сразу же очищать Корзину";
 "settings_skip_expert" = "Пропускать Экспертный режим в деинсталляторе";
 "settings_data" = "Данные";
 "settings_forget_everything" = "Сбросить все данные";
@@ -77,6 +81,8 @@
 "settings_tooltip_notifications" = "Показывать системные уведомления по завершении сканирования и очистки.";
 "settings_tooltip_tooltips" = "Показывать всплывающие подсказки при наведении на элементы интерфейса.";
 "settings_tooltip_auto_scan" = "Автоматически начинать сканирование для очистки при запуске приложения.";
+"settings_tooltip_refresh_interval" = "Как часто обновлять список процессов. «Вручную» отключает автоматическое обновление.";
+"settings_tooltip_sort_by" = "Порядок сортировки списка процессов по умолчанию.";
 "settings_tooltip_empty_trash" = "Если включено, системная Корзина будет очищена в процессе сканирования. Отключено по умолчанию для безопасности.";
 "settings_tooltip_bypass_trash" = "При удалении приложения и его связанных файлов удалять их безвозвратно, минуя Корзину. ВНИМАНИЕ: Это действие необратимо.";
 "settings_tooltip_show_related" = "Отображать список связанных файлов (кэши, настройки, логи) для каждого приложения в окне деинсталлятора.";
@@ -88,6 +94,9 @@
 "settings_reset_confirm_title" = "Сбросить все настройки?";
 "settings_reset_confirm_button" = "Сбросить всё";
 "settings_reset_confirm_message" = "Это приведет к очистке всех сохраненных данных и сбросу всех настроек до значений по умолчанию. Это действие нельзя отменить.";
+
+// Trash & Deletion Warning
+"settings_trash_warning" = "Эти настройки делают удаление необратимым. Файлы, обходящие Корзину или удаляемые из неё сразу, восстановить нельзя.";
 
 // Startup Services View
 "startup_title" = "Автозапуск";
@@ -258,3 +267,15 @@
 
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "РАЗРАБ";
+
+// Refresh Interval (Settings -> Processes)
+"refresh_manual" = "Вручную";
+"refresh_5s" = "Каждые 5 секунд";
+"refresh_10s" = "Каждые 10 секунд";
+"refresh_30s" = "Каждые 30 секунд";
+
+// Sort By (Settings -> Processes)
+"sort_cpu" = "Загрузка CPU";
+"sort_memory" = "Использование памяти";
+"sort_name" = "Имя";
+"sort_threads" = "Кол-во потоков";
