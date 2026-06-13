@@ -102,6 +102,32 @@
 "startup_disable" = "Отключить";
 "startup_enable" = "Включить";
 
+// Startup Categories
+"startup_category_user" = "Мои сервисы";
+"startup_category_third_party" = "Сторонние";
+"startup_category_system" = "Системные";
+
+// Startup Filters
+"startup_filter_all" = "Все";
+
+// Startup Category Help
+"startup_help_user" = "Пользовательский сервис из ~/Library/. Безопасно отключать.";
+"startup_help_third_party" = "Сторонний сервис из /Library/. Можно отключать с осторожностью.";
+"startup_help_system" = "Системный сервис Apple. Не рекомендуется отключать.";
+
+// Startup Vendor Settings
+"settings_startup_vendors" = "Системные вендоры";
+"startup_vendors_title" = "Системные вендоры";
+"startup_vendors_description" = "Префиксы лейблов, которые считаются системными сервисами.";
+"startup_vendors_description_sub" = "Сервисы с такими префиксами помечаются как 'Системные' и не рекомендуются к отключению.";
+"startup_vendors_current" = "Текущие префиксы";
+"startup_vendors_reset" = "Сбросить";
+"startup_vendors_empty" = "Нет добавленных префиксов";
+"startup_vendors_protected" = "Защищён";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Префикс должен содержать точку";
+"startup_vendors_error_duplicate" = "Такой префикс уже существует";
+
 // Cleanup View
 "cleanup_scanning" = "Сканирование системы...";
 "cleanup_clean" = "Система чиста";

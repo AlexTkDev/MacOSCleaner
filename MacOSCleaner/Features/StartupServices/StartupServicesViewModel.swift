@@ -4,15 +4,33 @@ import Observation
 @Observable
 public final class StartupServicesViewModel {
     private let manager: LaunchServiceManager
-    
+
     public var services: [StartupService] = []
     public var isLoading: Bool = false
     public var lastError: String? = nil
-    
+    public var filter: ServiceCategory? = nil
+
+    public var filteredServices: [StartupService] {
+        guard let filter else { return services }
+        return services.filter { $0.category == filter }
+    }
+
+    public var userCount: Int {
+        services.filter { $0.category == .user }.count
+    }
+
+    public var thirdPartyCount: Int {
+        services.filter { $0.category == .thirdParty }.count
+    }
+
+    public var systemCount: Int {
+        services.filter { $0.category == .system }.count
+    }
+
     public init(manager: LaunchServiceManager = LaunchServiceManager()) {
         self.manager = manager
     }
-    
+
     @MainActor
     public func scan() async {
         isLoading = true
@@ -24,7 +42,7 @@ public final class StartupServicesViewModel {
         }
         isLoading = false
     }
-    
+
     @MainActor
     public func toggle(service: StartupService) async {
         lastError = nil
@@ -34,7 +52,6 @@ public final class StartupServicesViewModel {
             } else {
                 try await manager.enable(service: service)
             }
-            // Refresh to get actual state from launchctl
             services = try await manager.scan()
         } catch {
             lastError = error.localizedDescription

@@ -19,6 +19,8 @@ struct SettingsView: View {
                 Divider().padding(.vertical, 16)
                 cleanupSection
                 Divider().padding(.vertical, 16)
+                startupVendorsSection
+                Divider().padding(.vertical, 16)
                 uninstallerSection
                 Divider().padding(.vertical, 16)
                 advancedSection
@@ -179,6 +181,15 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - Startup Vendors
+
+    private var startupVendorsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(title: "settings_startup_vendors".localized, icon: "bolt.horizontal.circle")
+            StartupVendorSettingsView()
         }
     }
 

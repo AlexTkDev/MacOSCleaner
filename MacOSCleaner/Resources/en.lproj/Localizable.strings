@@ -103,6 +103,32 @@
 "startup_disable" = "Disable";
 "startup_enable" = "Enable";
 
+// Startup Categories
+"startup_category_user" = "My Services";
+"startup_category_third_party" = "Third-party";
+"startup_category_system" = "System";
+
+// Startup Filters
+"startup_filter_all" = "All";
+
+// Startup Category Help
+"startup_help_user" = "User service from ~/Library/. Safe to disable.";
+"startup_help_third_party" = "Third-party service from /Library/. Can be disabled with caution.";
+"startup_help_system" = "Apple system service. Not recommended to disable.";
+
+// Startup Vendor Settings
+"settings_startup_vendors" = "System Vendors";
+"startup_vendors_title" = "System Vendors";
+"startup_vendors_description" = "Label prefixes considered as system services.";
+"startup_vendors_description_sub" = "Services with these prefixes are marked as 'System' and not recommended to disable.";
+"startup_vendors_current" = "Current Prefixes";
+"startup_vendors_reset" = "Reset";
+"startup_vendors_empty" = "No prefixes added";
+"startup_vendors_protected" = "Protected";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Prefix must contain a dot";
+"startup_vendors_error_duplicate" = "This prefix already exists";
+
 // Cleanup View
 "cleanup_scanning" = "Scanning System...";
 "cleanup_clean" = "System is Clean";
