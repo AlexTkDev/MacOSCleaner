@@ -77,6 +77,13 @@
 
 // Settings Tooltips
 "settings_tooltip_language" = "Выберите язык интерфейса приложения.";
+
+// Notification Status
+"settings_notifications_status" = "Статус уведомлений";
+"settings_notifications_granted" = "Разрешено";
+"settings_notifications_denied" = "Запрещено (открыть Настройки)";
+"settings_notifications_not_determined" = "Не запрашивалось";
+"settings_open_notification_settings" = "Открыть настройки уведомлений";
 "settings_tooltip_theme" = "Выберите тему оформления приложения. 'Системная' соответствует настройкам macOS.";
 "settings_tooltip_notifications" = "Показывать системные уведомления по завершении сканирования и очистки.";
 "settings_tooltip_tooltips" = "Показывать всплывающие подсказки при наведении на элементы интерфейса.";

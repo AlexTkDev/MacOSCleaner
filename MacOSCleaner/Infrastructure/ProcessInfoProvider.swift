@@ -128,7 +128,11 @@ public actor ProcessInfoProvider {
             pid, PROC_PIDTASKINFO, 0,
             &info, Int32(MemoryLayout<proc_taskinfo>.size)
         )
-        return size == Int32(MemoryLayout<proc_taskinfo>.size) ? info : nil
+        if size != Int32(MemoryLayout<proc_taskinfo>.size) {
+            logger.debug("proc_pidinfo(PROC_PIDTASKINFO) failed for pid \(pid): size=\(size)")
+            return nil
+        }
+        return info
     }
 
     private func getBSDInfo(for pid: pid_t) -> proc_bsdinfo? {
@@ -137,7 +141,11 @@ public actor ProcessInfoProvider {
             pid, PROC_PIDTBSDINFO, 0,
             &info, Int32(MemoryLayout<proc_bsdinfo>.size)
         )
-        return size == Int32(MemoryLayout<proc_bsdinfo>.size) ? info : nil
+        if size != Int32(MemoryLayout<proc_bsdinfo>.size) {
+            logger.debug("proc_pidinfo(PROC_PIDTBSDINFO) failed for pid \(pid): size=\(size)")
+            return nil
+        }
+        return info
     }
 
     private func getBundleID(for path: String) -> String? {

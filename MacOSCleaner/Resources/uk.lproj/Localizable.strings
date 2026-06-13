@@ -78,6 +78,13 @@
 
 // Settings Tooltips
 "settings_tooltip_language" = "Виберіть мову інтерфейсу додатка.";
+
+// Notification Status
+"settings_notifications_status" = "Статус сповіщень";
+"settings_notifications_granted" = "Дозволено";
+"settings_notifications_denied" = "Заборонено (відкрити Налаштування)";
+"settings_notifications_not_determined" = "Не запитувалося";
+"settings_open_notification_settings" = "Відкрити налаштування сповіщень";
 "settings_tooltip_theme" = "Виберіть тему оформлення додатка. 'Системна' відповідає налаштуванням macOS.";
 "settings_tooltip_notifications" = "Показувати системні сповіщення після завершення сканування та очищення.";
 "settings_tooltip_tooltips" = "Показувати спливаючі підказки при наведенні на елементи інтерфейсу.";

@@ -187,7 +187,7 @@ public final class AppSettings {
         let lang = AppLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .english
         self.language = lang
         self.theme = AppTheme(rawValue: defaults.string(forKey: Keys.theme) ?? "") ?? .system
-        self.showNotifications = defaults.object(forKey: Keys.showNotifications) as? Bool ?? true
+        self.showNotifications = defaults.object(forKey: Keys.showNotifications) as? Bool ?? false
         self.showTooltips = defaults.object(forKey: Keys.showTooltips) as? Bool ?? true
         self.autoScanOnStartup = defaults.bool(forKey: Keys.autoScanOnStartup)
         self.emptyTrashDuringCleanup = defaults.bool(forKey: Keys.emptyTrashDuringCleanup)
@@ -221,7 +221,7 @@ public final class AppSettings {
 
         language = .english
         theme = .system
-        showNotifications = true
+        showNotifications = false
         showTooltips = true
         autoScanOnStartup = false
         emptyTrashDuringCleanup = false

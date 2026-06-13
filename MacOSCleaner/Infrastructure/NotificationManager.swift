@@ -1,5 +1,6 @@
 import UserNotifications
 import OSLog
+import AppKit
 
 @MainActor
 final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
@@ -20,6 +21,17 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
             } else {
                 self.logger.info("Notification authorization granted: \(granted)")
             }
+        }
+    }
+    
+    func checkAuthorizationStatus() async -> UNAuthorizationStatus {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        return settings.authorizationStatus
+    }
+    
+    func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications?id=\(Bundle.main.bundleIdentifier ?? "input.MacOSCleaner")") {
+            NSWorkspace.shared.open(url)
         }
     }
     

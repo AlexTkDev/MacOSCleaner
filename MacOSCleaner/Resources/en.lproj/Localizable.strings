@@ -78,6 +78,13 @@
 
 // Settings Tooltips
 "settings_tooltip_language" = "Select the interface language for the application.";
+
+// Notification Status
+"settings_notifications_status" = "Notification Status";
+"settings_notifications_granted" = "Allowed";
+"settings_notifications_denied" = "Denied (open System Settings)";
+"settings_notifications_not_determined" = "Not requested";
+"settings_open_notification_settings" = "Open Notification Settings";
 "settings_tooltip_theme" = "Choose the visual appearance of the application. System follows your macOS settings.";
 "settings_tooltip_notifications" = "Display system notifications when scans and cleanup operations complete.";
 "settings_tooltip_tooltips" = "Show helpful tooltip descriptions when hovering over interface elements.";

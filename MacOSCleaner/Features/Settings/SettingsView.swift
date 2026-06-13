@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @Bindable var settings: AppSettings
@@ -6,6 +7,7 @@ struct SettingsView: View {
     let onForget: () -> Void
     @State private var showResetConfirmation = false
     @State private var trashManager = TrashManager()
+    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     var body: some View {
         ScrollView {
@@ -144,6 +146,16 @@ struct SettingsView: View {
                 isOn: $settings.showNotifications,
                 tooltip: "settings_tooltip_notifications".localized
             )
+
+            if settings.showNotifications {
+                notificationStatusView
+                    .onAppear {
+                        updateNotificationStatus()
+                    }
+                    .onChange(of: settings.showNotifications) { _, _ in
+                        updateNotificationStatus()
+                    }
+            }
 
             settingToggle(
                 title: "settings_tooltips".localized,
@@ -304,6 +316,68 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.red.opacity(0.15), lineWidth: 1)
             )
+        }
+    }
+
+    // MARK: - Notification Status
+
+    private var notificationStatusView: some View {
+        HStack {
+            Text("settings_notifications_status".localized)
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            Spacer()
+
+            HStack(spacing: 8) {
+                statusBadge
+
+                if notificationStatus == .denied {
+                    Button("settings_open_notification_settings".localized) {
+                        NotificationManager.shared.openNotificationSettings()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
+    }
+
+    private var statusBadge: some View {
+        Group {
+            switch notificationStatus {
+            case .authorized:
+                Label("settings_notifications_granted".localized, systemImage: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+            case .denied:
+                Label("settings_notifications_denied".localized, systemImage: "xmark.circle.fill")
+                    .foregroundColor(.red)
+            case .notDetermined:
+                Label("settings_notifications_not_determined".localized, systemImage: "questionmark.circle.fill")
+                    .foregroundColor(.orange)
+            case .provisional:
+                Label("Provisional", systemImage: "exclamationmark.circle.fill")
+                    .foregroundColor(.orange)
+            case .ephemeral:
+                Label("Ephemeral", systemImage: "exclamationmark.circle.fill")
+                    .foregroundColor(.orange)
+            @unknown default:
+                Label("Unknown", systemImage: "questionmark.circle.fill")
+                    .foregroundColor(.gray)
+            }
+        }
+        .font(.caption)
+        .labelStyle(.titleAndIcon)
+    }
+
+    private func updateNotificationStatus() {
+        Task {
+            let status = await NotificationManager.shared.checkAuthorizationStatus()
+            await MainActor.run {
+                notificationStatus = status
+            }
         }
     }
 

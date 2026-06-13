@@ -36,7 +36,7 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings()
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(settings.theme, .system)
-        XCTAssertTrue(settings.showNotifications)
+        XCTAssertFalse(settings.showNotifications)
         XCTAssertTrue(settings.showTooltips)
         XCTAssertFalse(settings.autoScanOnStartup)
         XCTAssertFalse(settings.emptyTrashDuringCleanup)
@@ -98,7 +98,7 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(settings.theme, .system)
-        XCTAssertTrue(settings.showNotifications)
+        XCTAssertFalse(settings.showNotifications)
         XCTAssertTrue(settings.showTooltips)
         XCTAssertFalse(settings.autoScanOnStartup)
         XCTAssertFalse(settings.emptyTrashDuringCleanup)

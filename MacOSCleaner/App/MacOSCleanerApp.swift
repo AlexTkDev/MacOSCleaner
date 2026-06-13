@@ -2,6 +2,9 @@ import SwiftUI
 
 @main
 struct MacOSCleanerApp: App {
+    // Note: AppIntents/linkd errors (com.apple.linkd.autoShortcut connection failures)
+    // are expected system noise on some macOS versions. They cannot be fixed in app code
+    // as they originate from the system's AppIntents framework initialization.
     @Environment(\.openWindow) private var openWindow
     
     private let commandRunner = CommandRunner()
