@@ -50,7 +50,7 @@ struct UninstallerView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         List(filteredApps, selection: $selectedApp) { app in
-                            AppRowView(app: app, formatter: formatter)
+                            AppRowView(app: app, formatter: formatter, showRelatedFiles: settings.showRelatedFiles)
                                 .tag(app)
                         }
                         .listStyle(.inset)
@@ -378,6 +378,7 @@ struct UninstallerView: View {
 struct AppRowView: View {
     let app: UninstallerService.AppInfo
     let formatter: ByteCountFormatter
+    let showRelatedFiles: Bool
     
     var body: some View {
         HStack(spacing: 12) {
@@ -395,7 +396,7 @@ struct AppRowView: View {
                 Text(app.name)
                     .font(.body)
                     .fontWeight(.medium)
-                Text(formatter.string(fromByteCount: app.totalSize))
+                Text(formatter.string(fromByteCount: showRelatedFiles ? app.totalSize : app.size))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

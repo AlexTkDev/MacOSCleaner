@@ -48,9 +48,6 @@ public final class CleanupStateMachine {
     }
     
     private func isValidTransition(from: CleanupState, to: CleanupState) -> Bool {
-        // Сброс в idle возможен из любого состояния
-        if to == .idle { return true }
-        
         // Ошибка или отмена возможны из активных состояний
         if to == .failed || to == .cancelled {
             return from == .scanning || from == .executing || from == .preview
@@ -64,6 +61,14 @@ public final class CleanupStateMachine {
         case (.preview, .executing):
             return true
         case (.executing, .completed):
+            return true
+        case (.preview, .scanning):
+            return true
+        case (.completed, .scanning):
+            return true
+        case (.failed, .scanning):
+            return true
+        case (.cancelled, .scanning):
             return true
         default:
             return false

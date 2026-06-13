@@ -59,8 +59,8 @@ final class CleanupEngineTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file1.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: file2.path))
 
-        let freed = try await engine.cleanContents(of: tempDir.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(freed, 0)
+        let result = try await engine.cleanContents(of: tempDir.path, dryRun: false)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
 
         XCTAssertFalse(FileManager.default.fileExists(atPath: file1.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: file2.path))
@@ -74,8 +74,8 @@ final class CleanupEngineTests: XCTestCase {
         let file = tempDir.appendingPathComponent("cache.dat")
         try "cachedata".write(to: file, atomically: true, encoding: .utf8)
 
-        let freed = try await engine.cleanContents(of: tempDir.path, dryRun: true)
-        XCTAssertGreaterThanOrEqual(freed, 0)
+        let result = try await engine.cleanContents(of: tempDir.path, dryRun: true)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
     }
 
@@ -93,8 +93,8 @@ final class CleanupEngineTests: XCTestCase {
         let file = subDir.appendingPathComponent("nested.txt")
         try "nested".write(to: file, atomically: true, encoding: .utf8)
 
-        let freed = try await engine.removeDirectory(tempDir.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(freed, 0)
+        let result = try await engine.removeDirectory(tempDir.path, dryRun: false)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
         XCTAssertFalse(FileManager.default.fileExists(atPath: tempDir.path))
     }
 
@@ -106,15 +106,15 @@ final class CleanupEngineTests: XCTestCase {
         let file = tempDir.appendingPathComponent("single.txt")
         try "content".write(to: file, atomically: true, encoding: .utf8)
 
-        let freed = try await engine.removeFile(file.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(freed, 0)
+        let result = try await engine.removeFile(file.path, dryRun: false)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 
     func testCleanContentsOnNonexistentPathReturnsZero() async throws {
         let engine = CleanupEngine()
-        let freed = try await engine.cleanContents(of: "/tmp/nonexistent_\(UUID().uuidString)", dryRun: false)
-        XCTAssertEqual(freed, 0)
+        let result = try await engine.cleanContents(of: "/tmp/nonexistent_\(UUID().uuidString)", dryRun: false)
+        XCTAssertEqual(result.freed, 0)
     }
 
     func testCleanOldFilesRemovesOlderThanDays() async throws {
@@ -130,8 +130,8 @@ final class CleanupEngineTests: XCTestCase {
         let oldAttrs: [FileAttributeKey: Any] = [.modificationDate: Date().addingTimeInterval(-86400 * 10)]
         try FileManager.default.setAttributes(oldAttrs, ofItemAtPath: oldFile.path)
 
-        let freed = try await engine.cleanOldFiles(in: tempDir.path, olderThanDays: 7, dryRun: false)
-        XCTAssertGreaterThanOrEqual(freed, 0)
+        let result = try await engine.cleanOldFiles(in: tempDir.path, olderThanDays: 7, dryRun: false)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
 
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldFile.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: newFile.path))
@@ -292,8 +292,8 @@ final class CleanupEngineTests: XCTestCase {
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
 
-        let results = try await engine.cleanContents(of: tempDir.path, dryRun: true)
-        XCTAssertGreaterThanOrEqual(results, 0)
+        let result = try await engine.cleanContents(of: tempDir.path, dryRun: true)
+        XCTAssertGreaterThanOrEqual(result.freed, 0)
     }
 
     func testTimeoutCancelsSlowOperation() async {
@@ -385,8 +385,8 @@ final class CleanupEngineTests: XCTestCase {
         try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: protectedDir.path)
 
         do {
-            let freed = try await engine.cleanContents(of: protectedDir.path, dryRun: false)
-            XCTAssertEqual(freed, 0)
+            let result = try await engine.cleanContents(of: protectedDir.path, dryRun: false)
+            XCTAssertEqual(result.freed, 0)
         } catch {
             XCTAssertTrue(error is CocoaError || (error as NSError).code == 257,
                           "Permission denied error should be caught: \(error)")
@@ -396,10 +396,11 @@ final class CleanupEngineTests: XCTestCase {
         cleanupTempDir(tempDir)
     }
 
-    func testRunReturnsEmptyForLargeFilesCategory() async throws {
+    func testRunReturnsLargeFilesCategory() async throws {
         let engine = CleanupEngine()
         let results = try await engine.run(categories: [.largeFiles], dryRun: true)
-        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.label, "Large files")
     }
 
     func testProgressCallbackInvoked() async throws {

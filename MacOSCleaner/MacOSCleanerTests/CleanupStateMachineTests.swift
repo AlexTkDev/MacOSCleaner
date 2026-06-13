@@ -41,12 +41,43 @@ final class CleanupStateMachineTests: XCTestCase {
         // idle -> completed (invalid)
         XCTAssertThrowsError(try stateMachine.transition(to: .completed))
         
-        // completed -> scanning (invalid, must reset to idle first)
+        // scanning -> idle (invalid, must use reset())
         try! stateMachine.transition(to: .scanning)
-        try! stateMachine.transition(to: .preview)
-        try! stateMachine.transition(to: .executing)
-        try! stateMachine.transition(to: .completed)
-        XCTAssertThrowsError(try stateMachine.transition(to: .scanning))
+        XCTAssertThrowsError(try stateMachine.transition(to: .idle))
+    }
+    
+    func testRescanTransitions() throws {
+        // preview -> scanning (valid for rescan)
+        try stateMachine.transition(to: .scanning)
+        try stateMachine.transition(to: .preview)
+        try stateMachine.transition(to: .scanning)
+        XCTAssertEqual(stateMachine.state, .scanning)
+        
+        stateMachine.reset()
+        
+        // completed -> scanning (valid for rescan)
+        try stateMachine.transition(to: .scanning)
+        try stateMachine.transition(to: .preview)
+        try stateMachine.transition(to: .executing)
+        try stateMachine.transition(to: .completed)
+        try stateMachine.transition(to: .scanning)
+        XCTAssertEqual(stateMachine.state, .scanning)
+        
+        stateMachine.reset()
+        
+        // failed -> scanning (valid for retry)
+        try stateMachine.transition(to: .scanning)
+        try stateMachine.transition(to: .failed)
+        try stateMachine.transition(to: .scanning)
+        XCTAssertEqual(stateMachine.state, .scanning)
+        
+        stateMachine.reset()
+        
+        // cancelled -> scanning (valid for retry)
+        try stateMachine.transition(to: .scanning)
+        try stateMachine.transition(to: .cancelled)
+        try stateMachine.transition(to: .scanning)
+        XCTAssertEqual(stateMachine.state, .scanning)
     }
     
     func testCancellation() throws {

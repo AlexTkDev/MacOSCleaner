@@ -65,9 +65,10 @@ struct RootView: View {
 #Preview {
     let journal = TransactionJournal()
     let settings = AppSettings()
+    let commandRunner = CommandRunner()
     RootView(
         cleanupViewModel: CleanupViewModel(
-            adapter: ShellCleanupAdapter(commandRunner: CommandRunner()),
+            engine: CleanupEngine(commandRunner: commandRunner),
             journal: journal,
             settings: settings
         ),

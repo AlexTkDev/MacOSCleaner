@@ -5,6 +5,7 @@ struct SettingsView: View {
     let permissionsManager: PermissionsManager
     let onForget: () -> Void
     @State private var showResetConfirmation = false
+    @State private var trashManager = TrashManager()
 
     var body: some View {
         ScrollView {
@@ -167,6 +168,17 @@ struct SettingsView: View {
                 isOn: $settings.emptyTrashDuringCleanup,
                 tooltip: "settings_tooltip_empty_trash".localized
             )
+            .onChange(of: settings.emptyTrashDuringCleanup) { _, newValue in
+                if newValue {
+                    Task {
+                        do {
+                            try await trashManager.requestTrashAccess()
+                        } catch {
+                            settings.emptyTrashDuringCleanup = false
+                        }
+                    }
+                }
+            }
         }
     }
 

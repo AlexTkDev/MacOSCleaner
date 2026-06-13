@@ -112,8 +112,6 @@
 "cleanup_ready" = "Ready to Clean";
 "cleanup_ready_sub" = "Scan your system to find safe-to-remove caches and temporary files.";
 "cleanup_additional_options" = "Additional Cleanup Options";
-"cleanup_option_dev_caches" = "Clean All Development Caches";
-"cleanup_option_dev_caches_sub" = "Clears Go, Maven, and project-specific build caches at once.";
 "cleanup_option_ds_store" = "Clean .DS_Store files";
 "cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";
 "cleanup_start_scan" = "Start Scan";
@@ -135,6 +133,7 @@
 "cleanup_recommended" = "Recommended for removal";
 "cleanup_deselect_all" = "Deselect All";
 "cleanup_select_all" = "Select All";
+"cleanup_show_all_count" = "Show all (%lld more)";
 "cleanup_debug_log" = "Debug Log (%lld lines)";
 
 // Cleanup Notifications
@@ -231,3 +230,6 @@
 "settings_fda_description" = "Required for cleaning system caches and application data.";
 "settings_open_settings" = "Open Settings";
 "settings_check_permissions" = "Check Permissions";
+
+// Cleanup Dev Badge
+"cleanup_dev_badge" = "DEV";

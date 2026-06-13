@@ -111,8 +111,6 @@
 "cleanup_ready" = "Готов к очистке";
 "cleanup_ready_sub" = "Просканируйте систему для поиска безопасных к удалению файлов кэша и временных файлов.";
 "cleanup_additional_options" = "Дополнительные параметры";
-"cleanup_option_dev_caches" = "Очистить кэши разработки";
-"cleanup_option_dev_caches_sub" = "Одновременно очищает кэши Go, Maven и кэши сборки конкретных проектов.";
 "cleanup_option_ds_store" = "Удалить файлы .DS_Store";
 "cleanup_option_ds_store_sub" = "Удаляет сгенерированные системой файлы метаданных из каталогов.";
 "cleanup_start_scan" = "Начать сканирование";
@@ -134,6 +132,7 @@
 "cleanup_recommended" = "Рекомендуется к удалению";
 "cleanup_deselect_all" = "Снять выделение";
 "cleanup_select_all" = "Выбрать все";
+"cleanup_show_all_count" = "Показать все (ещё %lld)";
 "cleanup_debug_log" = "Отладочный лог (%lld строк)";
 
 // Cleanup Notifications
@@ -230,3 +229,6 @@
 "settings_fda_description" = "Необходим для очистки системных кэшей и данных приложений.";
 "settings_open_settings" = "Открыть настройки";
 "settings_check_permissions" = "Проверить разрешения";
+
+// Cleanup Dev Badge
+"cleanup_dev_badge" = "РАЗРАБ";

@@ -136,6 +136,7 @@ public actor TrashManager {
                 relativeTo: nil
             )
             UserDefaults.standard.set(bookmarkData, forKey: bookmarkKey)
+            let _ = url.startAccessingSecurityScopedResource()
             Logger.trash.info("Saved security-scoped bookmark for Trash")
         } catch {
             Logger.trash.error("Failed to save bookmark: \(error.localizedDescription, privacy: .public)")

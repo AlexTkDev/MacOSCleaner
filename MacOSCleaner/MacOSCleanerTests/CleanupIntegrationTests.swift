@@ -37,8 +37,8 @@ final class CleanupIntegrationTests: XCTestCase {
 
         let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
 
-        let freed = try await engine.cleanContents(of: cacheDir.path, dryRun: false)
-        XCTAssertGreaterThan(freed, 0, "Should free some space")
+        let result = try await engine.cleanContents(of: cacheDir.path, dryRun: false)
+        XCTAssertGreaterThan(result.freed, 0, "Should free some space")
 
         XCTAssertFalse(FileManager.default.fileExists(atPath: file1.path),
                        "cache1.dat should be deleted after cleanup")

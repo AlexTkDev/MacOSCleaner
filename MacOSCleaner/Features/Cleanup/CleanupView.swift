@@ -5,7 +5,6 @@ public struct CleanupView: View {
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var logHeight: CGFloat = 160
-    @State private var expandedItems: Set<UUID> = []
     @Environment(\.colorScheme) private var colorScheme
     
     public init(viewModel: CleanupViewModel) {
@@ -104,12 +103,6 @@ public struct CleanupView: View {
                 Text("cleanup_additional_options".localized)
                     .font(.headline)
                     .padding(.bottom, 4)
-                
-                Toggle("cleanup_option_dev_caches".localized, isOn: $vm.options.cleanDevCaches)
-                Text("cleanup_option_dev_caches_sub".localized)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 20)
                 
                 Toggle("cleanup_option_ds_store".localized, isOn: $vm.options.cleanDSStore)
                 Text("cleanup_option_ds_store_sub".localized)
@@ -360,7 +353,6 @@ public struct CleanupView: View {
     }
     
     private var previewListView: some View {
-        @Bindable var vm = viewModel
         return VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -372,14 +364,14 @@ public struct CleanupView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                
+
                 Button(action: { viewModel.startScan() }) {
                     Label("cleanup_rescan".localized, systemImage: "arrow.clockwise")
                         .fontWeight(.medium)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
-                
+
                 Button(action: { viewModel.executeCleanup() }) {
                     Text("cleanup_now".localized)
                         .fontWeight(.bold)
@@ -391,11 +383,11 @@ public struct CleanupView: View {
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
-            
+
             Divider()
-            
+
             List {
-                Section(header: 
+                Section(header:
                     HStack {
                         Text("cleanup_recommended".localized)
                         Spacer()
@@ -407,33 +399,13 @@ public struct CleanupView: View {
                         .font(.caption)
                     }
                 ) {
-                    ForEach(viewModel.items) { item in
-                        rowView(for: item, isExpanded: expandedItems.contains(item.id)) {
-                            if !item.children.isEmpty {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    if expandedItems.contains(item.id) {
-                                        expandedItems.remove(item.id)
-                                    } else {
-                                        expandedItems.insert(item.id)
-                                    }
-                                }
-                            }
-                        }
-                        .listRowBackground(viewModel.selectedItemId == item.id ? Color.accentColor.opacity(0.1) : Color.clear)
-                        
-                        // Дети (показываем только если категория раскрыта)
-                        if !item.children.isEmpty && expandedItems.contains(item.id) {
-                            ForEach(item.children) { child in
-                                rowView(for: child, isExpanded: false, onToggleExpand: nil)
-                                    .padding(.leading, 24)
-                                    .listRowBackground(viewModel.selectedItemId == child.id ? Color.accentColor.opacity(0.1) : Color.clear)
-                            }
-                        }
+                    ForEach(viewModel.items) { category in
+                        categoryDisclosureGroup(for: category)
                     }
                 }
             }
             .listStyle(.inset)
-            
+
             if let selected = viewModel.selectedItem, let desc = selected.description {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -450,7 +422,7 @@ public struct CleanupView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    
+
                     Text(desc)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -466,13 +438,130 @@ public struct CleanupView: View {
                     alignment: .top
                 )
             }
-            
+
             if showLogs && !viewModel.scriptLogs.isEmpty {
                 Divider()
                 logPanel
                     .frame(maxWidth: .infinity)
             }
         }
+    }
+
+    // MARK: - Category Row
+
+    private func categoryRow(_ category: CleanupPreviewItem) -> some View {
+        HStack(spacing: 8) {
+            if category.isDeletable {
+                Image(systemName: category.isSelected ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 14))
+                    .foregroundColor(category.isSelected ? .accentColor : .secondary)
+                    .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewModel.toggleSelection(for: category.id)
+                    }
+            } else {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .frame(width: 20, height: 20)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(category.label)
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundColor(.primary)
+                    if isDevCategory(category.category) {
+                        devCacheBadge()
+                    }
+                }
+                riskBadge(for: category.risk)
+            }
+
+            Spacer()
+
+            Text("\(category.sizeMB) MB")
+                .font(.system(.body, design: .monospaced))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    // MARK: - Category DisclosureGroup
+
+    private func categoryDisclosureGroup(for category: CleanupPreviewItem) -> some View {
+        let isExpanded = viewModel.isExpanded(category.id)
+        return DisclosureGroup(isExpanded: Binding(
+            get: { isExpanded },
+            set: { _ in viewModel.toggleCategoryExpansion(category.id) }
+        )) {
+            ForEach(viewModel.visibleItems(for: category.id)) { item in
+                fileRow(item)
+                    .padding(.leading, 8)
+            }
+            if viewModel.hasMoreItems(category.id) {
+                Button {
+                    viewModel.showAllItems(category.id)
+                } label: {
+                    Text("cleanup_show_all_count \(viewModel.remainingCount(category.id))")
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
+                }
+                .padding(.leading, 32)
+                .padding(.vertical, 4)
+            }
+        } label: {
+            categoryRow(category)
+        }
+        .listRowBackground(
+            viewModel.selectedItemId == category.id
+                ? Color.accentColor.opacity(0.1)
+                : Color.clear
+        )
+    }
+
+    // MARK: - File Row
+
+    private func fileRow(_ item: CleanupPreviewItem) -> some View {
+        HStack(spacing: 8) {
+            if item.isDeletable {
+                Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 12))
+                    .foregroundColor(item.isSelected ? .accentColor : .secondary)
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewModel.toggleSelection(for: item.id)
+                    }
+            } else {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .frame(width: 18, height: 18)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.path ?? item.label)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+
+                if let date = item.modificationDate {
+                    Text(date.formatted(.dateTime.day().month().year()))
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
+
+            Text("\(item.sizeMB) MB")
+                .font(.system(.caption, design: .monospaced))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 2)
     }
     
     private func riskBadge(for risk: OperationRisk) -> some View {
@@ -492,6 +581,22 @@ public struct CleanupView: View {
         case .dangerous: return .red
         case .protected: return .secondary
         }
+    }
+
+    private func devCacheBadge() -> some View {
+        Text("cleanup_dev_badge".localized)
+            .font(.system(size: 9, weight: .bold))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.purple.opacity(0.15))
+            .foregroundColor(.purple)
+            .cornerRadius(4)
+    }
+
+    private func isDevCategory(_ category: String?) -> Bool {
+        guard let category else { return false }
+        return ["gradle_maven", "flutter_dart", "xcode", "android_caches",
+                "android_sdk", "ide_caches", "language_caches"].contains(category)
     }
     
     @ViewBuilder
@@ -634,69 +739,6 @@ public struct CleanupView: View {
         }
         .padding()
         .background(VisualEffectView(material: .titlebar, blendingMode: .withinWindow))
-    }
-    
-    private func rowView(
-        for item: CleanupPreviewItem,
-        isExpanded: Bool,
-        onToggleExpand: (() -> Void)? = nil
-    ) -> some View {
-        let isSelected = viewModel.selectedItemId == item.id
-        
-        return HStack(spacing: 8) {
-            // Чекбокс (отдельный тап-таргет)
-            if item.isDeletable {
-                Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 14))
-                    .foregroundColor(item.isSelected ? .accentColor : .secondary)
-                    .frame(width: 20, height: 20)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        viewModel.toggleSelection(for: item.id)
-                    }
-            } else {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .frame(width: 20, height: 20)
-            }
-            
-            // Основная часть строки (шеврон + текст + размер)
-            HStack(spacing: 8) {
-                if !item.children.isEmpty {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.secondary)
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .frame(width: 12)
-                        .onTapGesture {
-                            onToggleExpand?()
-                        }
-                } else {
-                    Spacer().frame(width: 12)
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.label)
-                        .font(.system(.subheadline, design: .monospaced))
-                        .foregroundColor(isSelected ? .accentColor : .primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    riskBadge(for: item.risk)
-                }
-                
-                Spacer()
-                
-                Text("\(item.sizeMB) MB")
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundColor(.secondary)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                viewModel.selectItem(item.id)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }
 

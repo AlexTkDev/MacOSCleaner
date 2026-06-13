@@ -255,16 +255,16 @@ public actor UninstallerService {
             "~/Library/Caches/CocoaPods",
             "~/Library/Caches/com.apple.dt.Xcode",
             "~/Library/Caches/org.swift.swiftpm",
+            "~/Library/Android",
+            "~/Library",
+            "~/Library/Developer",
+            "~/",
             "/Library/Application Support",
             "/Library/Caches",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
             "/Library/Preferences",
             "/Library/PrivilegedHelperTools",
-            "~/Library",
-            "~/Library/Developer",
-            "~/Library/Android",
-            "~/",
             "/tmp",
             "/private/tmp",
             "/usr/local/bin",
@@ -372,9 +372,19 @@ public actor UninstallerService {
             }
         }
         
+        // Deduplicate: remove parent URLs if a child URL is already in the set
+        let sortedURLs = relatedURLs.sorted { $0.path.count < $1.path.count }
+        var deduplicated = Set<URL>()
+        for url in sortedURLs {
+            let isChild = deduplicated.contains { url.path.hasPrefix($0.path + "/") }
+            if !isChild {
+                deduplicated.insert(url)
+            }
+        }
+        
         // Verification & Size Calculation
         var related: [RelatedFile] = []
-        for url in relatedURLs {
+        for url in deduplicated {
             // Safety check
             if (try? safetyManager.validate(url: url)) == nil { continue }
             if url.path == appURL.path || appURL.path.hasPrefix(url.path + "/") { continue }
@@ -478,13 +488,7 @@ public actor UninstallerService {
             extra.append("macoscleaner")
         }
         
-        // Developer build artifact patterns
-        extra.append(contentsOf: [
-            "DerivedData", "Build", "Products", "Intermediates",
-            "Pods", "Podfile", "CocoaPods",
-            ".dart_tool", "build", "flutter",
-            "SwiftPM", "swiftpm", "Package.resolved"
-        ])
+
         
         return extra
     }

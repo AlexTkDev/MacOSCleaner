@@ -114,3 +114,4 @@ GEMINI.md
 .antigravitycli
 build/
 PLAN.md
+macos-cache-cleanup.sh

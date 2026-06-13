@@ -20,7 +20,7 @@ public actor ProcessManager {
     public func listProcesses() async throws -> [RunningProcess] {
         let result = try await commandRunner.run(
             command: "/bin/ps",
-            arguments: ["-axo", "pid,comm,user,path"],
+            arguments: ["-axo", "pid,comm,user,args"],
             timeout: .seconds(10)
         )
 
@@ -177,7 +177,8 @@ public actor ProcessManager {
 
             let name = parts[1]
             let user = parts[2]
-            let path = parts.count >= 4 ? parts[3] : nil
+            let args = parts.count >= 4 ? parts[3...].joined(separator: " ") : ""
+            let path = args.components(separatedBy: " ").first
 
             processes.append(
                 RunningProcess(pid: pid, name: name, path: path, user: user)

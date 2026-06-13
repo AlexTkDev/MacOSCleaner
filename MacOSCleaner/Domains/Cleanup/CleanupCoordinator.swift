@@ -1,21 +1,23 @@
 import Foundation
 import Observation
 import OSLog
+import AppKit
 
 private extension Logger {
     static let coordinator = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "CleanupCoordinator")
 }
 
 @Observable
-public final class CleanupCoordinator {
+public final class CleanupCoordinator: @unchecked Sendable {
     private let stateMachine = CleanupStateMachine()
-    private let adapter: ShellCleanupAdapter
+    private let engine: CleanupEngine
     private let journal: TransactionJournal
     private let settings: AppSettings
     private let trashManager: TrashManager
     private let itemManager: CleanupItemManager
     private let notifier: CleanupNotifier
     private var currentTask: Task<Void, Never>?
+    private var currentCategory: String = ""
     
     public var state: CleanupState { stateMachine.state }
     public var currentStep: Int = 0
@@ -27,14 +29,14 @@ public final class CleanupCoordinator {
     public var scriptLogs: [String] = []
     
     public init(
-        adapter: ShellCleanupAdapter,
+        engine: CleanupEngine,
         journal: TransactionJournal,
         settings: AppSettings,
         trashManager: TrashManager = TrashManager(),
         itemManager: CleanupItemManager,
         notifier: CleanupNotifier = CleanupNotifier()
     ) {
-        self.adapter = adapter
+        self.engine = engine
         self.journal = journal
         self.settings = settings
         self.trashManager = trashManager
@@ -51,7 +53,7 @@ public final class CleanupCoordinator {
     }
     
     @MainActor
-    public func startScan(options: ShellCleanupAdapter.CleanupOptions) {
+    public func startScan(options: CleanupOptions) {
         currentTask?.cancel()
         currentTask = Task {
             do {
@@ -64,19 +66,12 @@ public final class CleanupCoordinator {
                 self.lastError = nil
                 self.scriptLogs = []
                 
-                let stream = self.adapter.runCleanup(scanOnly: true, options: options)
-                for try await event in stream {
-                    switch event {
-                    case .step(let current, let total, let title):
-                        self.currentStep = current
-                        self.totalSteps = total
-                        self.stepTitle = title
-                    case .preview(let label, let size, let deletable, let parentName, let description):
-                        Logger.coordinator.debug("Preview event: label=\(label, privacy: .public), size=\(size), parent=\(parentName ?? "none", privacy: .public), description=\(description ?? "none", privacy: .public)")
-                        self.itemManager.appendPreviewItem(label, size: size, deletable: deletable, parentName: parentName, description: description)
-                    case .log(let message):
-                        self.scriptLogs.append(message)
-                    case .result: break
+                let categories = options.scanCategories()
+                
+                _ = try await self.engine.scan(categories: categories) { [weak self] event in
+                    guard let self else { return }
+                    Task { @MainActor in
+                        self.handleEngineEvent(event)
                     }
                 }
                 
@@ -114,10 +109,13 @@ public final class CleanupCoordinator {
     }
     
     @MainActor
-    public func executeCleanup(options: ShellCleanupAdapter.CleanupOptions) {
+    public func executeCleanup(options: CleanupOptions) {
         currentTask?.cancel()
         currentTask = Task {
             do {
+                // Close running apps before cleanup
+                await self.closeRunningApps()
+
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedMB = 0
                 self.cleanedItems = []
@@ -132,24 +130,20 @@ public final class CleanupCoordinator {
                     try await self.trashManager.requestTrashAccess()
                 }
                 
-                let selectedPaths = self.itemManager.items.filter { $0.isSelected && $0.label != "trash_user_label".localized }.map { $0.label }
-                let stream = self.adapter.runCleanup(options: options, selectedPaths: selectedPaths)
+                let categories = options.categories()
                 var records: [OperationRecord] = []
                 
-                for try await event in stream {
-                    switch event {
-                    case .step(let current, let total, let title):
-                        self.currentStep = current
-                        self.totalSteps = total + (isTrashSelected ? 1 : 0)
-                        self.stepTitle = title
-                    case .result(let label, let freed):
-                        self.totalFreedMB += freed
-                        self.cleanedItems.append(CleanupResultItem(label: label, freedMB: freed))
-                        records.append(OperationRecord(id: UUID(), itemPath: label, status: "success", bytesFreed: Int64(freed * 1024 * 1024)))
-                    case .log(let message):
-                        self.scriptLogs.append(message)
-                    case .preview: break
+                let results = try await self.engine.run(categories: categories, dryRun: false) { [weak self] event in
+                    guard let self else { return }
+                    Task { @MainActor in
+                        self.handleEngineEvent(event)
                     }
+                }
+                
+                for result in results {
+                    self.totalFreedMB += result.freedMB
+                    self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB))
+                    records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: Int64(result.freedMB * 1024 * 1024)))
                 }
                 
                 if isTrashSelected {
@@ -194,5 +188,51 @@ public final class CleanupCoordinator {
         stepTitle = ""
         lastError = nil
         scriptLogs = []
+    }
+
+    @MainActor
+    private func closeRunningApps() async {
+        let appsToClose = NSWorkspace.shared.runningApplications.filter { app in
+            app.activationPolicy == .regular &&
+            app.bundleIdentifier != Bundle.main.bundleIdentifier &&
+            !(app.bundleIdentifier ?? "").hasPrefix("com.apple.")
+        }
+
+        for app in appsToClose {
+            app.terminate()
+        }
+
+        try? await Task.sleep(for: .seconds(3))
+
+        for app in appsToClose {
+            app.forceTerminate()
+        }
+    }
+    
+    @MainActor
+    private func handleEngineEvent(_ event: CleanupEngineEvent) {
+        switch event {
+        case .step(let current, let total, let title):
+            self.currentStep = current
+            self.totalSteps = total
+            self.stepTitle = title
+            // Extract category name from step title (e.g., "Xcode" from "Xcode")
+            self.currentCategory = title
+        case .preview(let label, let sizeMB, let deletable, let parentName, let description):
+            Logger.coordinator.debug("Preview event: label=\(label, privacy: .public), size=\(sizeMB), parent=\(parentName ?? "none", privacy: .public), description=\(description ?? "none", privacy: .public)")
+            self.itemManager.appendPreviewItem(label, size: sizeMB, deletable: deletable, parentName: parentName, description: description)
+        case .result(let label, let freedMB):
+            Logger.coordinator.debug("Result event: label=\(label, privacy: .public), freed=\(freedMB)")
+            if freedMB > 0 {
+                // Use currentCategory as parent to group file items under it
+                self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: self.currentCategory, description: nil)
+            }
+        case .log(let message):
+            self.scriptLogs.append(message)
+        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
+            // Use currentCategory as parent to ensure all items in this step group together
+            let effectiveParent = parentName ?? self.currentCategory
+            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: category, parentName: effectiveParent)
+        }
     }
 }

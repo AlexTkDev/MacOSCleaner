@@ -14,7 +14,22 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 **Dashboard** — disk usage chart, system info (model, CPU, RAM, OS version), cleanup history and statistics.
 
-**Smart Cleanup** — scans and removes user caches, app logs, Xcode DerivedData, Android Studio caches, Go/Maven build artifacts, Homebrew cache, and `.DS_Store` files. You pick what to delete, then confirm. Architecture: `CleanupCoordinator` orchestrates the scan/cleanup flow, `CleanupItemManager` manages the item tree and selection, `CleanupViewModel` is a thin UI layer.
+**Smart Cleanup** — comprehensive system cleanup with 22 categories:
+
+- **User Caches** — app caches, browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messaging caches (Telegram, Discord, Slack, Signal, WeChat, Teams)
+- **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods cache cleanup
+- **Development Tools** — Xcode DerivedData, iOS Simulators, Android SDK/caches, Gradle/Maven/Gradle, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM)
+- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Sublime Text, Claude, ChatGPT, Slack, Discord, Figma, Notion, Postman, Linear
+- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, diagnosticd
+- **Docker** — container and image cleanup
+- **App Containers** — sandboxed app caches (Containers + Group Containers)
+- **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tool caches (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
+- **Scattered Junk** — recursive .DS_Store removal, __MACOSX directories
+- **Orphaned Files** — HTTPStorages, WebKit entries for uninstalled apps
+- **Large Files** — old DMG/pkg/iso/zip installers, node_modules, iPhone backups, IPSW firmware, Mail Downloads
+- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS cache directories in ~/Library/Caches
+
+All categories are always scanned. Dev-related categories display a purple "DEV" badge in the UI. You pick what to delete, then confirm.
 
 **Process Manager** — lists running processes, lets you terminate or force-kill them with built-in safety (protected system processes cannot be killed).
 
@@ -34,6 +49,8 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 - `SafetyManager` blocks writes to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths.
 - `ProcessSafetyPolicy` protects critical system processes (kernel_task, launchd, WindowServer) from termination.
 - Permanent deletion (bypassing Trash) is opt-in and clearly marked in the UI.
+- Apps are closed before cleanup starts (graceful terminate, then force-kill after 3s timeout).
+- Full Disk Access permission is requested at startup.
 
 ---
 
@@ -41,7 +58,8 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 - **Swift 6** — strict concurrency, actors, `async/await`, structured task groups
 - **SwiftUI** — declarative UI, `@Observable`, `NavigationSplitView`, Charts
-- **Architecture** — feature-oriented folders, component-based cleanup (Coordinator, ItemManager, Notifier), no third-party UI frameworks
+- **Architecture** — feature-oriented folders, component-based cleanup (Coordinator, Engine, ItemManager, Notifier), no third-party UI frameworks
+- **CleanupEngine** — hybrid actor using FileManager for safe file ops and Process for system commands (brew, npm, docker), with configurable timeouts and cancellation
 - **Build** — XcodeGen (`project.yml` as single source of truth)
 - **Logging** — OSLog with structured subsystems
 
@@ -53,14 +71,14 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 MacOSCleaner/
 ├── App/          # Entry point, RootView, sidebar navigation
 ├── Domains/
-│   ├── Cleanup/  # CleanupStateMachine, CleanupCoordinator, CleanupItemManager,
-│   │             # CleanupNotifier, CleanupModels, ShellCleanupAdapter, TransactionJournal
+│   ├── Cleanup/  # CleanupStateMachine, CleanupCoordinator, CleanupEngine,
+│   │             # CleanupItemManager, CleanupNotifier, CleanupModels, TransactionJournal
 │   ├── ProcessManagement/  # ProcessManager, ProcessSafetyPolicy
 │   └── StartupServices/    # LaunchServiceManager
 ├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, About)
 ├── Infrastructure/  # System services (CommandRunner, SafetyManager, TrashManager, LanguageManager)
 ├── Models/       # Shared value types and enums (CleanupItem, OperationRisk, RunningProcess, etc.)
-└── Resources/    # Localizable.strings (en/ru/uk), shell scripts, assets
+└── Resources/    # Localizable.strings (en/ru/uk), assets
 ```
 
 ---
