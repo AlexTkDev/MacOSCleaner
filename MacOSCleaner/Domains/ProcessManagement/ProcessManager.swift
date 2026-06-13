@@ -3,6 +3,7 @@ import os
 
 public actor ProcessManager {
     private let commandRunner: CommandRunner
+    private let processInfoProvider: ProcessInfoProvider
     private var safetyPolicy: ProcessSafetyPolicy
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner",
@@ -11,25 +12,16 @@ public actor ProcessManager {
 
     public init(
         commandRunner: CommandRunner = CommandRunner(),
+        processInfoProvider: ProcessInfoProvider = ProcessInfoProvider(),
         safetyPolicy: ProcessSafetyPolicy = ProcessSafetyPolicy()
     ) {
         self.commandRunner = commandRunner
+        self.processInfoProvider = processInfoProvider
         self.safetyPolicy = safetyPolicy
     }
 
     public func listProcesses() async throws -> [RunningProcess] {
-        let result = try await commandRunner.run(
-            command: "/bin/ps",
-            arguments: ["-axo", "pid,comm,user,args"],
-            timeout: .seconds(10)
-        )
-
-        guard result.exitCode == 0 else {
-            logger.error("ps failed with exit code \(result.exitCode): \(result.stderr)")
-            throw ProcessManagerError.psFailed(result.stderr)
-        }
-
-        return parsePsOutput(result.stdout)
+        try await processInfoProvider.listAllProcesses()
     }
 
     public func searchProcesses(named query: String) async throws -> [RunningProcess] {
@@ -37,7 +29,8 @@ public actor ProcessManager {
         let lowered = query.lowercased()
         return all.filter {
             $0.name.lowercased().contains(lowered) ||
-            $0.path?.lowercased().contains(lowered) == true
+            $0.path?.lowercased().contains(lowered) == true ||
+            $0.bundleID?.lowercased().contains(lowered) == true
         }
     }
 
@@ -159,42 +152,6 @@ public actor ProcessManager {
 
     public func getProtected() -> Set<String> {
         safetyPolicy.protected
-    }
-
-    private func parsePsOutput(_ output: String) -> [RunningProcess] {
-        var processes: [RunningProcess] = []
-        let lines = output.components(separatedBy: .newlines)
-
-        for line in lines.dropFirst() {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            guard !trimmed.isEmpty else { continue }
-
-            let parts = trimmed.components(separatedBy: .whitespaces)
-                .filter { !$0.isEmpty }
-
-            guard parts.count >= 3,
-                  let pid = pid_t(parts[0]) else { continue }
-
-            let name = parts[1]
-            let user = parts[2]
-            let args = parts.count >= 4 ? parts[3...].joined(separator: " ") : ""
-            let path = args.components(separatedBy: " ").first
-
-            processes.append(
-                RunningProcess(pid: pid, name: name, path: path, user: user)
-            )
-        }
-
-        return processes
-    }
-
-    private func extractPath(from args: [String]) -> String? {
-        for arg in args {
-            if arg.hasPrefix("/") && FileManager.default.fileExists(atPath: arg) {
-                return arg
-            }
-        }
-        return args.first
     }
 }
 

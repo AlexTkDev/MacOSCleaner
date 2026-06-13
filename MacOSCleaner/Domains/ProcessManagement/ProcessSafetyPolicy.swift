@@ -58,11 +58,19 @@ public struct ProcessSafetyPolicy: Sendable {
             return .blocked(reason: "\(name) is in your whitelist (protected)")
         }
 
+        if let bundleID = process.bundleID, userWhitelist.contains(bundleID) {
+            return .blocked(reason: "\(bundleID) is in your whitelist (protected)")
+        }
+
         if protectedProcesses.contains(name) {
             return .blocked(reason: "\(name) is a protected system process")
         }
 
         if userBlacklist.contains(name) {
+            return .allowed
+        }
+
+        if let bundleID = process.bundleID, userBlacklist.contains(bundleID) {
             return .allowed
         }
 

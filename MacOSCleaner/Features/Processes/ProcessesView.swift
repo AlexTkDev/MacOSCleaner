@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct ProcessesView: View {
     @State private var viewModel: ProcessesViewModel
+    @State private var isEditMode = false
 
     public init(viewModel: ProcessesViewModel = ProcessesViewModel()) {
         _viewModel = State(initialValue: viewModel)
@@ -23,6 +24,10 @@ public struct ProcessesView: View {
 
             Divider()
 
+            if isEditMode {
+                selectionToolbar
+            }
+
             if viewModel.isLoading {
                 ProgressView("processes_scanning".localized)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,7 +38,11 @@ public struct ProcessesView: View {
             } else if viewModel.processes.isEmpty {
                 emptyView
             } else {
-                processList
+                if viewModel.viewMode == .grouped {
+                    groupedProcessList
+                } else {
+                    flatProcessList
+                }
             }
         }
         .background(Color(NSColor.windowBackgroundColor))
@@ -104,6 +113,52 @@ public struct ProcessesView: View {
             }
             Spacer()
 
+            if !viewModel.memoryHogs.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "memorychip")
+                        .font(.system(size: 12))
+                    Text(viewModel.totalMemoryFormatted)
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(Color.red.opacity(0.1))
+                )
+                .foregroundColor(.red)
+            }
+
+            Menu {
+                Picker("view_mode".localized, selection: $viewModel.viewMode) {
+                    ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                Divider()
+                Picker("sort_by".localized, selection: $viewModel.sortOption) {
+                    ForEach(ProcessSortOption.allCases) { option in
+                        Text(option.localizedName).tag(option)
+                    }
+                }
+                Divider()
+                Button(action: {
+                    isEditMode.toggle()
+                    if !isEditMode {
+                        viewModel.deselectAll()
+                    }
+                }) {
+                    Label(
+                        isEditMode ? "cancel_selection".localized : "select_multiple".localized,
+                        systemImage: isEditMode ? "xmark.circle" : "checkmark.circle"
+                    )
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .buttonStyle(.bordered)
+
             Button(action: {
                 viewModel.showBlacklistAlert = true
             }) {
@@ -147,6 +202,49 @@ public struct ProcessesView: View {
         .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
     }
 
+    private var selectionToolbar: some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                viewModel.selectAll()
+            }) {
+                Label("select_all".localized, systemImage: "checkmark.circle")
+            }
+            .buttonStyle(.bordered)
+
+            Button(action: {
+                viewModel.deselectAll()
+            }) {
+                Label("deselect_all".localized, systemImage: "circle")
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
+
+            Text("\(viewModel.selection.count) selected")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Button(action: {
+                Task { await viewModel.terminateSelected() }
+            }) {
+                Label("terminate_selected".localized, systemImage: "xmark.circle")
+            }
+            .buttonStyle(.bordered)
+            .disabled(viewModel.selection.isEmpty)
+
+            Button(role: .destructive, action: {
+                Task { await viewModel.forceKillSelected() }
+            }) {
+                Label("force_kill_selected".localized, systemImage: "exclamationmark.triangle")
+            }
+            .buttonStyle(.bordered)
+            .disabled(viewModel.selection.isEmpty)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+    }
+
     private var searchField: some View {
         HStack {
             Image(systemName: "magnifyingglass")
@@ -159,55 +257,108 @@ public struct ProcessesView: View {
         .cornerRadius(6)
     }
 
-    private var processList: some View {
+    private var groupedProcessList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                if !viewModel.userProcesses.isEmpty {
-                    sectionHeader("processes_section_user".localized, count: viewModel.userProcesses.count)
-                    ForEach(viewModel.userProcesses) { process in
-                        processRow(process)
-                        Divider()
-                    }
-                }
-
-                if !viewModel.userProcesses.isEmpty && !viewModel.systemProcesses.isEmpty {
+                ForEach(viewModel.processGroups) { group in
+                    processGroupRow(group)
                     Divider()
-                        .padding(.horizontal)
-                }
-
-                if !viewModel.systemProcesses.isEmpty {
-                    sectionHeader("processes_section_system".localized, count: viewModel.systemProcesses.count)
-                    ForEach(viewModel.systemProcesses) { process in
-                        processRow(process)
-                        Divider()
-                    }
                 }
             }
             .padding(.horizontal)
         }
     }
 
-    private func sectionHeader(_ title: String, count: Int) -> some View {
-        HStack {
-            Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.secondary)
-                .textCase(.uppercase)
-            Spacer()
-            Text("\(count)")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.secondary)
+    private var flatProcessList: some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(viewModel.filteredProcesses) { process in
+                    processRow(process)
+                    Divider()
+                }
+            }
+            .padding(.horizontal)
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 8)
+    }
+
+    private func processGroupRow(_ group: ProcessGroup) -> some View {
+        DisclosureGroup {
+            ForEach(group.processes) { process in
+                processRow(process)
+                    .padding(.leading, 20)
+            }
+        } label: {
+            HStack(spacing: 12) {
+                if let icon = group.processes.first(where: { $0.bundleID != nil }) {
+                    AppIconView(path: icon.path)
+                } else {
+                    Image(systemName: "app.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.secondary)
+                        .frame(width: 24)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(group.displayName)
+                        .font(.system(.body, design: .monospaced))
+                        .fontWeight(.medium)
+
+                    HStack(spacing: 8) {
+                        Text("\(group.processCount) processes")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        HStack(spacing: 2) {
+                            Image(systemName: "cpu")
+                                .font(.system(size: 10))
+                            Text(group.totalCPUFormatted)
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        }
+                        .foregroundColor(group.totalCPU > 50 ? .red : .secondary)
+
+                        HStack(spacing: 2) {
+                            Image(systemName: "memorychip")
+                                .font(.system(size: 10))
+                            Text(group.totalMemoryFormatted)
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        }
+                        .foregroundColor(group.totalMemory > 1_000_000_000 ? .red : .secondary)
+                    }
+                }
+
+                Spacer()
+
+                Menu {
+                    Button(action: {
+                        Task { await viewModel.terminateGroup(group) }
+                    }) {
+                        Label("processes_terminate_all".localized, systemImage: "xmark.circle")
+                    }
+
+                    Button(role: .destructive, action: {
+                        Task { await viewModel.forceKillGroup(group) }
+                    }) {
+                        Label("processes_force_kill_all".localized, systemImage: "exclamationmark.triangle")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 16))
+                }
+                .menuStyle(.borderlessButton)
+                .frame(width: 30)
+            }
+            .padding(.vertical, 8)
+        }
     }
 
     private func processRow(_ process: RunningProcess) -> some View {
         ProcessRow(
             process: process,
             permission: viewModel.checkPermission(process),
+            isSelected: viewModel.selection.contains(process.pid),
             onTerminate: { viewModel.confirmKill = process },
-            onForceKill: { viewModel.confirmForceKill = process }
+            onForceKill: { viewModel.confirmForceKill = process },
+            onToggleSelection: { viewModel.toggleSelection(process) }
         )
     }
 
@@ -350,6 +501,35 @@ public struct ProcessesView: View {
         }
         .padding()
         .frame(width: 420, height: 380)
+    }
+}
+
+private struct AppIconView: View {
+    let path: String?
+    @State private var icon: NSImage?
+
+    var body: some View {
+        if let icon {
+            Image(nsImage: icon)
+                .resizable()
+                .frame(width: 20, height: 20)
+        } else {
+            Image(systemName: "app.fill")
+                .font(.system(size: 18))
+                .foregroundColor(.secondary)
+                .frame(width: 24)
+                .task {
+                    await loadIcon()
+                }
+        }
+    }
+
+    private func loadIcon() async {
+        guard let path else { return }
+        let loadedIcon = await Task.detached {
+            NSWorkspace.shared.icon(forFile: path)
+        }.value
+        icon = loadedIcon
     }
 }
 

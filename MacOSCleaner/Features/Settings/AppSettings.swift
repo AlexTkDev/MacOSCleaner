@@ -41,6 +41,51 @@ public enum AppTheme: String, CaseIterable, Identifiable {
     }
 }
 
+public enum RefreshInterval: String, CaseIterable, Identifiable {
+    case manual = "Manual"
+    case seconds5 = "5 sec"
+    case seconds10 = "10 sec"
+    case seconds30 = "30 sec"
+
+    public var id: String { rawValue }
+
+    public var timeInterval: TimeInterval? {
+        switch self {
+        case .manual: return nil
+        case .seconds5: return 5
+        case .seconds10: return 10
+        case .seconds30: return 30
+        }
+    }
+
+    public var localizedName: String {
+        switch self {
+        case .manual: return "refresh_manual".localized
+        case .seconds5: return "refresh_5s".localized
+        case .seconds10: return "refresh_10s".localized
+        case .seconds30: return "refresh_30s".localized
+        }
+    }
+}
+
+public enum ProcessSortOption: String, CaseIterable, Identifiable {
+    case cpu = "CPU"
+    case memory = "Memory"
+    case name = "Name"
+    case threads = "Threads"
+
+    public var id: String { rawValue }
+
+    public var localizedName: String {
+        switch self {
+        case .cpu: return "sort_cpu".localized
+        case .memory: return "sort_memory".localized
+        case .name: return "sort_name".localized
+        case .threads: return "sort_threads".localized
+        }
+    }
+}
+
 @MainActor
 @Observable
 public final class AppSettings {
@@ -57,6 +102,8 @@ public final class AppSettings {
         static let showRelatedFiles = "settings_showRelatedFiles"
         static let emptyTrashImmediately = "settings_emptyTrashImmediately"
         static let skipExpertMode = "settings_skipExpertMode"
+        static let processRefreshInterval = "settings_processRefreshInterval"
+        static let processSortOption = "settings_processSortOption"
     }
 
     // MARK: - General
@@ -118,6 +165,20 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(skipExpertMode, forKey: Keys.skipExpertMode) }
     }
 
+    // MARK: - Process Management
+
+    public var processRefreshInterval: RefreshInterval {
+        didSet {
+            UserDefaults.standard.set(processRefreshInterval.rawValue, forKey: Keys.processRefreshInterval)
+        }
+    }
+
+    public var processSortOption: ProcessSortOption {
+        didSet {
+            UserDefaults.standard.set(processSortOption.rawValue, forKey: Keys.processSortOption)
+        }
+    }
+
     // MARK: - Init
 
     public init() {
@@ -134,6 +195,8 @@ public final class AppSettings {
         self.showRelatedFiles = defaults.object(forKey: Keys.showRelatedFiles) as? Bool ?? true
         self.emptyTrashImmediately = defaults.bool(forKey: Keys.emptyTrashImmediately)
         self.skipExpertMode = defaults.bool(forKey: Keys.skipExpertMode)
+        self.processRefreshInterval = RefreshInterval(rawValue: defaults.string(forKey: Keys.processRefreshInterval) ?? "") ?? .manual
+        self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
 
         LanguageManager.shared.setLanguage(lang)
 
@@ -149,7 +212,8 @@ public final class AppSettings {
         let allKeys = [
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
-            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.skipExpertMode
+            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.skipExpertMode,
+            Keys.processRefreshInterval, Keys.processSortOption
         ]
         for key in allKeys {
             defaults.removeObject(forKey: key)
@@ -165,6 +229,8 @@ public final class AppSettings {
         showRelatedFiles = true
         emptyTrashImmediately = false
         skipExpertMode = false
+        processRefreshInterval = .manual
+        processSortOption = .cpu
 
         LanguageManager.shared.setLanguage(.english)
     }
