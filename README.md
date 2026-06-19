@@ -16,20 +16,26 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 **Smart Cleanup** — comprehensive system cleanup with 22 categories:
 
-- **User Caches** — app caches, browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messaging caches (Telegram, Discord, Slack, Signal, WeChat, Teams)
-- **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods cache cleanup
-- **Development Tools** — Xcode DerivedData, iOS Simulators, Android SDK/caches, Gradle/Maven/Gradle, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM)
-- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Sublime Text, Claude, ChatGPT, Slack, Discord, Figma, Notion, Postman, Linear
-- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, diagnosticd
+- **User Caches** — app caches (Google, Spotify, JetBrains, opencode), browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messaging caches (Telegram, Discord, Slack, Signal, WeChat, Teams, Spotify)
+- **Package Managers** — Homebrew, npm (with manual fallback), yarn, pnpm, CocoaPods cache cleanup
+- **Development Tools** — Xcode DerivedData, iOS Simulators (including old runtime cleanup), Android SDK/caches + Android Studio cache discovery, Gradle/Maven, Flutter/Dart (.pub-cache, .flutter-devtools, .dart_tool project scanning), language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R)
+- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime Text/Merge, Atom, Claude, ChatGPT, Gemini, Perplexity, Slack, Discord, Figma, Notion, Postman, Insomnia, Linear, GitHub Desktop, 1Password, Tower, TablePlus, opencode + dynamic Electron cache discovery
+- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, diagnosticd, parsecd, icons
 - **Docker** — container and image cleanup
 - **App Containers** — sandboxed app caches (Containers + Group Containers)
 - **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tool caches (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
-- **Scattered Junk** — recursive .DS_Store removal, __MACOSX directories
-- **Orphaned Files** — HTTPStorages, WebKit entries for uninstalled apps
-- **Large Files** — old DMG/pkg/iso/zip installers, node_modules, iPhone backups, IPSW firmware, Mail Downloads
-- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS cache directories in ~/Library/Caches
+- **Scattered Junk** — recursive .DS_Store removal (including project dirs), __MACOSX directories, stray log files, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
+- **Orphaned Files** — HTTPStorages, WebKit, Cookies, /Users/Shared entries for uninstalled apps
+- **Large Files** — old DMG/pkg/iso/zip installers (Downloads, Desktop, Documents), node_modules (recursive), iPhone backups, IPSW firmware, Mail Downloads
+- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS cache directories in ~/Library/Caches; Apple caches (com.apple.*) auto-cleaned at ≥ 5 MB, others at ≥ 50 MB
 
 All categories are always scanned. Dev-related categories display a purple "DEV" badge in the UI. You pick what to delete, then confirm.
+
+**Cleanup Options** — additional opt-in options in the UI:
+- **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
+- **Clean Maven repository** — removes ~/.m2/repository (on by default, re-downloads on next build)
+- **Clean Go module cache** — removes GOMODCACHE (on by default, re-downloads on next build)
+- **Clean .dart_tool in projects** — scans ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos (on by default)
 
 **Process Manager** — lists running processes, lets you terminate or force-kill them with built-in safety (protected system processes cannot be killed).
 

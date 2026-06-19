@@ -6,6 +6,9 @@ final class CleanupOptionsTests: XCTestCase {
     func testDefaultOptions() {
         let options = CleanupOptions()
         XCTAssertFalse(options.cleanDSStore)
+        XCTAssertTrue(options.cleanMaven)
+        XCTAssertTrue(options.cleanModCache)
+        XCTAssertTrue(options.cleanProjects)
     }
 
     func testAllCategoriesAlwaysIncluded() {
