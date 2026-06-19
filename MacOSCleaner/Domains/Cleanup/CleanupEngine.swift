@@ -411,6 +411,23 @@ extension CleanupEngine {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
+
+        var isDir: ObjCBool = false
+        fm.fileExists(atPath: path, isDirectory: &isDir)
+
+        if !isDir.boolValue {
+            let size = (try? fm.attributesOfItem(atPath: path)[.size] as? Int64) ?? 0
+            let sizeStr = Self.formatBytes(size)
+            if dryRun {
+                progress?(.log("  \(Self.shortPath(path)) — \(sizeStr)"))
+                let item = fileItemForPath(path)
+                return (size, item)
+            }
+            try? fm.removeItem(at: url)
+            progress?(.log("  \(Self.shortPath(path)) — removed, freed \(sizeStr)"))
+            return (size, nil)
+        }
+
         let before = try getDirectorySize(path)
         let sizeStr = Self.formatBytes(before)
 
@@ -897,13 +914,13 @@ extension CleanupEngine {
         progress?(.log("Scanning Flutter / Dart caches..."))
         var freed: Int64 = 0
 
-        let paths = [
+        let dirs = [
             "\(home)/.pub-cache/hosted",
             "\(home)/.pub-cache/git",
             "\(home)/.dartServer",
-            "\(home)/.flutter-devtools/.devtools"
+            "\(home)/.flutter-devtools"
         ]
-        for path in paths {
+        for path in dirs {
             let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
             freed += f
             if dryRun { emitFileItem(item, category: "Flutter / Dart", parentName: nil, progress: progress) }
