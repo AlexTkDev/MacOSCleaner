@@ -923,11 +923,9 @@ extension CleanupEngine {
             for base in projectBases {
                 guard fm.fileExists(atPath: base) else { continue }
                 if let enumerator = fm.enumerator(atPath: base) {
-                    var depth = 0
                     while let item = enumerator.nextObject() as? String {
                         let fullPath = "\(base)/\(item)"
                         if item == ".dart_tool" {
-                            depth = 0
                             let (f, item) = try cleanContents(of: fullPath, dryRun: dryRun, progress: progress)
                             freed += f
                             if dryRun { emitFileItem(item, category: "Flutter / Dart", parentName: ".dart_tool", progress: progress) }
