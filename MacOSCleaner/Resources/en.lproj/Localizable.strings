@@ -156,6 +156,12 @@
 "cleanup_additional_options" = "Additional Cleanup Options";
 "cleanup_option_ds_store" = "Clean .DS_Store files";
 "cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";
+"cleanup_option_maven" = "Clean Maven repository (~/.m2/repository)";
+"cleanup_option_maven_sub" = "Removes downloaded Maven dependencies. Re-downloads on next build.";
+"cleanup_option_modcache" = "Clean Go module cache (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "Removes downloaded Go modules. Re-downloads on next build.";
+"cleanup_option_projects" = "Clean .dart_tool in projects";
+"cleanup_option_projects_sub" = "Removes Flutter/Dart project caches in ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
 "cleanup_start_scan" = "Start Scan";
 "cleanup_failed" = "Cleanup Failed";
 "cleanup_failed_default" = "An error occurred during the cleanup process.";

@@ -72,7 +72,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 let categories = options.scanCategories()
                 
-                _ = try await self.engine.scan(categories: categories) { [weak self] event in
+                _ = try await self.engine.scan(categories: categories, options: options) { [weak self] event in
                     guard let self else { return }
                     Task { @MainActor in
                         self.handleEngineEvent(event)
@@ -141,7 +141,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 let categories = options.categories()
                 var records: [OperationRecord] = []
                 
-                let results = try await self.engine.run(categories: categories, dryRun: false) { [weak self] event in
+                let results = try await self.engine.run(categories: categories, dryRun: false, options: options) { [weak self] event in
                     guard let self else { return }
                     Task { @MainActor in
                         self.handleEngineEvent(event)

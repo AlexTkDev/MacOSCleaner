@@ -130,6 +130,12 @@
 "cleanup_additional_options" = "Додаткові параметри";
 "cleanup_option_ds_store" = "Видалити файли .DS_Store";
 "cleanup_option_ds_store_sub" = "Видаляє згенеровані системою файли метаданих з каталогів.";
+"cleanup_option_maven" = "Очистити репозиторій Maven (~/.m2/repository)";
+"cleanup_option_maven_sub" = "Видаляє завантажені залежності Maven. Повторно завантажуються під час наступної збірки.";
+"cleanup_option_modcache" = "Очистити кеш модулів Go (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "Видаляє завантажені модулі Go. Повторно завантажуються під час наступної збірки.";
+"cleanup_option_projects" = "Очистити .dart_tool у проектах";
+"cleanup_option_projects_sub" = "Видаляє кеші проектів Flutter/Dart у ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
 "cleanup_start_scan" = "Почати сканування";
 "cleanup_failed" = "Помилка очищення";
 "cleanup_failed_default" = "Сталася помилка в процесі очищення.";
