@@ -48,7 +48,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
     public func cancel() {
         currentTask?.cancel()
         currentTask = nil
-        try? stateMachine.transition(to: .cancelled)
+        do {
+            try stateMachine.transition(to: .cancelled)
+        } catch {
+            Logger.coordinator.error("Failed to transition to cancelled: \(error.localizedDescription)")
+        }
         Logger.coordinator.info("Cleanup cancelled by user")
     }
     
@@ -103,7 +107,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
             } catch let error {
                 Logger.coordinator.error("startScan failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
-                try? self.stateMachine.transition(to: .failed)
+                do {
+                    try self.stateMachine.transition(to: .failed)
+                } catch {
+                    Logger.coordinator.error("Failed to transition to failed: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -171,7 +179,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
             } catch let error {
                 Logger.coordinator.error("executeCleanup failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
-                try? self.stateMachine.transition(to: .failed)
+                do {
+                    try self.stateMachine.transition(to: .failed)
+                } catch {
+                    Logger.coordinator.error("Failed to transition to failed: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -202,10 +214,35 @@ public final class CleanupCoordinator: @unchecked Sendable {
             app.terminate()
         }
 
-        try? await Task.sleep(for: .seconds(3))
+        do {
+            try await Task.sleep(for: .seconds(3))
+        } catch {
+            Logger.coordinator.warning("Sleep interrupted during app termination")
+        }
 
+        let safetyPolicy = ProcessSafetyPolicy()
         for app in appsToClose {
-            app.forceTerminate()
+            if !app.isTerminated {
+                let process = RunningProcess(
+                    pid: app.processIdentifier,
+                    name: app.localizedName ?? "Unknown",
+                    path: app.bundleURL?.path,
+                    user: nil,
+                    cpuPercent: 0,
+                    memoryBytes: 0,
+                    threadCount: 0,
+                    startTime: nil,
+                    parentPID: 0,
+                    bundleID: app.bundleIdentifier
+                )
+                let permission = safetyPolicy.isKillable(process)
+                if case .allowed = permission {
+                    app.forceTerminate()
+                    Logger.coordinator.info("Force terminated: \(app.localizedName ?? "Unknown")")
+                } else if case .blocked(let reason) = permission {
+                    Logger.coordinator.warning("Skipped force terminate for protected process: \(app.localizedName ?? "Unknown") - \(reason)")
+                }
+            }
         }
     }
     

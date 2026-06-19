@@ -114,33 +114,36 @@ public actor CommandRunner {
                 return
             }
 
-            // Читаем stdout и stderr параллельно, потом дожидаемся завершения
-            Task.detached {
-                // Читаем stderr асинхронно параллельно с stdout
-                let stderrTask = Task.detached {
-                    for try await line in stderrPipe.fileHandleForReading.bytes.lines {
-                        continuation.yield("[stderr] \(line)")
-                    }
-                }
+            let stdoutTask = Task {
                 for try await line in stdoutPipe.fileHandleForReading.bytes.lines {
                     continuation.yield(line)
                 }
-                _ = await stderrTask.result // дожидаемся stderr
+            }
+            
+            let stderrTask = Task {
+                for try await line in stderrPipe.fileHandleForReading.bytes.lines {
+                    continuation.yield("[stderr] \(line)")
+                }
+            }
 
-                // Оба pipe прочитаны — теперь проверяем код завершения
+            let waitTask = Task {
+                try? await stdoutTask.value
+                try? await stderrTask.value
+                
                 process.waitUntilExit()
                 let code = process.terminationStatus
                 continuation.yield("[debug] Exited with code: \(code)")
                 if code == 0 {
                     continuation.finish()
                 } else {
-                    continuation.finish(
-                        throwing: CommandRunnerError.executionFailed(code)
-                    )
+                    continuation.finish(throwing: CommandRunnerError.executionFailed(code))
                 }
             }
 
             continuation.onTermination = { @Sendable _ in
+                stdoutTask.cancel()
+                stderrTask.cancel()
+                waitTask.cancel()
                 if process.isRunning { process.terminate() }
             }
         }
@@ -149,7 +152,7 @@ public actor CommandRunner {
 
 extension FileHandle {
     func readToEndAsync() async throws -> Data? {
-        try await Task.detached {
+        try await Task {
             try self.readToEnd()
         }.value
     }

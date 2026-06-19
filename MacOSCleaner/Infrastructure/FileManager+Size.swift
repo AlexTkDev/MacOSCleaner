@@ -1,12 +1,21 @@
 import Foundation
 
 extension FileManager {
-    public func getDirectorySize(url: URL) -> Int64 {
+    /// Paths to exclude from size calculation (sparse files, virtual disks, etc.)
+    public static let defaultExcludedPaths: [String] = [
+        ".dev.orbstack",
+        ".dmg",
+        ".sparseimage",
+        ".sparsebundle"
+    ]
+    
+    public func getDirectorySize(url: URL, excludedPaths: [String] = FileManager.defaultExcludedPaths) -> Int64 {
         var size: Int64 = 0
         let enumerator = self.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [])
         while let fileURL = enumerator?.nextObject() as? URL {
-            // Skip OrbStack sparse files to avoid massive false positive sizes
-            if fileURL.path.contains(".dev.orbstack") {
+            let path = fileURL.path
+            let shouldExclude = excludedPaths.contains { path.contains($0) }
+            if shouldExclude {
                 continue
             }
             let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])

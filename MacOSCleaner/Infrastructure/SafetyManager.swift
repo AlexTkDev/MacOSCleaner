@@ -101,7 +101,7 @@ public struct SafetyManager: Sendable {
 
             for refused in refuseList {
                 let isExactMatch = (p == refused)
-                let isSubdirectory = p.hasPrefix(refused == "/" ? "//" : refused + "/")
+                let isSubdirectory = p.hasPrefix(refused + "/")
                 
                 if isExactMatch || isSubdirectory {
                     throw SafetyError.protectedPath(refused)

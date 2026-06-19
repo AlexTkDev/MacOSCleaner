@@ -45,6 +45,7 @@ public actor TransactionJournal {
     }
     
     /// Выполняет запись строки в журнал с проверкой размера и ротацией.
+    /// Использует атомарную запись через замену всего файла (read-modify-write).
     private func performWrite(line: String) throws {
         if FileManager.default.fileExists(atPath: journalURL.path) {
             let attributes = try FileManager.default.attributesOfItem(atPath: journalURL.path)
@@ -53,18 +54,30 @@ public actor TransactionJournal {
             }
         }
         
-        if !FileManager.default.fileExists(atPath: journalURL.path) {
-            try line.write(to: journalURL, atomically: true, encoding: .utf8)
-        } else {
-            let fileHandle = try FileHandle(forWritingTo: journalURL)
-            defer {
-                try? fileHandle.close()
+        var existingContent = ""
+        if FileManager.default.fileExists(atPath: journalURL.path) {
+            existingContent = try String(contentsOf: journalURL, encoding: .utf8)
+        }
+        
+        let newContent = existingContent + line
+        let tempURL = journalURL.appendingPathExtension("tmp.\(UUID().uuidString)")
+        
+        do {
+            try newContent.write(to: tempURL, atomically: true, encoding: .utf8)
+            
+            if FileManager.default.fileExists(atPath: journalURL.path) {
+                _ = try FileManager.default.replaceItemAt(
+                    journalURL,
+                    withItemAt: tempURL,
+                    backupItemName: nil,
+                    options: []
+                )
+            } else {
+                try FileManager.default.moveItem(at: tempURL, to: journalURL)
             }
-            try fileHandle.seekToEnd()
-            if let lineData = line.data(using: .utf8) {
-                try fileHandle.write(contentsOf: lineData)
-            }
-            try fileHandle.synchronize()
+        } catch {
+            try? FileManager.default.removeItem(at: tempURL)
+            throw error
         }
     }
     

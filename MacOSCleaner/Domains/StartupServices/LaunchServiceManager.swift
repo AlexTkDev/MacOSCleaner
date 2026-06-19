@@ -112,6 +112,13 @@ public actor LaunchServiceManager {
             }
         }
 
+        // Also query via print gui/<uid> for more complete user agent list
+        let uid = getuid()
+        let guiResult = try await commandRunner.run(command: "/bin/launchctl", arguments: ["print", "gui/\(uid)"])
+        if guiResult.exitCode == 0 {
+            labels.formUnion(parseSystemLabels(from: guiResult.stdout))
+        }
+
         let systemResult = try await commandRunner.run(command: "/bin/launchctl", arguments: ["print", "system"])
         if systemResult.exitCode == 0 {
             labels.formUnion(parseSystemLabels(from: systemResult.stdout))

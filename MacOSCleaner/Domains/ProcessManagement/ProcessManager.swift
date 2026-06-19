@@ -119,7 +119,17 @@ public actor ProcessManager {
             arguments: ["-0", "\(pid)"],
             timeout: .seconds(3)
         )
-        return result.exitCode == 0
+        if result.exitCode == 0 {
+            return true
+        }
+        
+        // Fallback: use ps to check if process exists
+        let psResult = try await commandRunner.run(
+            command: "/bin/ps",
+            arguments: ["-p", "\(pid)"],
+            timeout: .seconds(3)
+        )
+        return psResult.exitCode == 0 && psResult.stdout.contains("\(pid)")
     }
 
     public func checkPermission(_ process: RunningProcess) -> KillPermission {

@@ -228,16 +228,23 @@ public actor CleanupEngine {
     // MARK: - Timeout Wrapper
 
     private func withTimeout<T: Sendable>(_ duration: Duration, operation: @Sendable @escaping () async throws -> T) async throws -> T {
-        try await withThrowingTaskGroup(of: T.self) { group in
-            group.addTask {
-                try await operation()
+        try await withTaskCancellationHandler {
+            try await withThrowingTaskGroup(of: T.self) { group in
+                group.addTask {
+                    try await operation()
+                }
+                group.addTask {
+                    try await Task.sleep(for: duration)
+                    throw CleanupEngineError.timeout
+                }
+                guard let result = try await group.next() else {
+                    throw CleanupEngineError.timeout
+                }
+                group.cancelAll()
+                return result
             }
-            group.addTask {
-                try await Task.sleep(for: duration)
-                throw CleanupEngineError.timeout
-            }
-            defer { group.cancelAll() }
-            return try await group.next()!
+        } onCancel: {
+            // timeout task will be cancelled automatically
         }
     }
 
@@ -474,13 +481,37 @@ extension CleanupEngine {
 
     /// Wraps a command string to source the user's shell profile first,
     /// ensuring tools installed via nvm, volta, rbenv, etc. are on PATH.
+    /// Supports zsh, bash, fish, and nushell.
     private func withUserPath(_ command: String) -> String {
-        return """
-        if [ -f "$HOME/.zshrc" ]; then source "$HOME/.zshrc" 2>/dev/null; \
-        elif [ -f "$HOME/.bash_profile" ]; then source "$HOME/.bash_profile" 2>/dev/null; \
-        elif [ -f "$HOME/.bashrc" ]; then source "$HOME/.bashrc" 2>/dev/null; fi; \
-        \(command)
-        """
+        let home = fm.homeDirectoryForCurrentUser.path
+        let shellPath = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        let shellName = (shellPath as NSString).lastPathComponent
+        
+        switch shellName {
+        case "fish":
+            return """
+            fish -c 'source "\(home)/.config/fish/config.fish" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))'
+            """
+        case "nushell", "nu":
+            return """
+            nu -c 'source "\(home)/.config/nushell/env.nu" 2>/dev/null; source "\(home)/.config/nushell/config.nu" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))'
+            """
+        case "bash":
+            return """
+            if [ -f "\(home)/.bash_profile" ]; then source "\(home)/.bash_profile" 2>/dev/null; \
+            elif [ -f "\(home)/.bashrc" ]; then source "\(home)/.bashrc" 2>/dev/null; fi; \
+            \(command)
+            """
+        default:
+            // Default to zsh (most common on macOS)
+            return """
+            if [ -f "\(home)/.zshrc" ]; then source "\(home)/.zshrc" 2>/dev/null; \
+            elif [ -f "\(home)/.zprofile" ]; then source "\(home)/.zprofile" 2>/dev/null; \
+            elif [ -f "\(home)/.bash_profile" ]; then source "\(home)/.bash_profile" 2>/dev/null; \
+            elif [ -f "\(home)/.bashrc" ]; then source "\(home)/.bashrc" 2>/dev/null; fi; \
+            \(command)
+            """
+        }
     }
 
     /// Returns true if the command is available in the system.
@@ -573,6 +604,7 @@ extension CleanupEngine {
 
         guard let enumerator = fm.enumerator(atPath: path) else { return (0, nil) }
         while let item = enumerator.nextObject() as? String {
+            try Task.checkCancellation()
             let itemPath = "\(path)/\(item)"
             let attrs = try? fm.attributesOfItem(atPath: itemPath)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
@@ -907,11 +939,11 @@ extension CleanupEngine {
         // Clean simulator app caches
         let devicesPath = "\(home)/Library/Developer/CoreSimulator/Devices"
         if fm.fileExists(atPath: devicesPath) {
-            let allEntries = try? fm.contentsOfDirectory(atPath: devicesPath) ?? []
+            let allEntries = (try? fm.contentsOfDirectory(atPath: devicesPath)) ?? []
             // Filter out non-device entries (.DS_Store, device_set.plist)
-            let devices = allEntries?.filter { entry in
+            let devices = allEntries.filter { entry in
                 !entry.hasPrefix(".") && entry != "device_set.plist" && entry.contains("-")
-            } ?? []
+            }
             let deviceCount = devices.count
             progress?(.log("  Found \(deviceCount) simulator devices"))
             for device in devices {
@@ -1563,6 +1595,7 @@ extension CleanupEngine {
             guard fm.fileExists(atPath: dir) else { continue }
             guard let enumerator = fm.enumerator(atPath: dir) else { continue }
             while let item = enumerator.nextObject() as? String {
+                try Task.checkCancellation()
                 let fullPath = "\(dir)/\(item)"
                 let fileName = (item as NSString).lastPathComponent
                 // Skip .app bundles — don't walk inside them
@@ -1576,13 +1609,14 @@ extension CleanupEngine {
                 }
             }
         }
-
+        
         // __MACOSX directories
         let macosxDirs = [home]
         for dir in macosxDirs {
             guard fm.fileExists(atPath: dir) else { continue }
             guard let enumerator = fm.enumerator(atPath: dir) else { continue }
             while let item = enumerator.nextObject() as? String {
+                try Task.checkCancellation()
                 let fileName = (item as NSString).lastPathComponent
                 if fileName == "__MACOSX" {
                     let fullPath = "\(dir)/\(item)"
@@ -1883,6 +1917,7 @@ extension CleanupEngine {
             guard fm.fileExists(atPath: dir) else { continue }
             guard let enumerator = fm.enumerator(atPath: dir) else { continue }
             while let item = enumerator.nextObject() as? String {
+                try Task.checkCancellation()
                 let ext = (item as NSString).pathExtension.lowercased()
                 if ext == "ipsw" {
                     let fullPath = "\(dir)/\(item)"

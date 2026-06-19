@@ -30,6 +30,7 @@ public actor ProcessInfoProvider {
     private func listPIDs() throws -> [pid_t] {
         let bufferSize = proc_listpids(UInt32(PROC_ALL_PIDS), 0, nil, 0) / Int32(MemoryLayout<pid_t>.size)
         guard bufferSize > 0 else {
+            logger.error("proc_listpids returned 0 buffer size")
             throw ProcessInfoError.listPIDsFailed
         }
 
@@ -38,13 +39,25 @@ public actor ProcessInfoProvider {
             UInt32(PROC_ALL_PIDS), 0,
             &pidBuffer, Int32(bufferSize * Int32(MemoryLayout<pid_t>.size))
         )
+        
+        guard actualSize > 0 else {
+            logger.error("proc_listpids returned 0 actual size")
+            throw ProcessInfoError.listPIDsFailed
+        }
+        
         let count = Int(actualSize) / MemoryLayout<pid_t>.size
+        guard count > 0 else {
+            logger.error("proc_listpids returned no PIDs")
+            throw ProcessInfoError.listPIDsFailed
+        }
 
         return Array(pidBuffer.prefix(count))
     }
 
     private func processInfo(for pid: pid_t) async throws -> RunningProcess? {
         guard pid > 0 else { return nil }
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        guard pid != currentPID else { return nil }
 
         let path = getPath(for: pid)
         let taskInfo = getTaskInfo(for: pid)

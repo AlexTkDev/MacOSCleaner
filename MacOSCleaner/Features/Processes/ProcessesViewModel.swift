@@ -66,7 +66,7 @@ public final class ProcessesViewModel {
     }
 
     public var processGroups: [ProcessGroup] {
-        var groups = ProcessGroup.group(processes: filteredProcesses)
+        let groups = ProcessGroup.group(processes: filteredProcesses)
         return groups.map { group in
             var group = group
             if !searchText.isEmpty {

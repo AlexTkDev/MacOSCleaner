@@ -1,4 +1,7 @@
 import SwiftUI
+import OSLog
+
+private let crashLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner", category: "Crash")
 
 @main
 struct MacOSCleanerApp: App {
@@ -14,6 +17,8 @@ struct MacOSCleanerApp: App {
     private let permissionsManager = PermissionsManager()
     
     init() {
+        Self.installCrashHandlers()
+        
         let engine = CleanupEngine(commandRunner: commandRunner)
         self.cleanupViewModel = CleanupViewModel(engine: engine, journal: journal, settings: appSettings)
 
@@ -21,6 +26,32 @@ struct MacOSCleanerApp: App {
         let manager = permissionsManager
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             manager.showGuidanceIfNeeded()
+        }
+    }
+    
+    private static func installCrashHandlers() {
+        NSSetUncaughtExceptionHandler { exception in
+            let desc = exception.description
+            crashLogger.fault("Uncaught exception: \(exception.name.rawValue): \(desc)")
+            crashLogger.fault("Stack trace: \(exception.callStackSymbols.joined(separator: "\n"))")
+            fflush(stderr)
+            abort()
+        }
+        
+        signal(SIGABRT) { _ in
+            crashLogger.fault("Received SIGABRT")
+            fflush(stderr)
+            _exit(1)
+        }
+        signal(SIGSEGV) { _ in
+            crashLogger.fault("Received SIGSEGV")
+            fflush(stderr)
+            _exit(1)
+        }
+        signal(SIGBUS) { _ in
+            crashLogger.fault("Received SIGBUS")
+            fflush(stderr)
+            _exit(1)
         }
     }
 
