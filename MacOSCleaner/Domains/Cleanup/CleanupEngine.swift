@@ -2504,13 +2504,24 @@ extension CleanupEngine {
         let paths = [
             "\(home)/Library/Application Support/CrashReporter",
             "\(home)/Library/Logs/DiagnosticReports",
-            "/Library/Logs/DiagnosticReports"
         ]
 
         for path in paths {
             let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
             freed += f
             if dryRun { emitFileItem(item, category: "Crash Reporter", parentName: nil, progress: progress) }
+        }
+
+        // System path — skip in dry-run (cannot read), attempt only in actual cleanup
+        if !dryRun {
+            let systemPath = "/Library/Logs/DiagnosticReports"
+            do {
+                let (f, item) = try cleanContents(of: systemPath, dryRun: dryRun, progress: progress)
+                freed += f
+                if dryRun { emitFileItem(item, category: "Crash Reporter", parentName: nil, progress: progress) }
+            } catch is SafetyError {
+                progress?(.log("  \(Self.shortPath(systemPath)) — protected, skipped"))
+            }
         }
 
         let mb = Int(freed / (1024 * 1024))
