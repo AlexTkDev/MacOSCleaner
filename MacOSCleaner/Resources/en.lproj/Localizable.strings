@@ -293,3 +293,18 @@
 "sort_memory" = "Memory Usage";
 "sort_name" = "Name";
 "sort_threads" = "Thread Count";
+
+// New cleanup categories
+"time_machine_snapshots" = "Time Machine Snapshots";
+"ios_backups" = "iOS Backups";
+"mail_downloads" = "Mail Downloads";
+"saved_app_state" = "Saved Application State";
+"crash_reporter" = "Crash Reporter";
+"assets_v2" = "AssetsV2 / iWork Templates";
+"cloud_kit_cache" = "iCloud CloudKit Cache";
+"swift_pm_cache" = "Swift Package Manager Cache";
+"carthage_cache" = "Carthage Cache";
+"steam_cache" = "Steam Cache";
+"teams_cache" = "Microsoft Teams Cache";
+"adobe_caches" = "Adobe Caches";
+"chrome_extra_caches" = "Chrome Extra Caches";

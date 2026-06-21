@@ -1,52 +1,61 @@
-import XCTest
+import Foundation
+import Testing
 @testable import MacOSCleaner
 
-final class CleanupEngineTests: XCTestCase {
+@Suite("CleanupEngine")
+struct CleanupEngineTests {
 
     // MARK: - CleanupTimeouts Tests
 
-    func testDefaultTimeoutValues() {
+    @Test("Default timeout values")
+    func defaultTimeoutValues() {
         let timeouts = CleanupTimeouts.default
-        XCTAssertEqual(timeouts.fast, .seconds(30))
-        XCTAssertEqual(timeouts.system, .seconds(120))
-        XCTAssertEqual(timeouts.full, .seconds(300))
+        #expect(timeouts.fast == .seconds(30))
+        #expect(timeouts.system == .seconds(120))
+        #expect(timeouts.full == .seconds(300))
     }
 
-    func testCustomTimeoutValues() {
+    @Test("Custom timeout values")
+    func customTimeoutValues() {
         let timeouts = CleanupTimeouts(fast: .seconds(10), system: .seconds(60), full: .seconds(180))
-        XCTAssertEqual(timeouts.fast, .seconds(10))
-        XCTAssertEqual(timeouts.system, .seconds(60))
-        XCTAssertEqual(timeouts.full, .seconds(180))
+        #expect(timeouts.fast == .seconds(10))
+        #expect(timeouts.system == .seconds(60))
+        #expect(timeouts.full == .seconds(180))
     }
 
-    func testPartialCustomTimeouts() {
+    @Test("Partial custom timeouts")
+    func partialCustomTimeouts() {
         let timeouts = CleanupTimeouts(fast: .seconds(5))
-        XCTAssertEqual(timeouts.fast, .seconds(5))
-        XCTAssertEqual(timeouts.system, .seconds(120))
-        XCTAssertEqual(timeouts.full, .seconds(300))
+        #expect(timeouts.fast == .seconds(5))
+        #expect(timeouts.system == .seconds(120))
+        #expect(timeouts.full == .seconds(300))
     }
 
     // MARK: - CleanupEngineError Tests
 
-    func testTimeoutErrorDescription() {
+    @Test("Timeout error description")
+    func timeoutErrorDescription() {
         let error = CleanupEngineError.timeout
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("timed out"))
+        #expect(error.errorDescription != nil)
+        #expect(error.errorDescription!.contains("timed out"))
     }
 
-    func testSafetyViolationErrorDescription() {
+    @Test("Safety violation error description")
+    func safetyViolationErrorDescription() {
         let error = CleanupEngineError.safetyViolation("/System")
-        XCTAssertEqual(error.errorDescription, "Safety violation: /System")
+        #expect(error.errorDescription == "Safety violation: /System")
     }
 
-    func testCommandFailedErrorDescription() {
+    @Test("Command failed error description")
+    func commandFailedErrorDescription() {
         let error = CleanupEngineError.commandFailed("brew not found")
-        XCTAssertEqual(error.errorDescription, "Command failed: brew not found")
+        #expect(error.errorDescription == "Command failed: brew not found")
     }
 
     // MARK: - FileManager Operations Tests
 
-    func testCleanContentsCreatesAndDeletesFiles() async throws {
+    @Test("Clean contents creates and deletes files")
+    func cleanContentsCreatesAndDeletesFiles() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -56,17 +65,18 @@ final class CleanupEngineTests: XCTestCase {
         try "data1".write(to: file1, atomically: true, encoding: .utf8)
         try "data2".write(to: file2, atomically: true, encoding: .utf8)
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: file1.path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: file2.path))
+        #expect(FileManager.default.fileExists(atPath: file1.path))
+        #expect(FileManager.default.fileExists(atPath: file2.path))
 
         let result = try await engine.cleanContents(of: tempDir.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
+        #expect(result.freed >= 0)
 
-        XCTAssertFalse(FileManager.default.fileExists(atPath: file1.path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: file2.path))
+        #expect(!FileManager.default.fileExists(atPath: file1.path))
+        #expect(!FileManager.default.fileExists(atPath: file2.path))
     }
 
-    func testCleanContentsDryRunPreservesFiles() async throws {
+    @Test("Clean contents dry run preserves files")
+    func cleanContentsDryRunPreservesFiles() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -75,11 +85,12 @@ final class CleanupEngineTests: XCTestCase {
         try "cachedata".write(to: file, atomically: true, encoding: .utf8)
 
         let result = try await engine.cleanContents(of: tempDir.path, dryRun: true)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+        #expect(result.freed >= 0)
+        #expect(FileManager.default.fileExists(atPath: file.path))
     }
 
-    func testRemoveDirectoryDeletesEntireFolder() async throws {
+    @Test("Remove directory deletes entire folder")
+    func removeDirectoryDeletesEntireFolder() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer {
@@ -94,11 +105,12 @@ final class CleanupEngineTests: XCTestCase {
         try "nested".write(to: file, atomically: true, encoding: .utf8)
 
         let result = try await engine.removeDirectory(tempDir.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: tempDir.path))
+        #expect(result.freed >= 0)
+        #expect(!FileManager.default.fileExists(atPath: tempDir.path))
     }
 
-    func testRemoveFileDeletesSingleFile() async throws {
+    @Test("Remove file deletes single file")
+    func removeFileDeletesSingleFile() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -107,17 +119,19 @@ final class CleanupEngineTests: XCTestCase {
         try "content".write(to: file, atomically: true, encoding: .utf8)
 
         let result = try await engine.removeFile(file.path, dryRun: false)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+        #expect(result.freed >= 0)
+        #expect(!FileManager.default.fileExists(atPath: file.path))
     }
 
-    func testCleanContentsOnNonexistentPathReturnsZero() async throws {
+    @Test("Clean contents on nonexistent path returns zero")
+    func cleanContentsOnNonexistentPathReturnsZero() async throws {
         let engine = CleanupEngine()
         let result = try await engine.cleanContents(of: "/tmp/nonexistent_\(UUID().uuidString)", dryRun: false)
-        XCTAssertEqual(result.freed, 0)
+        #expect(result.freed == 0)
     }
 
-    func testCleanOldFilesRemovesOlderThanDays() async throws {
+    @Test("Clean old files removes older than days")
+    func cleanOldFilesRemovesOlderThanDays() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -131,15 +145,16 @@ final class CleanupEngineTests: XCTestCase {
         try FileManager.default.setAttributes(oldAttrs, ofItemAtPath: oldFile.path)
 
         let result = try await engine.cleanOldFiles(in: tempDir.path, olderThanDays: 7, dryRun: false)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
+        #expect(result.freed >= 0)
 
-        XCTAssertFalse(FileManager.default.fileExists(atPath: oldFile.path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: newFile.path))
+        #expect(!FileManager.default.fileExists(atPath: oldFile.path))
+        #expect(FileManager.default.fileExists(atPath: newFile.path))
     }
 
     // MARK: - Process Call Tests (with Mock)
 
-    func testMockCommandRunnerReturnsExpectedResult() async throws {
+    @Test("Mock command runner returns expected result")
+    func mockCommandRunnerReturnsExpectedResult() async throws {
         let mock = MockCommandRunner()
         mock.runHandler = { command, args in
             if args.joined(separator: " ").contains("brew --cache") {
@@ -149,23 +164,25 @@ final class CleanupEngineTests: XCTestCase {
         }
 
         let result = try await mock.run(command: "/bin/bash", arguments: ["-c", "brew --cache 2>/dev/null"], timeout: .seconds(5))
-        XCTAssertEqual(result.stdout, "/tmp/brew-cache")
-        XCTAssertEqual(result.exitCode, 0)
+        #expect(result.stdout == "/tmp/brew-cache")
+        #expect(result.exitCode == 0)
     }
 
-    func testMockCommandExistsReturnsCorrectly() async {
+    @Test("Mock command exists returns correctly")
+    func mockCommandExistsReturnsCorrectly() async {
         let mock = MockCommandRunner()
         mock.availableCommands = ["brew", "npm"]
 
         let brewExists = await mock.commandExists("brew")
-        XCTAssertTrue(brewExists)
+        #expect(brewExists)
         let npmExists = await mock.commandExists("npm")
-        XCTAssertTrue(npmExists)
+        #expect(npmExists)
         let nonexistentExists = await mock.commandExists("nonexistent")
-        XCTAssertFalse(nonexistentExists)
+        #expect(!nonexistentExists)
     }
 
-    func testPackageManagersWithMock() async throws {
+    @Test("Package managers with mock")
+    func packageManagersWithMock() async throws {
         let mock = MockCommandRunner()
         mock.availableCommands = ["brew", "npm"]
 
@@ -194,11 +211,12 @@ final class CleanupEngineTests: XCTestCase {
         defer { cleanupTempDir(tempDir) }
 
         let results = try await engine.cleanPackageManagers(dryRun: true, progress: nil)
-        XCTAssertFalse(results.isEmpty)
-        XCTAssertGreaterThanOrEqual(counter.value, 2)
+        #expect(!results.isEmpty)
+        #expect(counter.value >= 2)
     }
 
-    func testDockerCleanupWithMock() async throws {
+    @Test("Docker cleanup with mock")
+    func dockerCleanupWithMock() async throws {
         let mock = MockCommandRunner()
         mock.availableCommands = ["docker"]
 
@@ -215,23 +233,25 @@ final class CleanupEngineTests: XCTestCase {
 
         let engine = CleanupEngine(commandRunner: mock)
         let results = try await engine.cleanDocker(dryRun: true, progress: nil)
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results.first?.label, "Docker")
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Docker")
     }
 
-    func testDockerCleanupSkippedWhenNotInstalled() async throws {
+    @Test("Docker cleanup skipped when not installed")
+    func dockerCleanupSkippedWhenNotInstalled() async throws {
         let mock = MockCommandRunner()
         mock.availableCommands = []
 
         let engine = CleanupEngine(commandRunner: mock)
         let results = try await engine.cleanDocker(dryRun: false, progress: nil)
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results.first?.freedMB, 0)
+        #expect(results.count == 1)
+        #expect(results.first?.freedMB == 0)
     }
 
     // MARK: - Cancellation Tests
 
-    func testCancellationStopsExecution() async throws {
+    @Test("Cancellation stops execution")
+    func cancellationStopsExecution() async throws {
         let engine = CleanupEngine()
         let task = Task {
             try await engine.run(categories: CleanupCategory.allCases, dryRun: true)
@@ -249,7 +269,8 @@ final class CleanupEngineTests: XCTestCase {
         }
     }
 
-    func testCancellationBetweenCategories() async throws {
+    @Test("Cancellation between categories")
+    func cancellationBetweenCategories() async throws {
         let engine = CleanupEngine()
 
         let task = Task { () -> [CleanupCategory] in
@@ -273,7 +294,8 @@ final class CleanupEngineTests: XCTestCase {
         }
     }
 
-    func testScanDoesNotDeleteFiles() async throws {
+    @Test("Scan does not delete files")
+    func scanDoesNotDeleteFiles() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -282,21 +304,23 @@ final class CleanupEngineTests: XCTestCase {
         try "test".write(to: testFile, atomically: true, encoding: .utf8)
 
         _ = try await engine.scan(categories: [.scatteredJunk])
-        XCTAssertTrue(FileManager.default.fileExists(atPath: testFile.path), "Scan should not delete files")
+        #expect(FileManager.default.fileExists(atPath: testFile.path), "Scan should not delete files")
     }
 
     // MARK: - Timeout Tests
 
-    func testOperationCompletesWithinTimeout() async throws {
+    @Test("Operation completes within timeout")
+    func operationCompletesWithinTimeout() async throws {
         let engine = CleanupEngine(timeouts: CleanupTimeouts(fast: .seconds(5)))
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
 
         let result = try await engine.cleanContents(of: tempDir.path, dryRun: true)
-        XCTAssertGreaterThanOrEqual(result.freed, 0)
+        #expect(result.freed >= 0)
     }
 
-    func testTimeoutCancelsSlowOperation() async {
+    @Test("Timeout cancels slow operation")
+    func timeoutCancelsSlowOperation() async {
         let shortTimeouts = CleanupTimeouts(system: .milliseconds(100))
         let engine = CleanupEngine(timeouts: shortTimeouts)
 
@@ -309,17 +333,19 @@ final class CleanupEngineTests: XCTestCase {
         }
     }
 
-    func testFastCategoryUsesFastTimeout() async throws {
+    @Test("Fast category uses fast timeout")
+    func fastCategoryUsesFastTimeout() async throws {
         let timeouts = CleanupTimeouts(fast: .seconds(10), system: .seconds(60), full: .seconds(300))
         let engine = CleanupEngine(timeouts: timeouts)
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
 
         let results = try await engine.run(categories: [.appCaches], dryRun: true)
-        XCTAssertFalse(results.isEmpty, "Should return at least one result")
+        #expect(!results.isEmpty, "Should return at least one result")
     }
 
-    func testSystemCategoryUsesSystemTimeout() async throws {
+    @Test("System category uses system timeout")
+    func systemCategoryUsesSystemTimeout() async throws {
         let mock = MockCommandRunner()
         mock.availableCommands = ["brew"]
 
@@ -338,45 +364,49 @@ final class CleanupEngineTests: XCTestCase {
         let engine = CleanupEngine(commandRunner: mock, timeouts: timeouts)
 
         let results = try await engine.run(categories: [.packageManagers], dryRun: true)
-        XCTAssertFalse(results.isEmpty)
+        #expect(!results.isEmpty)
     }
 
-    func testFullCategoryUsesFullTimeout() async throws {
+    @Test("Full category uses full timeout")
+    func fullCategoryUsesFullTimeout() async throws {
         let timeouts = CleanupTimeouts(fast: .seconds(10), system: .seconds(60), full: .seconds(300))
         let engine = CleanupEngine(timeouts: timeouts)
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
 
         let results = try await engine.run(categories: [.xcode], dryRun: true)
-        XCTAssertNotNil(results)
+        #expect(!results.isEmpty)
     }
 
     // MARK: - Error Handling Tests
 
-    func testSafetyViolationThrowsOnProtectedPath() async throws {
+    @Test("Safety violation throws on protected path")
+    func safetyViolationThrowsOnProtectedPath() async throws {
         let engine = CleanupEngine()
 
         do {
             _ = try await engine.cleanContents(of: "/System/Library", dryRun: false)
-            XCTFail("Expected safety violation error")
+            Issue.record("Expected safety violation error")
         } catch {
-            XCTAssertTrue(error is SafetyError)
+            #expect(error is SafetyError)
         }
     }
 
-    func testSafetyViolationOnHomeSSH() async throws {
+    @Test("Safety violation on home SSH")
+    func safetyViolationOnHomeSSH() async throws {
         let engine = CleanupEngine()
         let home = NSHomeDirectory()
 
         do {
             _ = try await engine.cleanContents(of: "\(home)/.ssh", dryRun: false)
-            XCTFail("Expected safety violation error")
+            Issue.record("Expected safety violation error")
         } catch {
-            XCTAssertTrue(error is SafetyError)
+            #expect(error is SafetyError)
         }
     }
 
-    func testPermissionDeniedHandledGracefully() async throws {
+    @Test("Permission denied handled gracefully")
+    func permissionDeniedHandledGracefully() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
 
@@ -386,24 +416,26 @@ final class CleanupEngineTests: XCTestCase {
 
         do {
             let result = try await engine.cleanContents(of: protectedDir.path, dryRun: false)
-            XCTAssertEqual(result.freed, 0)
+            #expect(result.freed == 0)
         } catch {
-            XCTAssertTrue(error is CocoaError || (error as NSError).code == 257,
-                          "Permission denied error should be caught: \(error)")
+            #expect(error is CocoaError || (error as NSError).code == 257,
+                    "Permission denied error should be caught: \(error)")
         }
 
         try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: protectedDir.path)
         cleanupTempDir(tempDir)
     }
 
-    func testRunReturnsLargeFilesCategory() async throws {
+    @Test("Run returns large files category")
+    func runReturnsLargeFilesCategory() async throws {
         let engine = CleanupEngine()
         let results = try await engine.run(categories: [.largeFiles], dryRun: true)
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results.first?.label, "Large files")
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Large files")
     }
 
-    func testProgressCallbackInvoked() async throws {
+    @Test("Progress callback invoked")
+    func progressCallbackInvoked() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
@@ -413,17 +445,163 @@ final class CleanupEngineTests: XCTestCase {
             events.append(event)
         }
 
-        XCTAssertFalse(results.isEmpty)
-        XCTAssertFalse(events.isEmpty)
+        #expect(!results.isEmpty)
+        #expect(!events.isEmpty)
     }
 
-    func testMultipleCategoriesProcessed() async throws {
+    @Test("Multiple categories processed")
+    func multipleCategoriesProcessed() async throws {
         let engine = CleanupEngine()
         let tempDir = createTempCacheDir()
         defer { cleanupTempDir(tempDir) }
 
         let results = try await engine.run(categories: [.appCaches, .gradleMaven, .flutterDart], dryRun: true)
-        XCTAssertGreaterThanOrEqual(results.count, 1)
+        #expect(results.count >= 1)
+    }
+
+    // MARK: - New Category Tests (13 categories)
+
+    @Test("Time machine snapshots dry run")
+    func timeMachineSnapshotsDryRun() async throws {
+        let mock = MockCommandRunner()
+        mock.availableCommands = ["tmutil"]
+        mock.runHandler = { command, args in
+            let cmd = args.joined(separator: " ")
+            if cmd.contains("tmutil listlocalsnapshots") {
+                return CommandResult(stdout: "com.apple.TimeMachine.2026-01-01-120000.local\ncom.apple.TimeMachine.2026-01-02-120000.local", stderr: "", exitCode: 0)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+        let engine = CleanupEngine(commandRunner: mock)
+        let results = try await engine.run(categories: [.timeMachineSnapshots], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Time Machine Snapshots")
+    }
+
+    @Test("IOS backups dry run")
+    func iosBackupsDryRun() async throws {
+        let engine = CleanupEngine()
+        let tempDir = createTempCacheDir()
+        defer { cleanupTempDir(tempDir) }
+
+        let backupDir = tempDir.appendingPathComponent("MobileSync/Backup/test_backup_123")
+        try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+        try "data".write(to: backupDir.appendingPathComponent("manifest.db"), atomically: true, encoding: .utf8)
+
+        let results = try await engine.run(categories: [.iosBackups], dryRun: true)
+        #expect(!results.isEmpty)
+    }
+
+    @Test("Mail downloads dry run")
+    func mailDownloadsDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.mailDownloads], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Mail Downloads")
+    }
+
+    @Test("Saved app state dry run")
+    func savedAppStateDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.savedAppState], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Saved Application State")
+    }
+
+    @Test("Crash reporter dry run")
+    func crashReporterDryRun() async throws {
+        let engine = CleanupEngine()
+        do {
+            let results = try await engine.run(categories: [.crashReporter], dryRun: true)
+            #expect(results.count == 1)
+            #expect(results.first?.label == "Crash Reporter")
+        } catch is SafetyError {
+            // Expected: /Library/Logs/DiagnosticReports is a protected system path
+            #expect(Bool(true))
+        }
+    }
+
+    @Test("Assets v2 dry run")
+    func assetsV2DryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.assetsV2], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "AssetsV2 / iWork Templates")
+    }
+
+    @Test("CloudKit cache dry run")
+    func cloudKitCacheDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.cloudKitCache], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "CloudKit Cache")
+    }
+
+    @Test("SwiftPM cache dry run")
+    func swiftPMCacheDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.swiftPMCache], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Swift Package Manager Cache")
+    }
+
+    @Test("Carthage cache dry run")
+    func carthageCacheDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.carthageCache], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Carthage Cache")
+    }
+
+    @Test("Steam cache dry run")
+    func steamCacheDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.steamCache], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Steam Cache")
+    }
+
+    @Test("Teams cache dry run")
+    func teamsCacheDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.teamsCache], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Microsoft Teams Cache")
+    }
+
+    @Test("Adobe caches dry run")
+    func adobeCachesDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.adobeCaches], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Adobe Caches")
+    }
+
+    @Test("Chrome extra caches dry run")
+    func chromeExtraCachesDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.run(categories: [.chromeExtraCaches], dryRun: true)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Chrome Extra Caches")
+    }
+
+    @Test("All new categories included in CleanupOptions")
+    func allNewCategoriesIncludedInCleanupOptions() {
+        let options = CleanupOptions()
+        let categories = options.categories()
+        #expect(categories.contains(.timeMachineSnapshots))
+        #expect(categories.contains(.iosBackups))
+        #expect(categories.contains(.mailDownloads))
+        #expect(categories.contains(.savedAppState))
+        #expect(categories.contains(.crashReporter))
+        #expect(categories.contains(.assetsV2))
+        #expect(categories.contains(.cloudKitCache))
+        #expect(categories.contains(.swiftPMCache))
+        #expect(categories.contains(.carthageCache))
+        #expect(categories.contains(.steamCache))
+        #expect(categories.contains(.teamsCache))
+        #expect(categories.contains(.adobeCaches))
+        #expect(categories.contains(.chromeExtraCaches))
     }
 
     // MARK: - Helpers

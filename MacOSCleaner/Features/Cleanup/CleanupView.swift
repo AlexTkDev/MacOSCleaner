@@ -596,7 +596,8 @@ public struct CleanupView: View {
     private func isDevCategory(_ category: String?) -> Bool {
         guard let category else { return false }
         return ["gradle_maven", "flutter_dart", "xcode", "android_caches",
-                "android_sdk", "ide_caches", "language_caches"].contains(category)
+                "android_sdk", "ide_caches", "language_caches",
+                "swift_pm_cache", "carthage_cache"].contains(category)
     }
     
     @ViewBuilder

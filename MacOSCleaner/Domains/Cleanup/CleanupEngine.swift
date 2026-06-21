@@ -75,6 +75,21 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
     case orphanedFiles = "orphaned_files"
     case largeFiles = "large_files"
     case dynamicCacheDiscovery = "dynamic_cache_discovery"
+    
+    // New categories
+    case timeMachineSnapshots = "time_machine_snapshots"
+    case iosBackups = "ios_backups"
+    case mailDownloads = "mail_downloads"
+    case savedAppState = "saved_app_state"
+    case crashReporter = "crash_reporter"
+    case assetsV2 = "assets_v2"
+    case cloudKitCache = "cloud_kit_cache"
+    case swiftPMCache = "swift_pm_cache"
+    case carthageCache = "carthage_cache"
+    case steamCache = "steam_cache"
+    case teamsCache = "teams_cache"
+    case adobeCaches = "adobe_caches"
+    case chromeExtraCaches = "chrome_extra_caches"
 }
 
 // MARK: - CleanupEngine Actor
@@ -211,6 +226,58 @@ public actor CleanupEngine {
                 categoryResults = try await withTimeout(timeouts.fast) {
                     try await self.cleanDynamicCacheDiscovery(dryRun: dryRun, progress: progress)
                 }
+            case .timeMachineSnapshots:
+                categoryResults = try await withTimeout(timeouts.system) {
+                    try await self.cleanTimeMachineSnapshots(dryRun: dryRun, progress: progress)
+                }
+            case .iosBackups:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanIOSBackups(dryRun: dryRun, progress: progress)
+                }
+            case .mailDownloads:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanMailDownloads(dryRun: dryRun, progress: progress)
+                }
+            case .savedAppState:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanSavedAppState(dryRun: dryRun, progress: progress)
+                }
+            case .crashReporter:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanCrashReporter(dryRun: dryRun, progress: progress)
+                }
+            case .assetsV2:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanAssetsV2(dryRun: dryRun, progress: progress)
+                }
+            case .cloudKitCache:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanCloudKitCache(dryRun: dryRun, progress: progress)
+                }
+            case .swiftPMCache:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanSwiftPMCache(dryRun: dryRun, progress: progress)
+                }
+            case .carthageCache:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanCarthageCache(dryRun: dryRun, progress: progress)
+                }
+            case .steamCache:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanSteamCache(dryRun: dryRun, progress: progress)
+                }
+            case .teamsCache:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanTeamsCache(dryRun: dryRun, progress: progress)
+                }
+            case .adobeCaches:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanAdobeCaches(dryRun: dryRun, progress: progress)
+                }
+            case .chromeExtraCaches:
+                categoryResults = try await withTimeout(timeouts.fast) {
+                    try await self.cleanChromeExtraCaches(dryRun: dryRun, progress: progress)
+                }
             }
             results.append(contentsOf: categoryResults)
         }
@@ -276,6 +343,19 @@ public actor CleanupEngine {
         case .orphanedFiles: return "Orphaned files"
         case .largeFiles: return "Large files"
         case .dynamicCacheDiscovery: return "Dynamic cache discovery"
+        case .timeMachineSnapshots: return "Time Machine Snapshots"
+        case .iosBackups: return "iOS Backups"
+        case .mailDownloads: return "Mail Downloads"
+        case .savedAppState: return "Saved Application State"
+        case .crashReporter: return "Crash Reporter"
+        case .assetsV2: return "AssetsV2 / iWork Templates"
+        case .cloudKitCache: return "CloudKit Cache"
+        case .swiftPMCache: return "Swift Package Manager Cache"
+        case .carthageCache: return "Carthage Cache"
+        case .steamCache: return "Steam Cache"
+        case .teamsCache: return "Microsoft Teams Cache"
+        case .adobeCaches: return "Adobe Caches"
+        case .chromeExtraCaches: return "Chrome Extra Caches"
         }
     }
 }
@@ -329,6 +409,19 @@ public struct CleanupOptions: Sendable, Equatable {
             .languageCaches,
             .largeFiles,
             .dynamicCacheDiscovery,
+            .timeMachineSnapshots,
+            .iosBackups,
+            .mailDownloads,
+            .savedAppState,
+            .crashReporter,
+            .assetsV2,
+            .cloudKitCache,
+            .swiftPMCache,
+            .carthageCache,
+            .steamCache,
+            .teamsCache,
+            .adobeCaches,
+            .chromeExtraCaches,
         ]
 
         if cleanDSStore {
@@ -2197,19 +2290,6 @@ extension CleanupEngine {
             }
         }
 
-        // iPhone/iPad backups (MobileSync)
-        let mobileSync = "\(home)/Library/Application Support/MobileSync/Backup"
-        if fm.fileExists(atPath: mobileSync) {
-            let size = try getDirectorySize(mobileSync)
-            if size > 0 {
-                items.append(("MobileSync/Backup", size))
-                totalFound += size
-                if dryRun {
-                    emitFileItem(CleanupFileItem(path: mobileSync, sizeBytes: size, modificationDate: nil, isDirectory: true), category: "Large files", parentName: nil, progress: progress)
-                }
-            }
-        }
-
         // IPSW firmware files
         progress?(.log("  Scanning for IPSW firmware files..."))
         let ipswSearchDirs = [home, "/tmp"]
@@ -2229,19 +2309,6 @@ extension CleanupEngine {
                             emitFileItem(CleanupFileItem(path: fullPath, sizeBytes: size, modificationDate: nil, isDirectory: false), category: "Large files", parentName: nil, progress: progress)
                         }
                     }
-                }
-            }
-        }
-
-        // Mail downloads
-        let mailPath = "\(home)/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
-        if fm.fileExists(atPath: mailPath) {
-            let size = try getDirectorySize(mailPath)
-            if size > 0 {
-                items.append(("Mail Downloads", size))
-                totalFound += size
-                if dryRun {
-                    emitFileItem(CleanupFileItem(path: mailPath, sizeBytes: size, modificationDate: nil, isDirectory: true), category: "Large files", parentName: nil, progress: progress)
                 }
             }
         }
@@ -2332,6 +2399,290 @@ extension CleanupEngine {
         progress?(.log("Dynamic cache discovery total: \(Self.formatBytes(freed))"))
         progress?(.result(label: "Dynamic cache discovery", freedMB: mb))
         return [CleanupEngineResult(label: "Dynamic cache discovery", freedMB: mb)]
+    }
+
+    // MARK: 23. Time Machine Snapshots
+
+    func cleanTimeMachineSnapshots(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        progress?(.log("Scanning Time Machine local snapshots..."))
+
+        guard await commandRunner.commandExists("tmutil") else {
+            progress?(.log("  tmutil not found, skipped"))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+        }
+
+        let result = try? await commandRunner.run(command: "/usr/bin/tmutil", arguments: ["listlocalsnapshots", "/"])
+        let output = result?.stdout ?? ""
+
+        let snapshots = output
+            .split(separator: "\n")
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && $0.contains("com.apple.TimeMachine") }
+
+        progress?(.log("  Found \(snapshots.count) local snapshots"))
+
+        if dryRun {
+            for snap in snapshots {
+                progress?(.log("  ⊘ \(snap)"))
+            }
+            progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+        }
+
+        var deleted = 0
+        for snap in snapshots {
+            try Task.checkCancellation()
+            _ = try? await commandRunner.run(command: "/usr/bin/tmutil", arguments: ["deletelocalsnapshots", snap])
+            deleted += 1
+            progress?(.log("  ✓ Deleted \(snap)"))
+        }
+
+        progress?(.log("  Deleted \(deleted) snapshots"))
+        progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
+        return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+    }
+
+    // MARK: 24. iOS Backups
+
+    func cleanIOSBackups(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning iOS backups..."))
+
+        let backupDir = "\(home)/Library/Application Support/MobileSync/Backup"
+        let (freed, item) = try cleanContents(of: backupDir, dryRun: dryRun, progress: progress)
+        if dryRun { emitFileItem(item, category: "iOS Backups", parentName: nil, progress: progress) }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "iOS Backups", freedMB: mb))
+        return [CleanupEngineResult(label: "iOS Backups", freedMB: mb)]
+    }
+
+    // MARK: 25. Mail Downloads
+
+    func cleanMailDownloads(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Mail downloads..."))
+        var freed: Int64 = 0
+
+        let paths = [
+            "\(home)/Library/Mail Downloads",
+            "\(home)/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
+        ]
+
+        for path in paths {
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Mail Downloads", freedMB: mb))
+        return [CleanupEngineResult(label: "Mail Downloads", freedMB: mb)]
+    }
+
+    // MARK: 26. Saved Application State
+
+    func cleanSavedAppState(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning saved application state..."))
+
+        let (freed, item) = try cleanContents(of: "\(home)/Library/Saved Application State", dryRun: dryRun, progress: progress)
+        if dryRun { emitFileItem(item, category: "Saved Application State", parentName: nil, progress: progress) }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Saved Application State", freedMB: mb))
+        return [CleanupEngineResult(label: "Saved Application State", freedMB: mb)]
+    }
+
+    // MARK: 27. Crash Reporter
+
+    func cleanCrashReporter(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning crash reports..."))
+        var freed: Int64 = 0
+
+        let paths = [
+            "\(home)/Library/Application Support/CrashReporter",
+            "\(home)/Library/Logs/DiagnosticReports",
+            "/Library/Logs/DiagnosticReports"
+        ]
+
+        for path in paths {
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Crash Reporter", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Crash Reporter", freedMB: mb))
+        return [CleanupEngineResult(label: "Crash Reporter", freedMB: mb)]
+    }
+
+    // MARK: 28. AssetsV2 / iWork Templates
+
+    func cleanAssetsV2(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning AssetsV2 / iWork templates..."))
+
+        let (freed, item) = try cleanContents(of: "\(home)/Library/Application Support/AssetsV2", dryRun: dryRun, progress: progress)
+        if dryRun { emitFileItem(item, category: "AssetsV2 / iWork Templates", parentName: nil, progress: progress) }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "AssetsV2 / iWork Templates", freedMB: mb))
+        return [CleanupEngineResult(label: "AssetsV2 / iWork Templates", freedMB: mb)]
+    }
+
+    // MARK: 29. CloudKit Cache
+
+    func cleanCloudKitCache(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning CloudKit cache..."))
+
+        let (freed, item) = try cleanContents(of: "\(home)/Library/Caches/CloudKit", dryRun: dryRun, progress: progress)
+        if dryRun { emitFileItem(item, category: "CloudKit Cache", parentName: nil, progress: progress) }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "CloudKit Cache", freedMB: mb))
+        return [CleanupEngineResult(label: "CloudKit Cache", freedMB: mb)]
+    }
+
+    // MARK: 30. Swift Package Manager Cache
+
+    func cleanSwiftPMCache(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning SwiftPM cache..."))
+        var freed: Int64 = 0
+
+        let paths = [
+            "\(home)/.swiftpm/cache",
+            "\(home)/Library/Caches/org.swift.swiftpm"
+        ]
+
+        for path in paths {
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Swift Package Manager Cache", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Swift Package Manager Cache", freedMB: mb))
+        return [CleanupEngineResult(label: "Swift Package Manager Cache", freedMB: mb)]
+    }
+
+    // MARK: 31. Carthage Cache
+
+    func cleanCarthageCache(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Carthage cache..."))
+        var freed: Int64 = 0
+
+        let paths = [
+            "\(home)/Library/Caches/org.carthage.CarthageKit",
+            "\(home)/.cocoapods/repos"
+        ]
+
+        for path in paths {
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Carthage Cache", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Carthage Cache", freedMB: mb))
+        return [CleanupEngineResult(label: "Carthage Cache", freedMB: mb)]
+    }
+
+    // MARK: 32. Steam Cache
+
+    func cleanSteamCache(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Steam cache..."))
+        var freed: Int64 = 0
+
+        let steamBase = "\(home)/Library/Application Support/Steam"
+        let subdirs = ["appcache", "depotcache", "logs", "steamapps/shadercache", "steamapps/temp", "steamapps/download"]
+
+        for sub in subdirs {
+            let path = "\(steamBase)/\(sub)"
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Steam Cache", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Steam Cache", freedMB: mb))
+        return [CleanupEngineResult(label: "Steam Cache", freedMB: mb)]
+    }
+
+    // MARK: 33. Microsoft Teams Cache
+
+    func cleanTeamsCache(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Microsoft Teams cache..."))
+        var freed: Int64 = 0
+
+        let teamsBase = "\(home)/Library/Application Support/Microsoft/Teams"
+        let subdirs = [
+            "Cache", "Code Cache", "GPUCache", "IndexedDB",
+            "Blob_storage", "Service Worker", "Session Storage",
+            "Local Storage", "tmp"
+        ]
+
+        for sub in subdirs {
+            let path = "\(teamsBase)/\(sub)"
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Microsoft Teams Cache", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Microsoft Teams Cache", freedMB: mb))
+        return [CleanupEngineResult(label: "Microsoft Teams Cache", freedMB: mb)]
+    }
+
+    // MARK: 34. Adobe Caches
+
+    func cleanAdobeCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Adobe caches..."))
+        var freed: Int64 = 0
+
+        let paths = [
+            "\(home)/Library/Caches/Adobe",
+            "\(home)/Library/Application Support/Adobe/Common/Media Cache"
+        ]
+
+        for path in paths {
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Adobe Caches", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Adobe Caches", freedMB: mb))
+        return [CleanupEngineResult(label: "Adobe Caches", freedMB: mb)]
+    }
+
+    // MARK: 35. Chrome Extra Caches
+
+    func cleanChromeExtraCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning Chrome extra caches..."))
+        var freed: Int64 = 0
+
+        let chromeBase = "\(home)/Library/Application Support/Google/Chrome/Default"
+        let subdirs = ["Cache", "Code Cache", "GPUCache", "Service Worker", "Session Storage"]
+
+        for sub in subdirs {
+            let path = "\(chromeBase)/\(sub)"
+            let (f, item) = try cleanContents(of: path, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Chrome Extra Caches", parentName: nil, progress: progress) }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.result(label: "Chrome Extra Caches", freedMB: mb))
+        return [CleanupEngineResult(label: "Chrome Extra Caches", freedMB: mb)]
     }
 }
 

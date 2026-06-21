@@ -215,12 +215,15 @@ public final class CleanupItemManager {
 
     static func determineRisk(for label: String) -> OperationRisk {
         let l = label.lowercased()
-        if l.contains("xcode") || l.contains("android") || l.contains("gradle") {
-            return .moderate
-        }
-        if l.contains("browser") || l.contains("cache") {
-            return .safe
-        }
+
+        // Time Machine — moderate (user data, but safe to delete)
+        if l.contains("time machine") || l.contains("tmutil") { return .moderate }
+        // iOS backups — moderate (user data, re-downloadable from iCloud)
+        if l.contains("ios backup") || l.contains("mobilesync") { return .moderate }
+        // Xcode / Android / Gradle — moderate
+        if l.contains("xcode") || l.contains("android") || l.contains("gradle") { return .moderate }
+
+        // All others — safe (auto-regenerated caches)
         return .safe
     }
 }

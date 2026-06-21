@@ -292,3 +292,18 @@
 "sort_memory" = "Использование памяти";
 "sort_name" = "Имя";
 "sort_threads" = "Кол-во потоков";
+
+// New cleanup categories
+"time_machine_snapshots" = "Снимки Time Machine";
+"ios_backups" = "Резервные копии iOS";
+"mail_downloads" = "Загрузки Mail";
+"saved_app_state" = "Сохранённое состояние приложений";
+"crash_reporter" = "Отчёты о сбоях";
+"assets_v2" = "AssetsV2 / Шаблоны iWork";
+"cloud_kit_cache" = "Кэш iCloud CloudKit";
+"swift_pm_cache" = "Кэш Swift Package Manager";
+"carthage_cache" = "Кэш Carthage";
+"steam_cache" = "Кэш Steam";
+"teams_cache" = "Кэш Microsoft Teams";
+"adobe_caches" = "Кэши Adobe";
+"chrome_extra_caches" = "Доп. кэши Chrome";

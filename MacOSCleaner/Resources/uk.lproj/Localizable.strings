@@ -267,3 +267,18 @@
 "sort_memory" = "Пам'ять";
 "sort_name" = "Ім'я";
 "sort_threads" = "К-сть потоків";
+
+// New cleanup categories
+"time_machine_snapshots" = "Знімки Time Machine";
+"ios_backups" = "Резервні копії iOS";
+"mail_downloads" = "Завантаження Mail";
+"saved_app_state" = "Збережений стан додатків";
+"crash_reporter" = "Звіти про збої";
+"assets_v2" = "AssetsV2 / Шаблони iWork";
+"cloud_kit_cache" = "Кеш iCloud CloudKit";
+"swift_pm_cache" = "Кеш Swift Package Manager";
+"carthage_cache" = "Кеш Carthage";
+"steam_cache" = "Кеш Steam";
+"teams_cache" = "Кеш Microsoft Teams";
+"adobe_caches" = "Кеші Adobe";
+"chrome_extra_caches" = "Дод. кеші Chrome";
