@@ -14,7 +14,7 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 
 **Dashboard** — disk usage chart, system info (model, CPU, RAM, OS version), cleanup history and statistics.
 
-**Smart Cleanup** — comprehensive system cleanup with 22 categories:
+**Smart Cleanup** — comprehensive system cleanup with 35 categories:
 
 - **User Caches** — app caches (Google, Spotify, JetBrains, opencode), browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messaging caches (Telegram, Discord, Slack, Signal, WeChat, Teams, Spotify)
 - **Package Managers** — Homebrew, npm (with manual fallback), yarn, pnpm, CocoaPods cache cleanup
@@ -26,13 +26,26 @@ Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep you
 - **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tool caches (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
 - **Scattered Junk** — recursive .DS_Store removal (including project dirs), __MACOSX directories, stray log files, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
 - **Orphaned Files** — HTTPStorages, WebKit, Cookies, /Users/Shared entries for uninstalled apps
-- **Large Files** — old DMG/pkg/iso/zip installers (Downloads, Desktop, Documents), node_modules (recursive), iPhone backups, IPSW firmware, Mail Downloads
+- **Large Files** — old DMG/pkg/iso/zip installers (Downloads, Desktop, Documents), node_modules (recursive), iPhone backups, IPSW firmware
 - **Dynamic Cache Discovery** — auto-discovers large reverse-DNS cache directories in ~/Library/Caches; Apple caches (com.apple.*) auto-cleaned at ≥ 5 MB, others at ≥ 50 MB
+- **Time Machine Snapshots** — local APFS snapshots (safe to delete, macOS recreates)
+- **iOS Backups** — iPhone/iPad backups from Finder/iTunes (re-downloadable from iCloud)
+- **Mail Downloads** — cached email attachments
+- **Saved Application State** — window/session state for app resume (recreated on launch)
+- **Crash Reporter** — old crash reports and diagnostic logs
+- **AssetsV2 / iWork Templates** — Pages/Numbers/Keynote templates (~800 MB, re-downloaded on demand)
+- **iCloud CloudKit Cache** — iCloud metadata cache (rebuilt automatically)
+- **Swift Package Manager Cache** — build/download cache (rebuilt on next build)
+- **Carthage Cache** — dependency cache and spec repos (re-downloaded on next build)
+- **Steam Cache** — app cache, shader cache, depot cache, logs
+- **Microsoft Teams Cache** — Electron caches (Cache, Code Cache, GPUCache, IndexedDB)
+- **Adobe Caches** — application caches and media cache
+- **Chrome Extra Caches** — disk cache, code cache, GPU cache, service workers
 
-All categories are always scanned. Dev-related categories display a purple "DEV" badge in the UI. You pick what to delete, then confirm.
+All categories are always scanned. Dev-related categories display a purple "DEV" badge in the UI. Risk badges (Safe/Moderate/Dangerous) shown after scan. You pick what to delete, then confirm.
 
 **Cleanup Options** — additional opt-in options in the UI:
-- **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
+- **Clean .DS_Store files** — removes Finder metadata from directories (off by default, also available as "Scattered Junk" category)
 - **Clean Maven repository** — removes ~/.m2/repository (on by default, re-downloads on next build)
 - **Clean Go module cache** — removes GOMODCACHE (on by default, re-downloads on next build)
 - **Clean .dart_tool in projects** — scans ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos (on by default)
