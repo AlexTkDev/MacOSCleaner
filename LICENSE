@@ -105,7 +105,7 @@ term of this License. Upon termination:
      possession or control.
   c) Termination does not limit the Author's right to seek legal remedies.
 
-Sections 5, 6, 7, and 8 survive termination of this License.
+Sections 5, 6, 7, 8, 9, and 10 survive termination of this License.
 
 7. DISCLAIMER OF WARRANTY
 
@@ -127,12 +127,67 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING FROM, OUT OF, OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-9. GOVERNING LAW
+9. GOVERNING LAW AND INTERNATIONAL SCOPE
 
-This License shall be governed by and construed in accordance with the
-laws of Ukraine, without regard to its conflict of law provisions.
-Any disputes arising under this License shall be subject to the exclusive
-jurisdiction of the competent courts of Ukraine.
+This License is governed by and shall be interpreted in accordance with
+applicable international copyright law, including:
+
+  - The Berne Convention for the Protection of Literary and Artistic
+    Works (as amended, 181 member states);
+  - The Agreement on Trade-Related Aspects of Intellectual Property
+    Rights (TRIPS Agreement);
+  - The WIPO Copyright Treaty (WCT).
+
+The Author reserves the right to enforce this License in any jurisdiction
+worldwide where this software is accessed, used, copied, or distributed.
+The absence of a local governing law clause shall not be construed as a
+waiver of rights in any territory.
+
+10. COPYLEFT ENFORCEMENT CLAUSE
+
+Any use of this software or its source code in a commercial context
+without prior explicit written permission from the Author constitutes
+an "Unauthorized Commercial Use" and automatically triggers the
+following irrevocable obligations upon the violating party:
+
+  a) SOURCE DISCLOSURE OBLIGATION
+     Within 30 (thirty) calendar days of receiving written notice from
+     the Author, the violating party must publicly publish the complete,
+     unobfuscated source code of the entire product, service, system,
+     or application that incorporates, integrates, or is derived from
+     this software — including all dependencies, configurations, and
+     build scripts necessary to fully reproduce the product.
+
+     Such publication must be made publicly accessible at no cost
+     (e.g., via a public repository such as GitHub, GitLab, or
+     equivalent platform).
+
+  b) LICENSE CONVERSION
+     The product or service identified in clause (a) must be licensed
+     and distributed under the terms of the GNU Affero General Public
+     License, Version 3.0 (AGPL-3.0), or any later version published
+     by the Free Software Foundation, for the entire remaining duration
+     of its existence or operation.
+
+  c) CESSATION OF USE
+     The violating party must immediately cease all Unauthorized
+     Commercial Use of this software upon receipt of the Author's
+     written notice, and must not resume such use without obtaining
+     prior explicit written permission from the Author.
+
+  d) NOTIFICATION OBLIGATION
+     The violating party must notify the Author in writing of the full
+     nature, scope, and duration of the Unauthorized Commercial Use
+     within 30 (thirty) calendar days of receiving the Author's notice.
+
+The obligations in this Section are cumulative and independent. They do
+not limit the Author's right to seek injunctive relief, statutory
+damages, actual damages, legal costs, or any other remedy available
+under applicable law.
+
+Failure to comply with any obligation in this Section within the
+specified timeframe constitutes an independent and continuing breach
+of this License, giving rise to additional legal remedies.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Copyright (c) 2026 AlexTkDev — All rights reserved.
