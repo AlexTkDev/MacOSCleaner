@@ -136,6 +136,15 @@ public actor ProcessManager {
         safetyPolicy.isKillable(process)
     }
 
+    public func checkPermissions(_ processes: [RunningProcess]) -> [pid_t: KillPermission] {
+        var result: [pid_t: KillPermission] = [:]
+        result.reserveCapacity(processes.count)
+        for proc in processes {
+            result[proc.pid] = safetyPolicy.isKillable(proc)
+        }
+        return result
+    }
+
     public func addToBlacklist(_ name: String) {
         safetyPolicy.addToBlacklist(name)
     }

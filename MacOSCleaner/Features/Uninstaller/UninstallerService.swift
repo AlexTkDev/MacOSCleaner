@@ -127,12 +127,42 @@ public actor UninstallerService {
                 }
             }
             
+            var mergedApps: [String: AppInfo] = [:]
+            for app in apps {
+                let key = "\(app.bundleID ?? "")-\(app.name)"
+                if let existing = mergedApps[key] {
+                    var mainApp = existing
+                    var secondaryApp = app
+                    
+                    if app.url.path.hasPrefix("/Applications") && !existing.url.path.hasPrefix("/Applications") {
+                        mainApp = app
+                        secondaryApp = existing
+                    }
+                    
+                    var newRelated = mainApp.relatedFiles
+                    newRelated.append(contentsOf: secondaryApp.relatedFiles)
+                    newRelated.append(RelatedFile(url: secondaryApp.url, size: secondaryApp.size))
+                    
+                    var uniqueRelated: [URL: RelatedFile] = [:]
+                    for file in newRelated {
+                        if uniqueRelated[file.url] == nil {
+                            uniqueRelated[file.url] = file
+                        }
+                    }
+                    
+                    mainApp.relatedFiles = Array(uniqueRelated.values).sorted { $0.url.path < $1.url.path }
+                    mergedApps[key] = mainApp
+                } else {
+                    mergedApps[key] = app
+                }
+            }
+            
             await MainActor.run {
                 progress.message = "Scan complete"
                 progress.percentage = 1.0
             }
             
-            return apps.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            return mergedApps.values.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         }
     }
 

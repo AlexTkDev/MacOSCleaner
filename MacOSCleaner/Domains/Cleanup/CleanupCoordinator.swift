@@ -17,7 +17,6 @@ public final class CleanupCoordinator: @unchecked Sendable {
     private let itemManager: CleanupItemManager
     private let notifier: CleanupNotifier
     private var currentTask: Task<Void, Never>?
-    private var currentCategory: String = ""
     
     public var state: CleanupState { stateMachine.state }
     public var currentStep: Int = 0
@@ -69,6 +68,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.itemManager.clear()
                 self.lastError = nil
                 self.scriptLogs = []
+                
+                // Close running apps before scan for better cache cleanup
+                await self.closeRunningApps()
                 
                 let categories = options.scanCategories()
                 
@@ -253,22 +255,23 @@ public final class CleanupCoordinator: @unchecked Sendable {
             self.currentStep = current
             self.totalSteps = total
             self.stepTitle = title
-            // Extract category name from step title (e.g., "Xcode" from "Xcode")
-            self.currentCategory = title
         case .preview(let label, let sizeMB, let deletable, let parentName, let description):
             Logger.coordinator.debug("Preview event: label=\(label, privacy: .public), size=\(sizeMB), parent=\(parentName ?? "none", privacy: .public), description=\(description ?? "none", privacy: .public)")
             self.itemManager.appendPreviewItem(label, size: sizeMB, deletable: deletable, parentName: parentName, description: description)
         case .result(let label, let freedMB):
             Logger.coordinator.debug("Result event: label=\(label, privacy: .public), freed=\(freedMB)")
             if freedMB > 0 {
-                // Use currentCategory as parent to group file items under it
-                self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: self.currentCategory, description: nil)
+                self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: nil, description: nil)
+            }
+        case .categoryResult(let category, let label, let freedMB):
+            Logger.coordinator.debug("CategoryResult event: cat=\(category), label=\(label, privacy: .public), freed=\(freedMB)")
+            if freedMB > 0 {
+                self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: category, description: nil)
             }
         case .log(let message):
             self.scriptLogs.append(message)
         case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
-            // Use currentCategory as parent to ensure all items in this step group together
-            let effectiveParent = parentName ?? self.currentCategory
+            let effectiveParent = parentName ?? category
             self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: category, parentName: effectiveParent)
         }
     }

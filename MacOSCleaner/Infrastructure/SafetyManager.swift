@@ -29,7 +29,6 @@ public struct SafetyManager: Sendable {
             // Sensitive user data - never clean
             "\(home)/Library/Keychains",
             "\(home)/Library/Mail",
-            "\(home)/Library/Safari",
             "\(home)/Library/Calendars",
             "\(home)/Library/Reminders",
             "\(home)/Library/Contacts",
@@ -42,7 +41,6 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Application Support/Firefox/Profiles",
             // Critical system-level user data
             "\(home)/Library/Preferences",
-            "\(home)/Library/WebKit",
         ]
         
         let defaultExceptions = [
@@ -69,6 +67,11 @@ public struct SafetyManager: Sendable {
             "\(home)/.dartServer",
             "\(home)/.android",
             "\(home)/Library/Android",
+            // Browser caches (safe to clean)
+            "\(home)/Library/Safari",
+            "\(home)/Library/WebKit",
+            "\(home)/Library/Application Support/Google/Chrome",
+            "\(home)/Library/Application Support/Chrome",
         ]
         
         self.allowedExceptions = defaultExceptions + allowedExceptions

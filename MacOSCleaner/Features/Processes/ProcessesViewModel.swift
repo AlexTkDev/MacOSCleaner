@@ -109,11 +109,7 @@ public final class ProcessesViewModel {
         lastError = nil
         do {
             processes = try await processManager.listProcesses()
-            var perms: [pid_t: KillPermission] = [:]
-            for proc in processes {
-                perms[proc.pid] = await processManager.checkPermission(proc)
-            }
-            permissions = perms
+            permissions = await processManager.checkPermissions(processes)
             let bl = Array(await processManager.getBlacklist()).sorted()
             let wl = Array(await processManager.getWhitelist()).sorted()
             blacklist = bl

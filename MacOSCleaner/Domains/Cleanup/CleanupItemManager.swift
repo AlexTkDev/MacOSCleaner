@@ -99,13 +99,16 @@ public final class CleanupItemManager {
                     // When a parent already has children (file items from
                     // emitFileItem), appending the .result as another child
                     // double-counts: the UI sums all children for the parent
-                    // sizeMB.  Fix: don't add the result as a child — instead,
+                    // sizeMB. Fix: don't add the result as a child — instead,
                     // use its freedMB as the authoritative "what will be freed"
-                    // value for the parent.  This covers edge cases where the
+                    // value for the parent. This covers edge cases where the
                     // result includes extra data not in individual file items
                     // (e.g. orphaned remnants).
                     if !items[idx].children.isEmpty {
-                        items[idx].sizeMB = size
+                        // Use the larger of existing size or new result size
+                        // to avoid undercounting when result includes items
+                        // not yet in fileItems (like orphaned remnants)
+                        items[idx].sizeMB = max(items[idx].sizeMB, size)
                     } else {
                         items[idx].children.append(newItem)
                         items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }

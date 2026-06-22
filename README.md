@@ -5,8 +5,9 @@
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343.svg?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF.svg?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
+[![Version: 1.0](https://img.shields.io/badge/Release-1.0-brightgreen.svg)]()
 
-Native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep your Mac tidy. Nothing is permanently deleted — everything goes to Trash, so you can always restore it.
+Production-ready native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep your Mac tidy. Nothing is permanently deleted — everything goes to Trash, so you can always restore it.
 
 ---
 
@@ -62,6 +63,20 @@ All categories are always scanned. Dev-related categories display a purple "DEV"
 
 ---
 
+## Performance
+
+Optimized for Apple Silicon (M1-M5) with maximum parallelism:
+
+- **3 Specialized Actors** — `FileCleanupActor` (FileManager ops), `ProcessCleanupActor` (subprocess ops), `ScanActor` (app scanning) run concurrently without contention
+- **Parallel Category Execution** — cleanup categories execute up to `activeProcessorCount` (10-14 cores on M1-M4 Pro/Max) concurrent via `withThrowingTaskGroup`
+- **Iterative File Scanner** — stack-based `PosixScanner` with real batching (1000 files/batch), cooperative yielding every 2s, inode deduplication, and excluded directory name pruning
+- **Directory Size Cache** — `DirectorySizeCache` actor prevents redundant recursive size calculations across categories
+- **Command Cache** — `CommandCache` actor caches `commandExists` results, avoiding repeated subprocess spawns
+- **Batch Permission Checks** — `ProcessManager.checkPermissions()` single actor hop instead of N sequential hops
+- **Build Optimization** — wholemodule compilation, `-O` optimization level, dead code stripping, deployment target macOS 26+
+
+---
+
 ## Safety
 
 - All deletions go through `trashItem(at:)` — recoverable from Trash by default.
@@ -78,8 +93,11 @@ All categories are always scanned. Dev-related categories display a purple "DEV"
 - **Swift 6** — strict concurrency, actors, `async/await`, structured task groups
 - **SwiftUI** — declarative UI, `@Observable`, `NavigationSplitView`, Charts
 - **Architecture** — feature-oriented folders, component-based cleanup (Coordinator, Engine, ItemManager, Notifier), no third-party UI frameworks
-- **CleanupEngine** — hybrid actor using FileManager for safe file ops and Process for system commands (brew, npm, docker), with configurable timeouts and cancellation
-- **Build** — XcodeGen (`project.yml` as single source of truth)
+- **CleanupEngine** — actor-based engine with 3 specialized sub-actors (`FileCleanupActor`, `ProcessCleanupActor`, `ScanActor`) for parallel execution; categories run concurrently up to `ProcessInfo.processInfo.activeProcessorCount`
+- **File Scanning** — iterative stack-based `PosixScanner` with real batching, cooperative yielding, inode deduplication, and excluded directory name pruning
+- **Caching** — `DirectorySizeCache` and `CommandCache` actors eliminate redundant filesystem scans and subprocess spawns
+- **ProcessManager** — batch permission checks (single actor hop instead of N)
+- **Build** — XcodeGen (`project.yml` as single source of truth), wholemodule optimization, `-O` Swift optimization level
 - **Logging** — OSLog with structured subsystems
 
 ---
@@ -92,10 +110,22 @@ MacOSCleaner/
 ├── Domains/
 │   ├── Cleanup/  # CleanupStateMachine, CleanupCoordinator, CleanupEngine,
 │   │             # CleanupItemManager, CleanupNotifier, CleanupModels, TransactionJournal
-│   ├── ProcessManagement/  # ProcessManager, ProcessSafetyPolicy
+│   ├── ProcessManagement/  # ProcessManager (batch permissions), ProcessSafetyPolicy
 │   └── StartupServices/    # LaunchServiceManager
 ├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, About)
-├── Infrastructure/  # System services (CommandRunner, SafetyManager, TrashManager, LanguageManager)
+├── Infrastructure/  # System services
+│   ├── CommandRunner.swift          # Actor: subprocess execution with timeout/cancellation
+│   ├── CommandRunning.swift         # Protocol + commandExists caching
+│   ├── CommandCache.swift           # Actor: caches command existence checks
+│   ├── SafetyManager.swift          # Path validation, blocks critical system paths
+│   ├── TrashManager.swift           # Trash operations
+│   ├── LanguageManager.swift        # Runtime language switching (en/ru/uk)
+│   ├── PosixScanner.swift           # Iterative stack-based scanner with batching
+│   ├── FileCleanupActor.swift       # Actor: FileManager operations (clean, remove, size)
+│   ├── ProcessCleanupActor.swift    # Actor: subprocess operations with CommandCache
+│   ├── ScanActor.swift              # Actor: app scanning and directory enumeration
+│   ├── DirectorySizeCache.swift     # Actor: caches directory sizes
+│   └── FileManager+Size.swift       # FileManager size calculation extension
 ├── Models/       # Shared value types and enums (CleanupItem, OperationRisk, RunningProcess, etc.)
 └── Resources/    # Localizable.strings (en/ru/uk), assets
 ```

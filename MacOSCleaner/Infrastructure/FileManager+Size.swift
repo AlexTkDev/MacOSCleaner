@@ -10,7 +10,7 @@ extension FileManager {
     ]
 
     nonisolated(unsafe) private static let _sizeCache = NSCache<NSString, NSNumber>()
-    nonisolated(unsafe) private static let _sizeCacheLock = NSLock()
+    private static let _sizeCacheLock = NSLock()
 
     /// Clears the size cache (call after cleanup operations).
     public nonisolated static func clearSizeCache() {

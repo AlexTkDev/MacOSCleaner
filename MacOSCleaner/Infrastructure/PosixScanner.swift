@@ -6,17 +6,20 @@ private let scannerLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.
 public struct PosixScanner: Sendable {
     public struct Config: Sendable {
         public let excludedPrefixes: [String]
+        public let excludedDirectoryNames: Set<String>
         public let maxDepth: Int?
         public let batchSize: Int
         public let yieldInterval: Duration
 
         public init(
             excludedPrefixes: [String] = ["/Library/", "/.Trash/", "/.git/"],
+            excludedDirectoryNames: Set<String> = [".git", ".Trash", "node_modules", "__MACOSX"],
             maxDepth: Int? = nil,
             batchSize: Int = 1000,
-            yieldInterval: Duration = .seconds(2)
+            yieldInterval: Duration = .seconds(1)
         ) {
             self.excludedPrefixes = excludedPrefixes
+            self.excludedDirectoryNames = excludedDirectoryNames
             self.maxDepth = maxDepth
             self.batchSize = batchSize
             self.yieldInterval = yieldInterval
@@ -42,40 +45,26 @@ public struct PosixScanner: Sendable {
         let safeRoots = roots
         let safeConfig = config
         let safeProgress = progress
-        return AsyncStream { continuation in
+        return AsyncStream(bufferingPolicy: .bufferingNewest(4)) { continuation in
             let task = Task {
                 let fm = FileManager.default
                 let allRoots = safeRoots.filter { fm.fileExists(atPath: $0) }
+                let uniqueRoots = Self.deduplicateRoots(allRoots)
                 var totalScanned = 0
                 var totalFound = 0
 
-                await withTaskGroup(of: (Int, Int, [Entry]).self) { group in
-                    for root in allRoots {
+                await withTaskGroup(of: (Int, Int, [[Entry]]).self) { group in
+                    for root in uniqueRoots {
                         group.addTask {
-                            var scanned = 0
-                            var found = 0
-                            var entries: [Entry] = []
-                            var visitedInodes = Set<UInt64>()
-
-                            Self.scanRecursive(
-                                root,
-                                depth: 0,
-                                config: safeConfig,
-                                visitedInodes: &visitedInodes,
-                                scanned: &scanned,
-                                found: &found,
-                                entries: &entries
-                            )
-
-                            return (scanned, found, entries)
+                            Self.scanRoot(root, config: safeConfig)
                         }
                     }
 
-                    for await (scanned, found, entries) in group {
+                    for await (scanned, found, batches) in group {
                         totalScanned += scanned
                         totalFound += found
-                        if !entries.isEmpty {
-                            continuation.yield(entries)
+                        for batch in batches where !batch.isEmpty {
+                            continuation.yield(batch)
                         }
                         safeProgress?(totalScanned, totalFound)
                     }
@@ -89,77 +78,100 @@ public struct PosixScanner: Sendable {
         }
     }
 
-    private static func scanRecursive(
-        _ path: String,
-        depth: Int,
-        config: Config,
-        visitedInodes: inout Set<UInt64>,
-        scanned: inout Int,
-        found: inout Int,
-        entries: inout [Entry]
-    ) {
-        if let maxDepth = config.maxDepth, depth > maxDepth { return }
-
-        guard let dir = opendir(path) else {
-            scannerLog.warning("opendir failed: \(path) — \(String(cString: strerror(errno)))")
-            return
+    private static func deduplicateRoots(_ roots: [String]) -> [String] {
+        let sorted = roots.sorted { $0.count < $1.count }
+        var result: [String] = []
+        for root in sorted {
+            let isChild = result.contains { root.hasPrefix($0 + "/") }
+            if !isChild { result.append(root) }
         }
-        defer { closedir(dir) }
+        return result
+    }
 
-        var dirStat = Darwin.stat()
-        if fstat(Darwin.dirfd(dir), &dirStat) == 0 {
-            let inode = dirStat.st_ino
-            if visitedInodes.contains(inode) {
-                scannerLog.warning("Symlink loop detected, skipping: \(path) (inode: \(inode))")
-                return
+    private static func scanRoot(_ root: String, config: Config) -> (Int, Int, [[Entry]]) {
+        var allBatches: [[Entry]] = []
+        var batch: [Entry] = []
+        batch.reserveCapacity(config.batchSize)
+        var scanned = 0
+        var found = 0
+        var visitedInodes = Set<UInt64>()
+
+        var stack: [(path: String, depth: Int)] = [(root, 0)]
+
+        while let (currentPath, depth) = stack.popLast() {
+            if Task.isCancelled { break }
+            if let maxDepth = config.maxDepth, depth > maxDepth { continue }
+
+            guard let dir = opendir(currentPath) else { continue }
+
+            var dirStat = Darwin.stat()
+            if fstat(dirfd(dir), &dirStat) == 0 {
+                let inode = dirStat.st_ino
+                if visitedInodes.contains(inode) {
+                    closedir(dir)
+                    continue
+                }
+                visitedInodes.insert(inode)
             }
-            visitedInodes.insert(inode)
-        }
 
-        while let entry = readdir(dir) {
-            let name = withUnsafePointer(to: &entry.pointee.d_name) { ptr in
-                String(cString: UnsafeRawPointer(ptr).assumingMemoryBound(to: CChar.self))
-            }
-            if name == "." || name == ".." { continue }
+            var subdirs: [(String, Int)] = []
 
-            let fullPath = "\(path)/\(name)"
-            let isDir = entry.pointee.d_type == DT_DIR
-            let isLink = entry.pointee.d_type == DT_LNK
-            let inode = entry.pointee.d_ino
+            while let entry = readdir(dir) {
+                let name = withUnsafePointer(to: &entry.pointee.d_name) { ptr in
+                    String(cString: UnsafeRawPointer(ptr).assumingMemoryBound(to: CChar.self))
+                }
+                if name == "." || name == ".." { continue }
+                if config.excludedDirectoryNames.contains(name) { continue }
 
-            scanned += 1
+                let isDir = entry.pointee.d_type == DT_DIR
+                let isLink = entry.pointee.d_type == DT_LNK
+                let inode = entry.pointee.d_ino
+                let fullPath = currentPath + "/" + name
 
-            var excluded = false
-            for prefix in config.excludedPrefixes {
-                if fullPath.contains(prefix) {
-                    excluded = true
-                    break
+                scanned += 1
+
+                var excluded = false
+                for prefix in config.excludedPrefixes {
+                    if fullPath.contains(prefix) {
+                        excluded = true
+                        break
+                    }
+                }
+
+                if !excluded {
+                    batch.append(Entry(
+                        path: fullPath,
+                        name: name,
+                        isDirectory: isDir,
+                        isSymlink: isLink,
+                        depth: depth,
+                        inode: inode
+                    ))
+                    found += 1
+
+                    if batch.count >= config.batchSize {
+                        allBatches.append(batch)
+                        batch = []
+                        batch.reserveCapacity(config.batchSize)
+                    }
+                }
+
+                if isDir && !excluded {
+                    subdirs.append((fullPath, depth + 1))
                 }
             }
 
-            if !excluded {
-                entries.append(Entry(
-                    path: fullPath,
-                    name: name,
-                    isDirectory: isDir,
-                    isSymlink: isLink,
-                    depth: depth,
-                    inode: inode
-                ))
-                found += 1
-            }
+            closedir(dir)
 
-            if isDir {
-                scanRecursive(
-                    fullPath,
-                    depth: depth + 1,
-                    config: config,
-                    visitedInodes: &visitedInodes,
-                    scanned: &scanned,
-                    found: &found,
-                    entries: &entries
-                )
+            for sub in subdirs.reversed() {
+                stack.append(sub)
             }
         }
+
+        if !batch.isEmpty {
+            allBatches.append(batch)
+        }
+
+        return (scanned, found, allBatches)
     }
 }

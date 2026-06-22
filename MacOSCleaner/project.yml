@@ -7,7 +7,7 @@ targets:
   MacOSCleaner:
     type: application
     platform: macOS
-    deploymentTarget: "15.0"
+    deploymentTarget: "26.0"
     sources:
       - App
       - Domains
@@ -31,11 +31,18 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
         INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches."
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 MacOSCleaner. All rights reserved."
+        SWIFT_OPTIMIZATION_LEVEL: "-O"
+        SWIFT_COMPILATION_MODE: wholemodule
+        DEAD_CODE_STRIPPING: YES
+        SWIFT_STRICT_CONCURRENCY: minimal
+        CLANG_ANALYZER_NONNULL: YES
+        GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
+        COPY_PHASE_STRIP: NO
 
   MacOSCleanerTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "15.0"
+    deploymentTarget: "26.0"
     sources:
       - MacOSCleanerTests
     dependencies:
