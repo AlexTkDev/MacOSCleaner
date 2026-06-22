@@ -1,0 +1,48 @@
+name: MacOSCleaner
+options:
+  bundleIdPrefix: input
+  developmentLanguage: en
+
+targets:
+  MacOSCleaner:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - App
+      - Domains
+      - Features
+      - Infrastructure
+      - Models
+      - State
+      - Resources
+    entitlements:
+      path: MacOSCleaner.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
+        MARKETING_VERSION: 1.0
+        CURRENT_PROJECT_VERSION: 1
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: 6.0
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches."
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 MacOSCleaner. All rights reserved."
+
+  MacOSCleanerTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - MacOSCleanerTests
+    dependencies:
+      - target: MacOSCleaner
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleanerTests
+        SWIFT_VERSION: 6.0
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES

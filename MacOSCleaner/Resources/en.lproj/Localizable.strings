@@ -1,0 +1,310 @@
+// Common
+"welcome_msg" = "Welcome back!";
+"app_title" = "Cleaner";
+"sidebar_select_item" = "Select an item from the sidebar";
+"close" = "Close";
+"cancel_description" = "The operation was cancelled by user.";
+"reset" = "Reset";
+"cancel" = "Cancel";
+"done" = "Done";
+"try_again" = "Try Again";
+"error" = "Error";
+"version" = "Version";
+"size" = "Size";
+"last_used" = "Last Used";
+
+// Sidebar / Navigation Menu
+"menu_dashboard" = "Dashboard";
+"menu_cleanup" = "Cleanup";
+"menu_startup_services" = "Startup Services";
+"menu_startup_vendors" = "Startup Vendors";
+"menu_uninstaller" = "Uninstaller";
+"menu_settings" = "Settings";
+
+// About View
+"about_title" = "About MacOS Cleaner";
+"about_version" = "Version 1.0";
+"about_developer" = "Developed by AlexTkDev";
+"about_problem_link" = "If you have a problem with the app, let me know here";
+"about_linkedin" = "LinkedIn Profile";
+"about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
+
+// Dashboard View
+"dashboard_title" = "Dashboard";
+"dashboard_system_info" = "System Information";
+"dashboard_model" = "Model";
+"dashboard_os_version" = "OS Version";
+"dashboard_processor" = "Processor";
+"dashboard_memory" = "Memory";
+"dashboard_disk_usage" = "Disk Usage";
+"dashboard_used" = "Used";
+"dashboard_free" = "Free";
+"dashboard_total" = "Total";
+"dashboard_statistics" = "Statistics";
+"dashboard_total_freed" = "Total Freed";
+"dashboard_cleanups" = "Cleanups";
+"dashboard_status" = "Status";
+"dashboard_healthy" = "Healthy";
+"dashboard_recent_operations" = "Recent Operations";
+"dashboard_no_recent_operations" = "No recent operations";
+
+// Settings View
+"settings_title" = "Settings";
+"settings_subtitle" = "Configure app preferences";
+"settings_general" = "General";
+"settings_language" = "Language";
+"settings_theme" = "Theme";
+"theme_system" = "System";
+"theme_light" = "Light";
+"theme_dark" = "Dark";
+"settings_notifications" = "Notifications";
+"settings_tooltips" = "Tooltips";
+"settings_auto_scan" = "Automatic Scan on Startup";
+"settings_processes" = "Processes";
+"settings_refresh_interval" = "Refresh Interval";
+"settings_sort_by" = "Sort By";
+"settings_startup" = "Startup";
+"settings_trash_deletion" = "Trash & Deletion";
+"settings_empty_trash_during_cleanup" = "Empty Trash During Cleanup";
+"settings_bypass_trash_on_uninstall" = "Bypass Trash on Uninstall";
+"settings_empty_trash_immediately" = "Empty Trash Immediately";
+"settings_advanced" = "Advanced";
+"settings_show_related" = "Show Associated Files in Uninstaller";
+"settings_skip_expert" = "Skip Expert Mode in Uninstaller";
+"settings_data" = "Data";
+"settings_forget_everything" = "Forget Everything";
+"settings_forget_description" = "Clear all saved data and reset settings to their defaults.";
+"settings_reset_button" = "Reset All Settings";
+
+// Settings Tooltips
+"settings_tooltip_language" = "Select the interface language for the application.";
+
+// Notification Status
+"settings_notifications_status" = "Notification Status";
+"settings_notifications_granted" = "Allowed";
+"settings_notifications_denied" = "Denied (open System Settings)";
+"settings_notifications_not_determined" = "Not requested";
+"settings_open_notification_settings" = "Open Notification Settings";
+"settings_tooltip_theme" = "Choose the visual appearance of the application. System follows your macOS settings.";
+"settings_tooltip_notifications" = "Display system notifications when scans and cleanup operations complete.";
+"settings_tooltip_tooltips" = "Show helpful tooltip descriptions when hovering over interface elements.";
+"settings_tooltip_auto_scan" = "Automatically begin scanning for cleanup items when the application launches.";
+"settings_tooltip_refresh_interval" = "How often to refresh the process list. Manual disables automatic refresh.";
+"settings_tooltip_sort_by" = "Default sort order for the process list.";
+"settings_tooltip_empty_trash" = "When enabled, the system Trash will be emptied as part of the cleanup scan process. Disabled by default for safety.";
+"settings_tooltip_bypass_trash" = "When uninstalling an app and its associated files, permanently delete them instead of moving to the Trash. WARNING: This makes uninstallation irreversible.";
+"settings_tooltip_show_related" = "Display the list of associated files (caches, preferences, logs) found for each application in the Uninstaller view.";
+"settings_tooltip_empty_trash_immediately" = "After moving items to the Trash, immediately empty it. This makes the cleanup operation irreversible.";
+"settings_tooltip_skip_expert" = "Skip the Expert Mode file selection step and immediately uninstall applications with all associated files selected.";
+"settings_tooltip_forget" = "Remove all saved preferences and restore factory defaults.";
+
+// Settings Reset Dialog
+"settings_reset_confirm_title" = "Reset All Settings?";
+"settings_reset_confirm_button" = "Reset All";
+"settings_reset_confirm_message" = "This will clear all saved data and reset every setting to its default value. This action cannot be undone.";
+
+// Trash & Deletion Warning
+"settings_trash_warning" = "These settings make deletion irreversible. Files bypassing or immediately emptied from the Trash cannot be recovered.";
+
+// Startup Services View
+"startup_title" = "Startup Services";
+"startup_subtitle" = "Manage agents that start automatically.";
+"startup_refresh" = "Refresh list";
+"startup_scanning" = "Scanning services...";
+"startup_no_agents" = "No Startup Agents";
+"startup_no_agents_sub" = "No agents found in ~/Library/LaunchAgents.";
+"startup_scan_failed" = "Scan Failed";
+"startup_status_loaded" = "Loaded";
+"startup_status_unloaded" = "Unloaded";
+"startup_disable" = "Disable";
+"startup_enable" = "Enable";
+
+// Startup Categories
+"startup_category_user" = "My Services";
+"startup_category_third_party" = "Third-party";
+"startup_category_system" = "System";
+
+// Startup Filters
+"startup_filter_all" = "All";
+
+// Startup Category Help
+"startup_help_user" = "User service from ~/Library/. Safe to disable.";
+"startup_help_third_party" = "Third-party service from /Library/. Can be disabled with caution.";
+"startup_help_system" = "Apple system service. Not recommended to disable.";
+
+// Startup Vendor Settings
+"settings_startup_vendors" = "System Vendors";
+"startup_vendors_title" = "System Vendors";
+"startup_vendors_description" = "Label prefixes considered as system services.";
+"startup_vendors_description_sub" = "Services with these prefixes are marked as 'System' and not recommended to disable.";
+"startup_vendors_current" = "Current Prefixes";
+"startup_vendors_reset" = "Reset";
+"startup_vendors_empty" = "No prefixes added";
+"startup_vendors_protected" = "Protected";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Prefix must contain a dot";
+"startup_vendors_error_duplicate" = "This prefix already exists";
+
+// Cleanup View
+"cleanup_scanning" = "Scanning System...";
+"cleanup_clean" = "System is Clean";
+"cleanup_clean_sub" = "No unnecessary files were found during the scan.";
+"cleanup_rescan" = "Rescan";
+"cleanup_cleaning" = "Cleaning Up...";
+"cleanup_ready" = "Ready to Clean";
+"cleanup_ready_sub" = "Scan your system to find safe-to-remove caches and temporary files.";
+"cleanup_additional_options" = "Additional Cleanup Options";
+"cleanup_option_ds_store" = "Clean .DS_Store files";
+"cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";
+"cleanup_option_maven" = "Clean Maven repository (~/.m2/repository)";
+"cleanup_option_maven_sub" = "Removes downloaded Maven dependencies. Re-downloads on next build.";
+"cleanup_option_modcache" = "Clean Go module cache (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "Removes downloaded Go modules. Re-downloads on next build.";
+"cleanup_option_projects" = "Clean .dart_tool in projects";
+"cleanup_option_projects_sub" = "Removes Flutter/Dart project caches in ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
+"cleanup_start_scan" = "Start Scan";
+"cleanup_failed" = "Cleanup Failed";
+"cleanup_failed_default" = "An error occurred during the cleanup process.";
+"cleanup_script_logs" = "Script Logs:";
+"cleanup_complete" = "Cleanup Complete";
+"cleanup_complete_sub" = "Successfully freed %lld MB of disk space.";
+"cleanup_summary" = "Deleted Items Summary";
+"cleanup_selected" = "Selected: %lld MB";
+"cleanup_hide_logs" = "Hide Logs";
+"cleanup_show_logs" = "Show Logs";
+"cleanup_copy" = "Copy";
+"cleanup_copy_logs" = "Copy Logs";
+"cleanup_now" = "Clean Now";
+"cleanup_manual_instructions" = "Manual Cleanup Instructions";
+"cleanup_scan_results" = "Scan Results";
+"cleanup_scan_results_sub" = "Select items you want to remove and click 'Clean Now'.";
+"cleanup_recommended" = "Recommended for removal";
+"cleanup_deselect_all" = "Deselect All";
+"cleanup_select_all" = "Select All";
+"cleanup_show_all_count" = "Show all (%lld more)";
+"cleanup_debug_log" = "Debug Log (%lld lines)";
+
+// Cleanup Notifications
+"cleanup_scan_complete_title" = "Scan Complete";
+"cleanup_scan_complete_body" = "Found %lld MB of files to clean.";
+"cleanup_emptying_trash" = "Emptying Recycle Bin...";
+"cleanup_complete_title" = "Cleanup Complete";
+"cleanup_complete_body" = "Successfully freed %lld MB.";
+
+// Trash
+"trash_user_label" = "User Recycle Bin";
+"trash_user_description" = "Contents of your system Recycle Bin. Contains deleted files.";
+
+// Uninstaller View
+"uninstaller_title" = "Uninstaller";
+"uninstaller_search" = "Search Apps";
+"uninstaller_reload" = "Reload Applications";
+"uninstaller_confirm_perm_delete" = "Permanently Delete?";
+"uninstaller_confirm_move_trash" = "Move to Trash?";
+"uninstaller_delete_permanently" = "Delete Permanently";
+"uninstaller_move_trash" = "Move to Trash";
+"uninstaller_uninstall_app_warning_perm" = "This will permanently delete %@ and %lld related files. This action cannot be undone.";
+"uninstaller_uninstall_app_warning_trash" = "This will move %@ and %lld related files to the Trash.";
+"uninstaller_drag_drop" = "Drag .app here to scan";
+"uninstaller_or_select" = "OR SELECT FROM THE LIST";
+"uninstaller_unknown_bundle" = "Unknown Bundle ID";
+"uninstaller_expert_mode" = "Expert Mode";
+"uninstaller_select_files" = "(select related files)";
+"uninstaller_action_info_perm" = "Permanent Action";
+"uninstaller_action_info_perm_sub" = "Files are permanently deleted, bypassing the Trash.";
+"uninstaller_action_info_trash" = "Reversible Action";
+"uninstaller_action_info_trash_sub" = "Files are moved to the Trash and can be restored.";
+"uninstaller_space_reclaim" = "Total Space to Reclaim: %@";
+"uninstaller_button_uninstall" = "Uninstall Application";
+"uninstaller_related_files_count" = "%lld Related Files Found";
+"uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
+"uninstaller_cleanup_items" = "Cleanup Items";
+"uninstaller_scanning_apps" = "Scanning Applications...";
+"uninstaller_complete_title" = "Uninstallation Complete";
+"uninstaller_complete_body" = "Application %@ was successfully removed.";
+
+// Processes View
+"menu_processes" = "Processes";
+"processes_title" = "Processes";
+"processes_subtitle" = "Manage running system processes.";
+"processes_search" = "Search processes...";
+"processes_scanning" = "Scanning processes...";
+"processes_terminate" = "Terminate";
+"processes_force_kill" = "Force Kill";
+"processes_protected" = "Protected";
+"processes_refresh" = "Refresh list";
+"processes_confirm_terminate" = "Terminate Process?";
+"processes_confirm_terminate_message" = "Are you sure you want to terminate %@ (PID %lld)?";
+"processes_confirm_force" = "Force Kill?";
+"processes_confirm_force_message" = "Force killing may cause data loss. Kill %@ (PID %lld)?";
+"processes_no_results" = "No matching processes found.";
+"processes_no_processes" = "No Processes Found";
+"processes_no_processes_sub" = "No running processes detected.";
+"processes_scan_failed" = "Scan Failed";
+"processes_manage_blacklist" = "Manage blacklist";
+"processes_manage_whitelist" = "Manage whitelist";
+"processes_tooltip_blacklist" = "Processes you can always kill — add heavy apps like Docker or OrbStack here";
+"processes_tooltip_whitelist" = "Processes that can never be killed — protect critical apps from accidental termination";
+"processes_tooltip_refresh" = "Refresh the list of running processes";
+"processes_section_user" = "Your Processes";
+"processes_section_system" = "System Processes";
+"processes_badge_blacklist" = "Blacklist (%lld)";
+"processes_badge_whitelist" = "Whitelist (%lld)";
+"processes_blacklist_title" = "Blacklist";
+"processes_blacklist_placeholder" = "Process name to block...";
+"processes_whitelist_title" = "Whitelist";
+"processes_whitelist_placeholder" = "Process name to protect...";
+"add" = "Add";
+
+// Permissions
+"permissions_title" = "Permissions Required";
+"permissions_subtitle" = "MacOSCleaner needs access to system folders for cleanup.";
+"permissions_fda_description" = "Required to access ~/Library/Caches, ~/Library/Application Support, and other system folders.";
+"permissions_instructions_title" = "How to grant Full Disk Access:";
+"permissions_step1" = "Click 'Open System Settings' below.";
+"permissions_step2" = "Find MacOSCleaner in the list.";
+"permissions_step3" = "Toggle the switch to ON.";
+"permissions_step4" = "Return to MacOSCleaner and click 'Check Status'.";
+"permissions_open_settings" = "Open System Settings";
+"permissions_check_status" = "Check Status";
+"permissions_dismiss_temp" = "Skip for now";
+"permissions_dismiss_permanent" = "Don't show again";
+"permissions_status_granted" = "Granted";
+"permissions_status_required" = "Required";
+"permissions_window_title" = "Permissions";
+
+// Settings Permissions
+"settings_permissions" = "Permissions";
+"settings_fda_description" = "Required for cleaning system caches and application data.";
+"settings_open_settings" = "Open Settings";
+"settings_check_permissions" = "Check Permissions";
+
+// Cleanup Dev Badge
+"cleanup_dev_badge" = "DEV";
+
+// Refresh Interval (Settings -> Processes)
+"refresh_manual" = "Manual";
+"refresh_5s" = "Every 5 seconds";
+"refresh_10s" = "Every 10 seconds";
+"refresh_30s" = "Every 30 seconds";
+
+// Sort By (Settings -> Processes)
+"sort_cpu" = "CPU Usage";
+"sort_memory" = "Memory Usage";
+"sort_name" = "Name";
+"sort_threads" = "Thread Count";
+
+// New cleanup categories
+"time_machine_snapshots" = "Time Machine Snapshots";
+"ios_backups" = "iOS Backups";
+"mail_downloads" = "Mail Downloads";
+"saved_app_state" = "Saved Application State";
+"crash_reporter" = "Crash Reporter";
+"assets_v2" = "AssetsV2 / iWork Templates";
+"cloud_kit_cache" = "iCloud CloudKit Cache";
+"swift_pm_cache" = "Swift Package Manager Cache";
+"carthage_cache" = "Carthage Cache";
+"steam_cache" = "Steam Cache";
+"teams_cache" = "Microsoft Teams Cache";
+"adobe_caches" = "Adobe Caches";
+"chrome_extra_caches" = "Chrome Extra Caches";

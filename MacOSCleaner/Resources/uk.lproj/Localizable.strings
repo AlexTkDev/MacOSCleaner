@@ -1,0 +1,284 @@
+// Common
+"welcome_msg" = "З поверненням!";
+"app_title" = "Очищення";
+"sidebar_select_item" = "Виберіть елемент у бічному меню";
+"close" = "Закрити";
+"cancel_description" = "Операцію скасовано користувачем.";
+"reset" = "Скинути";
+"cancel" = "Скасувати";
+"done" = "Готово";
+"try_again" = "Повторити";
+"error" = "Помилка";
+"version" = "Версія";
+"size" = "Розмір";
+"last_used" = "Останній запуск";
+
+// Sidebar / Navigation Menu
+"menu_dashboard" = "Огляд";
+"menu_cleanup" = "Очищення";
+"menu_startup_services" = "Автозапуск";
+"menu_startup_vendors" = "Вендори автозапуску";
+"menu_uninstaller" = "Деінсталятор";
+"menu_settings" = "Налаштування";
+
+// About View
+"about_title" = "Про програму MacOS Cleaner";
+"about_version" = "Версія 1.0";
+"about_developer" = "Розробник: AlexTkDev";
+"about_problem_link" = "Якщо виникла проблема з додатком, повідомте мені тут";
+"about_linkedin" = "Профіль LinkedIn";
+"about_copyright" = "© 2026 AlexTkDev. Усі права захищені.";
+
+// Dashboard View
+"dashboard_title" = "Огляд";
+"dashboard_system_info" = "Інформація про систему";
+"dashboard_model" = "Модель";
+"dashboard_os_version" = "Версія ОС";
+"dashboard_processor" = "Процесор";
+"dashboard_memory" = "Пам'ять";
+"dashboard_disk_usage" = "Використання диска";
+"dashboard_used" = "Використано";
+"dashboard_free" = "Вільно";
+"dashboard_total" = "Всього";
+"dashboard_statistics" = "Статистика";
+"dashboard_total_freed" = "Всього очищено";
+"dashboard_cleanups" = "Очищення";
+"dashboard_status" = "Статус";
+"dashboard_healthy" = "У нормі";
+"dashboard_recent_operations" = "Недавні операції";
+"dashboard_no_recent_operations" = "Немає недавніх операцій";
+
+// Settings View
+"settings_title" = "Налаштування";
+"settings_subtitle" = "Налаштування параметрів додатка";
+"settings_general" = "Загальні";
+"settings_language" = "Мова";
+"settings_theme" = "Тема";
+"theme_system" = "Системна";
+"theme_light" = "Світла";
+"theme_dark" = "Темна";
+"settings_notifications" = "Сповіщення";
+"settings_tooltips" = "Підказки";
+"settings_auto_scan" = "Автосканування при запуску";
+"settings_processes" = "Процеси";
+"settings_refresh_interval" = "Інтервал оновлення";
+"settings_sort_by" = "Сортування";
+"settings_startup" = "Автозапуск";
+"settings_trash_deletion" = "Смітник і видалення";
+"settings_empty_trash_during_cleanup" = "Очищати Смітник при очищенні";
+"settings_bypass_trash_on_uninstall" = "Обходити Смітник при видаленні";
+"settings_empty_trash_immediately" = "Одразу очищати Смітник";
+"settings_advanced" = "Додатково";
+"settings_show_related" = "Показувати пов'язані файли в деінсталяторі";
+"settings_skip_expert" = "Пропускати Експертний режим у деінсталяторі";
+"settings_data" = "Дані";
+"settings_forget_everything" = "Скинути всі дані";
+"settings_forget_description" = "Очистити всі збережені дані та відновити налаштування за замовчуванням.";
+"settings_reset_button" = "Скинути всі налаштування";
+
+// Settings Tooltips
+"settings_tooltip_language" = "Виберіть мову інтерфейсу додатка.";
+
+// Notification Status
+"settings_notifications_status" = "Статус сповіщень";
+"settings_notifications_granted" = "Дозволено";
+"settings_notifications_denied" = "Заборонено (відкрити Налаштування)";
+"settings_notifications_not_determined" = "Не запитувалося";
+"settings_open_notification_settings" = "Відкрити налаштування сповіщень";
+"settings_tooltip_theme" = "Виберіть тему оформлення додатка. 'Системна' відповідає налаштуванням macOS.";
+"settings_tooltip_notifications" = "Показувати системні сповіщення після завершення сканування та очищення.";
+"settings_tooltip_tooltips" = "Показувати спливаючі підказки при наведенні на елементи інтерфейсу.";
+"settings_tooltip_auto_scan" = "Автоматично починати сканування для очищення при запуску додатка.";
+"settings_tooltip_refresh_interval" = "Як часто оновлювати список процесів. «Вручну» вимикає автоматичне оновлення.";
+"settings_tooltip_sort_by" = "Порядок сортування списку процесів за замовчуванням.";
+"settings_tooltip_empty_trash" = "Якщо увімкнено, системний Смітник буде очищено в процесі сканування. Вимкнено за замовчуванням задля безпеки.";
+"settings_tooltip_bypass_trash" = "При видаленні додатка та його пов'язаних файлів видаляти їх безповоротно, минаючи Смітник. УВАГА: Ця дія є незворотною.";
+"settings_tooltip_show_related" = "Відображати список пов'язаних файлів (кеші, налаштування, логи) для кожного додатка у вікні деінсталятора.";
+"settings_tooltip_empty_trash_immediately" = "Одразу очищати Смітник після переміщення файлів. Це робить операцію очищення незворотною.";
+"settings_tooltip_skip_expert" = "Пропускати вибір файлів в Експертному режимі та одразу видаляти додатки з усіма знайденими пов'язаними файлами.";
+"settings_tooltip_forget" = "Видалити всі збережені налаштування та відновити параметри за замовчуванням.";
+
+// Settings Reset Dialog
+"settings_reset_confirm_title" = "Скинути всі налаштування?";
+"settings_reset_confirm_button" = "Скинути все";
+"settings_reset_confirm_message" = "Це призведе до очищення всіх збережених даних і скидання всіх налаштувань до значень за замовчуванням. Цю дію не можна скасувати.";
+
+// Trash & Deletion Warning
+"settings_trash_warning" = "Ці налаштування роблять видалення незворотним. Файли, що обходять Смітник або видаляються з нього одразу, відновити неможливо.";
+
+// Startup Services View
+"startup_title" = "Автозапуск";
+"startup_subtitle" = "Керування агентами автозапуску.";
+"startup_refresh" = "Оновити список";
+"startup_scanning" = "Сканування служб...";
+"startup_no_agents" = "Немає агентів автозапуску";
+"startup_no_agents_sub" = "Агенти у папці ~/Library/LaunchAgents не знайдені.";
+"startup_scan_failed" = "Помилка сканування";
+"startup_status_loaded" = "Завантажений";
+"startup_status_unloaded" = "Вивантажений";
+"startup_disable" = "Вимкнути";
+"startup_enable" = "Увімкнути";
+
+// Cleanup View
+"cleanup_scanning" = "Сканування системи...";
+"cleanup_clean" = "Система чиста";
+"cleanup_clean_sub" = "Під час сканування не було знайдено непотрібних файлів.";
+"cleanup_rescan" = "Повторити сканування";
+"cleanup_cleaning" = "Очищення...";
+"cleanup_ready" = "Готовий до очищення";
+"cleanup_ready_sub" = "Просканируйте систему для пошуку безпечних до видалення файлів кешу та тимчасових файлів.";
+"cleanup_additional_options" = "Додаткові параметри";
+"cleanup_option_ds_store" = "Видалити файли .DS_Store";
+"cleanup_option_ds_store_sub" = "Видаляє згенеровані системою файли метаданих з каталогів.";
+"cleanup_option_maven" = "Очистити репозиторій Maven (~/.m2/repository)";
+"cleanup_option_maven_sub" = "Видаляє завантажені залежності Maven. Повторно завантажуються під час наступної збірки.";
+"cleanup_option_modcache" = "Очистити кеш модулів Go (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "Видаляє завантажені модулі Go. Повторно завантажуються під час наступної збірки.";
+"cleanup_option_projects" = "Очистити .dart_tool у проектах";
+"cleanup_option_projects_sub" = "Видаляє кеші проектів Flutter/Dart у ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
+"cleanup_start_scan" = "Почати сканування";
+"cleanup_failed" = "Помилка очищення";
+"cleanup_failed_default" = "Сталася помилка в процесі очищення.";
+"cleanup_script_logs" = "Логи виконання:";
+"cleanup_complete" = "Очищення завершено";
+"cleanup_complete_sub" = "Успішно звільнено %lld МБ дискового простору.";
+"cleanup_summary" = "Зведення видалених файлів";
+"cleanup_selected" = "Вибрано: %lld МБ";
+"cleanup_hide_logs" = "Приховати логи";
+"cleanup_show_logs" = "Показати логи";
+"cleanup_copy" = "Копіювати";
+"cleanup_copy_logs" = "Копиювати логи";
+"cleanup_now" = "Очистити зараз";
+"cleanup_manual_instructions" = "Інструкції для ручного очищення";
+"cleanup_scan_results" = "Результати сканирування";
+"cleanup_scan_results_sub" = "Виберіть елементи для видалення та натисніть 'Очистити зараз'.";
+"cleanup_recommended" = "Рекомендується до видалення";
+"cleanup_deselect_all" = "Зняти виділення";
+"cleanup_select_all" = "Вибрати все";
+"cleanup_show_all_count" = "Показати все (ще %lld)";
+"cleanup_debug_log" = "Блокнот відладки (%lld рядків)";
+
+// Cleanup Notifications
+"cleanup_scan_complete_title" = "Сканування завершено";
+"cleanup_scan_complete_body" = "Знайдено файлів для видалення: %lld МБ.";
+"cleanup_emptying_trash" = "Очищення смітника...";
+"cleanup_complete_title" = "Очищення завершено";
+"cleanup_complete_body" = "Успішно звільнено %lld МБ.";
+
+// Trash
+"trash_user_label" = "Користувацький смітник";
+"trash_user_description" = "Вміст вашого смітника. Включає видалені файли.";
+
+// Uninstaller View
+"uninstaller_title" = "Деінсталятор";
+"uninstaller_search" = "Пошук додатків";
+"uninstaller_reload" = "Оновити список";
+"uninstaller_confirm_perm_delete" = "Видалити безповоротно?";
+"uninstaller_confirm_move_trash" = "Перемістити в Смітник?";
+"uninstaller_delete_permanently" = "Видалити безповоротно";
+"uninstaller_move_trash" = "Перемістити в Смітник";
+"uninstaller_uninstall_app_warning_perm" = "Це призведе до безповоротного видалення додатка %@ та його пов'язаних файлів (%lld). Цю дію не можна скасувати.";
+"uninstaller_uninstall_app_warning_trash" = "Это перемістить додаток %@ та його пов'язані файли (%lld) у Смітник.";
+"uninstaller_drag_drop" = "Перетягніть .app сюди для сканування";
+"uninstaller_or_select" = "АБО ВИБЕРІТЬ ІЗ СПИСКУ";
+"uninstaller_unknown_bundle" = "Невідомий Bundle ID";
+"uninstaller_expert_mode" = "Експертний режим";
+"uninstaller_select_files" = "(вибрати пов'язані файли)";
+"uninstaller_action_info_perm" = "Безповоротна дія";
+"uninstaller_action_info_perm_sub" = "Файли видаляються назавжди в обхід Смітника.";
+"uninstaller_action_info_trash" = "Зворотна дія";
+"uninstaller_action_info_trash_sub" = "Файли переміщуються в Смітник і можуть бути відновлені.";
+"uninstaller_space_reclaim" = "Всього місця до звільнення: %@";
+"uninstaller_button_uninstall" = "Видалити додаток";
+"uninstaller_related_files_count" = "Знайдено пов'язаних файлів: %lld";
+"uninstaller_expert_tip" = "В Експертному режимі ви можете вибірково видаляти залишкові файли, такі як кеші та налаштування.";
+"uninstaller_cleanup_items" = "Елементи для очищення";
+"uninstaller_scanning_apps" = "Сканування додатків...";
+"uninstaller_complete_title" = "Видалення завершено";
+"uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
+
+// Processes View
+"menu_processes" = "Процеси";
+"processes_title" = "Процеси";
+"processes_subtitle" = "Керування запущеними системними процесами.";
+"processes_search" = "Пошук процесів...";
+"processes_scanning" = "Сканування процесів...";
+"processes_terminate" = "Завершити";
+"processes_force_kill" = "Примусово вбити";
+"processes_protected" = "Захищений";
+"processes_refresh" = "Оновити список";
+"processes_confirm_terminate" = "Завершити процес?";
+"processes_confirm_terminate_message" = "Ви впевнені, що хочете завершити %@ (PID %lld)?";
+"processes_confirm_force" = "Примусово вбити?";
+"processes_confirm_force_message" = "Примусове завершення може призвести до втрати даних. Вбити %@ (PID %lld)?";
+"processes_no_results" = "Відповідних процесів не знайдено.";
+"processes_no_processes" = "Процеси не знайдені";
+"processes_no_processes_sub" = "Запущені процеси не виявлені.";
+"processes_scan_failed" = "Помилка сканування";
+"processes_manage_blacklist" = "Керування блеклістом";
+"processes_manage_whitelist" = "Керування вайтлістом";
+"processes_tooltip_blacklist" = "Процеси, які можна завжди вбити — додайте важкі додатки на кшталт Docker або OrbStack";
+"processes_tooltip_whitelist" = "Процеси, які не можна вбити — захистіть критичні додатки від випадкового завершення";
+"processes_tooltip_refresh" = "Оновити список запущених процесів";
+"processes_section_user" = "Ваші процеси";
+"processes_section_system" = "Системні процеси";
+"processes_badge_blacklist" = "Блекліст (%lld)";
+"processes_badge_whitelist" = "Вайтліст (%lld)";
+"processes_blacklist_title" = "Блекліст";
+"processes_blacklist_placeholder" = "Ім'я процесу для блокування...";
+"processes_whitelist_title" = "Вайтліст";
+"processes_whitelist_placeholder" = "Ім'я процесу для захисту...";
+"add" = "Додати";
+
+// Permissions
+"permissions_title" = "Потрібні дозволи";
+"permissions_subtitle" = "MacOSCleaner потрібен доступ до системних папок для очищення.";
+"permissions_fda_description" = "Необхідний для доступу до ~/Library/Caches, ~/Library/Application Support та інших системних папок.";
+"permissions_instructions_title" = "Як надати Full Disk Access:";
+"permissions_step1" = "Натисніть 'Відкрити System Settings' нижче.";
+"permissions_step2" = "Знайдіть MacOSCleaner у списку.";
+"permissions_step3" = "Увімкніть перемикач.";
+"permissions_step4" = "Поверніться до MacOSCleaner і натисніть 'Перевірити статус'.";
+"permissions_open_settings" = "Відкрити System Settings";
+"permissions_check_status" = "Перевірити статус";
+"permissions_dismiss_temp" = "Пропустити";
+"permissions_dismiss_permanent" = "Більше не показувати";
+"permissions_status_granted" = "Надано";
+"permissions_status_required" = "Потрібно";
+"permissions_window_title" = "Дозволи";
+
+// Settings Permissions
+"settings_permissions" = "Дозволи";
+"settings_fda_description" = "Необхідний для очищення системних кешів та даних додатків.";
+"settings_open_settings" = "Відкрити налаштування";
+"settings_check_permissions" = "Перевірити дозволи";
+
+// Cleanup Dev Badge
+"cleanup_dev_badge" = "РОЗРОБ";
+
+// Refresh Interval (Settings -> Processes)
+"refresh_manual" = "Вручну";
+"refresh_5s" = "Кожні 5 секунд";
+"refresh_10s" = "Кожні 10 секунд";
+"refresh_30s" = "Кожні 30 секунд";
+
+// Sort By (Settings -> Processes)
+"sort_cpu" = "CPU";
+"sort_memory" = "Пам'ять";
+"sort_name" = "Ім'я";
+"sort_threads" = "К-сть потоків";
+
+// New cleanup categories
+"time_machine_snapshots" = "Знімки Time Machine";
+"ios_backups" = "Резервні копії iOS";
+"mail_downloads" = "Завантаження Mail";
+"saved_app_state" = "Збережений стан додатків";
+"crash_reporter" = "Звіти про збої";
+"assets_v2" = "AssetsV2 / Шаблони iWork";
+"cloud_kit_cache" = "Кеш iCloud CloudKit";
+"swift_pm_cache" = "Кеш Swift Package Manager";
+"carthage_cache" = "Кеш Carthage";
+"steam_cache" = "Кеш Steam";
+"teams_cache" = "Кеш Microsoft Teams";
+"adobe_caches" = "Кеші Adobe";
+"chrome_extra_caches" = "Дод. кеші Chrome";
