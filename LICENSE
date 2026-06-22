@@ -1,56 +1,195 @@
-PERSONAL USE ONLY LICENSE
-Version 1.0
+SOURCE-AVAILABLE PERSONAL USE ONLY LICENSE
+Version 1.1
 
-Copyright (c) 2026 AlexTkDev
+Copyright (c) 2026 AlexTkDev (https://github.com/AlexTkDev)
+Project: MacOSCleaner
 All rights reserved.
 
-1. Grant of License
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPORTANT: This is NOT an open-source license. This software is
+"source-available": the source code is publicly visible for reference
+purposes only. All rights not explicitly granted are reserved.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GRANT OF LICENSE
 
 Subject to the terms of this License, the Author grants you a limited,
-worldwide, non-exclusive, non-transferable, revocable, royalty-free license to:
+worldwide, non-exclusive, non-transferable, revocable, royalty-free
+license to:
 
-- Use and run the software for personal, educational, and strictly non-commercial purposes only.
-- View, study, and fork the source code solely for personal reference and learning purposes.
+  a) Use and run the software solely for personal, non-commercial purposes
+     on your own devices.
+  b) View and study the source code for personal reference and learning only.
+  c) Fork the repository on GitHub solely for personal study, provided all
+     original copyright and license notices are preserved.
 
-2. Restrictions
+"Personal use" means use by a single natural person on their own devices
+for private, non-revenue-generating purposes, explicitly excluding any
+organizational or institutional context.
 
-You may NOT, without prior written permission from the Author:
+2. RESTRICTIONS
 
-- Sell, sublicense, rent, lease, distribute, publish, or commercialize the software or any part of it.
-- Use the software or source code in any business, commercial, revenue-generating, or profit-oriented activity.
-- Repackage, rebrand, resell, or redistribute the software as your own product.
-- Modify, adapt, translate, reverse engineer, or create derivative works based on the software.
-- Integrate, embed, include, or use the software or any portion of its code in other applications, libraries, frameworks, services, or products.
-- Remove or alter copyright notices, license notices, or author attribution.
-- Use the software in violation of applicable laws or regulations.
+You may NOT, without prior explicit written permission from the Author:
 
-3. Forks and Copies
+  a) Use, deploy, run, or access this software or its source code within
+     or on behalf of any legal entity, including but not limited to:
+     corporations, limited liability companies (LLCs), partnerships,
+     joint ventures, government bodies, educational institutions,
+     non-profit organizations, or any other organization of any kind.
 
-Forks and copies of the repository are permitted only for personal,
-non-commercial reference purposes and must include this License and all
-original copyright notices.
+  b) Use the software or any portion of its code in any commercial,
+     revenue-generating, profit-oriented, or business activity of
+     any nature.
 
-Public redistribution of modified or unmodified copies is prohibited without
-explicit written permission from the Author.
+  c) Sell, sublicense, rent, lease, distribute, publish, or otherwise
+     commercialize the software or any part of it.
 
-4. Ownership
+  d) Repackage, rebrand, resell, or redistribute the software as your
+     own product or as part of another product.
+
+  e) Modify, adapt, translate, or create derivative works based on
+     the software. Forks are permitted for personal study only and
+     must not contain modifications intended for use or redistribution.
+
+  f) Integrate, embed, or use the software or any portion of its code
+     in other applications, libraries, frameworks, services, or products.
+
+  g) Reverse engineer the software beyond what is already visible in
+     the source code.
+
+  h) Remove, alter, or obscure any copyright notices, license notices,
+     or author attribution present in the software.
+
+  i) Use the software in any manner that violates applicable laws or
+     regulations.
+
+3. FORKS AND COPIES
+
+Forks of this repository are permitted solely for personal, non-commercial
+study. The following conditions apply to all forks and copies:
+
+  a) This License and all original copyright notices must be included
+     in their entirety.
+  b) No modifications may be made with intent to use, deploy, or
+     redistribute.
+  c) Public redistribution of modified or unmodified copies is strictly
+     prohibited without explicit written permission from the Author.
+
+4. REQUESTING PERMISSION
+
+If you wish to use this software outside the scope of this License
+(including any organizational or commercial use), you must obtain prior
+written permission from the Author.
+
+Contact: https://github.com/AlexTkDev
+
+Permission requests must describe: the intended use, the entity involved,
+the scope of deployment, and the duration. Silence does not constitute
+consent.
+
+5. OWNERSHIP
 
 The software is licensed, not sold. The Author retains all rights, title,
-ownership, and intellectual property rights in and to the software and source code.
+ownership, and intellectual property rights in and to the software and
+its source code. No implied licenses are granted.
 
-5. Termination
+6. TERMINATION
 
-This License automatically terminates immediately if you violate any term of this License.
+This License terminates automatically and immediately if you violate any
+term of this License. Upon termination:
 
-Upon termination, you must immediately stop using the software and delete all copies,
-forks, and related materials in your possession or control.
+  a) You must immediately cease all use of the software.
+  b) You must delete all copies, forks, and related materials in your
+     possession or control.
+  c) Termination does not limit the Author's right to seek legal remedies.
 
-6. Disclaimer of Warranty
+Sections 5, 6, 7, 8, 9, and 10 survive termination of this License.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, AND NON-INFRINGEMENT.
+7. DISCLAIMER OF WARRANTY
 
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+THE AUTHOR DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS,
+OPERATE WITHOUT INTERRUPTION, OR BE ERROR-FREE.
+
+8. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+9. GOVERNING LAW AND INTERNATIONAL SCOPE
+
+This License is governed by and shall be interpreted in accordance with
+applicable international copyright law, including:
+
+  - The Berne Convention for the Protection of Literary and Artistic
+    Works (as amended, 181 member states);
+  - The Agreement on Trade-Related Aspects of Intellectual Property
+    Rights (TRIPS Agreement);
+  - The WIPO Copyright Treaty (WCT).
+
+The Author reserves the right to enforce this License in any jurisdiction
+worldwide where this software is accessed, used, copied, or distributed.
+The absence of a local governing law clause shall not be construed as a
+waiver of rights in any territory.
+
+10. COPYLEFT ENFORCEMENT CLAUSE
+
+Any use of this software or its source code in a commercial context
+without prior explicit written permission from the Author constitutes
+an "Unauthorized Commercial Use" and automatically triggers the
+following irrevocable obligations upon the violating party:
+
+  a) SOURCE DISCLOSURE OBLIGATION
+     Within 30 (thirty) calendar days of receiving written notice from
+     the Author, the violating party must publicly publish the complete,
+     unobfuscated source code of the entire product, service, system,
+     or application that incorporates, integrates, or is derived from
+     this software — including all dependencies, configurations, and
+     build scripts necessary to fully reproduce the product.
+
+     Such publication must be made publicly accessible at no cost
+     (e.g., via a public repository such as GitHub, GitLab, or
+     equivalent platform).
+
+  b) LICENSE CONVERSION
+     The product or service identified in clause (a) must be licensed
+     and distributed under the terms of the GNU Affero General Public
+     License, Version 3.0 (AGPL-3.0), or any later version published
+     by the Free Software Foundation, for the entire remaining duration
+     of its existence or operation.
+
+  c) CESSATION OF USE
+     The violating party must immediately cease all Unauthorized
+     Commercial Use of this software upon receipt of the Author's
+     written notice, and must not resume such use without obtaining
+     prior explicit written permission from the Author.
+
+  d) NOTIFICATION OBLIGATION
+     The violating party must notify the Author in writing of the full
+     nature, scope, and duration of the Unauthorized Commercial Use
+     within 30 (thirty) calendar days of receiving the Author's notice.
+
+The obligations in this Section are cumulative and independent. They do
+not limit the Author's right to seek injunctive relief, statutory
+damages, actual damages, legal costs, or any other remedy available
+under applicable law.
+
+Failure to comply with any obligation in this Section within the
+specified timeframe constitutes an independent and continuing breach
+of this License, giving rise to additional legal remedies.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Copyright (c) 2026 AlexTkDev — All rights reserved.
+https://github.com/AlexTkDev/MacOSCleaner
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
