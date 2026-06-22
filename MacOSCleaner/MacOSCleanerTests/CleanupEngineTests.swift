@@ -13,14 +13,16 @@ struct CleanupEngineTests {
         #expect(timeouts.fast == .seconds(30))
         #expect(timeouts.system == .seconds(120))
         #expect(timeouts.full == .seconds(300))
+        #expect(timeouts.scatteredJunk == .seconds(600))
     }
 
     @Test("Custom timeout values")
     func customTimeoutValues() {
-        let timeouts = CleanupTimeouts(fast: .seconds(10), system: .seconds(60), full: .seconds(180))
+        let timeouts = CleanupTimeouts(fast: .seconds(10), system: .seconds(60), full: .seconds(180), scatteredJunk: .seconds(900))
         #expect(timeouts.fast == .seconds(10))
         #expect(timeouts.system == .seconds(60))
         #expect(timeouts.full == .seconds(180))
+        #expect(timeouts.scatteredJunk == .seconds(900))
     }
 
     @Test("Partial custom timeouts")
@@ -29,6 +31,7 @@ struct CleanupEngineTests {
         #expect(timeouts.fast == .seconds(5))
         #expect(timeouts.system == .seconds(120))
         #expect(timeouts.full == .seconds(300))
+        #expect(timeouts.scatteredJunk == .seconds(600))
     }
 
     // MARK: - CleanupEngineError Tests
@@ -376,6 +379,117 @@ struct CleanupEngineTests {
 
         let results = try await engine.run(categories: [.xcode], dryRun: true)
         #expect(!results.isEmpty)
+    }
+
+    @Test("ScatteredJunk category uses scatteredJunk timeout")
+    func scatteredJunkUsesScatteredJunkTimeout() async throws {
+        let timeouts = CleanupTimeouts(
+            fast: .seconds(10),
+            system: .seconds(60),
+            full: .seconds(300),
+            scatteredJunk: .seconds(600)
+        )
+        let engine = CleanupEngine(timeouts: timeouts)
+
+        let results = try await engine.run(categories: [.scatteredJunk], dryRun: true)
+        #expect(!results.isEmpty)
+        #expect(results.first?.label == "Scattered junk")
+    }
+
+    // MARK: - PosixScanner Tests
+
+    @Test("PosixScanner scans files recursively")
+    func posixScannerScansFilesRecursively() async throws {
+        let scanner = PosixScanner()
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("posix_test_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let subDir = tempDir.appendingPathComponent("subdir")
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try "data1".write(to: tempDir.appendingPathComponent("file1.txt"), atomically: true, encoding: .utf8)
+        try "data2".write(to: subDir.appendingPathComponent("file2.txt"), atomically: true, encoding: .utf8)
+
+        var entries: [PosixScanner.Entry] = []
+        for await batch in scanner.scanParallel(roots: [tempDir.path]) {
+            entries.append(contentsOf: batch)
+        }
+
+        #expect(entries.count >= 2)
+        let names = entries.map(\.name).sorted()
+        #expect(names.contains("file1.txt"))
+        #expect(names.contains("file2.txt"))
+    }
+
+    @Test("PosixScanner excludes specified prefixes")
+    func posixScannerExcludesSpecifiedPrefixes() async throws {
+        let scanner = PosixScanner()
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("posix_excl_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let keepDir = tempDir.appendingPathComponent("keep")
+        let skipDir = tempDir.appendingPathComponent("Library")
+        try FileManager.default.createDirectory(at: keepDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: skipDir, withIntermediateDirectories: true)
+        try "keep".write(to: keepDir.appendingPathComponent("keep.txt"), atomically: true, encoding: .utf8)
+        try "skip".write(to: skipDir.appendingPathComponent("skip.txt"), atomically: true, encoding: .utf8)
+
+        var entries: [PosixScanner.Entry] = []
+        for await batch in scanner.scanParallel(
+            roots: [tempDir.path],
+            config: .init(excludedPrefixes: ["/Library/"])
+        ) {
+            entries.append(contentsOf: batch)
+        }
+
+        let paths = entries.map(\.path)
+        #expect(paths.contains { $0.contains("keep.txt") })
+        #expect(!paths.contains { $0.contains("skip.txt") })
+    }
+
+    @Test("PosixScanner detects symlinks")
+    func posixScannerDetectsSymlinks() async throws {
+        let scanner = PosixScanner()
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("posix_link_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let realFile = tempDir.appendingPathComponent("real.txt")
+        try "data".write(to: realFile, atomically: true, encoding: .utf8)
+
+        let symlink = tempDir.appendingPathComponent("link.txt")
+        try FileManager.default.createSymbolicLink(at: symlink, withDestinationURL: realFile)
+
+        var entries: [PosixScanner.Entry] = []
+        for await batch in scanner.scanParallel(roots: [tempDir.path]) {
+            entries.append(contentsOf: batch)
+        }
+
+        let linkEntry = entries.first { $0.name == "link.txt" }
+        #expect(linkEntry != nil)
+        #expect(linkEntry?.isSymlink == true)
+    }
+
+    @Test("PosixScanner does not follow symlink loops")
+    func posixScannerDoesNotFollowSymlinkLoops() async throws {
+        let scanner = PosixScanner()
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("posix_loop_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let subDir = tempDir.appendingPathComponent("sub")
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+
+        let symlink = subDir.appendingPathComponent("loop")
+        try FileManager.default.createSymbolicLink(at: symlink, withDestinationURL: tempDir)
+
+        var entryCount = 0
+        for await batch in scanner.scanParallel(roots: [tempDir.path]) {
+            entryCount += batch.count
+        }
+
+        #expect(entryCount < 1000, "Should not recurse infinitely through symlink loops")
     }
 
     // MARK: - Error Handling Tests

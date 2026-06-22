@@ -30,15 +30,13 @@ public final class CleanupItemManager {
     public var selectedSizeMB: Int {
         var total = 0
         for item in items {
-            if item.children.isEmpty {
-                if item.isSelected {
+            if item.isSelected {
+                if item.children.isEmpty {
                     total += item.sizeMB
-                }
-            } else {
-                for child in item.children {
-                    if child.isSelected {
-                        total += child.sizeMB
-                    }
+                } else {
+                    // parent.sizeMB is the authoritative "what will be freed"
+                    // (set by the .result event in appendPreviewItem).
+                    total += item.sizeMB
                 }
             }
         }
@@ -98,8 +96,20 @@ public final class CleanupItemManager {
         if let parentName = parentName, !parentName.isEmpty {
             if let idx = items.firstIndex(where: { $0.label == parentName }) {
                 if !items[idx].children.contains(where: { $0.label == label }) {
-                    items[idx].children.append(newItem)
-                    items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
+                    // When a parent already has children (file items from
+                    // emitFileItem), appending the .result as another child
+                    // double-counts: the UI sums all children for the parent
+                    // sizeMB.  Fix: don't add the result as a child — instead,
+                    // use its freedMB as the authoritative "what will be freed"
+                    // value for the parent.  This covers edge cases where the
+                    // result includes extra data not in individual file items
+                    // (e.g. orphaned remnants).
+                    if !items[idx].children.isEmpty {
+                        items[idx].sizeMB = size
+                    } else {
+                        items[idx].children.append(newItem)
+                        items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
+                    }
                 }
             } else {
                 let parent = CleanupPreviewItem(

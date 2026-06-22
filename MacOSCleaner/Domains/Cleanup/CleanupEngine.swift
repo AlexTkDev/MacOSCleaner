@@ -15,11 +15,19 @@ public struct CleanupTimeouts: Sendable {
     public var system: Duration
     /// Full cycle operations (Xcode DerivedData, Simulator cleanup)
     public var full: Duration
+    /// Scattered junk scanning (deep home directory scan)
+    public var scatteredJunk: Duration
 
-    public init(fast: Duration = .seconds(30), system: Duration = .seconds(120), full: Duration = .seconds(300)) {
+    public init(
+        fast: Duration = .seconds(30),
+        system: Duration = .seconds(120),
+        full: Duration = .seconds(300),
+        scatteredJunk: Duration = .seconds(600)
+    ) {
         self.fast = fast
         self.system = system
         self.full = full
+        self.scatteredJunk = scatteredJunk
     }
 
     public static let `default` = CleanupTimeouts()
@@ -207,8 +215,8 @@ public actor CleanupEngine {
                     try await self.cleanDotfileCaches(dryRun: dryRun, progress: progress)
                 }
             case .scatteredJunk:
-                categoryResults = try await withTimeout(timeouts.full) {
-                    try await self.cleanScatteredJunk(dryRun: dryRun, progress: progress)
+                categoryResults = try await withTimeout(timeouts.scatteredJunk) {
+                    try await self.cleanScatteredJunk(dryRun: dryRun, cleanDSStore: options.cleanDSStore, progress: progress)
                 }
             case .orphanedRemnants:
                 categoryResults = try await withTimeout(timeouts.fast) {
@@ -538,6 +546,7 @@ extension CleanupEngine {
             removedCount += 1
         }
 
+        FileManager.clearSizeCache()
         let after = try getDirectorySize(path)
         let freed = max(0, before - after)
         if freed > 0 {
@@ -822,11 +831,12 @@ extension CleanupEngine {
             progress?(.log("  Cache path: \(Self.shortPath(cacheDir))"))
 
             if dryRun {
-                let size = Int(try getDirectorySize(cacheDir) / (1024 * 1024))
-                progress?(.log("  Homebrew cache: \(Self.formatBytes(try getDirectorySize(cacheDir)))"))
-                progress?(.result(label: "Homebrew cache", freedMB: size))
-                results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: size))
-                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: try getDirectorySize(cacheDir), modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
+                let sizeBytes = try getDirectorySize(cacheDir)
+                let sizeMB = Int(sizeBytes / (1024 * 1024))
+                progress?(.log("  Homebrew cache: \(Self.formatBytes(sizeBytes))"))
+                progress?(.result(label: "Homebrew cache", freedMB: sizeMB))
+                results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: sizeMB))
+                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
                 let before = try getDirectorySize(cacheDir)
                 progress?(.log("  Running: brew cleanup --prune=all -q"))
@@ -849,11 +859,12 @@ extension CleanupEngine {
             progress?(.log("  Cache path: \(Self.shortPath(cacheDir))"))
 
             if dryRun {
-                let size = Int(try getDirectorySize(cacheDir) / (1024 * 1024))
-                progress?(.log("  npm cache: \(Self.formatBytes(try getDirectorySize(cacheDir)))"))
-                progress?(.result(label: "npm cache", freedMB: size))
-                results.append(CleanupEngineResult(label: "npm cache", freedMB: size))
-                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: try getDirectorySize(cacheDir), modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
+                let sizeBytes = try getDirectorySize(cacheDir)
+                let sizeMB = Int(sizeBytes / (1024 * 1024))
+                progress?(.log("  npm cache: \(Self.formatBytes(sizeBytes))"))
+                progress?(.result(label: "npm cache", freedMB: sizeMB))
+                results.append(CleanupEngineResult(label: "npm cache", freedMB: sizeMB))
+                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
                 let before = try getDirectorySize(cacheDir)
                 progress?(.log("  Running: npm cache clean --force"))
@@ -883,11 +894,12 @@ extension CleanupEngine {
             progress?(.log("  Cache path: \(Self.shortPath(cacheDir))"))
 
             if dryRun {
-                let size = Int(try getDirectorySize(cacheDir) / (1024 * 1024))
-                progress?(.log("  yarn cache: \(Self.formatBytes(try getDirectorySize(cacheDir)))"))
-                progress?(.result(label: "yarn cache", freedMB: size))
-                results.append(CleanupEngineResult(label: "yarn cache", freedMB: size))
-                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: try getDirectorySize(cacheDir), modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
+                let sizeBytes = try getDirectorySize(cacheDir)
+                let sizeMB = Int(sizeBytes / (1024 * 1024))
+                progress?(.log("  yarn cache: \(Self.formatBytes(sizeBytes))"))
+                progress?(.result(label: "yarn cache", freedMB: sizeMB))
+                results.append(CleanupEngineResult(label: "yarn cache", freedMB: sizeMB))
+                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
                 let before = try getDirectorySize(cacheDir)
                 progress?(.log("  Running: yarn cache clean"))
@@ -910,11 +922,12 @@ extension CleanupEngine {
             progress?(.log("  Store path: \(Self.shortPath(storeDir))"))
 
             if dryRun {
-                let size = Int(try getDirectorySize(storeDir) / (1024 * 1024))
-                progress?(.log("  pnpm store: \(Self.formatBytes(try getDirectorySize(storeDir)))"))
-                progress?(.result(label: "pnpm store", freedMB: size))
-                results.append(CleanupEngineResult(label: "pnpm store", freedMB: size))
-                emitFileItem(CleanupFileItem(path: storeDir, sizeBytes: try getDirectorySize(storeDir), modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
+                let sizeBytes = try getDirectorySize(storeDir)
+                let sizeMB = Int(sizeBytes / (1024 * 1024))
+                progress?(.log("  pnpm store: \(Self.formatBytes(sizeBytes))"))
+                progress?(.result(label: "pnpm store", freedMB: sizeMB))
+                results.append(CleanupEngineResult(label: "pnpm store", freedMB: sizeMB))
+                emitFileItem(CleanupFileItem(path: storeDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
                 let before = try getDirectorySize(storeDir)
                 progress?(.log("  Running: pnpm store prune"))
@@ -936,11 +949,12 @@ extension CleanupEngine {
             progress?(.log("  Cache path: \(Self.shortPath(cacheDir))"))
 
             if dryRun {
-                let size = Int(try getDirectorySize(cacheDir) / (1024 * 1024))
-                progress?(.log("  CocoaPods cache: \(Self.formatBytes(try getDirectorySize(cacheDir)))"))
-                progress?(.result(label: "CocoaPods cache", freedMB: size))
-                results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: size))
-                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: try getDirectorySize(cacheDir), modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
+                let sizeBytes = try getDirectorySize(cacheDir)
+                let sizeMB = Int(sizeBytes / (1024 * 1024))
+                progress?(.log("  CocoaPods cache: \(Self.formatBytes(sizeBytes))"))
+                progress?(.result(label: "CocoaPods cache", freedMB: sizeMB))
+                results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: sizeMB))
+                emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
                 let before = try getDirectorySize(cacheDir)
                 progress?(.log("  Running: pod cache clean --all"))
@@ -1884,13 +1898,12 @@ extension CleanupEngine {
 
     // MARK: 18. Scattered Junk
 
-    func cleanScatteredJunk(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        let home = fm.homeDirectoryForCurrentUser.path
+    func cleanScatteredJunk(dryRun: Bool, cleanDSStore: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let localFM = FileManager.default
+        let home = localFM.homeDirectoryForCurrentUser.path
         progress?(.log("Scanning scattered junk..."))
-        var freed: Int64 = 0
 
-        // .DS_Store in project dirs + home + /Applications
-        let dsStoreDirs = [
+        let scanDirs = [
             home,
             "/Applications",
             "\(home)/Documents",
@@ -1901,108 +1914,141 @@ extension CleanupEngine {
             "\(home)/dev",
             "\(home)/code",
             "\(home)/repos"
-        ]
-        for dir in dsStoreDirs {
-            guard fm.fileExists(atPath: dir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fullPath = "\(dir)/\(item)"
-                let fileName = (item as NSString).lastPathComponent
-                if fileName.hasSuffix(".app") {
-                    enumerator.skipDescendants()
-                    continue
-                }
-                if fileName == ".DS_Store" {
-                    let (f, _) = (try? removeFile(fullPath, dryRun: dryRun, progress: nil)) ?? (0, nil)
-                    freed += f
-                }
-            }
-        }
+        ].filter { localFM.fileExists(atPath: $0) }
 
-        // __MACOSX directories (exclude Library/Trash)
-        if let enumerator = fm.enumerator(atPath: home) {
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fileName = (item as NSString).lastPathComponent
-                if fileName == "__MACOSX" {
-                    let fullPath = "\(home)/\(item)"
-                    if !fullPath.contains("/Library/") && !fullPath.contains("/.Trash/") {
-                        let (f, _) = (try? removeDirectory(fullPath, dryRun: dryRun, progress: nil)) ?? (0, nil)
-                        freed += f
-                    }
-                }
-            }
-        }
+        let scanner = PosixScanner()
+        var foundItems: [ScatteredItem] = []
+        var scannedCount = 0
 
-        // Stray *.log files in home dotfiles (>7 days, >1 MB)
-        progress?(.log("  Scanning for stray log files..."))
-        let logDirs = [home]
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-        for dir in logDirs {
-            guard fm.fileExists(atPath: dir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fullPath = "\(dir)/\(item)"
-                let fileName = (item as NSString).lastPathComponent
-                // Skip Library/Trash/.git
-                if fullPath.contains("/Library/") || fullPath.contains("/.Trash/") || fullPath.contains("/.git/") {
-                    enumerator.skipDescendants()
+        let windowsMetaNames: Set<String> = ["Thumbs.db", "desktop.ini", "ehthumbs.db"]
+
+        for await batch in scanner.scanParallel(
+            roots: scanDirs,
+            config: .init(
+                excludedPrefixes: ["/Library/", "/.Trash/", "/.git/"],
+                maxDepth: nil,
+                batchSize: 1000,
+                yieldInterval: .seconds(2)
+            ),
+            progress: { scanned, _ in
+                progress?(.log("  Scanned \(scanned) files..."))
+            }
+        ) {
+            try Task.checkCancellation()
+
+            for entry in batch {
+                scannedCount += 1
+
+                if entry.name == ".DS_Store" {
+                    if cleanDSStore {
+                        foundItems.append(.dsStore(entry.path))
+                        if dryRun {
+                            emitFileItem(
+                                makeFileItemForPath(entry.path, fm: localFM),
+                                category: "Scattered junk",
+                                parentName: ".DS_Store",
+                                progress: progress
+                            )
+                        }
+                    }
                     continue
                 }
-                if fileName.hasSuffix(".log") {
-                    if let attrs = try? fm.attributesOfItem(atPath: fullPath),
+
+                if entry.isDirectory && entry.name == "__MACOSX" {
+                    foundItems.append(.macosxDir(entry.path))
+                    if dryRun {
+                        emitFileItem(
+                            makeFileItemForPath(entry.path, fm: localFM),
+                            category: "Scattered junk",
+                            parentName: "__MACOSX",
+                            progress: progress
+                        )
+                    }
+                    continue
+                }
+
+                if windowsMetaNames.contains(entry.name) {
+                    foundItems.append(.windowsMeta(entry.path))
+                    if dryRun {
+                        emitFileItem(
+                            makeFileItemForPath(entry.path, fm: localFM),
+                            category: "Scattered junk",
+                            parentName: "Windows metadata",
+                            progress: progress
+                        )
+                    }
+                    continue
+                }
+
+                if !entry.isDirectory && entry.name.hasSuffix(".log") {
+                    if let attrs = try? localFM.attributesOfItem(atPath: entry.path),
                        let modDate = attrs[.modificationDate] as? Date,
                        modDate < cutoffDate,
-                       let size = attrs[.size] as? Int64, size > 1024 * 1024 {
-                        let (f, _) = (try? removeFile(fullPath, dryRun: dryRun, progress: nil)) ?? (0, nil)
-                        freed += f
+                       let size = attrs[.size] as? Int64,
+                       size > 1024 * 1024 {
+                        foundItems.append(.oldLogFile(entry.path, size))
+                        if dryRun {
+                            emitFileItem(
+                                makeFileItemForPath(entry.path, fm: localFM, size: size),
+                                category: "Scattered junk",
+                                parentName: "Old logs",
+                                progress: progress
+                            )
+                        }
                     }
+                    continue
                 }
-            }
-        }
 
-        // Windows metadata (Thumbs.db, desktop.ini, ehthumbs.db)
-        progress?(.log("  Scanning for Windows metadata files..."))
-        for dir in [home] {
-            guard fm.fileExists(atPath: dir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fileName = (item as NSString).lastPathComponent
-                if fileName == "Thumbs.db" || fileName == "desktop.ini" || fileName == "ehthumbs.db" {
-                    let fullPath = "\(dir)/\(item)"
-                    let (f, _) = (try? removeFile(fullPath, dryRun: dryRun, progress: nil)) ?? (0, nil)
-                    freed += f
-                }
-            }
-        }
-
-        // Broken symlinks in project dirs
-        progress?(.log("  Scanning for broken symlinks..."))
-        let symlinkDirs = [
-            "\(home)/Documents", "\(home)/Downloads", "\(home)/Desktop",
-            "\(home)/Projects", "\(home)/Developer", "\(home)/dev", "\(home)/code"
-        ]
-        for dir in symlinkDirs {
-            guard fm.fileExists(atPath: dir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fullPath = "\(dir)/\(item)"
-                var isSymlink: ObjCBool = false
-                if fm.fileExists(atPath: fullPath, isDirectory: &isSymlink) {
-                    // Check if it's a symlink by trying to read attributes
-                    if let attrs = try? fm.attributesOfItem(atPath: fullPath),
-                       attrs[.type] as? FileAttributeType == .typeSymbolicLink {
-                        // Verify target exists
-                        if fm.fileExists(atPath: fullPath) == false {
-                            let (f, _) = (try? removeFile(fullPath, dryRun: dryRun, progress: nil)) ?? (0, nil)
-                            freed += f
+                if entry.isSymlink {
+                    let dirOfSymlink = (entry.path as NSString).deletingLastPathComponent
+                    let target = try? localFM.destinationOfSymbolicLink(atPath: entry.path)
+                    if let target = target {
+                        let resolvedTarget: String
+                        if (target as NSString).isAbsolutePath {
+                            resolvedTarget = target
+                        } else {
+                            resolvedTarget = (dirOfSymlink as NSString).appendingPathComponent(target)
+                        }
+                        if !localFM.fileExists(atPath: resolvedTarget) {
+                            foundItems.append(.brokenSymlink(entry.path))
+                            if dryRun {
+                                emitFileItem(
+                                    makeFileItemForPath(entry.path, fm: localFM),
+                                    category: "Scattered junk",
+                                    parentName: "Broken symlinks",
+                                    progress: progress
+                                )
+                            }
+                        }
+                    } else {
+                        foundItems.append(.brokenSymlink(entry.path))
+                        if dryRun {
+                            emitFileItem(
+                                makeFileItemForPath(entry.path, fm: localFM),
+                                category: "Scattered junk",
+                                parentName: "Broken symlinks",
+                                progress: progress
+                            )
                         }
                     }
                 }
+            }
+        }
+
+        var freed: Int64 = 0
+        for item in foundItems {
+            try Task.checkCancellation()
+            switch item {
+            case .dsStore(let path), .windowsMeta(let path), .brokenSymlink(let path):
+                let (f, _) = (try? removeFile(path, dryRun: dryRun, progress: nil)) ?? (0, nil)
+                freed += f
+            case .macosxDir(let path):
+                let (f, _) = (try? removeDirectory(path, dryRun: dryRun, progress: nil)) ?? (0, nil)
+                freed += f
+            case .oldLogFile(let path, _):
+                let (f, _) = (try? removeFile(path, dryRun: dryRun, progress: nil)) ?? (0, nil)
+                freed += f
             }
         }
 
@@ -2010,6 +2056,22 @@ extension CleanupEngine {
         progress?(.log("Scattered junk total: \(Self.formatBytes(freed))"))
         progress?(.result(label: "Scattered junk", freedMB: mb))
         return [CleanupEngineResult(label: "Scattered junk", freedMB: mb)]
+    }
+
+    private func makeFileItemForPath(_ path: String, fm: FileManager, size: Int64? = nil) -> CleanupFileItem? {
+        let attrs = try? fm.attributesOfItem(atPath: path)
+        let modDate = attrs?[.modificationDate] as? Date
+        let isDir = (attrs?[.type] as? FileAttributeType) == .typeDirectory
+        let itemSize = size ?? (try? getDirectorySize(path)) ?? (attrs?[.size] as? Int64) ?? 0
+        return CleanupFileItem(path: path, sizeBytes: itemSize, modificationDate: modDate, isDirectory: isDir)
+    }
+
+    private enum ScatteredItem: Sendable {
+        case dsStore(String)
+        case macosxDir(String)
+        case oldLogFile(String, Int64)
+        case windowsMeta(String)
+        case brokenSymlink(String)
     }
 
     // MARK: 19. Orphaned Remnants
