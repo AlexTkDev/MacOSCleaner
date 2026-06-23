@@ -7,98 +7,81 @@
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
 [![Version: 1.0](https://img.shields.io/badge/Release-1.0-brightgreen.svg)]()
 
-Production-ready native macOS app built with Swift 6 & SwiftUI to reclaim disk space and keep your Mac tidy. Nothing is permanently deleted — everything goes to Trash, so you can always restore it.
+Native macOS app that frees up disk space by cleaning caches, temp files, and app leftovers. Everything goes to Trash — nothing is gone forever unless you say so.
 
 ---
 
 ## Features
 
-**Dashboard** — disk usage chart, system info (model, CPU, RAM, OS version), cleanup history and statistics.
+**Dashboard** — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
 
-**Smart Cleanup** — comprehensive system cleanup with 35 categories:
+**Smart Cleanup** — scans 35 categories at once:
 
-- **User Caches** — app caches (Google, Spotify, JetBrains, opencode), browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messaging caches (Telegram, Discord, Slack, Signal, WeChat, Teams, Spotify)
-- **Package Managers** — Homebrew, npm (with manual fallback), yarn, pnpm, CocoaPods cache cleanup
-- **Development Tools** — Xcode DerivedData, iOS Simulators (including old runtime cleanup), Android SDK/caches + Android Studio cache discovery, Gradle/Maven, Flutter/Dart (.pub-cache, .flutter-devtools, .dart_tool project scanning), language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R)
-- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime Text/Merge, Atom, Claude, ChatGPT, Gemini, Perplexity, Slack, Discord, Figma, Notion, Postman, Insomnia, Linear, GitHub Desktop, 1Password, Tower, TablePlus, opencode + dynamic Electron cache discovery
-- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, diagnosticd, parsecd, icons
+- **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
+- **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
+- **Dev Tools** — Xcode DerivedData, iOS Simulators (old runtimes too), Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R)
+- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime, Claude, ChatGPT, Gemini, Perplexity, Slack, Discord, Figma, Notion, Postman, Linear, GitHub Desktop, Tower, TablePlus, opencode + dynamic Electron cache discovery
+- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, icons
 - **Docker** — container and image cleanup
-- **App Containers** — sandboxed app caches (Containers + Group Containers)
-- **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tool caches (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
-- **Scattered Junk** — recursive .DS_Store removal (including project dirs), __MACOSX directories, stray log files, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
-- **Orphaned Files** — HTTPStorages, WebKit, Cookies, /Users/Shared entries for uninstalled apps
-- **Large Files** — old DMG/pkg/iso/zip installers (Downloads, Desktop, Documents), node_modules (recursive), iPhone backups, IPSW firmware
-- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS cache directories in ~/Library/Caches; Apple caches (com.apple.*) auto-cleaned at ≥ 5 MB, others at ≥ 50 MB
-- **Time Machine Snapshots** — local APFS snapshots (safe to delete, macOS recreates)
-- **iOS Backups** — iPhone/iPad backups from Finder/iTunes (re-downloadable from iCloud)
+- **App Containers** — sandboxed caches in Containers + Group Containers
+- **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tools (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
+- **Scattered Junk** — .DS_Store, __MACOSX, stray logs, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
+- **Orphaned Files** — leftovers from uninstalled apps in HTTPStorages, WebKit, Cookies, /Users/Shared
+- **Large Files** — old DMG/pkg/iso/zip installers, node_modules (recursive), iPhone backups, IPSW firmware
+- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS caches in ~/Library/Caches; Apple caches (com.apple.*) at ≥ 5 MB, others at ≥ 20 MB
+- **Time Machine Snapshots** — local APFS snapshots (macOS recreates them automatically)
+- **iOS Backups** — re-downloadable from iCloud
 - **Mail Downloads** — cached email attachments
-- **Saved Application State** — window/session state for app resume (recreated on launch)
-- **Crash Reporter** — old crash reports and diagnostic logs
+- **Saved Application State** — window/session state (recreated on app launch)
+- **Crash Reports** — old crash logs and diagnostic files
 - **AssetsV2 / iWork Templates** — Pages/Numbers/Keynote templates (~800 MB, re-downloaded on demand)
-- **iCloud CloudKit Cache** — iCloud metadata cache (rebuilt automatically)
-- **Swift Package Manager Cache** — build/download cache (rebuilt on next build)
-- **Carthage Cache** — dependency cache and spec repos (re-downloaded on next build)
+- **iCloud CloudKit Cache** — metadata cache (rebuilt automatically)
+- **SwiftPM Cache** — build/download cache (rebuilt on next build)
+- **Carthage Cache** — dependency cache and spec repos
 - **Steam Cache** — app cache, shader cache, depot cache, logs
-- **Microsoft Teams Cache** — Electron caches (Cache, Code Cache, GPUCache, IndexedDB)
-- **Adobe Caches** — application caches and media cache
+- **Teams Cache** — Electron caches (Cache, Code Cache, GPUCache, IndexedDB)
+- **Adobe Caches** — application and media caches
 - **Chrome Extra Caches** — disk cache, code cache, GPU cache, service workers
 
-All categories are always scanned. Dev-related categories display a purple "DEV" badge in the UI. Risk badges (Safe/Moderate/Dangerous) shown after scan. You pick what to delete, then confirm.
+All categories are always scanned. Dev-related ones show a purple "DEV" badge. Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan — you pick what to delete, then confirm.
 
-**Cleanup Options** — additional opt-in options in the UI:
-- **Clean .DS_Store files** — removes Finder metadata from directories (off by default, also available as "Scattered Junk" category)
-- **Clean Maven repository** — removes ~/.m2/repository (on by default, re-downloads on next build)
-- **Clean Go module cache** — removes GOMODCACHE (on by default, re-downloads on next build)
-- **Clean .dart_tool in projects** — scans ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos (on by default)
+**Cleanup Options** — one opt-in toggle before scan:
+- **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
 
-**Process Manager** — lists running processes, lets you terminate or force-kill them with built-in safety (protected system processes cannot be killed).
+**Process Manager** — lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
 
-**Startup Services** — lists all LaunchAgents from `~/Library/LaunchAgents`, shows their load status, and lets you enable or disable them without touching system agents.
+**Startup Services** — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
 
-**App Uninstaller** — finds installed apps, scans for residual files across known support directories (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode lets you cherry-pick which leftovers to remove.
+**App Uninstaller** — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode for cherry-picking leftovers.
 
-**Settings** — light/dark/system theme, language switcher (English, Русский, Українська), notification toggles, scan-on-startup, Trash behavior, and more.
-
-**Multilingual UI** — runtime language switching without restart, using a custom `LanguageManager` backed by `Localizable.strings` for `en`, `ru`, `uk`.
+**Settings** — light/dark/system theme, languages (English, Русский, Українська), notifications, scan-on-startup, Trash behavior, and more.
 
 ---
 
-## Performance
+## How It Works
 
-Optimized for Apple Silicon (M1-M5) with maximum parallelism:
-
-- **3 Specialized Actors** — `FileCleanupActor` (FileManager ops), `ProcessCleanupActor` (subprocess ops), `ScanActor` (app scanning) run concurrently without contention
-- **Parallel Category Execution** — cleanup categories execute up to `activeProcessorCount` (10-14 cores on M1-M4 Pro/Max) concurrent via `withThrowingTaskGroup`
-- **Iterative File Scanner** — stack-based `PosixScanner` with real batching (1000 files/batch), cooperative yielding every 2s, inode deduplication, and excluded directory name pruning
-- **Directory Size Cache** — `DirectorySizeCache` actor prevents redundant recursive size calculations across categories
-- **Command Cache** — `CommandCache` actor caches `commandExists` results, avoiding repeated subprocess spawns
-- **Batch Permission Checks** — `ProcessManager.checkPermissions()` single actor hop instead of N sequential hops
-- **Build Optimization** — wholemodule compilation, `-O` optimization level, dead code stripping, deployment target macOS 26+
+Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories execute concurrently across all available cores. File scanning is done with a stack-based iterator that batches work and deduplicates inodes. Size calculations are cached to avoid redundant work.
 
 ---
 
 ## Safety
 
-- All deletions go through `trashItem(at:)` — recoverable from Trash by default.
-- `SafetyManager` blocks writes to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths.
-- `ProcessSafetyPolicy` protects critical system processes (kernel_task, launchd, WindowServer) from termination.
-- Permanent deletion (bypassing Trash) is opt-in and clearly marked in the UI.
-- Apps are closed before cleanup starts (graceful terminate, then force-kill after 3s timeout).
-- Full Disk Access permission is requested at startup.
+- Everything goes to Trash via `trashItem(at:)` — always recoverable
+- `SafetyManager` blocks access to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths
+- `ProcessSafetyPolicy` protects system-critical processes from termination
+- Permanent deletion is opt-in and clearly marked in the UI
+- Apps are closed before cleanup (graceful terminate → force-kill after 3s)
+- Full Disk Access is requested at startup
 
 ---
 
 ## Tech Stack
 
-- **Swift 6** — strict concurrency, actors, `async/await`, structured task groups
-- **SwiftUI** — declarative UI, `@Observable`, `NavigationSplitView`, Charts
-- **Architecture** — feature-oriented folders, component-based cleanup (Coordinator, Engine, ItemManager, Notifier), no third-party UI frameworks
-- **CleanupEngine** — actor-based engine with 3 specialized sub-actors (`FileCleanupActor`, `ProcessCleanupActor`, `ScanActor`) for parallel execution; categories run concurrently up to `ProcessInfo.processInfo.activeProcessorCount`
-- **File Scanning** — iterative stack-based `PosixScanner` with real batching, cooperative yielding, inode deduplication, and excluded directory name pruning
-- **Caching** — `DirectorySizeCache` and `CommandCache` actors eliminate redundant filesystem scans and subprocess spawns
-- **ProcessManager** — batch permission checks (single actor hop instead of N)
-- **Build** — XcodeGen (`project.yml` as single source of truth), wholemodule optimization, `-O` Swift optimization level
+- **Swift 6** — actors, `async/await`, structured task groups
+- **SwiftUI** — `@Observable`, `NavigationSplitView`, Charts
+- **Build** — XcodeGen, whole-module optimization, `-O` Swift flag
 - **Logging** — OSLog with structured subsystems
+- **Architecture** — feature-oriented folders, component-based cleanup
 
 ---
 
@@ -106,28 +89,15 @@ Optimized for Apple Silicon (M1-M5) with maximum parallelism:
 
 ```
 MacOSCleaner/
-├── App/          # Entry point, RootView, sidebar navigation
-├── Domains/
-│   ├── Cleanup/  # CleanupStateMachine, CleanupCoordinator, CleanupEngine,
-│   │             # CleanupItemManager, CleanupNotifier, CleanupModels, TransactionJournal
-│   ├── ProcessManagement/  # ProcessManager (batch permissions), ProcessSafetyPolicy
-│   └── StartupServices/    # LaunchServiceManager
-├── Features/     # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, About)
-├── Infrastructure/  # System services
-│   ├── CommandRunner.swift          # Actor: subprocess execution with timeout/cancellation
-│   ├── CommandRunning.swift         # Protocol + commandExists caching
-│   ├── CommandCache.swift           # Actor: caches command existence checks
-│   ├── SafetyManager.swift          # Path validation, blocks critical system paths
-│   ├── TrashManager.swift           # Trash operations
-│   ├── LanguageManager.swift        # Runtime language switching (en/ru/uk)
-│   ├── PosixScanner.swift           # Iterative stack-based scanner with batching
-│   ├── FileCleanupActor.swift       # Actor: FileManager operations (clean, remove, size)
-│   ├── ProcessCleanupActor.swift    # Actor: subprocess operations with CommandCache
-│   ├── ScanActor.swift              # Actor: app scanning and directory enumeration
-│   ├── DirectorySizeCache.swift     # Actor: caches directory sizes
-│   └── FileManager+Size.swift       # FileManager size calculation extension
-├── Models/       # Shared value types and enums (CleanupItem, OperationRisk, RunningProcess, etc.)
-└── Resources/    # Localizable.strings (en/ru/uk), assets
+├ App/              # Entry point, RootView, sidebar navigation
+├ Domains/
+│  ├ Cleanup/       # Coordinator, Engine, StateMachine, ItemManager, Notifier, Models
+│  ├ ProcessManagement/  # ProcessManager, ProcessSafetyPolicy
+│  └ StartupServices/    # LaunchServiceManager
+├ Features/         # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, Uninstaller, About)
+├ Infrastructure/   # CommandRunner, SafetyManager, TrashManager, LanguageManager, PosixScanner, actors
+├ Models/           # CleanupItem, OperationRisk, RunningProcess, StartupService, etc.
+└ Resources/        # Localizable.strings (en/ru/uk), assets
 ```
 
 ---
@@ -147,31 +117,22 @@ open MacOSCleaner.xcodeproj
 
 ## Building a Distributable .app
 
-To create a standalone `.app` bundle you can share with others (no Xcode required on their end):
+### Option 1: Xcode (Recommended)
 
-### Option 1: Using Xcode (Recommended)
+```bash
+cd MacOSCleaner
+xcodegen
+open MacOSCleaner.xcodeproj
+```
 
-1. Open the project in Xcode:
-   ```bash
-   cd MacOSCleaner
-   xcodegen
-   open MacOSCleaner.xcodeproj
-   ```
+In Xcode: **Product → Archive** → **Distribute App** → **Copy App** → choose destination.
 
-2. In Xcode:
-   - Select **Product → Archive** (or `Cmd+Shift+Cmd+A`)
-   - Wait for archiving to complete → **Distribute App** → **Copy App**
-   - Choose a destination folder
-
-3. The resulting `MacOSCleaner.app` is ready to share
-
-### Option 2: Command Line (CI-friendly)
+### Option 2: Command Line
 
 ```bash
 cd MacOSCleaner
 xcodegen
 
-# Build Release configuration
 xcodebuild -project MacOSCleaner.xcodeproj \
   -scheme MacOSCleaner \
   -configuration Release \
@@ -179,14 +140,13 @@ xcodebuild -project MacOSCleaner.xcodeproj \
   -archivePath build/MacOSCleaner.xcarchive \
   archive
 
-# Export .app from archive
 xcodebuild -exportArchive \
   -archivePath build/MacOSCleaner.xcarchive \
   -exportPath build/Export \
   -exportOptionsPlist ExportOptions.plist
 ```
 
-Create `ExportOptions.plist` in the `MacOSCleaner` folder:
+Create `ExportOptions.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -203,9 +163,7 @@ Create `ExportOptions.plist` in the `MacOSCleaner` folder:
 </plist>
 ```
 
-The `.app` will be at `build/Export/MacOSCleaner.app`.
-
-### Option 3: Quick Debug Build (for testing)
+### Option 3: Debug Build
 
 ```bash
 cd MacOSCleaner
@@ -215,50 +173,40 @@ xcodebuild -project MacOSCleaner.xcodeproj \
   -derivedDataPath build
 ```
 
-The app will be at `build/Build/Products/Debug/MacOSCleaner.app`.
-
 ---
 
-### Code Signing for Distribution
+## Code Signing
 
-**Without Apple Developer ID** (ad-hoc, for local testing only):
+**Ad-hoc** (local testing only):
 ```bash
 codesign --force --deep --sign - "/path/to/MacOSCleaner.app"
 ```
-⚠️ Gatekeeper will block this on other Macs unless they right-click → Open.
+Gatekeeper will block this on other Macs unless they right-click → Open.
 
-**With Apple Developer ID** (recommended for sharing):
+**Developer ID** (recommended for sharing):
 ```bash
 codesign --force --deep --options runtime \
   --sign "Developer ID Application: Your Name (TEAM_ID)" \
   "/path/to/MacOSCleaner.app"
 
-# Notarize (required for macOS 10.15+)
 xcrun notarytool submit "/path/to/MacOSCleaner.app" \
   --apple-id "your@email.com" \
   --team-id "TEAM_ID" \
   --password "app-specific-password" \
   --wait
 
-# Staple notarization ticket
 xcrun stapler staple "/path/to/MacOSCleaner.app"
 ```
 
----
-
-### Verify the Build
-
+**Verify:**
 ```bash
-# Check code signature
 codesign --verify --deep --strict --verbose=2 "/path/to/MacOSCleaner.app"
-
-# Check notarization
 spctl --assess --type execute --verbose "/path/to/MacOSCleaner.app"
 ```
 
 ---
 
-**Logs:** open `Console.app` and filter by subsystem `com.alextkdev.macos-cleaner`.
+**Logs:** open `Console.app` → filter by subsystem `com.alextkdev.macos-cleaner`.
 
 ---
 
