@@ -20,13 +20,14 @@ Native macOS app that frees up disk space by cleaning caches, temp files, and ap
 - **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
 - **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
 - **Dev Tools** — Xcode DerivedData, iOS Simulators (old runtimes too), Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R)
-- **IDE Caches** — Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime, Claude, ChatGPT, Gemini, Perplexity, Slack, Discord, Figma, Notion, Postman, Linear, GitHub Desktop, Tower, TablePlus, opencode + dynamic Electron cache discovery
+- **IDE Caches** — Cursor, VS Code (incl. Insiders), Windsurf, Zed, JetBrains, Nova, Sublime Text, Atom, Eclipse, opencode, Claude, ChatGPT, Gemini, Perplexity, GitHub Desktop, Slack, Discord, Figma, Notion, Postman, Insomnia, Linear, Tower, TablePlus + dynamic Electron cache discovery
 - **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, icons
 - **Docker** — container and image cleanup
 - **App Containers** — sandboxed caches in Containers + Group Containers
 - **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tools (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
 - **Scattered Junk** — .DS_Store, __MACOSX, stray logs, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
 - **Orphaned Files** — leftovers from uninstalled apps in HTTPStorages, WebKit, Cookies, /Users/Shared
+- **Old IDE Versions** — cleans system caches for VS Code, Cursor, Windsurf, Zed, Sublime Text, Eclipse, Atom; detects and removes leftover JetBrains cache/log directories for no-longer-installed products; cleans old Android Studio version caches (keeps latest); removes stale CachedData subdirectories for VS Code, Cursor, Windsurf (keeps latest version)
 - **Large Files** — old DMG/pkg/iso/zip installers, node_modules (recursive), iPhone backups, IPSW firmware
 - **Dynamic Cache Discovery** — auto-discovers large reverse-DNS caches in ~/Library/Caches; Apple caches (com.apple.*) at ≥ 5 MB, others at ≥ 20 MB
 - **Time Machine Snapshots** — local APFS snapshots (macOS recreates them automatically)
