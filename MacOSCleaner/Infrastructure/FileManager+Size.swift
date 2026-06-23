@@ -4,9 +4,19 @@ extension FileManager {
     /// Paths to exclude from size calculation (sparse files, virtual disks, etc.)
     public static let defaultExcludedPaths: [String] = [
         ".dev.orbstack",
+        ".orbstack",
         ".dmg",
         ".sparseimage",
-        ".sparsebundle"
+        ".sparsebundle",
+        ".raw",
+        ".qcow2",
+        ".img",
+        ".vmdk",
+        ".vdi",
+        ".vhd",
+        ".vhdx",
+        "Docker.raw",
+        "docker.raw"
     ]
 
     nonisolated(unsafe) private static let _sizeCache = NSCache<NSString, NSNumber>()
@@ -34,6 +44,9 @@ extension FileManager {
             let filePath = fileURL.path
             let shouldExclude = excludedPaths.contains { filePath.contains($0) }
             if shouldExclude {
+                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                    enumerator?.skipDescendants()
+                }
                 continue
             }
             let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])
@@ -48,10 +61,18 @@ extension FileManager {
     }
 
     /// Fast size estimation using filesystem allocated size (physical disk usage).
-    public func getPhysicalDirectorySize(url: URL) -> Int64 {
+    public func getPhysicalDirectorySize(url: URL, excludedPaths: [String] = FileManager.defaultExcludedPaths) -> Int64 {
         var size: Int64 = 0
-        let enumerator = self.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey], options: [])
+        let enumerator = self.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey], options: [])
         while let fileURL = enumerator?.nextObject() as? URL {
+            let filePath = fileURL.path
+            let shouldExclude = excludedPaths.contains { filePath.contains($0) }
+            if shouldExclude {
+                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                    enumerator?.skipDescendants()
+                }
+                continue
+            }
             let resourceValues = try? fileURL.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileSizeKey])
             if let allocated = resourceValues?.totalFileAllocatedSize {
                 size += Int64(allocated)

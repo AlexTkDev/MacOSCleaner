@@ -439,17 +439,7 @@ public actor UninstallerService {
     }
 
     private func getDirectorySize(url: URL) async -> Int64 {
-        var size: Int64 = 0
-        let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [])
-        while let fileURL = enumerator?.nextObject() as? URL {
-            // Skip OrbStack sparse files to avoid massive false positive sizes
-            if fileURL.path.contains(".dev.orbstack") {
-                continue
-            }
-            let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])
-            size += Int64(resourceValues?.fileSize ?? 0)
-        }
-        return size
+        fileManager.getDirectorySize(url: url, excludedPaths: FileManager.defaultExcludedPaths)
     }
 
     func getSystemSearchPaths() -> [String] {

@@ -82,9 +82,21 @@ public actor DirectorySizeCache {
         ) else { return CachedDirectoryInfo(size: 0, fileCount: 0, timestamp: Date()) }
 
         while let fileURL = enumerator.nextObject() as? URL {
+            if Task.isCancelled {
+                break
+            }
+            if fileCount >= 100000 {
+                // Prevent infinite or extremely long size calculations
+                break
+            }
             let filePath = fileURL.path
             let dominated = excludedPaths.contains { filePath.contains($0) }
-            if dominated { continue }
+            if dominated {
+                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                    enumerator.skipDescendants()
+                }
+                continue
+            }
             fileCount += 1
             if let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey]) {
                 size += Int64(values.fileSize ?? 0)

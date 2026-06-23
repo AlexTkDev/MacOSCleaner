@@ -158,6 +158,14 @@ public actor FileCleanupActor {
         while let item = enumerator.nextObject() as? String {
             try Task.checkCancellation()
             let itemPath = "\(path)/\(item)"
+            // Skip virtual disk files (Docker, VMs, OrbStack)
+            let shouldExclude = FileManager.defaultExcludedPaths.contains { itemPath.contains($0) }
+            if shouldExclude {
+                var isDir: ObjCBool = false
+                fm.fileExists(atPath: itemPath, isDirectory: &isDir)
+                if isDir.boolValue { enumerator.skipDescendants() }
+                continue
+            }
             let attrs = try? fm.attributesOfItem(atPath: itemPath)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
                 let size = (attrs?[.size] as? Int64) ?? 0

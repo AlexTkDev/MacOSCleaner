@@ -150,11 +150,9 @@ public actor CleanupEngine {
         let maxConcurrency = ProcessInfo.processInfo.activeProcessorCount
 
         var pending = Array(categories.enumerated())
-        var activeTasks = 0
         var completedCount = 0
 
-        try await withThrowingTaskGroup(of: (Int, String, [CleanupEngineResult]).self) { group in
-            var futures: [(Int, String)] = []
+        await withTaskGroup(of: (Int, String, [CleanupEngineResult]).self) { group in
 
             for (index, category) in pending.prefix(maxConcurrency) {
                 let title = Self.titleForCategory(category)
@@ -166,7 +164,7 @@ public actor CleanupEngine {
                             progress?(event)
                         }
                     }
-                    let results = try await self.runCategoryWithTimeout(
+                    let results = await self.runCategoryWithTimeout(
                         category,
                         dryRun: dryRun,
                         options: options,
@@ -174,12 +172,10 @@ public actor CleanupEngine {
                     )
                     return (index, title, results)
                 }
-                futures.append((index, title))
-                activeTasks += 1
             }
             pending.removeFirst(min(maxConcurrency, pending.count))
 
-            for try await (_, title, categoryResults) in group {
+            for await (_, title, categoryResults) in group {
                 completedCount += 1
                 progress?(.step(current: completedCount, total: total, title: title))
                 results.append(contentsOf: categoryResults)
@@ -195,7 +191,7 @@ public actor CleanupEngine {
                                 progress?(event)
                             }
                         }
-                        let results = try await self.runCategoryWithTimeout(
+                        let results = await self.runCategoryWithTimeout(
                             nextCategory,
                             dryRun: dryRun,
                             options: options,
@@ -216,10 +212,22 @@ public actor CleanupEngine {
         dryRun: Bool,
         options: CleanupOptions,
         progress: (@Sendable (CleanupEngineEvent) -> Void)?
-    ) async throws -> [CleanupEngineResult] {
+    ) async -> [CleanupEngineResult] {
         let timeout = Self.timeoutForCategory(category)
-        return try await withTimeout(timeout) {
-            try await self.runCategory(category, dryRun: dryRun, options: options, progress: progress)
+        let title = Self.titleForCategory(category)
+        do {
+            return try await withTimeout(timeout) {
+                try await self.runCategory(category, dryRun: dryRun, options: options, progress: progress)
+            }
+        } catch is CancellationError {
+            progress?(.log("⚠️ \(title) — cancelled"))
+            return []
+        } catch {
+            let isTimeout = (error as? CleanupEngineError) == .timeout
+            let reason = isTimeout ? "timed out after \(Int(timeout.components.seconds))s" : error.localizedDescription
+            progress?(.log("⚠️ \(title) — \(reason), skipped"))
+            Logger.engine.warning("Category \(title) failed: \(reason)")
+            return []
         }
     }
 
@@ -276,9 +284,30 @@ public actor CleanupEngine {
             return .seconds(300)
         case .scatteredJunk:
             return .seconds(600)
+        case .orphanedRemnants, .appContainers, .dynamicCacheDiscovery, .largeFiles, .orphanedFiles:
+            return .seconds(300)
         default:
-            return .seconds(30)
+            return .seconds(60)
         }
+    }
+
+    // MARK: - Heavy Container Skip List
+
+    /// Bundle IDs of apps with very large container directories (virtual disks, images).
+    /// These are skipped during size calculation and orphan scanning to avoid timeouts.
+    static let heavyContainerBundleIDs: Set<String> = [
+        "com.docker.docker",
+        "dev.orbstack.OrbStack",
+        "com.vmware.fusion",
+        "com.parallels.desktop.console",
+        "com.utmapp.UTM",
+        "org.virtualbox.app.VirtualBox",
+        "com.microsoft.rdc.macos",  // Remote Desktop — can have large caches
+    ]
+
+    /// Returns true if this container entry should be skipped due to known heavy content.
+    private static func isHeavyContainer(_ entry: String) -> Bool {
+        heavyContainerBundleIDs.contains(entry)
     }
 
     /// Scans the specified categories without deletion.
@@ -310,6 +339,20 @@ public actor CleanupEngine {
             }
         } onCancel: {
             // timeout task will be cancelled automatically
+        }
+    }
+
+    // MARK: - Size Calculation with Timeout
+
+    /// Calculates directory size with a timeout. Returns 0 if the calculation takes too long.
+    func getDirectorySizeWithTimeout(_ path: String, timeout: Duration = .seconds(10)) async -> Int64 {
+        do {
+            return try await withTimeout(timeout) {
+                await self.getDirectorySize(path)
+            }
+        } catch {
+            Logger.engine.warning("Size calculation timed out for \(path, privacy: .public)")
+            return 0
         }
     }
 
@@ -433,7 +476,7 @@ public struct CleanupOptions: Sendable, Equatable {
 
 // MARK: - CleanupEngineError
 
-public enum CleanupEngineError: Error, LocalizedError {
+public enum CleanupEngineError: Error, LocalizedError, Equatable {
     case timeout
     case safetyViolation(String)
     case commandFailed(String)
@@ -443,6 +486,15 @@ public enum CleanupEngineError: Error, LocalizedError {
         case .timeout: return "Operation timed out"
         case .safetyViolation(let path): return "Safety violation: \(path)"
         case .commandFailed(let msg): return "Command failed: \(msg)"
+        }
+    }
+
+    public static func == (lhs: CleanupEngineError, rhs: CleanupEngineError) -> Bool {
+        switch (lhs, rhs) {
+        case (.timeout, .timeout): return true
+        case (.safetyViolation(let a), .safetyViolation(let b)): return a == b
+        case (.commandFailed(let a), .commandFailed(let b)): return a == b
+        default: return false
         }
     }
 }
@@ -810,6 +862,11 @@ extension CleanupEngine {
                 if let enumerator = fm.enumerator(atPath: base) {
                     while let item = enumerator.nextObject() as? String {
                         let fullPath = "\(base)/\(item)"
+                        // Skip heavy directories (Docker, VMs)
+                        if Self.isHeavyDirectory(fullPath) {
+                            enumerator.skipDescendants()
+                            continue
+                        }
                         if item == ".dart_tool" {
                             let (f, item) = try await cleanContents(of: fullPath, dryRun: dryRun, progress: progress)
                             freed += f
@@ -1658,6 +1715,11 @@ extension CleanupEngine {
                 if container.hasPrefix("com.apple.") || container.hasPrefix("group.com.apple.") {
                     continue
                 }
+                // Skip heavy containers (Docker, VMs) — virtual disks cause timeouts
+                if Self.isHeavyContainer(container) {
+                    progress?(.log("  \(container) — skipped (heavy container)"))
+                    continue
+                }
                 let containerPath = "\(containersPath)/\(container)"
                 for subdir in cacheSubdirs {
                     let dataCaches = "\(containerPath)/\(subdir)"
@@ -1969,10 +2031,15 @@ extension CleanupEngine {
                 if entry.hasPrefix("group.is.workflow.") || entry.hasPrefix("is.workflow.") {
                     continue
                 }
+                // Skip heavy containers (Docker, VMs) — virtual disks cause timeouts
+                if Self.isHeavyContainer(entry) {
+                    progress?(.log("  \(entry) — skipped (heavy container)"))
+                    continue
+                }
 
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(scanDir)/\(entry)"
-                    let entrySize = await getDirectorySize(entryPath)
+                    let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 { // > 1 MB
                         orphanCount += 1
                         let shortDir = scanDir.replacingOccurrences(of: home, with: "~")
@@ -2081,9 +2148,13 @@ extension CleanupEngine {
             let entries = (try? fm.contentsOfDirectory(atPath: httpStorages)) ?? []
             for entry in entries {
                 if entry.hasPrefix("com.apple.") { continue }
+                if Self.isHeavyContainer(entry) {
+                    progress?(.log("  \(entry) — skipped (heavy container)"))
+                    continue
+                }
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(httpStorages)/\(entry)"
-                    let entrySize = await getDirectorySize(entryPath)
+                    let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 {
                         if dryRun {
                             freed += entrySize
@@ -2103,9 +2174,13 @@ extension CleanupEngine {
             let entries = (try? fm.contentsOfDirectory(atPath: webkitDir)) ?? []
             for entry in entries {
                 if entry.hasPrefix("com.apple.") { continue }
+                if Self.isHeavyContainer(entry) {
+                    progress?(.log("  \(entry) — skipped (heavy container)"))
+                    continue
+                }
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(webkitDir)/\(entry)"
-                    let entrySize = await getDirectorySize(entryPath)
+                    let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 {
                         if dryRun {
                             freed += entrySize
@@ -2123,6 +2198,45 @@ extension CleanupEngine {
         progress?(.log("Orphaned files total: \(Self.formatBytes(freed))"))
         progress?(.result(label: "Orphaned files", freedMB: mb))
         return [CleanupEngineResult(label: "Orphaned files", freedMB: mb)]
+    }
+
+    // MARK: - Heavy Directory Skip List
+
+    /// Paths to skip during recursive scans (virtual disks, VM images, Docker, etc.)
+    /// These directories contain sparse files or virtual disks that cause timeout during size calculation.
+    static let heavyDirectoryPaths: Set<String> = [
+        "Library/Containers/com.docker.docker",
+        "Library/Containers/dev.orbstack.OrbStack",
+        "Library/Containers/com.vmware.fusion",
+        "Library/Containers/com.parallels.desktop.console",
+        "Library/Containers/com.utmapp.UTM",
+        "Library/Containers/org.virtualbox.app.VirtualBox",
+        "Library/Application Support/Docker",
+        "Library/Application Support/OrbStack",
+        "Library/Application Support/VMware",
+        "Library/Application Support/Parallels",
+        "Library/Application Support/UTM",
+        "Library/Application Support/VirtualBox",
+        "Library/Caches/com.docker.docker",
+        "Library/Caches/dev.orbstack.OrbStack",
+        "Library/Group Containers/group.com.docker",
+        ".docker",
+        ".orbstack",
+        ".vagrant.d",
+        "VirtualBox VMs",
+        "VMware",
+        "Parallels",
+    ]
+
+    /// Checks if a path should be skipped due to known heavy content.
+    private static func isHeavyDirectory(_ path: String) -> Bool {
+        let normalizedPath = path.replacingOccurrences(of: "//", with: "/")
+        for heavyPath in heavyDirectoryPaths {
+            if normalizedPath.contains(heavyPath) {
+                return true
+            }
+        }
+        return false
     }
 
     // MARK: 21. Large Files
@@ -2174,8 +2288,14 @@ extension CleanupEngine {
                     enumerator.skipDescendants()
                     continue
                 }
+                // Skip heavy directories (Docker, VMs, etc.)
+                if Self.isHeavyDirectory(fullPath) {
+                    progress?(.log("  Skipping heavy directory: \(Self.shortPath(fullPath))"))
+                    enumerator.skipDescendants()
+                    continue
+                }
                 if item == "node_modules" {
-                    let size = await getDirectorySize(fullPath)
+                    let size = await getDirectorySizeWithTimeout(fullPath, timeout: .seconds(10))
                     if size > 100 * 1024 * 1024 {
                         items.append(("\(fullPath.replacingOccurrences(of: home, with: "~"))", size))
                         totalFound += size
@@ -2196,9 +2316,14 @@ extension CleanupEngine {
             guard let enumerator = fm.enumerator(atPath: dir) else { continue }
             while let item = enumerator.nextObject() as? String {
                 try Task.checkCancellation()
+                // Skip heavy directories in IPSW search too
+                let fullPath = "\(dir)/\(item)"
+                if Self.isHeavyDirectory(fullPath) {
+                    enumerator.skipDescendants()
+                    continue
+                }
                 let ext = (item as NSString).pathExtension.lowercased()
                 if ext == "ipsw" {
-                    let fullPath = "\(dir)/\(item)"
                     if let attrs = try? fm.attributesOfItem(atPath: fullPath),
                        let size = attrs[.size] as? Int64, size > 100 * 1024 * 1024 {
                         items.append(("IPSW: \(item)", size))
@@ -2241,11 +2366,17 @@ extension CleanupEngine {
         for entry in entries {
             try Task.checkCancellation()
 
+            // Skip heavy containers (Docker, VMs) — virtual disks cause timeouts
+            if Self.isHeavyContainer(entry) {
+                progress?(.log("  \(entry) — skipped (heavy container)"))
+                continue
+            }
+
             let entryPath = "\(cachesDir)/\(entry)"
             var isDir: ObjCBool = false
             guard fm.fileExists(atPath: entryPath, isDirectory: &isDir), isDir.boolValue else { continue }
 
-            let size = await getDirectorySize(entryPath)
+            let size = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
             if size < 5 * 1024 * 1024 { // < 5 MB, skip
                 continue
             }

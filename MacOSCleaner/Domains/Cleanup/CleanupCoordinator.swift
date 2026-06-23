@@ -131,6 +131,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
+                var skippedCategories: [String] = []
                 
                 let isTrashSelected = self.itemManager.items.contains { item in
                     item.isSelected && item.label == "trash_user_label".localized
@@ -156,6 +157,15 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: Int64(result.freedMB * 1024 * 1024)))
                 }
                 
+                // Check for skipped categories from logs
+                for log in self.scriptLogs {
+                    if log.contains("timed out") || log.contains("skipped") {
+                        if let category = self.extractCategoryFromLog(log) {
+                            skippedCategories.append(category)
+                        }
+                    }
+                }
+                
                 if isTrashSelected {
                     self.totalSteps = self.currentStep + 1
                     self.currentStep += 1
@@ -171,6 +181,12 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
                 try await self.journal.log(transaction: transaction)
+                
+                if !skippedCategories.isEmpty {
+                    let skippedList = skippedCategories.joined(separator: ", ")
+                    self.scriptLogs.append("⚠️ Cleanup completed with partial results. Skipped categories: \(skippedList)")
+                    self.lastError = "Some categories were skipped due to timeouts: \(skippedList)"
+                }
                 
                 self.notifier.sendCleanupComplete(
                     totalFreedMB: self.totalFreedMB,
@@ -188,6 +204,52 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 }
             }
         }
+    }
+    
+    private func extractCategoryFromLog(_ log: String) -> String? {
+        let patterns = [
+            "App containers",
+            "Orphaned remnants",
+            "Orphaned files",
+            "Large files",
+            "Dynamic cache discovery",
+            "App caches",
+            "Package managers",
+            "Gradle",
+            "Flutter",
+            "Xcode",
+            "iOS Simulators",
+            "Android",
+            "IDE",
+            "Browser",
+            "Messaging",
+            "Docker",
+            "Language caches",
+            "User logs",
+            "System caches",
+            "Dotfile caches",
+            "Scattered junk",
+            "Time Machine",
+            "iOS Backups",
+            "Mail Downloads",
+            "Saved Application State",
+            "Crash Reporter",
+            "AssetsV2",
+            "CloudKit",
+            "SwiftPM",
+            "Carthage",
+            "Steam",
+            "Teams",
+            "Adobe",
+            "Chrome"
+        ]
+        
+        for pattern in patterns {
+            if log.contains(pattern) {
+                return pattern
+            }
+        }
+        return nil
     }
     
     @MainActor

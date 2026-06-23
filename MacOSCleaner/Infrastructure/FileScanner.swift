@@ -42,6 +42,15 @@ public actor FileScanner {
                     while let fileURL = enumerator.nextObject() as? URL {
                         if Task.isCancelled { break }
                         
+                        let filePath = fileURL.path
+                        let shouldExclude = FileManager.defaultExcludedPaths.contains { filePath.contains($0) }
+                        if shouldExclude {
+                            if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                                enumerator.skipDescendants()
+                            }
+                            continue
+                        }
+                        
                         currentBatch.append(fileURL)
                         
                         let now = Date()
