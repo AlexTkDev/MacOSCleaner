@@ -143,6 +143,7 @@
 "cleanup_complete" = "Очищення завершено";
 "cleanup_complete_sub" = "Успішно звільнено %lld МБ дискового простору.";
 "cleanup_summary" = "Зведення видалених файлів";
+"cleanup_skipped" = "Не вдалося очистити";
 "cleanup_selected" = "Вибрано: %lld МБ";
 "cleanup_hide_logs" = "Приховати логи";
 "cleanup_show_logs" = "Показати логи";

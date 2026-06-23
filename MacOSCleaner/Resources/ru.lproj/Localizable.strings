@@ -168,6 +168,7 @@
 "cleanup_complete" = "Очистка завершена";
 "cleanup_complete_sub" = "Успешно освобождено %lld МБ дискового пространства.";
 "cleanup_summary" = "Сводка удаленных файлов";
+"cleanup_skipped" = "Не удалось очистить";
 "cleanup_selected" = "Выбрано: %lld МБ";
 "cleanup_hide_logs" = "Скрыть логи";
 "cleanup_show_logs" = "Показать логи";

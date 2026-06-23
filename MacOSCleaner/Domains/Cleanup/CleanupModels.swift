@@ -68,3 +68,9 @@ public struct CleanupResultItem: Identifiable, Sendable {
     public let label: String
     public let freedMB: Int
 }
+
+public struct SkippedCleanupItem: Identifiable, Sendable {
+    public let id: UUID = UUID()
+    public let label: String
+    public let reason: String
+}

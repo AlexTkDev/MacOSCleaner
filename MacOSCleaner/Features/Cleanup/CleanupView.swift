@@ -245,6 +245,34 @@ public struct CleanupView: View {
                     }
                 }
                 .listStyle(.inset)
+                
+                if !viewModel.skippedItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("cleanup_skipped".localized)
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                            .padding(.top, 8)
+                        
+                        ForEach(viewModel.skippedItems) { item in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .padding(.top, 2)
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.label)
+                                        .font(.system(.subheadline, design: .monospaced))
+                                    Text(item.reason)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.bottom, 8)
+                }
             }
             
             Spacer()

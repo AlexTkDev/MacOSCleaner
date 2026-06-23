@@ -16,6 +16,7 @@ public final class CleanupViewModel {
     public var items: [CleanupPreviewItem] { itemManager.items }
     public var totalFreedMB: Int { coordinator.totalFreedMB }
     public var cleanedItems: [CleanupResultItem] { coordinator.cleanedItems }
+    public var skippedItems: [SkippedCleanupItem] { coordinator.skippedItems }
     public var lastError: String? { coordinator.lastError }
     public var scriptLogs: [String] { coordinator.scriptLogs }
     public var selectedItemId: UUID? {

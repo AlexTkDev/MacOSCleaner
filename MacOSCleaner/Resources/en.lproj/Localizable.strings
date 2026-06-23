@@ -169,6 +169,7 @@
 "cleanup_complete" = "Cleanup Complete";
 "cleanup_complete_sub" = "Successfully freed %lld MB of disk space.";
 "cleanup_summary" = "Deleted Items Summary";
+"cleanup_skipped" = "Could Not Clean";
 "cleanup_selected" = "Selected: %lld MB";
 "cleanup_hide_logs" = "Hide Logs";
 "cleanup_show_logs" = "Show Logs";

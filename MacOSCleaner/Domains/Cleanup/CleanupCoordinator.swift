@@ -24,6 +24,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
     public var stepTitle: String = ""
     public var totalFreedMB: Int = 0
     public var cleanedItems: [CleanupResultItem] = []
+    public var skippedItems: [SkippedCleanupItem] = []
     public var lastError: String? = nil
     public var scriptLogs: [String] = []
     
@@ -68,6 +69,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.itemManager.clear()
                 self.lastError = nil
                 self.scriptLogs = []
+                self.skippedItems = []
                 
                 // Close running apps before scan for better cache cleanup
                 await self.closeRunningApps()
@@ -131,7 +133,6 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
-                var skippedCategories: [String] = []
                 
                 let isTrashSelected = self.itemManager.items.contains { item in
                     item.isSelected && item.label == "trash_user_label".localized
@@ -159,9 +160,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 // Check for skipped categories from logs
                 for log in self.scriptLogs {
-                    if log.contains("timed out") || log.contains("skipped") {
-                        if let category = self.extractCategoryFromLog(log) {
-                            skippedCategories.append(category)
+                    if log.contains("⚠️"), log.contains("skipped") {
+                        if let item = self.parseSkippedFromLog(log) {
+                            self.skippedItems.append(item)
                         }
                     }
                 }
@@ -182,10 +183,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
                 try await self.journal.log(transaction: transaction)
                 
-                if !skippedCategories.isEmpty {
-                    let skippedList = skippedCategories.joined(separator: ", ")
-                    self.scriptLogs.append("⚠️ Cleanup completed with partial results. Skipped categories: \(skippedList)")
-                    self.lastError = "Some categories were skipped due to timeouts: \(skippedList)"
+                if !self.skippedItems.isEmpty {
+                    let skippedList = self.skippedItems.map { "\($0.label) (\($0.reason))" }.joined(separator: ", ")
+                    self.scriptLogs.append("⚠️ Cleanup completed with partial results. Skipped: \(skippedList)")
                 }
                 
                 self.notifier.sendCleanupComplete(
@@ -206,50 +206,63 @@ public final class CleanupCoordinator: @unchecked Sendable {
         }
     }
     
-    private func extractCategoryFromLog(_ log: String) -> String? {
-        let patterns = [
-            "App containers",
-            "Orphaned remnants",
-            "Orphaned files",
-            "Large files",
-            "Dynamic cache discovery",
-            "App caches",
-            "Package managers",
-            "Gradle",
-            "Flutter",
-            "Xcode",
-            "iOS Simulators",
-            "Android",
-            "IDE",
-            "Browser",
-            "Messaging",
-            "Docker",
-            "Language caches",
-            "User logs",
-            "System caches",
-            "Dotfile caches",
-            "Scattered junk",
-            "Time Machine",
-            "iOS Backups",
-            "Mail Downloads",
-            "Saved Application State",
-            "Crash Reporter",
-            "AssetsV2",
-            "CloudKit",
-            "SwiftPM",
-            "Carthage",
-            "Steam",
-            "Teams",
-            "Adobe",
-            "Chrome"
+    private func parseSkippedFromLog(_ log: String) -> SkippedCleanupItem? {
+        let patterns: [(label: String, keywords: [String])] = [
+            ("App containers", ["App containers"]),
+            ("Orphaned remnants", ["Orphaned remnants"]),
+            ("Orphaned files", ["Orphaned files"]),
+            ("Large files", ["Large files"]),
+            ("Dynamic cache discovery", ["Dynamic cache discovery"]),
+            ("App caches", ["App caches"]),
+            ("Package managers", ["Package managers"]),
+            ("Gradle + Maven", ["Gradle"]),
+            ("Flutter / Dart", ["Flutter"]),
+            ("Xcode", ["Xcode"]),
+            ("iOS Simulators", ["iOS Simulators"]),
+            ("Android caches", ["Android caches"]),
+            ("Android SDK", ["Android SDK"]),
+            ("IDE / Electron caches", ["IDE"]),
+            ("Browser caches", ["Browser caches"]),
+            ("Messaging / media", ["Messaging"]),
+            ("Docker", ["Docker"]),
+            ("Language caches", ["Language caches"]),
+            ("User logs", ["User logs"]),
+            ("System caches", ["System caches"]),
+            ("Dotfile caches", ["Dotfile caches"]),
+            ("Scattered junk", ["Scattered junk"]),
+            ("Time Machine Snapshots", ["Time Machine"]),
+            ("iOS Backups", ["iOS Backups"]),
+            ("Mail Downloads", ["Mail Downloads"]),
+            ("Saved Application State", ["Saved Application State"]),
+            ("Crash Reporter", ["Crash Reporter"]),
+            ("AssetsV2", ["AssetsV2"]),
+            ("CloudKit Cache", ["CloudKit"]),
+            ("Swift Package Manager Cache", ["SwiftPM"]),
+            ("Carthage Cache", ["Carthage"]),
+            ("Steam Cache", ["Steam"]),
+            ("Microsoft Teams Cache", ["Teams"]),
+            ("Adobe Caches", ["Adobe"]),
+            ("Chrome Extra Caches", ["Chrome"]),
         ]
-        
-        for pattern in patterns {
-            if log.contains(pattern) {
-                return pattern
-            }
+
+        guard let matched = patterns.first(where: { $0.keywords.contains(where: { log.contains($0) }) }) else {
+            return nil
         }
-        return nil
+
+        // Extract reason — everything between "—" and ", skipped"
+        let reason: String
+        if let range = log.range(of: "— ") {
+            let afterDash = log[range.upperBound...]
+            if let skippedRange = afterDash.range(of: ", skipped") {
+                reason = String(afterDash[..<skippedRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            } else {
+                reason = String(afterDash).trimmingCharacters(in: .whitespaces)
+            }
+        } else {
+            reason = "unknown"
+        }
+
+        return SkippedCleanupItem(label: matched.label, reason: reason)
     }
     
     @MainActor
@@ -259,6 +272,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         stateMachine.reset()
         itemManager.clear()
         cleanedItems = []
+        skippedItems = []
         totalFreedMB = 0
         currentStep = 0
         stepTitle = ""
