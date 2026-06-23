@@ -257,7 +257,19 @@ public actor UninstallerService {
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
         
         var relatedURLs = Set<URL>()
-        let searchPatterns = createSearchPatterns(bundleID: bundleID, appName: appName)
+        var searchPatterns = createSearchPatterns(bundleID: bundleID, appName: appName)
+        
+        // Detect Electron-based apps and add pattern to find Electron helper processes
+        let electronFrameworkPath = appURL.appendingPathComponent("Contents/Frameworks/Electron Framework.framework")
+        if fileManager.fileExists(atPath: electronFrameworkPath.path) {
+            searchPatterns.append("Electron")
+        }
+        
+        // Detect Java-based apps (Android Studio, etc.)
+        let javaPath = appURL.appendingPathComponent("Contents/PlugIns/jdk-bundle")
+        if fileManager.fileExists(atPath: javaPath.path) {
+            searchPatterns.append("jdk-bundle")
+        }
         
         // Pass 1: mdfind (Spotlight)
         let mdfindResults = await runMdfind(bundleID: bundleID, appName: appName)
@@ -300,13 +312,41 @@ public actor UninstallerService {
             "/usr/local/bin",
             "/usr/local/share",
             "/Library/Frameworks",
-            "/Library/Internet Plug-Ins"
+            "/Library/Internet Plug-Ins",
+            
+            // Shared file lists (recent documents)
+            "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments",
+            
+            // Per-host preferences
+            "~/Library/Preferences/ByHost",
+            
+            // Google-specific paths
+            "~/Library/Google",
+            
+            // User-level system extension paths
+            "~/Library/Fonts",
+            "~/Library/QuickLook",
+            "~/Library/Screen Savers",
+            "~/Library/Internet Plug-Ins",
+            "~/Library/LaunchDaemons",
+            "~/Library/Frameworks",
+            "~/Library/Input Methods",
+            "~/Library/Audio/Plug-Ins",
+            
+            // Receipts database
+            "/private/var/db/receipts",
+            
+            // System-level extension paths
+            "/Library/QuickLook",
+            "/Library/Screen Savers",
+            "/Library/Input Methods",
+            "/Library/Audio/Plug-Ins"
         ]
         
         libraryPaths.append(contentsOf: getSystemSearchPaths())
         
         let teamID = await getTeamIdentifier(url: appURL)
-        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit"]
+        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit", "Preferences", "Application Scripts", "Google", "ByHost"]
         
         for path in libraryPaths {
             let expandedPath = (path as NSString).expandingTildeInPath
@@ -338,22 +378,9 @@ public actor UninstallerService {
                         relatedURLs.insert(fileURL)
                     }
                 }
-                // 3-level recursive check for vendor folders
+                // Recursive check for vendor folders up to 4 levels deep
                 else if deepScanFolders.contains(folderURL.lastPathComponent) {
-                    let subContents = (try? fileManager.contentsOfDirectory(at: fileURL, includingPropertiesForKeys: nil, options: [])) ?? []
-                    for subURL in subContents {
-                        if matches(fileName: subURL.lastPathComponent, patterns: searchPatterns) {
-                            relatedURLs.insert(subURL)
-                        } else {
-                            // Try one more level for possible vendor folders (e.g. Google/AndroidStudio)
-                            let vendorSubContents = (try? fileManager.contentsOfDirectory(at: subURL, includingPropertiesForKeys: nil, options: [])) ?? []
-                            for vendorSubURL in vendorSubContents {
-                                if matches(fileName: vendorSubURL.lastPathComponent, patterns: searchPatterns) {
-                                    relatedURLs.insert(vendorSubURL)
-                                }
-                            }
-                        }
-                    }
+                    relatedURLs.formUnion(deepSearch(in: fileURL, patterns: searchPatterns, currentDepth: 1, maxDepth: 4, teamID: teamID))
                 }
             }
         }
@@ -438,6 +465,38 @@ public actor UninstallerService {
         )
     }
 
+    private func deepSearch(in url: URL, patterns: [String], currentDepth: Int, maxDepth: Int, teamID: String?) -> Set<URL> {
+        var found = Set<URL>()
+        if currentDepth > maxDepth { return found }
+        
+        let contents = (try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])) ?? []
+        for fileURL in contents {
+            let fileName = fileURL.lastPathComponent
+            var matched = false
+            
+            if matches(fileName: fileName, patterns: patterns) {
+                found.insert(fileURL)
+                matched = true
+            } else if let tID = teamID, url.path.contains("Launch") || url.path.contains("Privileged") || url.path.contains("Extensions") || url.path.contains("Application Scripts") {
+                // If we're deep inside scripts, we can also check for team IDs
+                // Though getTeamIdentifier is async, we can't await it here unless we make deepSearch async.
+                // Let's just check if fileName contains TeamID, which is often the case for Group Containers and App Scripts!
+                if fileName.contains(tID) {
+                    found.insert(fileURL)
+                    matched = true
+                }
+            }
+            
+            if !matched {
+                var isDir: ObjCBool = false
+                if fileManager.fileExists(atPath: fileURL.path, isDirectory: &isDir), isDir.boolValue {
+                    found.formUnion(deepSearch(in: fileURL, patterns: patterns, currentDepth: currentDepth + 1, maxDepth: maxDepth, teamID: teamID))
+                }
+            }
+        }
+        return found
+    }
+
     private func getDirectorySize(url: URL) async -> Int64 {
         fileManager.getDirectorySize(url: url, excludedPaths: FileManager.defaultExcludedPaths)
     }
@@ -445,16 +504,25 @@ public actor UninstallerService {
     func getSystemSearchPaths() -> [String] {
         var paths = [String]()
         
-        // DARWIN_USER_CACHE_DIR and TEMP_DIR are under /var/folders/
-        // NSTemporaryDirectory() usually points to the 'T' directory
-        let tmpDir = NSTemporaryDirectory()
-        if !tmpDir.isEmpty {
-            paths.append(tmpDir)
-            // Replace /T/ with /C/ for cache directory
-            let cacheDir = tmpDir.replacingOccurrences(of: "/T/", with: "/C/")
-            if fileManager.fileExists(atPath: cacheDir) {
-                paths.append(cacheDir)
+        // Scan ALL /private/var/folders/ subdirectories (T/, C/, X/, etc.)
+        // Each user session gets a unique UUID under a short prefix directory
+        let varFoldersPath = "/private/var/folders"
+        if let shortDirs = try? fileManager.contentsOfDirectory(atPath: varFoldersPath) {
+            for shortDir in shortDirs where !shortDir.hasPrefix(".") {
+                let shortPath = "\(varFoldersPath)/\(shortDir)"
+                if let uuidDirs = try? fileManager.contentsOfDirectory(atPath: shortPath) {
+                    for uuidDir in uuidDirs where !uuidDir.hasPrefix(".") {
+                        let uuidPath = "\(shortPath)/\(uuidDir)"
+                        paths.append(uuidPath)
+                    }
+                }
             }
+        }
+        
+        // Also include NSTemporaryDirectory() as fallback
+        let tmpDir = NSTemporaryDirectory()
+        if !tmpDir.isEmpty && !paths.contains(tmpDir) {
+            paths.append(tmpDir)
         }
         
         return paths
@@ -464,11 +532,19 @@ public actor UninstallerService {
         var patterns = Set<String>()
         if let bundleID = bundleID {
             patterns.insert(bundleID)
-            let parts = bundleID.components(separatedBy: ".")
+            let parts = bundleID.components(separatedBy: CharacterSet(charactersIn: ".-"))
             if parts.count >= 2 {
-                // Add all suffixes: com.apple.dt.Xcode -> apple.dt.Xcode, dt.Xcode, Xcode
                 for i in 1..<parts.count {
-                    patterns.insert(parts.dropFirst(i).joined(separator: "."))
+                    let suffix = parts.dropFirst(i).joined(separator: ".")
+                    if suffix.count >= 3 {
+                        patterns.insert(suffix)
+                    }
+                }
+            }
+            // Add parts >= 4 chars to handle things like 'todesktop'
+            for part in parts where part.count >= 4 {
+                if !["com", "org", "net", "apple", "mac", "app"].contains(part.lowercased()) {
+                    patterns.insert(part)
                 }
             }
         }
@@ -507,8 +583,12 @@ public actor UninstallerService {
         if lowerName.contains("cleaner") || lowerID.contains("cleaner") {
             extra.append("macoscleaner")
         }
-        
-
+        if lowerName.contains("orbstack") || lowerID.contains("orbstack") {
+            extra.append(contentsOf: ["macvirt", "orbstack", "docker"])
+        }
+        if lowerName.contains("chrome") || lowerID.contains("chrome") {
+            extra.append(contentsOf: ["googleupdater", "keystone", "googlesoftwareupdate", "chrome"])
+        }
         
         return extra
     }

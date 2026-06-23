@@ -45,7 +45,8 @@ struct DashboardView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(NSColor.windowBackgroundColor))
-            .cornerRadius(12)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
         }
     }
     
@@ -92,7 +93,8 @@ struct DashboardView: View {
         }
         .padding()
         .background(Color(NSColor.windowBackgroundColor))
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
         .frame(maxWidth: .infinity)
     }
     
@@ -110,7 +112,8 @@ struct DashboardView: View {
         }
         .padding()
         .background(Color(NSColor.windowBackgroundColor))
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
         .frame(maxWidth: .infinity)
     }
     
@@ -134,7 +137,8 @@ struct DashboardView: View {
                     }
                 }
                 .background(Color(NSColor.windowBackgroundColor))
-                .cornerRadius(12)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
             }
         }
     }

@@ -2,131 +2,162 @@ import SwiftUI
 
 struct PermissionsView: View {
     @Bindable var permissionsManager: PermissionsManager
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
-            HStack(spacing: 12) {
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 48))
-                    .foregroundColor(.orange)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("permissions_title".localized)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("permissions_subtitle".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            headerSection
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    statusCard
+                    instructionsCard
+                    actionButtons
                 }
+                .padding(24)
             }
-            .padding(.top, 20)
-            
-            Divider()
-            
-            // FDA Status
-            permissionStatusRow(
-                icon: "externaldrive.badge.checkmark",
-                title: "Full Disk Access",
-                description: "permissions_fda_description".localized,
-                isGranted: permissionsManager.hasFullDiskAccess
+
+            dismissBar
+        }
+        .frame(minWidth: 450, minHeight: 500)
+        .background(Color(NSColor.windowBackgroundColor))
+    }
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "lock.shield")
+                .font(.system(size: 40))
+                .foregroundColor(.white)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("permissions_title".localized)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                Text("permissions_subtitle".localized)
+                    .font(.subheadline)
+                    .opacity(0.85)
+            }
+        }
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(24)
+        .background {
+            LinearGradient(
+                colors: [
+                    .accentColor.opacity(colorScheme == .dark ? 0.8 : 0.65),
+                    .accentColor.opacity(colorScheme == .dark ? 0.3 : 0.15),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
-            
-            Divider()
-            
-            // Instructions
+        }
+    }
+
+    // MARK: - Status Card
+
+    private var statusCard: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "externaldrive.badge.checkmark")
+                .font(.title2)
+                .foregroundColor(permissionsManager.hasFullDiskAccess ? .green : .orange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text("Full Disk Access")
+                        .font(.headline)
+                    Spacer()
+                    statusBadge(isGranted: permissionsManager.hasFullDiskAccess)
+                }
+                Text("permissions_fda_description".localized)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(16)
+        .background(Color(NSColor.controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+    }
+
+    // MARK: - Instructions Card
+
+    private var instructionsCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("permissions_instructions_title".localized)
+                .font(.headline)
+
             VStack(alignment: .leading, spacing: 12) {
-                Text("permissions_instructions_title".localized)
-                    .font(.headline)
-                
                 instructionStep(number: 1, text: "permissions_step1".localized)
                 instructionStep(number: 2, text: "permissions_step2".localized)
                 instructionStep(number: 3, text: "permissions_step3".localized)
                 instructionStep(number: 4, text: "permissions_step4".localized)
             }
-            .padding(.horizontal, 8)
-            
-            Divider()
-            
-            // Buttons
-            HStack(spacing: 16) {
-                Button {
-                    permissionsManager.openFullDiskAccessSettings()
-                } label: {
-                    Label("permissions_open_settings".localized, systemImage: "gear")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                
-                Button {
-                    permissionsManager.refresh()
-                } label: {
-                    Label("permissions_check_status".localized, systemImage: "arrow.clockwise")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(NSColor.controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+    }
+
+    // MARK: - Buttons
+
+    private var actionButtons: some View {
+        HStack(spacing: 16) {
+            Button {
+                permissionsManager.openFullDiskAccessSettings()
+            } label: {
+                Label("permissions_open_settings".localized, systemImage: "gear")
+                    .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 8)
-            
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+
+            Button {
+                permissionsManager.refresh()
+            } label: {
+                Label("permissions_check_status".localized, systemImage: "arrow.clockwise")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+    }
+
+    // MARK: - Dismiss
+
+    private var dismissBar: some View {
+        HStack {
+            Button("permissions_dismiss_temp".localized) {
+                permissionsManager.dismissGuidanceTemporarily()
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.secondary)
+
             Spacer()
-            
-            // Dismiss
-            HStack {
-                Button("permissions_dismiss_temp".localized) {
-                    permissionsManager.dismissGuidanceTemporarily()
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Button("permissions_dismiss_permanent".localized) {
-                    permissionsManager.dismissGuidancePermanently()
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.secondary)
-                .font(.caption)
+
+            Button("permissions_dismiss_permanent".localized) {
+                permissionsManager.dismissGuidancePermanently()
             }
-            .padding(.bottom, 12)
+            .buttonStyle(.plain)
+            .foregroundColor(.secondary)
+            .font(.caption)
         }
-        .padding(24)
-        .frame(minWidth: 450, minHeight: 500)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
     }
-    
+
     // MARK: - Components
-    
-    private func permissionStatusRow(icon: String, title: String, description: String, isGranted: Bool) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(isGranted ? .green : .orange)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(title)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    statusBadge(isGranted: isGranted)
-                }
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-    
+
     private func statusBadge(isGranted: Bool) -> some View {
         HStack(spacing: 4) {
             Circle()
                 .fill(isGranted ? Color.green : Color.orange)
                 .frame(width: 8, height: 8)
-            
+
             Text(isGranted ? "permissions_status_granted".localized : "permissions_status_required".localized)
                 .font(.caption2)
                 .fontWeight(.medium)
@@ -136,7 +167,7 @@ struct PermissionsView: View {
         .background(isGranted ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
         .cornerRadius(6)
     }
-    
+
     private func instructionStep(number: Int, text: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
@@ -146,7 +177,7 @@ struct PermissionsView: View {
                 .frame(width: 20, height: 20)
                 .background(Color.accentColor)
                 .clipShape(Circle())
-            
+
             Text(text)
                 .font(.callout)
                 .foregroundColor(.primary)

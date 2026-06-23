@@ -12,10 +12,12 @@ struct RootView: View {
             List(NavigationItem.allCases, selection: $selectedItem) { item in
                 NavigationLink(value: item) {
                     Label(item.localizedTitle, systemImage: item.systemImage)
+                        .padding(.vertical, 2)
                 }
             }
+            .listStyle(.sidebar)
             .navigationTitle("app_title".localized)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 280)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             if let selectedItem {
                 contentView(for: selectedItem)

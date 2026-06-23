@@ -11,23 +11,17 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 20) {
                 header
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 8)
 
-                permissionsSection
-                Divider().padding(.vertical, 16)
-                generalSection
-                Divider().padding(.vertical, 16)
-                processesSection
-                Divider().padding(.vertical, 16)
-                startupSection
-                Divider().padding(.vertical, 16)
-                trashDeletionSection
-                Divider().padding(.vertical, 16)
-                advancedSection
-                Divider().padding(.vertical, 16)
-                resetSection
+                sectionCard { permissionsSection }
+                sectionCard { generalSection }
+                sectionCard { processesSection }
+                sectionCard { startupSection }
+                sectionCard { trashDeletionSection }
+                sectionCard { advancedSection }
+                sectionCard { resetSection }
             }
             .padding(32)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -382,6 +376,17 @@ struct SettingsView: View {
     }
 
     // MARK: - Components
+
+    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(NSColor.controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+    }
 
     private func sectionHeader(title: String, icon: String) -> some View {
         Label(title, systemImage: icon)

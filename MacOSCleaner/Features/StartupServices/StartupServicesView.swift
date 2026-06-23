@@ -60,7 +60,10 @@ public struct StartupServicesView: View {
             filterPicker
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+        .background(Color(NSColor.controlBackgroundColor))
+        .overlay(alignment: .bottom) {
+            Divider()
+        }
     }
 
     private var filterPicker: some View {
@@ -155,10 +158,18 @@ public struct StartupServicesView: View {
                             await viewModel.toggle(service: service)
                         }
                     }
-                    Divider()
+                    if service.id != viewModel.filteredServices.last?.id {
+                        Divider()
+                            .padding(.leading, 120)
+                    }
                 }
             }
             .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+            .padding()
         }
     }
 
