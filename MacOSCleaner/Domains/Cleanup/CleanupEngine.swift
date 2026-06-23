@@ -99,6 +99,7 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
     case teamsCache = "teams_cache"
     case adobeCaches = "adobe_caches"
     case chromeExtraCaches = "chrome_extra_caches"
+    case ideOldVersions = "ide_old_versions"
 }
 
 // MARK: - CleanupEngine Actor
@@ -265,6 +266,7 @@ public actor CleanupEngine {
         case .mailDownloads: return try await cleanMailDownloads(dryRun: dryRun, progress: progress)
         case .savedAppState: return try await cleanSavedAppState(dryRun: dryRun, progress: progress)
         case .crashReporter: return try await cleanCrashReporter(dryRun: dryRun, progress: progress)
+        case .ideOldVersions: return try await cleanIDEOldVersions(dryRun: dryRun, progress: progress)
         case .assetsV2: return try await cleanAssetsV2(dryRun: dryRun, progress: progress)
         case .cloudKitCache: return try await cleanCloudKitCache(dryRun: dryRun, progress: progress)
         case .swiftPMCache: return try await cleanSwiftPMCache(dryRun: dryRun, progress: progress)
@@ -278,7 +280,7 @@ public actor CleanupEngine {
 
     private static func timeoutForCategory(_ category: CleanupCategory) -> Duration {
         switch category {
-        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots:
+        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions:
             return .seconds(120)
         case .xcode, .iosSimulators:
             return .seconds(300)
@@ -395,6 +397,7 @@ public actor CleanupEngine {
         case .teamsCache: return "Microsoft Teams Cache"
         case .adobeCaches: return "Adobe Caches"
         case .chromeExtraCaches: return "Chrome Extra Caches"
+        case .ideOldVersions: return "Old IDE Versions"
         }
     }
 }
@@ -464,6 +467,7 @@ public struct CleanupOptions: Sendable, Equatable {
             .teamsCache,
             .adobeCaches,
             .chromeExtraCaches,
+            .ideOldVersions,
         ]
 
         if cleanDSStore {
@@ -1318,6 +1322,193 @@ extension CleanupEngine {
         progress?(.log("IDE / Electron total: \(Self.formatBytes(totalFreed))"))
         progress?(.result(label: "IDE / Electron caches", freedMB: mb))
         return [CleanupEngineResult(label: "IDE / Electron caches", freedMB: mb)]
+    }
+
+    // MARK: 9b. Old IDE Versions
+
+    func cleanIDEOldVersions(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        progress?(.log("Scanning old IDE versions and leftover caches..."))
+        var freed: Int64 = 0
+
+        // 1. System-level IDE caches (safe, regenerated automatically)
+        let systemCacheDirs = [
+            // VS Code
+            "\(home)/Library/Caches/com.microsoft.VSCode",
+            // Cursor
+            "\(home)/Library/Caches/Cursor",
+            // Windsurf
+            "\(home)/Library/Caches/com.exafunction.windsurf",
+            "\(home)/Library/Caches/com.exafunction.windsurf.ShipIt",
+            // Zed
+            "\(home)/Library/Caches/dev.zed.Zed",
+            "\(home)/.cache/zed",
+            // Nova
+            "\(home)/Library/Caches/com.panic.Nova",
+            // Sublime Text
+            "\(home)/Library/Caches/com.sublimetext.4",
+            "\(home)/Library/Caches/com.sublimetext.sublime-merge",
+            // Eclipse
+            "\(home)/Library/Caches/org.eclipse.platform.ide",
+            // Atom (legacy)
+            "\(home)/Library/Caches/com.github.atom",
+            "\(home)/Library/Caches/Atom",
+        ]
+
+        for dir in systemCacheDirs {
+            try Task.checkCancellation()
+            let (f, item) = try await cleanContents(of: dir, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: nil, progress: progress) }
+        }
+
+        // 2. JetBrains: detect old product version dirs for no-longer-installed IDEs
+        progress?(.log("  Checking JetBrains products..."))
+        let installedJetBrainsProducts = collectInstalledJetBrainsProducts()
+        let jetBrainsCacheBase = "\(home)/Library/Caches/JetBrains"
+        let jetBrainsLogBase = "\(home)/Library/Logs/JetBrains"
+
+        for base in [jetBrainsCacheBase, jetBrainsLogBase] {
+            guard fm.fileExists(atPath: base) else { continue }
+            let entries = (try? fm.contentsOfDirectory(atPath: base)) ?? []
+            for entry in entries {
+                try Task.checkCancellation()
+                guard !entry.hasPrefix(".") else { continue }
+                // Check if this product dir matches an installed IDE
+                let isInstalled = installedJetBrainsProducts.contains { product in
+                    entry.lowercased().hasPrefix(product.lowercased())
+                }
+                if !isInstalled {
+                    let entryPath = "\(base)/\(entry)"
+                    let (f, item) = try await removeDirectory(entryPath, dryRun: dryRun, progress: progress)
+                    freed += f
+                    if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "JetBrains leftover: \(entry)", progress: progress) }
+                } else {
+                    // Product IS installed — still clean caches (safe, regenerated)
+                    // but only for the cache dir, not logs
+                    if base == jetBrainsCacheBase {
+                        let entryPath = "\(base)/\(entry)"
+                        let (f, item) = try await cleanContents(of: entryPath, dryRun: dryRun, progress: progress)
+                        freed += f
+                        if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "JetBrains cache: \(entry)", progress: progress) }
+                    }
+                }
+            }
+        }
+
+        // 3. Android Studio: clean caches for old versions (keep only latest per product line)
+        progress?(.log("  Checking Android Studio caches..."))
+        let asCandidates = [
+            "\(home)/Library/Caches/Google/AndroidStudio",
+            "\(home)/Library/Caches/AndroidStudio",
+        ]
+        for candidateBase in asCandidates {
+            let baseDir = URL(fileURLWithPath: candidateBase).deletingLastPathComponent().path
+            let prefix = URL(fileURLWithPath: candidateBase).lastPathComponent
+            guard fm.fileExists(atPath: baseDir) else { continue }
+            let entries = (try? fm.contentsOfDirectory(atPath: baseDir)) ?? []
+            let matching = entries.filter { $0.hasPrefix(prefix) && !$0.hasPrefix(".") }.sorted()
+            // Keep the last one (latest version), remove older ones
+            if matching.count > 1 {
+                for old in matching.dropLast() {
+                    let oldPath = "\(baseDir)/\(old)"
+                    let (f, item) = try await removeDirectory(oldPath, dryRun: dryRun, progress: progress)
+                    freed += f
+                    if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "Android Studio old: \(old)", progress: progress) }
+                }
+            }
+        }
+
+        // 4. VS Code / Cursor / Windsurf CachedData — each subdir is a version, old ones can be cleaned
+        let electronAppSupportBases = [
+            ("\(home)/Library/Application Support/Code", "Code"),
+            ("\(home)/Library/Application Support/Code - Insiders", "Code - Insiders"),
+            ("\(home)/Library/Application Support/Cursor", "Cursor"),
+            ("\(home)/Library/Application Support/Windsurf", "Windsurf"),
+        ]
+        for (appSupportPath, appName) in electronAppSupportBases {
+            let cachedDataPath = "\(appSupportPath)/CachedData"
+            guard fm.fileExists(atPath: cachedDataPath) else { continue }
+            let entries = (try? fm.contentsOfDirectory(atPath: cachedDataPath)) ?? []
+            if entries.count > 1 {
+                // Has multiple version subdirs — clean old ones
+                let sorted = entries.filter { $0 != "CachedData" && !$0.hasPrefix(".") }.sorted()
+                if sorted.count > 1 {
+                    for old in sorted.dropLast() {
+                        let oldPath = "\(cachedDataPath)/\(old)"
+                        var isDir: ObjCBool = false
+                        fm.fileExists(atPath: oldPath, isDirectory: &isDir)
+                        guard isDir.boolValue else { continue }
+                        let (f, item) = try await removeDirectory(oldPath, dryRun: dryRun, progress: progress)
+                        freed += f
+                        if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "\(appName) old CachedData", progress: progress) }
+                    }
+                }
+            }
+        }
+
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.log("Old IDE versions total: \(Self.formatBytes(freed))"))
+        progress?(.result(label: "Old IDE versions", freedMB: mb))
+        return [CleanupEngineResult(label: "Old IDE Versions", freedMB: mb)]
+    }
+
+    /// Collects installed JetBrains product names from /Applications.
+    private func collectInstalledJetBrainsProducts() -> [String] {
+        let searchPaths = ["/Applications", "\(fm.homeDirectoryForCurrentUser.path)/Applications"]
+        var products: [String] = []
+        let jetBrainsBundlePrefixes = [
+            "com.jetbrains.", "com.google.AndroidStudio"
+        ]
+        // Map bundle ID suffixes to product directory name used in caches/logs
+        let productNameMap: [String: String] = [
+            "intellij": "IntelliJIdea",
+            "intellij.ce": "IntelliJIdea",
+            "intellij.ue": "IntelliJIdea",
+            "pycharm": "PyCharm",
+            "pycharm.ce": "PyCharm",
+            "pycharm.pe": "PyCharm",
+            "webstorm": "WebStorm",
+            "clion": "CLion",
+            "goland": "GoLand",
+            "goland.ce": "GoLand",
+            "rider": "Rider",
+            "dataspell": "DataSpell",
+            "rubymine": "RubyMine",
+            "phpstorm": "PhpStorm",
+            "dotmemory": "dotMemory",
+            "dotcover": "dotCover",
+            "dottrace": "dotTrace",
+            "resharper": "ReSharper",
+            "fleet": "Fleet",
+            "aqua": "Aqua",
+            "idea": "IntelliJIdea",
+            "AndroidStudio": "AndroidStudio",
+        ]
+        for basePath in searchPaths {
+            guard let contents = try? fm.contentsOfDirectory(atPath: basePath) else { continue }
+            for item in contents where item.hasSuffix(".app") {
+                let appPath = "\(basePath)/\(item)"
+                guard let bundle = Bundle(url: URL(fileURLWithPath: appPath)),
+                      let bundleID = bundle.bundleIdentifier?.lowercased() else { continue }
+                guard jetBrainsBundlePrefixes.contains(where: { bundleID.hasPrefix($0) }) else { continue }
+                // Extract the product part after prefix
+                let productKey = bundleID
+                    .replacingOccurrences(of: "com.jetbrains.", with: "")
+                    .replacingOccurrences(of: "com.google.", with: "")
+                    .replacingOccurrences(of: "-eap", with: "")
+                if let mapped = productNameMap[productKey] {
+                    products.append(mapped)
+                } else {
+                    // Fallback: use capitalized last component
+                    let parts = productKey.components(separatedBy: ".")
+                    if let last = parts.last?.capitalized {
+                        products.append(last)
+                    }
+                }
+            }
+        }
+        return products
     }
 
     // MARK: 10. Browser Caches
@@ -2220,12 +2411,12 @@ extension CleanupEngine {
         "Library/Caches/com.docker.docker",
         "Library/Caches/dev.orbstack.OrbStack",
         "Library/Group Containers/group.com.docker",
-        ".docker",
-        ".orbstack",
-        ".vagrant.d",
-        "VirtualBox VMs",
-        "VMware",
-        "Parallels",
+        "/.docker",
+        "/.orbstack",
+        "/.vagrant.d",
+        "/VirtualBox VMs/",
+        "VMware Fusion",
+        "Parallels Desktop",
     ]
 
     /// Checks if a path should be skipped due to known heavy content.
@@ -2288,10 +2479,14 @@ extension CleanupEngine {
                     enumerator.skipDescendants()
                     continue
                 }
-                // Skip heavy directories (Docker, VMs, etc.)
+                // Skip heavy directories (Docker, VMs, etc.) — only for actual directories
                 if Self.isHeavyDirectory(fullPath) {
-                    progress?(.log("  Skipping heavy directory: \(Self.shortPath(fullPath))"))
-                    enumerator.skipDescendants()
+                    var isDir: ObjCBool = false
+                    fm.fileExists(atPath: fullPath, isDirectory: &isDir)
+                    if isDir.boolValue {
+                        progress?(.log("  Skipping heavy directory: \(Self.shortPath(fullPath))"))
+                        enumerator.skipDescendants()
+                    }
                     continue
                 }
                 if item == "node_modules" {
@@ -2319,7 +2514,9 @@ extension CleanupEngine {
                 // Skip heavy directories in IPSW search too
                 let fullPath = "\(dir)/\(item)"
                 if Self.isHeavyDirectory(fullPath) {
-                    enumerator.skipDescendants()
+                    var isDir: ObjCBool = false
+                    fm.fileExists(atPath: fullPath, isDirectory: &isDir)
+                    if isDir.boolValue { enumerator.skipDescendants() }
                     continue
                 }
                 let ext = (item as NSString).pathExtension.lowercased()
