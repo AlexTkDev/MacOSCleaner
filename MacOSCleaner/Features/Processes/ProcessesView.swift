@@ -29,8 +29,13 @@ public struct ProcessesView: View {
             }
 
             if viewModel.isLoading {
-                ProgressView("processes_scanning".localized)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                AnimatedScanView(
+                    title: "processes_scanning".localized,
+                    subtitle: "",
+                    currentStep: 0,
+                    totalSteps: 1
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = viewModel.lastError {
                 errorView(error)
             } else if viewModel.filteredProcesses.isEmpty && !viewModel.searchText.isEmpty {

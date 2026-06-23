@@ -25,7 +25,7 @@ public struct CleanupView: View {
                 Color(NSColor.windowBackgroundColor)
                 if viewModel.state == .scanning || viewModel.state == .executing {
                     LinearGradient(
-                        colors: [.accentColor.opacity(0.05), .clear],
+                        colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -331,53 +331,22 @@ public struct CleanupView: View {
     }
     
     private func progressView(title: String, subtitle: String) -> some View {
-        VStack(spacing: 24) {
-            ProgressView()
-                .controlSize(.large)
-            
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(.headline)
-                
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .monospacedDigit()
-                
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(height: 8)
-                        
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.accentColor, .accentColor.opacity(0.6)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: geo.size.width * CGFloat(viewModel.currentStep) / CGFloat(max(1, viewModel.totalSteps)), height: 8)
-                            .animation(.spring(), value: viewModel.currentStep)
-                    }
-                }
-                .frame(width: 300, height: 8)
-            }
-            
-            Button(action: { viewModel.cancel() }) {
-                Text("cancel".localized)
-                    .fontWeight(.medium)
-                    .frame(width: 120, height: 32)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.regular)
+        VStack(spacing: 20) {
+            AnimatedScanView(
+                title: title,
+                subtitle: subtitle,
+                currentStep: viewModel.currentStep,
+                totalSteps: viewModel.totalSteps,
+                onCancel: { viewModel.cancel() }
+            )
             
             if showLogs && !viewModel.scriptLogs.isEmpty {
                 Divider()
+                    .padding(.horizontal)
                 logPanel
             }
         }
+        .padding(.top, 20)
     }
     
     private var previewListView: some View {

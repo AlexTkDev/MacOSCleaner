@@ -12,8 +12,13 @@ public struct StartupServicesView: View {
             header
 
             if viewModel.isLoading {
-                ProgressView("startup_scanning".localized)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                AnimatedScanView(
+                    title: "startup_scanning".localized,
+                    subtitle: "",
+                    currentStep: 0,
+                    totalSteps: 1
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = viewModel.lastError {
                 errorView(error)
             } else if viewModel.services.isEmpty {

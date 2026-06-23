@@ -39,14 +39,12 @@ struct UninstallerView: View {
                 // Apps List
                 VStack(spacing: 0) {
                     if isLoading {
-                        VStack(spacing: 16) {
-                            ProgressView(value: service.progress.percentage)
-                                .progressViewStyle(.linear)
-                                .padding(.horizontal)
-                        Text("uninstaller_scanning_apps".localized)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                        AnimatedScanView(
+                            title: "uninstaller_scanning_apps".localized,
+                            subtitle: service.progress.message,
+                            currentStep: service.progress.currentStep,
+                            totalSteps: service.progress.totalSteps
+                        )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         List(filteredApps, selection: $selectedApp) { app in
