@@ -41,6 +41,14 @@ public actor UninstallerService {
         public let url: URL
         public var isSelected: Bool = true
         public let size: Int64
+        public let isShared: Bool
+        
+        public init(url: URL, isSelected: Bool = true, size: Int64 = 0, isShared: Bool = false) {
+            self.url = url
+            self.isSelected = isSelected
+            self.size = size
+            self.isShared = isShared
+        }
         
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
         public static func == (lhs: RelatedFile, rhs: RelatedFile) -> Bool { lhs.id == rhs.id }
@@ -141,7 +149,7 @@ public actor UninstallerService {
                     
                     var newRelated = mainApp.relatedFiles
                     newRelated.append(contentsOf: secondaryApp.relatedFiles)
-                    newRelated.append(RelatedFile(url: secondaryApp.url, size: secondaryApp.size))
+                    newRelated.append(RelatedFile(url: secondaryApp.url, size: secondaryApp.size, isShared: false))
                     
                     var uniqueRelated: [URL: RelatedFile] = [:]
                     for file in newRelated {
@@ -298,6 +306,9 @@ public actor UninstallerService {
             "~/Library/Caches/com.apple.dt.Xcode",
             "~/Library/Caches/org.swift.swiftpm",
             "~/Library/Android",
+            "~/.android",
+            "~/.gradle",
+            "~/Library/Caches/com.google.android.studio",
             "~/Library",
             "~/Library/Developer",
             "~/",
@@ -346,7 +357,7 @@ public actor UninstallerService {
         libraryPaths.append(contentsOf: getSystemSearchPaths())
         
         let teamID = await getTeamIdentifier(url: appURL)
-        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit", "Preferences", "Application Scripts", "Google", "ByHost"]
+        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit", "Preferences", "Application Scripts", "Google", "ByHost", "Android", "gradle"]
         
         for path in libraryPaths {
             let expandedPath = (path as NSString).expandingTildeInPath
@@ -449,7 +460,8 @@ public actor UninstallerService {
             var isDir: ObjCBool = false
             if fileManager.fileExists(atPath: url.path, isDirectory: &isDir) {
                 let fileSize = await getDirectorySize(url: url)
-                related.append(RelatedFile(url: url, size: fileSize))
+                let isShared = isSharedAndroidPath(url)
+                related.append(RelatedFile(url: url, size: fileSize, isShared: isShared))
             }
         }
         
@@ -498,7 +510,7 @@ public actor UninstallerService {
     }
 
     private func getDirectorySize(url: URL) async -> Int64 {
-        fileManager.getDirectorySize(url: url, excludedPaths: FileManager.defaultExcludedPaths)
+        fileManager.getDirectorySize(url: url, excludedPaths: [])
     }
 
     func getSystemSearchPaths() -> [String] {
@@ -575,7 +587,7 @@ public actor UninstallerService {
             extra.append(contentsOf: ["Instruments", "Simulator", "iphonesimulator", "llvm", "clang"])
         }
         if lowerName.contains("android") || lowerID.contains("android") {
-            extra.append(contentsOf: ["android", "emulator", "gradle", "jetbrains", "studio"])
+            extra.append(contentsOf: ["android", "emulator", "gradle", "jetbrains", "studio", "sdk", "avd"])
         }
         if lowerName.contains("flutter") || lowerID.contains("flutter") {
             extra.append(contentsOf: ["mobileinstallation", "flutter", "dart"])
@@ -591,6 +603,19 @@ public actor UninstallerService {
         }
         
         return extra
+    }
+
+    private func isSharedAndroidPath(_ url: URL) -> Bool {
+        let path = url.path
+        let sharedPaths = [
+            "Library/Android/sdk",
+            ".android/avd",
+            ".android/cache",
+            ".gradle/caches",
+            ".gradle/daemon",
+            ".gradle/wrapper"
+        ]
+        return sharedPaths.contains { path.contains($0) }
     }
 
     private func matches(fileName: String, patterns: [String]) -> Bool {

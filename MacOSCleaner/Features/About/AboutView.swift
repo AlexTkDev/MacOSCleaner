@@ -24,7 +24,7 @@ struct AboutView: View {
                 Text("app_title".localized)
                     .font(.title)
                     .fontWeight(.bold)
-                Text("about_version".localized)
+                Text(String(format: "about_version".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"))
                     .font(.subheadline)
                     .opacity(0.85)
             }

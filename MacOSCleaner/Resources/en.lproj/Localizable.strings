@@ -23,7 +23,7 @@
 
 // About View
 "about_title" = "About MacOS Cleaner";
-"about_version" = "Version 1.0";
+"about_version" = "Version %@";
 "about_developer" = "Developed by AlexTkDev";
 "about_problem_link" = "If you have a problem with the app, let me know here";
 "about_linkedin" = "LinkedIn Profile";
@@ -223,6 +223,7 @@
 "uninstaller_scanning_apps" = "Scanning Applications...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
+"shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
 
 // Processes View
 "menu_processes" = "Processes";

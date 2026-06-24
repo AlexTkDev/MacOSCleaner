@@ -22,7 +22,7 @@
 
 // About View
 "about_title" = "О программе MacOS Cleaner";
-"about_version" = "Версия 1.0";
+"about_version" = "Версия %@";
 "about_developer" = "Разработчик: AlexTkDev";
 "about_problem_link" = "Если возникла проблема с приложением, сообщите мне здесь";
 "about_linkedin" = "Профиль LinkedIn";
@@ -222,6 +222,7 @@
 "uninstaller_scanning_apps" = "Сканирование приложений...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
+"shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
 
 // Processes View
 "menu_processes" = "Процессы";

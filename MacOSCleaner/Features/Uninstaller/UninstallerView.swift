@@ -444,9 +444,17 @@ struct RelatedFileRow: View {
                 .foregroundColor(riskColor.opacity(0.8))
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(file.url.lastPathComponent)
-                    .font(.subheadline)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(file.url.lastPathComponent)
+                        .font(.subheadline)
+                        .lineLimit(1)
+                    if file.isShared {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.caption)
+                            .help("shared_data_warning".localized)
+                    }
+                }
                 Text(file.url.path)
                     .font(.system(size: 10, design: .monospaced))
                     .foregroundColor(.secondary)

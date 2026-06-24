@@ -72,7 +72,6 @@ public actor DirectorySizeCache {
 
     private func computeSize(_ path: String) -> CachedDirectoryInfo {
         let url = URL(fileURLWithPath: path)
-        let excludedPaths = FileManager.defaultExcludedPaths
         var size: Int64 = 0
         var fileCount: Int = 0
         guard let enumerator = fm.enumerator(
@@ -89,9 +88,8 @@ public actor DirectorySizeCache {
                 // Prevent infinite or extremely long size calculations
                 break
             }
-            let filePath = fileURL.path
-            let dominated = excludedPaths.contains { filePath.contains($0) }
-            if dominated {
+            let shouldExclude = FileManager.shouldExclude(url: fileURL)
+            if shouldExclude {
                 if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
                     enumerator.skipDescendants()
                 }
