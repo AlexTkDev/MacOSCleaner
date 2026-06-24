@@ -1,0 +1,30 @@
+name: Build macOS App
+
+on:
+  push:
+    branches:
+      - relese
+
+  pull_request:
+    branches:
+      - relese
+
+jobs:
+  build:
+    name: Build MacOSCleaner
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project MacOSCleaner.xcodeproj \
+            -scheme MacOSCleaner \
+            -configuration Release \
+            build
