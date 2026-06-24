@@ -15,6 +15,27 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/Dashboard.png" width="45%">
+  <img src="assets/screenshots/Cleanup.png" width="45%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Cleanup_Scan_Results.png" width="45%">
+  <img src="assets/screenshots/Uninstaller.png" width="45%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Processes.png" width="45%">
+  <img src="assets/screenshots/Startup_Services.png" width="45%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Settings_1.png" width="45%">
+  <img src="assets/screenshots/About.png" width="45%">
+</p>
+
+---
+
 ## Features
 
 **Dashboard** 📊 — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
