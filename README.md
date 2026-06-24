@@ -25,13 +25,9 @@
   <img src="assets/screenshots/Cleanup_Scan_Results.png" width="45%">
   <img src="assets/screenshots/Uninstaller.png" width="45%">
 </p>
+
 <p align="center">
-  <img src="assets/screenshots/Processes.png" width="45%">
-  <img src="assets/screenshots/Startup_Services.png" width="45%">
-</p>
-<p align="center">
-  <img src="assets/screenshots/Settings_1.png" width="45%">
-  <img src="assets/screenshots/About.png" width="45%">
+  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/realese/assets/screenshots">📷 View all screenshots</a>
 </p>
 
 ---
