@@ -192,6 +192,11 @@
 "uninstaller_space_reclaim" = "Всього місця до звільнення: %@";
 "uninstaller_button_uninstall" = "Видалити додаток";
 "uninstaller_related_files_count" = "Знайдено пов'язаних файлів: %lld";
+"uninstaller_developer_components" = "Пов'язані дані розробника";
+"uninstaller_developer_components_description" = "Керуйте цими даними в Smart Cleanup.";
+"uninstaller_open_cleanup" = "Відкрити Smart Cleanup";
+"uninstaller_used_by" = "Використовується: %@";
+"uninstaller_show_in_finder" = "Показати в Finder";
 "uninstaller_expert_tip" = "В Експертному режимі ви можете вибірково видаляти залишкові файли, такі як кеші та налаштування.";
 "uninstaller_cleanup_items" = "Елементи для очищення";
 "uninstaller_scanning_apps" = "Сканування додатків...";

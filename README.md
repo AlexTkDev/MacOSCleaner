@@ -205,6 +205,11 @@ codesign --verify --deep --strict --verbose=2 "/path/to/MacOSCleaner.app"
 spctl --assess --type execute --verbose "/path/to/MacOSCleaner.app"
 ```
 
+**Fix damaged app attributes:**
+```bash
+sudo xattr -r -c /path/to/MacOSCleaner.app
+```
+
 ---
 
 **Logs:** open `Console.app` → filter by subsystem `com.alextkdev.macos-cleaner`.

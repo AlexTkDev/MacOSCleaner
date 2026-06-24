@@ -218,6 +218,9 @@
 "uninstaller_space_reclaim" = "Total Space to Reclaim: %@";
 "uninstaller_button_uninstall" = "Uninstall Application";
 "uninstaller_related_files_count" = "%lld Related Files Found";
+"uninstaller_developer_components" = "Related Developer Data";
+"uninstaller_developer_components_description" = "Manage these items in Smart Cleanup.";
+"uninstaller_open_cleanup" = "Open Smart Cleanup";
 "uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
 "uninstaller_cleanup_items" = "Cleanup Items";
 "uninstaller_scanning_apps" = "Scanning Applications...";
