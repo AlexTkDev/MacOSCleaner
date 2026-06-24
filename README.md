@@ -1,4 +1,8 @@
-# macOS Cleaner
+<p align="center">
+  <img src=".github/logo.png" alt="macOS Cleaner" width="128">
+</p>
+
+<h1 align="center">macOS Cleaner</h1>
 
 [![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS-000000.svg?logo=apple&logoColor=white)](https://apple.com)
@@ -7,15 +11,15 @@
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
 [![Version: 1.0](https://img.shields.io/badge/Release-1.0-brightgreen.svg)]()
 
-Native macOS app that frees up disk space by cleaning caches, temp files, and app leftovers. Everything goes to Trash — nothing is gone forever unless you say so.
+🧹 Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.
 
 ---
 
 ## Features
 
-**Dashboard** — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
+**Dashboard** 📊 — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
 
-**Smart Cleanup** — scans 35 categories at once:
+**Smart Cleanup** 🔍 — scans 35 categories at once:
 
 - **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
 - **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
@@ -49,11 +53,11 @@ All categories are always scanned. Dev-related ones show a purple "DEV" badge. R
 **Cleanup Options** — one opt-in toggle before scan:
 - **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
 
-**Process Manager** — lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
+**Process Manager** ⚙️ — lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
 
-**Startup Services** — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
+**Startup Services** 🚀 — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
 
-**App Uninstaller** — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode for cherry-picking leftovers.
+**App Uninstaller** 🗑️ — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode for cherry-picking leftovers.
 
 **Settings** — light/dark/system theme, languages (English, Русский, Українська), notifications, scan-on-startup, Trash behavior, and more.
 
@@ -65,7 +69,7 @@ Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories exe
 
 ---
 
-## Safety
+## Safety 🛡️
 
 - Everything goes to Trash via `trashItem(at:)` — always recoverable
 - `SafetyManager` blocks access to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths
