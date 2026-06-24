@@ -51,7 +51,7 @@ struct RootView: View {
         case .startupServices:
             StartupServicesView()
         case .uninstaller:
-            UninstallerView(settings: appSettings)
+            UninstallerView(settings: appSettings, navigateToCleanup: { selectedItem = .cleanup })
         case .settings:
             SettingsView(
                 settings: appSettings,

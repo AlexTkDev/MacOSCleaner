@@ -42,8 +42,7 @@ public actor FileScanner {
                     while let fileURL = enumerator.nextObject() as? URL {
                         if Task.isCancelled { break }
                         
-                        let filePath = fileURL.path
-                        let shouldExclude = FileManager.defaultExcludedPaths.contains { filePath.contains($0) }
+                        let shouldExclude = FileManager.shouldExclude(url: fileURL)
                         if shouldExclude {
                             if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
                                 enumerator.skipDescendants()

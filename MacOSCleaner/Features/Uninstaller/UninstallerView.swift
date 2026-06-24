@@ -9,6 +9,7 @@ private extension Logger {
 
 struct UninstallerView: View {
     let settings: AppSettings
+    let navigateToCleanup: () -> Void
     @State private var service = UninstallerService()
     @State private var allApps: [UninstallerService.AppInfo] = []
     @State private var selectedApp: UninstallerService.AppInfo?
@@ -103,10 +104,11 @@ struct UninstallerView: View {
             Button("cancel".localized, role: .cancel) { }
         } message: {
             if let app = selectedApp {
+                let count = app.relatedFiles.filter(\.isSelected).count
                 if settings.bypassTrashOnUninstall {
-                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(app.relatedFiles.filter(\.isSelected).count)))
+                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)))
                 } else {
-                    Text(String(format: "uninstaller_uninstall_app_warning_trash".localized, app.name, Int64(app.relatedFiles.filter(\.isSelected).count)))
+                    Text(String(format: "uninstaller_uninstall_app_warning_trash".localized, app.name, Int64(count)))
                 }
             }
         }
@@ -255,6 +257,10 @@ struct UninstallerView: View {
                     } else {
                         simpleFilesSection(app)
                     }
+                    
+                    if !app.developerComponents.isEmpty {
+                        developerComponentsSection(app)
+                    }
                 }
                 
                 Spacer(minLength: 40)
@@ -334,7 +340,7 @@ struct UninstallerView: View {
                 systemImage: "doc.on.doc"
             )
             .font(.headline)
-            
+
             Text("uninstaller_expert_tip".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -343,23 +349,77 @@ struct UninstallerView: View {
 
     private func relatedFilesSection(_ app: UninstallerService.AppInfo) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("uninstaller_cleanup_items".localized, systemImage: "list.bullet.indent")
-                .font(.headline)
-            
-            VStack(spacing: 1) {
-                ForEach(app.relatedFiles) { file in
-                    RelatedFileRow(file: file, formatter: formatter) {
-                        toggleSelection(file, in: app)
+            if !app.relatedFiles.isEmpty {
+                Label("uninstaller_cleanup_items".localized, systemImage: "list.bullet.indent")
+                    .font(.headline)
+
+                VStack(spacing: 1) {
+                    ForEach(app.relatedFiles) { file in
+                        RelatedFileRow(file: file, formatter: formatter) {
+                            toggleSelection(file, in: app)
+                        }
                     }
                 }
+                .background(Color(NSColor.alternatingContentBackgroundColors[0]))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                )
             }
-            .background(Color(NSColor.alternatingContentBackgroundColors[0]))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-            )
+
         }
+    }
+
+    private func developerComponentsSection(_ app: UninstallerService.AppInfo) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("uninstaller_developer_components".localized, systemImage: "wrench.adjustable")
+                .font(.headline)
+
+            ForEach(app.developerComponents) { component in
+                HStack {
+                    Image(systemName: "shippingbox")
+                        .foregroundColor(.purple)
+                        .font(.subheadline)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(component.title)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Text(component.category.rawValue)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    Text(formatter.string(fromByteCount: component.sizeBytes))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color.purple.opacity(0.04))
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+                )
+            }
+
+            HStack {
+                Text("uninstaller_developer_components_description".localized)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button("uninstaller_open_cleanup".localized) {
+                    navigateToCleanup()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+        }
+        .padding(.top, app.relatedFiles.isEmpty ? 0 : 12)
     }
 
     private func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
@@ -426,7 +486,7 @@ struct RelatedFileRow: View {
     let file: UninstallerService.RelatedFile
     let formatter: ByteCountFormatter
     let onToggle: () -> Void
-    
+
     var riskColor: Color {
         let path = file.url.path
         if path.contains("Preferences") { return .orange }
@@ -439,23 +499,25 @@ struct RelatedFileRow: View {
         HStack {
             Toggle("", isOn: Binding(get: { file.isSelected }, set: { _ in onToggle() }))
                 .toggleStyle(.checkbox)
-            
+
             Image(systemName: "folder.fill")
                 .foregroundColor(riskColor.opacity(0.8))
-            
+
             VStack(alignment: .leading, spacing: 2) {
-                Text(file.url.lastPathComponent)
-                    .font(.subheadline)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(file.url.lastPathComponent)
+                        .font(.subheadline)
+                        .lineLimit(1)
+                }
                 Text(file.url.path)
                     .font(.system(size: 10, design: .monospaced))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            
+
             Spacer()
-            
+
             Text(formatter.string(fromByteCount: file.size))
                 .font(.caption)
                 .foregroundColor(.secondary)

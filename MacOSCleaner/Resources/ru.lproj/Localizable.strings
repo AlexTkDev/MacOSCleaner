@@ -22,7 +22,7 @@
 
 // About View
 "about_title" = "О программе MacOS Cleaner";
-"about_version" = "Версия 1.0";
+"about_version" = "Версия %@";
 "about_developer" = "Разработчик: AlexTkDev";
 "about_problem_link" = "Если возникла проблема с приложением, сообщите мне здесь";
 "about_linkedin" = "Профиль LinkedIn";
@@ -217,11 +217,17 @@
 "uninstaller_space_reclaim" = "Всего места к освобождению: %@";
 "uninstaller_button_uninstall" = "Удалить приложение";
 "uninstaller_related_files_count" = "Найдено связанных файлов: %lld";
+"uninstaller_developer_components" = "Связанные данные разработчика";
+"uninstaller_developer_components_description" = "Управляйте этими данными в Smart Cleanup.";
+"uninstaller_open_cleanup" = "Открыть Smart Cleanup";
+"uninstaller_used_by" = "Используется: %@";
+"uninstaller_show_in_finder" = "Показать в Finder";
 "uninstaller_expert_tip" = "В Экспертном режиме вы можете выборочно удалять остаточные файлы, такие как кэши и настройки.";
 "uninstaller_cleanup_items" = "Элементы для очистки";
 "uninstaller_scanning_apps" = "Сканирование приложений...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
+"shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
 
 // Processes View
 "menu_processes" = "Процессы";

@@ -158,8 +158,8 @@ public actor FileCleanupActor {
         while let item = enumerator.nextObject() as? String {
             try Task.checkCancellation()
             let itemPath = "\(path)/\(item)"
-            // Skip virtual disk files (Docker, VMs, OrbStack)
-            let shouldExclude = FileManager.defaultExcludedPaths.contains { itemPath.contains($0) }
+            let itemURL = URL(fileURLWithPath: itemPath)
+            let shouldExclude = FileManager.shouldExclude(url: itemURL)
             if shouldExclude {
                 var isDir: ObjCBool = false
                 fm.fileExists(atPath: itemPath, isDirectory: &isDir)
