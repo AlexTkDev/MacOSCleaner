@@ -23,7 +23,7 @@
 
 // About View
 "about_title" = "About MacOS Cleaner";
-"about_version" = "Version 1.0";
+"about_version" = "Version %@";
 "about_developer" = "Developed by AlexTkDev";
 "about_problem_link" = "If you have a problem with the app, let me know here";
 "about_linkedin" = "LinkedIn Profile";
@@ -218,11 +218,15 @@
 "uninstaller_space_reclaim" = "Total Space to Reclaim: %@";
 "uninstaller_button_uninstall" = "Uninstall Application";
 "uninstaller_related_files_count" = "%lld Related Files Found";
+"uninstaller_developer_components" = "Related Developer Data";
+"uninstaller_developer_components_description" = "Manage these items in Smart Cleanup.";
+"uninstaller_open_cleanup" = "Open Smart Cleanup";
 "uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
 "uninstaller_cleanup_items" = "Cleanup Items";
 "uninstaller_scanning_apps" = "Scanning Applications...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
+"shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
 
 // Processes View
 "menu_processes" = "Processes";

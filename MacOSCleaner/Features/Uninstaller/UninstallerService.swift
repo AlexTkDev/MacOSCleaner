@@ -36,12 +36,41 @@ public actor UninstallerService {
         self.commandRunner = commandRunner
     }
 
+    public enum DeletionRisk: String, Sendable, CaseIterable {
+        case safe
+        case normal
+    }
+
+    public struct RelatedCleanupComponent: Identifiable, Sendable, Hashable {
+        public let id = UUID()
+        public let title: String
+        public let category: CleanupCategory
+        public let sizeBytes: Int64
+
+        public init(title: String, category: CleanupCategory, sizeBytes: Int64) {
+            self.title = title
+            self.category = category
+            self.sizeBytes = sizeBytes
+        }
+
+        public func hash(into hasher: inout Hasher) { hasher.combine(id) }
+        public static func == (lhs: RelatedCleanupComponent, rhs: RelatedCleanupComponent) -> Bool { lhs.id == rhs.id }
+    }
+
     public struct RelatedFile: Identifiable, Sendable, Hashable {
         public let id = UUID()
         public let url: URL
         public var isSelected: Bool = true
         public let size: Int64
-        
+        public let deletionRisk: DeletionRisk
+
+        public init(url: URL, isSelected: Bool = true, size: Int64 = 0, deletionRisk: DeletionRisk = .normal) {
+            self.url = url
+            self.isSelected = isSelected
+            self.size = size
+            self.deletionRisk = deletionRisk
+        }
+
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
         public static func == (lhs: RelatedFile, rhs: RelatedFile) -> Bool { lhs.id == rhs.id }
     }
@@ -52,7 +81,8 @@ public actor UninstallerService {
         public let bundleID: String?
         public let name: String
         public var relatedFiles: [RelatedFile] = []
-        
+        public var developerComponents: [RelatedCleanupComponent] = []
+
         public var size: Int64 = 0
         public var version: String = ""
         public var lastUsed: Date? = nil
@@ -65,6 +95,82 @@ public actor UninstallerService {
             let relatedSize = relatedFiles.filter(\.isSelected).reduce(0) { $0 + $1.size }
             return size + relatedSize
         }
+    }
+
+    // MARK: - Developer Components Detection
+
+    /// Maps known apps to related developer infrastructure components managed by Smart Cleanup.
+    private func detectDeveloperComponents(appName: String, bundleID: String?) async -> [RelatedCleanupComponent] {
+        let home = NSHomeDirectory()
+        var components: [RelatedCleanupComponent] = []
+        let lowerName = appName.lowercased()
+        let lowerID = bundleID?.lowercased() ?? ""
+
+        if lowerName.contains("android studio") || lowerID.contains("android.studio") {
+            let sdkURL = URL(fileURLWithPath: "\(home)/Library/Android/sdk")
+            if fileManager.fileExists(atPath: sdkURL.path) {
+                let sdkSize = await getDirectorySize(url: sdkURL)
+                if sdkSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Android SDK", category: .androidSDK, sizeBytes: sdkSize))
+                }
+            }
+            let gradleURL = URL(fileURLWithPath: "\(home)/.gradle")
+            if fileManager.fileExists(atPath: gradleURL.path) {
+                let gradleSize = await getDirectorySize(url: gradleURL)
+                if gradleSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Gradle Cache", category: .gradleMaven, sizeBytes: gradleSize))
+                }
+            }
+        }
+
+        if lowerID == "com.apple.dt.xcode" || (lowerName == "xcode" && lowerID.hasPrefix("com.apple.dt")) {
+            let derivedURL = URL(fileURLWithPath: "\(home)/Library/Developer/Xcode/DerivedData")
+            if fileManager.fileExists(atPath: derivedURL.path) {
+                let derivedSize = await getDirectorySize(url: derivedURL)
+                if derivedSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Xcode DerivedData", category: .xcode, sizeBytes: derivedSize))
+                }
+            }
+            let simURL = URL(fileURLWithPath: "\(home)/Library/Developer/CoreSimulator")
+            if fileManager.fileExists(atPath: simURL.path) {
+                let simSize = await getDirectorySize(url: simURL)
+                if simSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "iOS Simulators", category: .iosSimulators, sizeBytes: simSize))
+                }
+            }
+        }
+
+        if lowerName == "flutter" || lowerID.contains("flutter") {
+            let flutterURL = URL(fileURLWithPath: "\(home)/.pub-cache")
+            if fileManager.fileExists(atPath: flutterURL.path) {
+                let flutterSize = await getDirectorySize(url: flutterURL)
+                if flutterSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Flutter/Dart Cache", category: .flutterDart, sizeBytes: flutterSize))
+                }
+            }
+        }
+
+        if lowerName.contains("orbstack") || lowerID == "dev.orbstack" || lowerName.contains("docker") || lowerID == "com.docker.docker" {
+            let dockerURL = URL(fileURLWithPath: "\(home)/Library/Containers/com.docker.docker")
+            if fileManager.fileExists(atPath: dockerURL.path) {
+                let dockerSize = await getDirectorySize(url: dockerURL)
+                if dockerSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Docker", category: .docker, sizeBytes: dockerSize))
+                }
+            }
+        }
+
+        if lowerName == "homebrew" || lowerID == "com.homebrew" {
+            let brewURL = URL(fileURLWithPath: "/opt/homebrew")
+            if fileManager.fileExists(atPath: brewURL.path) {
+                let brewSize = await getDirectorySize(url: brewURL)
+                if brewSize > 0 {
+                    components.append(RelatedCleanupComponent(title: "Homebrew", category: .packageManagers, sizeBytes: brewSize))
+                }
+            }
+        }
+
+        return components
     }
 
     public func scanAllApplications() async throws -> [AppInfo] {
@@ -154,6 +260,18 @@ public actor UninstallerService {
                     mergedApps[key] = mainApp
                 } else {
                     mergedApps[key] = app
+                }
+            }
+            
+            await MainActor.run {
+                progress.message = "Detecting developer components..."
+                progress.percentage = 0.95
+            }
+            
+            for (key, app) in mergedApps {
+                let components = await detectDeveloperComponents(appName: app.name, bundleID: app.bundleID)
+                if !components.isEmpty {
+                    mergedApps[key]?.developerComponents = components
                 }
             }
             
@@ -298,6 +416,9 @@ public actor UninstallerService {
             "~/Library/Caches/com.apple.dt.Xcode",
             "~/Library/Caches/org.swift.swiftpm",
             "~/Library/Android",
+            "~/.android",
+            "~/.gradle",
+            "~/Library/Caches/com.google.android.studio",
             "~/Library",
             "~/Library/Developer",
             "~/",
@@ -346,7 +467,7 @@ public actor UninstallerService {
         libraryPaths.append(contentsOf: getSystemSearchPaths())
         
         let teamID = await getTeamIdentifier(url: appURL)
-        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit", "Preferences", "Application Scripts", "Google", "ByHost"]
+        let deepScanFolders = ["Application Support", "Caches", "Logs", "Developer", "Containers", "Group Containers", "HTTPStorages", "WebKit", "Preferences", "Application Scripts", "Google", "ByHost", "Android", "gradle"]
         
         for path in libraryPaths {
             let expandedPath = (path as NSString).expandingTildeInPath
@@ -498,7 +619,7 @@ public actor UninstallerService {
     }
 
     private func getDirectorySize(url: URL) async -> Int64 {
-        fileManager.getDirectorySize(url: url, excludedPaths: FileManager.defaultExcludedPaths)
+        fileManager.getDirectorySize(url: url, excludedPaths: [])
     }
 
     func getSystemSearchPaths() -> [String] {
@@ -575,7 +696,7 @@ public actor UninstallerService {
             extra.append(contentsOf: ["Instruments", "Simulator", "iphonesimulator", "llvm", "clang"])
         }
         if lowerName.contains("android") || lowerID.contains("android") {
-            extra.append(contentsOf: ["android", "emulator", "gradle", "jetbrains", "studio"])
+            extra.append(contentsOf: ["android", "emulator", "gradle", "jetbrains", "studio", "sdk", "avd"])
         }
         if lowerName.contains("flutter") || lowerID.contains("flutter") {
             extra.append(contentsOf: ["mobileinstallation", "flutter", "dart"])
@@ -669,6 +790,8 @@ public actor UninstallerService {
         }
 
         // 2. Move files to trash or remove permanently
+        let deletionTargets = app.relatedFiles.filter(\.isSelected).map(\.url)
+
         if bypassTrash {
             try safetyManager.validate(url: app.url)
             do {
@@ -679,14 +802,13 @@ public actor UninstallerService {
                 throw error
             }
 
-            for file in app.relatedFiles where file.isSelected {
+            for target in deletionTargets {
                 do {
-                    try safetyManager.validate(url: file.url)
-                    try fileManager.removeItem(at: file.url)
-                    Logger.uninstaller.debug("Removed related: \(file.url.path, privacy: .public)")
+                    try safetyManager.validate(url: target)
+                    try fileManager.removeItem(at: target)
+                    Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
-                    Logger.uninstaller.warning("removeItem related '\(file.url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                    // Non-fatal: continue with remaining related files
+                    Logger.uninstaller.warning("removeItem failed '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                 }
             }
         } else {
@@ -698,13 +820,12 @@ public actor UninstallerService {
                 throw error
             }
 
-            for file in app.relatedFiles where file.isSelected {
+            for target in deletionTargets {
                 do {
-                    _ = try await trashManager.trashItem(at: file.url)
-                    Logger.uninstaller.debug("Trashed related: \(file.url.path, privacy: .public)")
+                    _ = try await trashManager.trashItem(at: target)
+                    Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
                 } catch {
-                    Logger.uninstaller.warning("trashItem related '\(file.url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                    // Non-fatal: continue with remaining related files
+                    Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                 }
             }
         }
