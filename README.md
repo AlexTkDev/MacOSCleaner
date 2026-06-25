@@ -9,7 +9,7 @@
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343.svg?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF.svg?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
-[![Version: 1.0.1](https://img.shields.io/badge/Release-1.0-brightgreen.svg)]()
+[![Version: 1.0.1](https://img.shields.io/badge/Release-1.0.1-brightgreen.svg)]()
 
 🧹 Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.
 

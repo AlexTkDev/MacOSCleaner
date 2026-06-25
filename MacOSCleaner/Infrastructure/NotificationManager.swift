@@ -25,8 +25,11 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     }
     
     func checkAuthorizationStatus() async -> UNAuthorizationStatus {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
-        return settings.authorizationStatus
+        await withCheckedContinuation { continuation in
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                continuation.resume(returning: settings.authorizationStatus)
+            }
+        }
     }
     
     func openNotificationSettings() {
