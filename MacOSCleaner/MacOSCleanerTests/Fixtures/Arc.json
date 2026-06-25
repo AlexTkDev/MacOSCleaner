@@ -1,0 +1,14 @@
+{
+  "app": "Arc",
+  "bundleID": "company.thebrowser.Browser",
+  "mustFind": [
+    "~/Library/Application Support/Arc",
+    "~/Library/Caches/Arc"
+  ],
+  "mustNotFind": [
+    "com.apple.",
+    "com.google.Chrome"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -15,7 +15,6 @@ public struct BrowserRule: ApplicationRule {
     ]
     public let supportedTeamIDs: Set<String> = [
         "EQHXZ8M8AV",  // Google
-        "UBF8T346G9",  // Mozilla
         "BFYZ25A2P4",  // Brave
     ]
     public let supportedAppNames: Set<String> = [

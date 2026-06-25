@@ -1,0 +1,15 @@
+{
+  "app": "Steam",
+  "bundleID": "com.valvesoftware.steam",
+  "mustFind": [
+    "Application Support/Steam",
+    "~/Library/Caches/com.valvesoftware.Steam"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Steam/steamapps"
+  ],
+  "scoreFloor": 30
+}

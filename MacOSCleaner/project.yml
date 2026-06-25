@@ -25,6 +25,7 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
@@ -51,4 +52,5 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleanerTests
         SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
         GENERATE_INFOPLIST_FILE: YES

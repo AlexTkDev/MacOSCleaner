@@ -6,9 +6,8 @@ import Foundation
 struct RealWorldValidationTests {
 
     private func loadFixture(_ name: String) throws -> BaselineFixture {
-        // Use the test bundle's resource path
-        let bundle = Bundle(identifier: "com.macos-cleaner.MacOSCleanerTests") ?? Bundle.main
-        guard let url = bundle.url(forResource: name, withExtension: "json", subdirectory: "Fixtures") else {
+        let bundle = Bundle(identifier: "input.MacOSCleanerTests") ?? Bundle.main
+        guard let url = bundle.url(forResource: name, withExtension: "json") else {
             throw TestError.fixtureNotFound(name)
         }
         let data = try Data(contentsOf: url)

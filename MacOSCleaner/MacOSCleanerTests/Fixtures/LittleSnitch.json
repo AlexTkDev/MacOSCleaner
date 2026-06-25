@@ -1,0 +1,13 @@
+{
+  "app": "LittleSnitch",
+  "bundleID": "at.obdev.littlesnitch",
+  "mustFind": [
+    "LaunchDaemons",
+    "~/Library/Application Support/Little Snitch"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -22,12 +22,6 @@ struct MacOSCleanerApp: App {
         let engine = CleanupEngine(commandRunner: commandRunner)
         self.cleanupViewModel = CleanupViewModel(engine: engine, journal: journal, settings: appSettings)
 
-        // Request permissions at startup
-        let manager = permissionsManager
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            manager.showGuidanceIfNeeded()
-        }
-
         // Preload Launch Services cache
         Task { await LSRegisterCache().warmup() }
     }

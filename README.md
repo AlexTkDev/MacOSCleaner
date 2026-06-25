@@ -36,13 +36,14 @@
 
 **Dashboard** 📊 — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
 
-**Smart Cleanup** 🔍 — scans 35 categories at once:
+**Smart Cleanup** 🔍 — scans 54 categories at once:
 
 - **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
 - **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
-- **Dev Tools** — Xcode DerivedData, iOS Simulators (old runtimes too), Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R)
+- **Dev Tools** — Xcode DerivedData, iOS Simulators (old runtimes too), Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R, Maven, pnpm-store, Yarn, Poetry, Cargo git, SwiftPM repos, Bazel)
 - **IDE Caches** — Cursor, VS Code (incl. Insiders), Windsurf, Zed, JetBrains, Nova, Sublime Text, Atom, Eclipse, opencode, Claude, ChatGPT, Gemini, Perplexity, GitHub Desktop, Slack, Discord, Figma, Notion, Postman, Insomnia, Linear, Tower, TablePlus + dynamic Electron cache discovery
-- **System Caches** — QuickLook, fonts, Spotlight, Siri, CloudKit, TimeMachine, icons
+- **Browser Sub-Caches** — Firefox Profiles/*/cache2, Safari LocalStorage/Databases, Chrome Code Cache/GPUCache/Service Worker/GrShaderCache, Edge/Brave/Arc Code Cache
+- **System Caches** — QuickLook ThumbnailsAgent, fonts, Spotlight, Siri, CloudKit, TimeMachine, icons
 - **Docker** — container and image cleanup
 - **App Containers** — sandboxed caches in Containers + Group Containers
 - **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tools (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
@@ -53,7 +54,7 @@
 - **Dynamic Cache Discovery** — auto-discovers large reverse-DNS caches in ~/Library/Caches; Apple caches (com.apple.*) at ≥ 5 MB, others at ≥ 20 MB
 - **Time Machine Snapshots** — local APFS snapshots (macOS recreates them automatically)
 - **iOS Backups** — re-downloadable from iCloud
-- **Mail Downloads** — cached email attachments
+- **Mail Downloads** — cached email attachments (all Mail accounts)
 - **Saved Application State** — window/session state (recreated on app launch)
 - **Crash Reports** — old crash logs and diagnostic files
 - **AssetsV2 / iWork Templates** — Pages/Numbers/Keynote templates (~800 MB, re-downloaded on demand)
@@ -63,26 +64,50 @@
 - **Steam Cache** — app cache, shader cache, depot cache, logs
 - **Teams Cache** — Electron caches (Cache, Code Cache, GPUCache, IndexedDB)
 - **Adobe Caches** — application and media caches
-- **Chrome Extra Caches** — disk cache, code cache, GPU cache, service workers
+- **Chrome Extra Caches** — GrShaderCache, disk cache, code cache, GPU cache, service workers
+- **Launch Agents** — user-level LaunchAgents in ~/Library/LaunchAgents
+- **Launch Daemons** — system-level LaunchDaemons (sudo)
+- **Privileged Helpers** — system helper tools (sudo)
+- **Package Receipts** — pkgutil receipt databases
+- **Internet Plug-Ins** — legacy browser plug-ins
+- **Shared File Lists** — Finder sidebar / recent items lists
+- **iCloud Cloud Documents** — iCloud document cache (opt-in)
+- **Photos Library Cache** — Photos.app library cache
+- **Voice Memos** — Voice Memos recordings (opt-in)
+- **GarageBand / Logic** — project files and caches (opt-in)
+- **iMovie / Final Cut** — render files and libraries (opt-in)
+- **Garmin / Fitbit** — device sync caches
+- **Old Backups** — stale .backup files in Home, Desktop, Documents, Downloads
+- **DNS Cache Flush** — flushes DNS resolver cache (command, sudo)
+- **Font Cache** — rebuilds font databases (command, sudo)
+- **Sleep Image** — removes /var/vm/sleepimage (command, sudo, opt-in)
+- **Duplicate Files** — sha256 duplicate detection in ~/Documents, ~/Desktop, ~/Downloads, ~/Pictures, ~/Movies
+- **Unused Apps** — apps not launched in 180+ days (scan-only)
 
 All categories are always scanned. Dev-related ones show a purple "DEV" badge. Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan — you pick what to delete, then confirm.
 
-**Cleanup Options** — one opt-in toggle before scan:
+**Cleanup Options** — toggles before scan:
 - **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
+- **Clean iCloud Documents** — includes iCloud document cache (off by default)
+- **Clean Voice Memos** — includes Voice Memos recordings (off by default)
+- **Clean GarageBand / Logic** — includes project files and caches (off by default)
+- **Clean iMovie / Final Cut** — includes render files and libraries (off by default)
+- **Clean Sleep Image** — removes hibernation image file (off by default)
 
 **Process Manager** ⚙️ — lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
 
 **Startup Services** 🚀 — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
 
-**App Uninstaller** 🗑️ — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode for cherry-picking leftovers.
+**App Uninstaller** 🗑️ — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. 30 specialized application rules for precise leftover detection.
 
 **Deep Forensics Engine** 🔬 — when an app is selected for deep scan, the engine:
 - **Identifies** the app via bundle ID, code signing (Team ID, signing authority), receipt presence, and sandbox status
 - **Probes** every candidate file against 30 evidence types across 7 categories: identity, signature, system integration, metadata, content, graph relationships, and Launch Services registration
 - **Builds an evidence graph** — links related files by parent–child relationships for propagation scoring
 - **Confidence tiers** — each file receives a tier: `.guaranteed` (≥100 score with critical evidence), `.veryLikely` (≥60), `.possible` (≥30), or `.ignore` (<30)
-- **Special rules** — JetBrains apps require ≥3 non-vendor evidence types; Electron, Flutter, Docker apps get targeted path probing
+- **30 application rules** — Cloud Storage, Virtualization, Database Tools, Terminal, Communication, Git Clients, Parallels, VMware Fusion, DaVinci Resolve, Logic Pro, Final Cut Pro, Rancher Desktop, Karabiner Elements, Little Snitch, NordVPN, Alfred, Raycast + Electron, Browser, JetBrains, Docker, Xcode, Android Studio, Adobe, Microsoft Office, Steam, Epic Games, Unity, Homebrew, Network Extension
 - **Developer artifacts** — detects Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew for deep uninstall
+- **Verification** — post-uninstall re-scan confirms cleanup completeness; snapshots stored for rollback
 
 **Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file in the detail view to see exactly why it was associated with the app: bundle ID match, parent directory, team ID, Launch Agent reference, etc. Every evidence type has a user-readable title and description in English, Russian, and Ukrainian.
 
@@ -92,7 +117,7 @@ All categories are always scanned. Dev-related ones show a purple "DEV" badge. R
 
 ## How It Works
 
-Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories execute concurrently across all available cores. File scanning is done with a stack-based iterator that batches work and deduplicates inodes. Size calculations are cached to avoid redundant work.
+Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories execute concurrently across all available cores. File scanning is done with a stack-based iterator that batches work and deduplicates inodes. Size calculations are cached to avoid redundant work. All cleanup paths are embedded as static Swift arrays — no runtime JSON parsing.
 
 ---
 
@@ -121,15 +146,23 @@ Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories exe
 
 ```
 MacOSCleaner/
-├ App/              # Entry point, RootView, sidebar navigation
+├ App/                    # Entry point, RootView, sidebar navigation
 ├ Domains/
-│  ├ Cleanup/       # Coordinator, Engine, StateMachine, ItemManager, Notifier, Models
-│  ├ ProcessManagement/  # ProcessManager, ProcessSafetyPolicy
-│  └ StartupServices/    # LaunchServiceManager
-├ Features/         # SwiftUI views + ViewModels (Dashboard, Cleanup, Processes, Settings, Uninstaller, About)
-├ Infrastructure/   # CommandRunner, SafetyManager, TrashManager, LanguageManager, PosixScanner, actors
-├ Models/           # CleanupItem, OperationRisk, RunningProcess, StartupService, etc.
-└ Resources/        # Localizable.strings (en/ru/uk), assets
+│  ├ Cleanup/             # Coordinator, Engine, StateMachine, ItemManager, Notifier, Models, EmbeddedCleanupPaths
+│  ├ ProcessManagement/   # ProcessManager, ProcessSafetyPolicy
+│  └ StartupServices/     # LaunchServiceManager
+├ Features/
+│  ├ Dashboard/           # DashboardView + ViewModel
+│  ├ Cleanup/             # CleanupView + ViewModel, AnimatedScanView
+│  ├ Processes/           # ProcessesView + ViewModel, ProcessRow
+│  ├ Settings/            # SettingsView, AppSettings, StartupVendorSettings
+│  ├ Uninstaller/         # 30 application rules, forensics engine, caches, UI
+│  ├ StartupServices/     # StartupServicesView + ViewModel
+│  ├ Permissions/         # PermissionsView
+│  └ About/               # AboutView
+├ Infrastructure/         # CommandRunner, SafetyManager, TrashManager, LanguageManager, PosixScanner, actors
+├ Models/                 # CleanupItem, OperationRisk, RunningProcess, StartupService, etc.
+└ Resources/              # Localizable.strings (en/ru/uk), assets
 ```
 
 ---

@@ -83,7 +83,7 @@ final class ProblematicAppsTests: XCTestCase {
         let rule = MicrosoftOfficeRule()
         let identity = makeIdentity(
             bundleID: "com.microsoft.custom",
-            appName: "Something Microsoft",
+            appName: "Microsoft Something",
             teamID: "UBF8T346G9"
         )
         XCTAssertTrue(rule.matches(identity: identity))
@@ -276,7 +276,7 @@ final class ProblematicAppsTests: XCTestCase {
     func test_networkExtensionRule_evidence_forSystemExtensions() {
         let rule = NetworkExtensionRule()
         let identity = makeIdentity(bundleID: "at.obdev.littlesnitch", appName: "Little Snitch")
-        let url = URL(fileURLWithPath: "/Library/SystemExtensions")
+        let url = URL(fileURLWithPath: "/Library/SystemExtensions/at.obdev.LittleSnitchNetworkExtension.systemextension")
         let evidence = rule.evidence(for: url, identity: identity)
         XCTAssertTrue(evidence.contains { $0.source == .rule })
     }
@@ -350,7 +350,7 @@ final class ProblematicAppsTests: XCTestCase {
             appName: "Little Snitch"
         )
         let rule = await registry.bestRule(for: identity)
-        XCTAssertEqual(rule.displayName, "Network Extension")
+        XCTAssertEqual(rule.displayName, "Little Snitch")
     }
 
     func test_registry_returns_networkExtensionRule_for_nordVPN() async {
@@ -360,7 +360,7 @@ final class ProblematicAppsTests: XCTestCase {
             appName: "NordVPN"
         )
         let rule = await registry.bestRule(for: identity)
-        XCTAssertEqual(rule.displayName, "Network Extension")
+        XCTAssertEqual(rule.displayName, "NordVPN")
     }
 
     // MARK: - Fixture Loading Tests
@@ -449,8 +449,8 @@ final class ProblematicAppsTests: XCTestCase {
     }
 
     private func loadFixture(_ name: String) throws -> BaselineFixture {
-        let bundle = Bundle(identifier: "com.macos-cleaner.MacOSCleanerTests") ?? Bundle.main
-        guard let url = bundle.url(forResource: name, withExtension: "json", subdirectory: "Fixtures") else {
+        let bundle = Bundle(for: Self.self)
+        guard let url = bundle.url(forResource: name, withExtension: "json") else {
             throw TestError.fixtureNotFound(name)
         }
         let data = try Data(contentsOf: url)

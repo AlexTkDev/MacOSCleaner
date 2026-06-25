@@ -1,0 +1,15 @@
+{
+  "app": "Homebrew",
+  "bundleID": "com.homebrew.brew",
+  "mustFind": [
+    "/opt/homebrew",
+    "/usr/local/Homebrew"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [
+    "~/Library/Caches/Homebrew"
+  ],
+  "scoreFloor": 30
+}
