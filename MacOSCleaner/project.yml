@@ -7,14 +7,13 @@ targets:
   MacOSCleaner:
     type: application
     platform: macOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "15.5"
     sources:
       - App
       - Domains
       - Features
       - Infrastructure
       - Models
-      - State
       - Resources
     entitlements:
       path: MacOSCleaner.entitlements
@@ -42,7 +41,7 @@ targets:
   MacOSCleanerTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "15.5"
     sources:
       - MacOSCleanerTests
     dependencies:
