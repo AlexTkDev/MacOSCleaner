@@ -152,10 +152,7 @@ struct ProcessRow: View {
 
     private func loadAppIcon() async {
         guard let path = process.path else { return }
-        let icon = await Task.detached {
-            NSWorkspace.shared.icon(forFile: path)
-        }.value
-        appIcon = icon
+        appIcon = NSWorkspace.shared.icon(forFile: path)
     }
 
     private var iconName: String {

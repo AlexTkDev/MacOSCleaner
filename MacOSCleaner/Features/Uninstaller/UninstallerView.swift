@@ -199,8 +199,8 @@ struct UninstallerView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // Header
                 HStack(alignment: .top, spacing: 20) {
-                    if let icon = app.icon {
-                        Image(nsImage: icon)
+                    if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
+                        Image(nsImage: nsImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 80, height: 80)
@@ -440,8 +440,8 @@ struct AppRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            if let icon = app.icon {
-                Image(nsImage: icon)
+            if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
+                Image(nsImage: nsImage)
                     .resizable()
                     .frame(width: 32, height: 32)
             } else {

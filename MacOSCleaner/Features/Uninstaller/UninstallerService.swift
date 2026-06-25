@@ -86,7 +86,7 @@ public actor UninstallerService {
         public var size: Int64 = 0
         public var version: String = ""
         public var lastUsed: Date? = nil
-        public var icon: NSImage? = nil
+        public var iconData: Data? = nil
         
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
         public static func == (lhs: AppInfo, rhs: AppInfo) -> Bool { lhs.id == rhs.id }
@@ -369,7 +369,9 @@ public actor UninstallerService {
                      infoDictionary?["CFBundleVersion"] as? String ?? "N/A"
         
         let size = await getDirectorySize(url: appURL)
-        let icon = NSWorkspace.shared.icon(forFile: appURL.path)
+        let iconData = await MainActor.run {
+            NSWorkspace.shared.icon(forFile: appURL.path).tiffRepresentation
+        }
         
         let mdItem = MDItemCreate(nil, appURL.path as CFString)
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
@@ -582,7 +584,7 @@ public actor UninstallerService {
             size: size,
             version: version,
             lastUsed: lastUsed,
-            icon: icon
+            iconData: iconData
         )
     }
 

@@ -531,10 +531,7 @@ private struct AppIconView: View {
 
     private func loadIcon() async {
         guard let path else { return }
-        let loadedIcon = await Task.detached {
-            NSWorkspace.shared.icon(forFile: path)
-        }.value
-        icon = loadedIcon
+        icon = NSWorkspace.shared.icon(forFile: path)
     }
 }
 
