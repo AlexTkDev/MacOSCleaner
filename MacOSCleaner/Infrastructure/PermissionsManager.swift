@@ -41,28 +41,42 @@ public final class PermissionsManager {
     /// Checks if the application has Full Disk Access by attempting to read protected paths.
     public static func checkFullDiskAccess() -> Bool {
         let fm = FileManager.default
-        let home = NSHomeDirectory()
         
-        let criticalPaths = [
-            "/Library/Application Support",
-            home + "/Library/Caches",
-            home + "/Library/Application Support",
-            home + "/Library/Keychains",
+        // Directories with restricted permissions — listing contents requires FDA
+        let protectedPaths = [
+            "/Library/Application Support/com.apple.TCC",
+            "/private/var/db/dslocal",
         ]
         
-        var failedPaths: [String] = []
-        for path in criticalPaths {
+        var checked = false
+        for path in protectedPaths {
             guard fm.fileExists(atPath: path) else { continue }
+            checked = true
             do {
                 _ = try fm.contentsOfDirectory(atPath: path)
             } catch {
-                failedPaths.append(path)
+                Logger.permissions.warning("FDA check failed at: \(path)")
+                return false
             }
         }
         
-        if !failedPaths.isEmpty {
-            Logger.permissions.warning("FDA check failed for: \(failedPaths.joined(separator: ", "))")
-            return false
+        // Fallback for older macOS — try Keychains with attribute check
+        if !checked {
+            let keychains = "/Library/Keychains"
+            if fm.fileExists(atPath: keychains) {
+                do {
+                    // attributesOfItem requires read access to the item metadata,
+                    // which is a stronger check than listing parent directory
+                    _ = try fm.attributesOfItem(atPath: keychains)
+                    if let items = try? fm.contentsOfDirectory(atPath: keychains),
+                       let first = items.first {
+                        _ = try fm.attributesOfItem(atPath: keychains + "/" + first)
+                    }
+                } catch {
+                    Logger.permissions.warning("FDA check failed at: \(keychains)")
+                    return false
+                }
+            }
         }
         
         Logger.permissions.info("Full Disk Access check passed")

@@ -104,6 +104,7 @@
 		9CEF93EA4AC1719CDF985A58 /* LogicProRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0F61F1833BCBAD84509BE0 /* LogicProRule.swift */; };
 		9D8FA0DA512C5B78E8983175 /* TrashManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D604E53BC61E11EDDC30B90 /* TrashManagerTests.swift */; };
 		9E12B9110CAF741A51367B1C /* ProcessesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408FDF60DE1F0734F49ADE65 /* ProcessesView.swift */; };
+		9EC173288EFFC99A7B34B3A7 /* DashboardView.swift.back in Resources */ = {isa = PBXBuildFile; fileRef = DB8F5E087C85389E6C6C2B26 /* DashboardView.swift.back */; };
 		9F48B8272BC8F88521B69141 /* ScanActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1342D347B34E14E2DB3428 /* ScanActor.swift */; };
 		A50B617B0D6B7F32B53C879A /* ProcessGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12EE41C2EEF2151D9A20EAC7 /* ProcessGroup.swift */; };
 		A5582FB3CC44494C2D0C5863 /* StartupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD1B0FF19F3B77B06378FAD /* StartupService.swift */; };
@@ -341,6 +342,7 @@
 		D976632F4535BD8561654197 /* ElectronRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElectronRule.swift; sourceTree = "<group>"; };
 		DA8B28911DC4508EB90A34A5 /* Arc.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Arc.json; sourceTree = "<group>"; };
 		DAB05B780E52D2EA5A76D570 /* XcodeRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XcodeRule.swift; sourceTree = "<group>"; };
+		DB8F5E087C85389E6C6C2B26 /* DashboardView.swift.back */ = {isa = PBXFileReference; path = DashboardView.swift.back; sourceTree = "<group>"; };
 		DBA64165D2FBAC03ACE56DC6 /* ConfidenceEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceEngineTests.swift; sourceTree = "<group>"; };
 		DCBD05CD906BFA50A593DAA2 /* SteamRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SteamRule.swift; sourceTree = "<group>"; };
 		DD4DB6F7DA427DA269274700 /* NordVPN.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NordVPN.json; sourceTree = "<group>"; };
@@ -674,6 +676,7 @@
 			isa = PBXGroup;
 			children = (
 				280CD515ADC8F97A79AD7B12 /* DashboardView.swift */,
+				DB8F5E087C85389E6C6C2B26 /* DashboardView.swift.back */,
 				A5EFE9DE1E343AF8F2490C67 /* DashboardViewModel.swift */,
 			);
 			path = Dashboard;
@@ -819,6 +822,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EC337EF82F7F025681B3725 /* Assets.xcassets in Resources */,
+				9EC173288EFFC99A7B34B3A7 /* DashboardView.swift.back in Resources */,
 				C89630797CDD60C50CC75BA7 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

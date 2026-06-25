@@ -21,11 +21,11 @@ struct RootView: View {
         } detail: {
             if let selectedItem {
                 contentView(for: selectedItem)
-                    .frame(minWidth: 900, minHeight: 600)
+                    .frame(minWidth: 800, minHeight: 600)
             } else {
                 Text("sidebar_select_item".localized)
                     .foregroundColor(.secondary)
-                    .frame(minWidth: 900, minHeight: 600)
+                    .frame(minWidth: 800, minHeight: 600)
             }
         }
 
