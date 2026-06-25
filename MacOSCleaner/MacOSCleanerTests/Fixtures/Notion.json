@@ -1,0 +1,18 @@
+{
+  "app": "Notion",
+  "bundleID": "notion.id",
+  "mustFind": [
+    "~/Library/Application Support/Notion",
+    "~/Library/Caches/notion.id",
+    "~/Library/Preferences/notion.id.plist",
+    "~/Library/Saved Application State/notion.id.savedState",
+    "~/Library/Logs/Notion"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "md.obsidian"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

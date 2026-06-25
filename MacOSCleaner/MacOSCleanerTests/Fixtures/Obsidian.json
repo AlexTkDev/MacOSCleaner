@@ -1,0 +1,17 @@
+{
+  "app": "Obsidian",
+  "bundleID": "md.obsidian",
+  "mustFind": [
+    "~/Library/Application Support/obsidian",
+    "~/Library/Caches/md.obsidian",
+    "~/Library/Preferences/md.obsidian.plist",
+    "~/Library/Saved Application State/md.obsidian.savedState"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.microsoft.VSCode"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -1,0 +1,22 @@
+{
+  "app": "Android Studio",
+  "bundleID": "com.google.android.studio",
+  "mustFind": [
+    "~/Library/Application Support/Google/AndroidStudio",
+    "~/Library/Caches/Google/AndroidStudio",
+    "~/Library/Preferences/com.google.android.studio.plist",
+    "~/Library/Saved Application State/com.google.android.studio.savedState",
+    "~/Library/Logs/Google/AndroidStudio"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.jetbrains"
+  ],
+  "developerArtifacts": [
+    "~/Library/Android/sdk",
+    "~/.gradle",
+    "~/.android/avd"
+  ],
+  "scoreFloor": 30
+}

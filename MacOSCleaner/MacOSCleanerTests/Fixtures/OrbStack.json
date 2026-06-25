@@ -1,0 +1,23 @@
+{
+  "app": "OrbStack",
+  "bundleID": "dev.orbstack.OrbStack",
+  "mustFind": [
+    "~/Library/Containers/dev.orbstack.OrbStack",
+    "~/Library/Group Containers/group.com.docker",
+    "~/Library/Application Support/OrbStack",
+    "~/Library/Caches/dev.orbstack.OrbStack",
+    "~/Library/Preferences/dev.orbstack.OrbStack.plist",
+    "~/Library/Saved Application State/dev.orbstack.OrbStack.savedState",
+    "~/Library/Logs/OrbStack"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker.docker"
+  ],
+  "developerArtifacts": [
+    "~/Library/Containers/dev.orbstack.OrbStack/Data/data.raw",
+    "~/Library/Containers/dev.orbstack.OrbStack/Data/data.qcow2"
+  ],
+  "scoreFloor": 30
+}

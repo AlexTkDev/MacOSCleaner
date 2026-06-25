@@ -101,7 +101,7 @@ public struct ProcessGroup: Identifiable, Sendable {
             return first.name
         }
 
-        return "Unknown"
+        return "process.unknown".localized
     }
 
     private static func extractIcon(from processes: [RunningProcess]) -> String {

@@ -111,4 +111,13 @@ public enum ProcessCategory: String, CaseIterable, Sendable {
     case launchAgents = "Launch Agents"
     case launchDaemons = "Launch Daemons"
     case system = "System"
+
+    public var localizedTitle: String {
+        switch self {
+        case .applications: return "process.category.applications".localized
+        case .launchAgents: return "process.category.launch_agents".localized
+        case .launchDaemons: return "process.category.launch_daemons".localized
+        case .system: return "process.category.system".localized
+        }
+    }
 }

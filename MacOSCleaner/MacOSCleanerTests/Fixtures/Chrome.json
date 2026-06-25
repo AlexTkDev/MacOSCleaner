@@ -1,0 +1,23 @@
+{
+  "app": "Chrome",
+  "bundleID": "com.google.Chrome",
+  "mustFind": [
+    "~/Library/Application Support/Google/Chrome",
+    "~/Library/Caches/Google/Chrome",
+    "~/Library/Preferences/com.google.Chrome.plist",
+    "~/Library/Saved Application State/com.google.Chrome.savedState",
+    "~/Library/Application Support/Google/Chrome/Default",
+    "~/Library/Application Support/Google/Chrome/Profile*"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.google.Chrome.beta",
+    "com.google.Chrome.dev",
+    "com.google.Chrome.canary",
+    "com.brave.Browser",
+    "com.microsoft.edgemac"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

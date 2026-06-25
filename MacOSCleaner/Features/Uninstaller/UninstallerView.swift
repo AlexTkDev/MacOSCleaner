@@ -16,8 +16,9 @@ struct UninstallerView: View {
     @State private var searchText = ""
     @State private var isTargeted = false
     @State private var showingConfirmation = false
-    @State private var isExpertMode = false
     @State private var isLoading = false
+    @State private var explainingFile: UninstallerService.RelatedFile?
+    @State private var deepScanCache: [URL: UninstallerService.AppInfo] = [:]
     
     private let formatter: ByteCountFormatter = {
         let f = ByteCountFormatter()
@@ -84,6 +85,20 @@ struct UninstallerView: View {
             }
         }
         .onAppear(perform: loadApps)
+        .onChange(of: selectedApp?.url) { oldURL, newURL in
+            guard let url = newURL else { return }
+            guard let app = allApps.first(where: { $0.url == url }) else { return }
+            guard app.scanState == .discovered else { return }
+            Task {
+                if let result = try? await service.deepScan(app) {
+                    deepScanCache[result.url] = result
+                    if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
+                        allApps[idx] = result
+                    }
+                    selectedApp = result
+                }
+            }
+        }
         .confirmationDialog(
             settings.bypassTrashOnUninstall
                 ? "uninstaller_confirm_perm_delete".localized
@@ -117,7 +132,17 @@ struct UninstallerView: View {
     private func loadApps() {
         isLoading = true
         Task {
-            allApps = (try? await service.scanAllApplications()) ?? []
+            let fresh = (try? await service.scanAllApplications()) ?? []
+            allApps = fresh.map { app in
+                var updated = app
+                if let cached = deepScanCache[app.url], cached.bundleID == app.bundleID {
+                    updated.relatedFiles = cached.relatedFiles
+                    updated.developerComponents = cached.developerComponents
+                    updated.identity = cached.identity
+                    updated.scanState = cached.scanState
+                }
+                return updated
+            }
             isLoading = false
         }
     }
@@ -236,28 +261,10 @@ struct UninstallerView: View {
                 }
                 
                 Divider()
-                
-                // Expert Mode Toggle (respect settings.showRelatedFiles & skipExpertMode)
+
                 if settings.showRelatedFiles {
-                    if !settings.skipExpertMode {
-                        Toggle(isOn: $isExpertMode.animation()) {
-                            HStack {
-                                Text("uninstaller_expert_mode".localized)
-                                    .font(.headline)
-                                Text("uninstaller_select_files".localized)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .toggleStyle(.switch)
-                    }
-                    
-                    if isExpertMode && !settings.skipExpertMode {
-                        relatedFilesSection(app)
-                    } else {
-                        simpleFilesSection(app)
-                    }
-                    
+                    relatedFilesSection(app)
+
                     if !app.developerComponents.isEmpty {
                         developerComponentsSection(app)
                     }
@@ -292,6 +299,14 @@ struct UninstallerView: View {
         DetailBadge(title: "size".localized, value: formatter.string(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size))
         if let lastUsed = app.lastUsed {
             DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day()))
+        }
+        switch app.scanState {
+        case .deepScanned:
+            DetailBadge(title: "uninstaller.tier.guaranteed".localized, value: "")
+        case .scanning:
+            DetailBadge(title: "scanning".localized, value: "")
+        default:
+            EmptyView()
         }
     }
 
@@ -333,41 +348,82 @@ struct UninstallerView: View {
         }
     }
 
-    private func simpleFilesSection(_ app: UninstallerService.AppInfo) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(
-                String(format: "uninstaller_related_files_count".localized, Int64(app.relatedFiles.count)),
-                systemImage: "doc.on.doc"
-            )
-            .font(.headline)
+    private func relatedFilesSection(_ app: UninstallerService.AppInfo) -> some View {
+        let grouped = Dictionary(grouping: app.relatedFiles) { $0.confidence }
+        let allTiers = ConfidenceTier.allCases.filter { $0 != .ignore }.sorted(by: >)
+        let visibleTiers = allTiers
+        let selectedCount = app.relatedFiles.filter(\.isSelected).count
+        return VStack(alignment: .leading, spacing: 12) {
+            ForEach(visibleTiers, id: \.self) { tier in
+                let files = grouped[tier] ?? []
+                if !files.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label(tier.displayKey.localized, systemImage: tierIcon(tier))
+                            .font(.subheadline)
+                            .foregroundColor(tierColor(tier))
 
-            Text("uninstaller_expert_tip".localized)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                        VStack(spacing: 1) {
+                            ForEach(files) { file in
+                                RelatedFileRow(
+                                    file: file,
+                                    formatter: formatter,
+                                    onToggle: { toggleSelection(file, in: app) },
+                                    onExplain: { explainingFile = file }
+                                )
+                            }
+                        }
+                        .background(Color(NSColor.alternatingContentBackgroundColors[0]))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                    }
+                }
+            }
+            if selectedCount > 0 {
+                let tierLabels = allTiers.compactMap { t -> String? in
+                    let count = grouped[t]?.count ?? 0
+                    guard count > 0 else { return nil }
+                    return "\(count) \(t.displayKey.localized)"
+                }.joined(separator: ", ")
+                Text(String(format: "uninstaller.footer.summary".localized, Int64(selectedCount), tierLabels))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 8)
+            }
+        }
+        .sheet(item: $explainingFile) { file in
+            EvidenceExplanationView(
+                file: file,
+                context: selectedApp.flatMap { app in
+                    app.identity.map { id in
+                        ExplanationContext(
+                            bundleID: id.bundleID,
+                            appName: id.appName,
+                            teamID: id.teamID
+                        )
+                    }
+                }
+            )
         }
     }
 
-    private func relatedFilesSection(_ app: UninstallerService.AppInfo) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if !app.relatedFiles.isEmpty {
-                Label("uninstaller_cleanup_items".localized, systemImage: "list.bullet.indent")
-                    .font(.headline)
+    private func tierIcon(_ tier: ConfidenceTier) -> String {
+        switch tier {
+        case .guaranteed: return "checkmark.shield.fill"
+        case .veryLikely: return "shield.fill"
+        case .possible: return "questionmark.circle.fill"
+        case .ignore: return "slash.circle"
+        }
+    }
 
-                VStack(spacing: 1) {
-                    ForEach(app.relatedFiles) { file in
-                        RelatedFileRow(file: file, formatter: formatter) {
-                            toggleSelection(file, in: app)
-                        }
-                    }
-                }
-                .background(Color(NSColor.alternatingContentBackgroundColors[0]))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                )
-            }
-
+    private func tierColor(_ tier: ConfidenceTier) -> Color {
+        switch tier {
+        case .guaranteed: return .green
+        case .veryLikely: return .blue
+        case .possible: return .orange
+        case .ignore: return .gray
         }
     }
 
@@ -422,6 +478,10 @@ struct UninstallerView: View {
         .padding(.top, app.relatedFiles.isEmpty ? 0 : 12)
     }
 
+    private func closeExplaining() {
+        explainingFile = nil
+    }
+    
     private func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
         if let appIndex = allApps.firstIndex(where: { $0.id == app.id }),
            let fileIndex = allApps[appIndex].relatedFiles.firstIndex(where: { $0.id == file.id }) {
@@ -486,6 +546,7 @@ struct RelatedFileRow: View {
     let file: UninstallerService.RelatedFile
     let formatter: ByteCountFormatter
     let onToggle: () -> Void
+    let onExplain: () -> Void
 
     var riskColor: Color {
         let path = file.url.path
@@ -518,6 +579,15 @@ struct RelatedFileRow: View {
 
             Spacer()
 
+            if !file.evidence.isEmpty {
+                Button(action: onExplain) {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .help("Why this file?")
+            }
+
             Text(formatter.string(fromByteCount: file.size))
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -525,5 +595,43 @@ struct RelatedFileRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+    }
+}
+
+struct EvidenceExplanationView: View {
+    let file: UninstallerService.RelatedFile
+    let context: ExplanationContext?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                let grouped = EvidenceExplanations.explanations(for: file.evidence, context: context)
+                ForEach(EvidenceCategory.allCases, id: \.self) { category in
+                    let items = grouped[category] ?? []
+                    if !items.isEmpty {
+                        Section("uninstaller.evidence_category.\(category.rawValue)".localized) {
+                            ForEach(items, id: \.evidence) { explanation in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(explanation.title)
+                                        .font(.headline)
+                                    Text(explanation.description)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("done".localized) { dismiss() }
+                }
+            }
+            .navigationTitle(file.url.lastPathComponent)
+        }
+        .frame(minWidth: 400, minHeight: 300)
     }
 }

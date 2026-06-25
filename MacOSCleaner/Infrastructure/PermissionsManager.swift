@@ -43,20 +43,15 @@ public final class PermissionsManager {
         let fm = FileManager.default
         let home = NSHomeDirectory()
         
-        let testPaths = [
+        let criticalPaths = [
             "/Library/Application Support",
             home + "/Library/Caches",
             home + "/Library/Application Support",
-            home + "/Library/Mail",
-            home + "/Library/Messages",
-            home + "/Library/Safari",
             home + "/Library/Keychains",
-            home + "/Library/Calendars",
-            home + "/Library/Contacts",
         ]
         
         var failedPaths: [String] = []
-        for path in testPaths {
+        for path in criticalPaths {
             guard fm.fileExists(atPath: path) else { continue }
             do {
                 _ = try fm.contentsOfDirectory(atPath: path)
@@ -117,16 +112,16 @@ public final class PermissionsManager {
     public var missingPermissions: [String] {
         var missing: [String] = []
         if !hasFullDiskAccess {
-            missing.append("Full Disk Access")
+            missing.append("permissions.full_disk_access".localized)
         }
         if !hasAccessibility {
-            missing.append("Accessibility")
+            missing.append("permissions.accessibility".localized)
         }
         if !hasAutomation {
-            missing.append("Automation (Apple Events)")
+            missing.append("permissions.automation".localized)
         }
         if !hasTrashAccess {
-            missing.append("Trash Access")
+            missing.append("permissions.trash_access".localized)
         }
         return missing
     }

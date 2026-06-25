@@ -1,0 +1,24 @@
+{
+  "app": "IntelliJ IDEA",
+  "bundleID": "com.jetbrains.intellij",
+  "mustFind": [
+    "~/Library/Application Support/JetBrains/IntelliJIdea",
+    "~/Library/Caches/JetBrains/IntelliJIdea",
+    "~/Library/Preferences/com.jetbrains.intellij.plist",
+    "~/Library/Saved Application State/com.jetbrains.intellij.savedState",
+    "~/Library/Logs/JetBrains/IntelliJIdea"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.jetbrains.pycharm",
+    "com.jetbrains.goland",
+    "com.jetbrains.webstorm",
+    "com.jetbrains.datagrip",
+    "com.jetbrains.rubymine",
+    "com.jetbrains.clion",
+    "com.jetbrains.rider"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

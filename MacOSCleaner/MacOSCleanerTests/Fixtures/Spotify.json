@@ -1,0 +1,17 @@
+{
+  "app": "Spotify",
+  "bundleID": "com.spotify.client",
+  "mustFind": [
+    "~/Library/Application Support/Spotify",
+    "~/Library/Caches/com.spotify.client",
+    "~/Library/Preferences/com.spotify.client.plist",
+    "~/Library/Saved Application State/com.spotify.client.savedState",
+    "~/Library/Logs/Spotify"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple."
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -1,0 +1,22 @@
+{
+  "app": "Postman",
+  "bundleID": "com.postmanlabs.mac",
+  "mustFind": [
+    "~/Library/Application Support/Postman",
+    "~/Library/Caches/com.postmanlabs.mac",
+    "~/Library/Preferences/com.postmanlabs.mac.plist",
+    "~/Library/Saved Application State/com.postmanlabs.mac.savedState",
+    "~/Library/Logs/Postman",
+    "~/Library/Cookies/com.postmanlabs.mac.binarycookies"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.postmanlabs.mac.ShipIt",
+    "com.postmanlabs.mac.ShipIt.plist"
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Postman/generated"
+  ],
+  "scoreFloor": 30
+}

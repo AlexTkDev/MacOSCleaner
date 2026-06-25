@@ -67,7 +67,7 @@ struct SettingsView: View {
 
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Full Disk Access")
+                    Text("permissions.full_disk_access".localized)
                         .font(.body)
                     Text("settings_fda_description".localized)
                         .font(.caption)
@@ -267,12 +267,6 @@ struct SettingsView: View {
                 isOn: $settings.showRelatedFiles,
                 tooltip: "settings_tooltip_show_related".localized
             )
-
-            settingToggle(
-                title: "settings_skip_expert".localized,
-                isOn: $settings.skipExpertMode,
-                tooltip: "settings_tooltip_skip_expert".localized
-            )
         }
     }
 
@@ -352,13 +346,13 @@ struct SettingsView: View {
                 Label("settings_notifications_not_determined".localized, systemImage: "questionmark.circle.fill")
                     .foregroundColor(.orange)
             case .provisional:
-                Label("Provisional", systemImage: "exclamationmark.circle.fill")
+                Label("permissions.notification_provisional".localized, systemImage: "exclamationmark.circle.fill")
                     .foregroundColor(.orange)
             case .ephemeral:
-                Label("Ephemeral", systemImage: "exclamationmark.circle.fill")
+                Label("permissions.notification_ephemeral".localized, systemImage: "exclamationmark.circle.fill")
                     .foregroundColor(.orange)
             @unknown default:
-                Label("Unknown", systemImage: "questionmark.circle.fill")
+                Label("permissions.unknown_status".localized, systemImage: "questionmark.circle.fill")
                     .foregroundColor(.gray)
             }
         }

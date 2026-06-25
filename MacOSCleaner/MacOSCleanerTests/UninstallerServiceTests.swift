@@ -3,59 +3,71 @@ import XCTest
 
 final class UninstallerServiceTests: XCTestCase {
     var service: UninstallerService!
-    
+
     override func setUp() async throws {
         service = UninstallerService()
     }
-    
-    func testCreateSearchPatternsXcode() async {
-        let patterns = await service.createSearchPatterns(bundleID: "com.apple.dt.Xcode", appName: "Xcode")
-        let set = Set(patterns)
-        
-        XCTAssertTrue(set.contains("com.apple.dt.Xcode"))
-        XCTAssertTrue(set.contains("apple.dt.Xcode"))
-        XCTAssertTrue(set.contains("dt.Xcode"))
-        XCTAssertTrue(set.contains("Xcode"))
-        XCTAssertTrue(set.contains("Simulator"))
-        XCTAssertTrue(set.contains("Instruments"))
+
+    func testScanState_initiallyDiscovered() {
+        let app = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/Test.app"),
+            bundleID: "com.test.app",
+            name: "TestApp"
+        )
+        XCTAssertEqual(app.scanState, .discovered)
     }
-    
-    func testCreateSearchPatternsAndroidStudio() async {
-        let patterns = await service.createSearchPatterns(bundleID: "com.google.android.studio", appName: "Android Studio")
-        let set = Set(patterns)
-        
-        XCTAssertTrue(set.contains("com.google.android.studio"))
-        XCTAssertTrue(set.contains("google.android.studio"))
-        XCTAssertTrue(set.contains("android.studio"))
-        XCTAssertTrue(set.contains("studio"))
-        XCTAssertTrue(set.contains("AndroidStudio"))
-        XCTAssertTrue(set.contains("Android"))
-        XCTAssertTrue(set.contains("Studio"))
-        XCTAssertTrue(set.contains("gradle"))
-        XCTAssertTrue(set.contains("emulator"))
+
+    func testAppInfo_totalSize_withRelatedFiles() {
+        var app = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/Test.app"),
+            bundleID: "com.test.app",
+            name: "TestApp",
+            size: 100
+        )
+        app.relatedFiles = [
+            UninstallerService.RelatedFile(url: URL(fileURLWithPath: "/Library/Caches/test.cache"), size: 50),
+            UninstallerService.RelatedFile(url: URL(fileURLWithPath: "/Library/Preferences/test.plist"), size: 30),
+        ]
+        XCTAssertEqual(app.totalSize, 180)
     }
-    
-    func testCreateSearchPatternsFlutter() async {
-        let patterns = await service.createSearchPatterns(bundleID: "com.apple.mobileinstallation", appName: "Runner")
-        let set = Set(patterns)
-        
-        // Wait, appName is Runner, but maybe we should use a better name.
-        // If we search for Runner, we should find related stuff.
-        XCTAssertTrue(set.contains("Runner"))
+
+    func testAppInfo_totalSize_ignoresDeselected() {
+        var app = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/Test.app"),
+            bundleID: "com.test.app",
+            name: "TestApp",
+            size: 100
+        )
+        app.relatedFiles = [
+            UninstallerService.RelatedFile(url: URL(fileURLWithPath: "/Library/Caches/test.cache"), isSelected: false, size: 50),
+            UninstallerService.RelatedFile(url: URL(fileURLWithPath: "/Library/Preferences/test.plist"), size: 30),
+        ]
+        XCTAssertEqual(app.totalSize, 130)
     }
-    
-    func testCreateSearchPatternsMacOSCleaner() async {
-        let patterns = await service.createSearchPatterns(bundleID: "input.MacOSCleaner", appName: "MacOSCleaner")
-        let set = Set(patterns)
-        
-        XCTAssertTrue(set.contains("input.MacOSCleaner"))
-        XCTAssertTrue(set.contains("MacOSCleaner"))
-        XCTAssertTrue(set.contains("macoscleaner"))
+
+    func testConfidenceTier_comparable() {
+        XCTAssertTrue(ConfidenceTier.possible < ConfidenceTier.veryLikely)
+        XCTAssertTrue(ConfidenceTier.veryLikely < ConfidenceTier.guaranteed)
+        XCTAssertTrue(ConfidenceTier.ignore < ConfidenceTier.possible)
     }
-    
-    func testSystemSearchPaths() async {
-        let paths = await service.getSystemSearchPaths()
-        XCTAssertFalse(paths.isEmpty)
-        XCTAssertTrue(paths.contains { $0.contains("/var/folders/") })
+
+    func testRelatedFile_evidenceAndConfidence() {
+        let file = UninstallerService.RelatedFile(
+            url: URL(fileURLWithPath: "/Library/Caches/test.cache"),
+            evidence: [.bundleIDExact, .teamID],
+            confidence: .guaranteed
+        )
+        XCTAssertTrue(file.evidence.contains(.bundleIDExact))
+        XCTAssertEqual(file.confidence, .guaranteed)
+    }
+
+    func testEvidence_category_mapping() {
+        XCTAssertEqual(Evidence.bundleIDExact.category, .identity)
+        XCTAssertEqual(Evidence.teamID.category, .signature)
+        XCTAssertEqual(Evidence.launchAgent.category, .system)
+        XCTAssertEqual(Evidence.packageReceipt.category, .metadata)
+        XCTAssertEqual(Evidence.spotlight.category, .content)
+        XCTAssertEqual(Evidence.parentDirectory.category, .graph)
+        XCTAssertEqual(Evidence.launchServicesRegistered.category, .launchServices)
     }
 }

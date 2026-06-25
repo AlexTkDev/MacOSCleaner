@@ -47,6 +47,11 @@
 "dashboard_recent_operations" = "Недавние операции";
 "dashboard_no_recent_operations" = "Нет недавних операций";
 
+// Language Names
+"language.english" = "Английский";
+"language.russian" = "Русский";
+"language.ukrainian" = "Украинский";
+
 // Settings View
 "settings_title" = "Настройки";
 "settings_subtitle" = "Настройка параметров приложения";
@@ -314,3 +319,127 @@
 "teams_cache" = "Кэш Microsoft Teams";
 "adobe_caches" = "Кэши Adobe";
 "chrome_extra_caches" = "Доп. кэши Chrome";
+
+// Process View - Missing Keys
+"view_mode" = "Режим просмотра";
+"sort_by" = "Сортировка";
+"cancel_selection" = "Отменить выбор";
+"select_multiple" = "Выбрать несколько";
+"select_all" = "Выбрать все";
+"deselect_all" = "Снять выделение";
+"terminate_selected" = "Завершить выбранные";
+"force_kill_selected" = "Принудительно завершить выбранные";
+"processes_terminate_all" = "Завершить все";
+"processes_force_kill_all" = "Принудительно завершить все";
+"process.unknown" = "Неизвестно";
+
+// Uninstaller - Scan Progress
+"uninstaller.progress.discovering" = "Поиск приложений...";
+"uninstaller.progress.complete" = "Сканирование завершено";
+
+// Uninstaller - Confidence Tiers
+"uninstaller.tier.ignore" = "Игнорировать";
+"uninstaller.tier.possible" = "Возможно";
+"uninstaller.tier.very_likely" = "Очень вероятно";
+"uninstaller.tier.guaranteed" = "Гарантировано";
+
+// Developer Components
+"developer.android_sdk" = "Android SDK";
+"developer.gradle_cache" = "Кэш Gradle";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "Симуляторы iOS";
+"developer.flutter_cache" = "Кэш Flutter";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+// Evidence Categories
+"uninstaller.evidence_category.identity" = "Совпадение идентификатора";
+"uninstaller.evidence_category.signature" = "Подпись кода";
+"uninstaller.evidence_category.system" = "Системная интеграция";
+"uninstaller.evidence_category.metadata" = "Метаданные файла";
+"uninstaller.evidence_category.content" = "Анализ содержимого";
+"uninstaller.evidence_category.graph" = "Распространение графа";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+// Evidence Descriptions
+"uninstaller.evidence.bundleIDExact.title" = "Совпадение Bundle ID";
+"uninstaller.evidence.bundleIDExact.description" = "Имя совпадает с идентификатором пакета приложения.";
+"uninstaller.evidence.bundleIDPrefix.title" = "Префикс Bundle ID";
+"uninstaller.evidence.bundleIDPrefix.description" = "Имя начинается с идентификатора пакета приложения.";
+"uninstaller.evidence.appNameExact.title" = "Совпадение имени приложения";
+"uninstaller.evidence.appNameExact.description" = "Имя совпадает с названием приложения.";
+"uninstaller.evidence.appNamePrefix.title" = "Префикс имени приложения";
+"uninstaller.evidence.appNamePrefix.description" = "Имя начинается с названия приложения.";
+"uninstaller.evidence.executableName.title" = "Имя исполняемого файла";
+"uninstaller.evidence.executableName.description" = "Имя совпадает с исполняемым файлом приложения.";
+"uninstaller.evidence.frameworkName.title" = "Имя фреймворка";
+"uninstaller.evidence.frameworkName.description" = "Файл является фреймворком, используемым приложением.";
+"uninstaller.evidence.xpcServiceName.title" = "XPC-сервис";
+"uninstaller.evidence.xpcServiceName.description" = "Файл является XPC-сервисом приложения.";
+"uninstaller.evidence.plugInName.title" = "Имя плагина";
+"uninstaller.evidence.plugInName.description" = "Файл является плагином приложения.";
+"uninstaller.evidence.vendorName.title" = "Имя вендора";
+"uninstaller.evidence.vendorName.description" = "Файл принадлежит тому же разработчику.";
+"uninstaller.evidence.teamID.title" = "Совпадение Team ID";
+"uninstaller.evidence.teamID.description" = "Подписано той же командой Apple Developer.";
+"uninstaller.evidence.developerSignature.title" = "Подпись разработчика";
+"uninstaller.evidence.developerSignature.description" = "Подписано тем же сертификатом разработчика.";
+"uninstaller.evidence.launchAgent.title" = "Launch Agent";
+"uninstaller.evidence.launchAgent.description" = "Автозагрузчик, зарегистрированный приложением.";
+"uninstaller.evidence.launchDaemon.title" = "Launch Daemon";
+"uninstaller.evidence.launchDaemon.description" = "Демон, зарегистрированный приложением.";
+"uninstaller.evidence.loginItem.title" = "Элемент входа";
+"uninstaller.evidence.loginItem.description" = "Элемент автозапуска, зарегистрированный приложением.";
+"uninstaller.evidence.appGroup.title" = "Группа приложений";
+"uninstaller.evidence.appGroup.description" = "Принадлежит групповому контейнеру приложения.";
+"uninstaller.evidence.container.title" = "Контейнер приложения";
+"uninstaller.evidence.container.description" = "Песочница приложения.";
+"uninstaller.evidence.extension.title" = "Расширение приложения";
+"uninstaller.evidence.extension.description" = "Расширение, зарегистрированное приложением.";
+"uninstaller.evidence.xpcConnection.title" = "XPC-соединение";
+"uninstaller.evidence.xpcConnection.description" = "XPC-соединение, используемое приложением.";
+"uninstaller.evidence.packageReceipt.title" = "Квитанция пакета";
+"uninstaller.evidence.packageReceipt.description" = "Зарегистрировано через квитанцию пакета.";
+"uninstaller.evidence.plistContent.title" = "Содержимое Plist";
+"uninstaller.evidence.plistContent.description" = "Plist содержит имя или Bundle ID приложения.";
+"uninstaller.evidence.spotlight.title" = "Индекс Spotlight";
+"uninstaller.evidence.spotlight.description" = "Найдено через поиск Spotlight.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Атрибут пакета Spotlight";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Метаданные Spotlight ссылаются на пакет приложения.";
+"uninstaller.evidence.spotlightCreator.title" = "Создатель Spotlight";
+"uninstaller.evidence.spotlightCreator.description" = "Метаданные создателя Spotlight совпадают.";
+"uninstaller.evidence.fileContent.title" = "Содержимое файла";
+"uninstaller.evidence.fileContent.description" = "Содержимое файла ссылается на приложение.";
+"uninstaller.evidence.electronCache.title" = "Кэш Electron";
+"uninstaller.evidence.electronCache.description" = "Кэш приложения на Electron.";
+"uninstaller.evidence.jetBrainsConfig.title" = "Конфиг JetBrains";
+"uninstaller.evidence.jetBrainsConfig.description" = "Конфигурация IDE JetBrains.";
+"uninstaller.evidence.flutterBuild.title" = "Сборка Flutter";
+"uninstaller.evidence.flutterBuild.description" = "Артефакт сборки Flutter.";
+"uninstaller.evidence.parentDirectory.title" = "Родительский каталог";
+"uninstaller.evidence.parentDirectory.description" = "Найдено в каталоге, связанном с приложением.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Зарегистрировано в базе Launch Services.";
+
+// Permissions - Missing Access Descriptions
+"permissions.full_disk_access" = "Полный доступ к диску";
+"permissions.accessibility" = "Специальные возможности";
+"permissions.automation" = "Автоматизация (Apple Events)";
+"permissions.trash_access" = "Доступ к Корзине";
+"permissions.notification_provisional" = "Предварительные";
+"permissions.notification_ephemeral" = "Эфемерные";
+"permissions.unknown_status" = "Неизвестно";
+
+// Process Categories
+"process.category.applications" = "Приложения";
+"process.category.launch_agents" = "Агенты автозапуска";
+"process.category.launch_daemons" = "Демоны";
+"process.category.system" = "Системные";
+
+// Uninstaller - Additional UI
+"uninstaller.scanning_deep" = "Глубокое сканирование...";
+"uninstaller.why_this_file" = "Почему этот файл?";
+"uninstaller.related_files" = "Связанные файлы";
+"uninstaller.developer_artifacts" = "Артефакты разработчика";
+"uninstaller.progress.developer_components" = "Проверка компонентов разработчика...";
+"uninstaller.footer.summary" = "Выбрано %lld файлов в %@ категориях";

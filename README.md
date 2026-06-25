@@ -9,7 +9,7 @@
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343.svg?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF.svg?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
-[![Version: 1.0.1](https://img.shields.io/badge/Release-1.0.1-brightgreen.svg)]()
+[![Version: 1.1](https://img.shields.io/badge/Release-1.1-brightgreen.svg)]()
 
 🧹 Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.
 
@@ -75,6 +75,16 @@ All categories are always scanned. Dev-related ones show a purple "DEV" badge. R
 **Startup Services** 🚀 — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
 
 **App Uninstaller** 🗑️ — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. Expert Mode for cherry-picking leftovers.
+
+**Deep Forensics Engine** 🔬 — when an app is selected for deep scan, the engine:
+- **Identifies** the app via bundle ID, code signing (Team ID, signing authority), receipt presence, and sandbox status
+- **Probes** every candidate file against 30 evidence types across 7 categories: identity, signature, system integration, metadata, content, graph relationships, and Launch Services registration
+- **Builds an evidence graph** — links related files by parent–child relationships for propagation scoring
+- **Confidence tiers** — each file receives a tier: `.guaranteed` (≥100 score with critical evidence), `.veryLikely` (≥60), `.possible` (≥30), or `.ignore` (<30)
+- **Special rules** — JetBrains apps require ≥3 non-vendor evidence types; Electron, Flutter, Docker apps get targeted path probing
+- **Developer artifacts** — detects Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew for deep uninstall
+
+**Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file in the detail view to see exactly why it was associated with the app: bundle ID match, parent directory, team ID, Launch Agent reference, etc. Every evidence type has a user-readable title and description in English, Russian, and Ukrainian.
 
 **Settings** — light/dark/system theme, languages (English, Русский, Українська), notifications, scan-on-startup, Trash behavior, and more.
 

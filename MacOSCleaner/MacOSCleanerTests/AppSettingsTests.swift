@@ -3,29 +3,22 @@ import XCTest
 
 @MainActor
 final class AppSettingsTests: XCTestCase {
-    private var suiteName: String!
-    private var defaults: UserDefaults!
-
     override func setUp() async throws {
-        // Reset all settings keys to avoid pollution between test cases
         let keysToReset = [
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_skipExpertMode"
+            "settings_showRelatedFiles", "settings_emptyTrashImmediately"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
 
     override func tearDown() async throws {
-        // Clean up after each test
         let keysToReset = [
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_skipExpertMode"
+            "settings_showRelatedFiles", "settings_emptyTrashImmediately"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -43,7 +36,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
-        XCTAssertFalse(settings.skipExpertMode)
     }
 
     // MARK: - Persistence
@@ -69,14 +61,12 @@ final class AppSettingsTests: XCTestCase {
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
-        settings.skipExpertMode = true
 
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_autoScanOnStartup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashDuringCleanup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_bypassTrashOnUninstall"))
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_showRelatedFiles"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashImmediately"))
-        XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_skipExpertMode"))
     }
 
     // MARK: - Reset
@@ -92,7 +82,6 @@ final class AppSettingsTests: XCTestCase {
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
-        settings.skipExpertMode = true
 
         settings.resetAll()
 
@@ -105,6 +94,5 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
-        XCTAssertFalse(settings.skipExpertMode)
     }
 }

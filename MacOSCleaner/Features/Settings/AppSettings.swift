@@ -10,9 +10,9 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
 
     public var displayName: String {
         switch self {
-        case .english: return "English"
-        case .russian: return "Русский"
-        case .ukrainian: return "Українська"
+        case .english: return "language.english".localized
+        case .russian: return "language.russian".localized
+        case .ukrainian: return "language.ukrainian".localized
         }
     }
 }
@@ -101,7 +101,6 @@ public final class AppSettings {
         static let bypassTrashOnUninstall = "settings_bypassTrashOnUninstall"
         static let showRelatedFiles = "settings_showRelatedFiles"
         static let emptyTrashImmediately = "settings_emptyTrashImmediately"
-        static let skipExpertMode = "settings_skipExpertMode"
         static let processRefreshInterval = "settings_processRefreshInterval"
         static let processSortOption = "settings_processSortOption"
     }
@@ -161,10 +160,6 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(emptyTrashImmediately, forKey: Keys.emptyTrashImmediately) }
     }
 
-    public var skipExpertMode: Bool {
-        didSet { UserDefaults.standard.set(skipExpertMode, forKey: Keys.skipExpertMode) }
-    }
-
     // MARK: - Process Management
 
     public var processRefreshInterval: RefreshInterval {
@@ -194,7 +189,6 @@ public final class AppSettings {
         self.bypassTrashOnUninstall = defaults.bool(forKey: Keys.bypassTrashOnUninstall)
         self.showRelatedFiles = defaults.object(forKey: Keys.showRelatedFiles) as? Bool ?? true
         self.emptyTrashImmediately = defaults.bool(forKey: Keys.emptyTrashImmediately)
-        self.skipExpertMode = defaults.bool(forKey: Keys.skipExpertMode)
         self.processRefreshInterval = RefreshInterval(rawValue: defaults.string(forKey: Keys.processRefreshInterval) ?? "") ?? .manual
         self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
 
@@ -212,7 +206,7 @@ public final class AppSettings {
         let allKeys = [
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
-            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.skipExpertMode,
+            Keys.showRelatedFiles, Keys.emptyTrashImmediately,
             Keys.processRefreshInterval, Keys.processSortOption
         ]
         for key in allKeys {
@@ -228,7 +222,6 @@ public final class AppSettings {
         bypassTrashOnUninstall = false
         showRelatedFiles = true
         emptyTrashImmediately = false
-        skipExpertMode = false
         processRefreshInterval = .manual
         processSortOption = .cpu
 

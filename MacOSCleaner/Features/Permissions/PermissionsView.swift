@@ -65,7 +65,7 @@ struct PermissionsView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("Full Disk Access")
+                    Text("permissions.full_disk_access".localized)
                         .font(.headline)
                     Spacer()
                     statusBadge(isGranted: permissionsManager.hasFullDiskAccess)
