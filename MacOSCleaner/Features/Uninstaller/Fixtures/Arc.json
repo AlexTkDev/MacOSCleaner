@@ -1,0 +1,21 @@
+{
+  "app": "Arc",
+  "bundleID": "company.thebrowser.Browser",
+  "mustFind": [
+    "~/Library/Application Support/Arc",
+    "~/Library/Caches/Arc",
+    "~/Library/Caches/company.thebrowser.Browser",
+    "~/Library/Preferences/company.thebrowser.Browser.plist",
+    "~/Library/Logs/Arc",
+    "~/Library/Saved Application State/company.thebrowser.Browser.savedState",
+    "~/Library/WebKit/company.thebrowser.Browser"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.google.Chrome",
+    "org.mozilla.firefox"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

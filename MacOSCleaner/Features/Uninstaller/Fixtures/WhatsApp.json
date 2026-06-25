@@ -1,0 +1,17 @@
+{
+  "app": "WhatsApp",
+  "bundleID": "net.whatsapp.WhatsApp",
+  "mustFind": [
+    "~/Library/Containers/net.whatsapp.WhatsApp",
+    "~/Library/Application Support/WhatsApp",
+    "~/Library/Caches/net.whatsapp.WhatsApp",
+    "~/Library/Preferences/net.whatsapp.WhatsApp.plist"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

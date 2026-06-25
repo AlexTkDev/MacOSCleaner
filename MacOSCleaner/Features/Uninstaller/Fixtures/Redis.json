@@ -1,0 +1,19 @@
+{
+  "app": "Redis",
+  "bundleID": "io.redis",
+  "mustFind": [
+    "/usr/local/var/db/redis",
+    "/opt/homebrew/var/db/redis",
+    "/usr/local/etc/redis.conf"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [
+    "/usr/local/var/db/redis/dump.rdb",
+    "/usr/local/var/db/redis/appendonly.aof"
+  ],
+  "scoreFloor": 30
+}

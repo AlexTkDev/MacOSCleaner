@@ -1,0 +1,24 @@
+{
+  "app": "VMware Fusion",
+  "bundleID": "com.vmware.fusion",
+  "mustFind": [
+    "~/Library/Preferences/com.vmware.fusion.plist",
+    "~/Library/Application Support/VMware",
+    "~/Library/Caches/com.vmware.fusion",
+    "~/Library/Logs/VMware",
+    "/Library/Application Support/VMware",
+    "/Library/Extensions/vmmon.kext",
+    "/Library/Extensions/vmnet.kext",
+    "/Library/LaunchDaemons/com.vmware.networkD.plist",
+    "/Library/PrivilegedHelperTools/com.vmware.networkD"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [
+    "~/Documents/Virtual Machines/*.vmwarevm"
+  ],
+  "scoreFloor": 30
+}

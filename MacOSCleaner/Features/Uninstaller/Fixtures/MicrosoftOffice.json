@@ -1,0 +1,26 @@
+{
+  "app": "Microsoft Office",
+  "bundleID": "com.microsoft.word",
+  "mustFind": [
+    "~/Library/Application Support/Microsoft",
+    "~/Library/Application Support/Microsoft Office",
+    "~/Library/Group Containers/UBF8T346G9.Office",
+    "~/Library/Preferences/com.microsoft.word.plist",
+    "~/Library/Preferences/com.microsoft.office.licensingV2.plist",
+    "~/Library/Caches/com.microsoft.word",
+    "~/Library/Logs/Microsoft",
+    "~/Library/Saved Application State/com.microsoft.word.savedState",
+    "/Library/Application Support/Microsoft",
+    "/Library/Preferences/com.microsoft.office.licensingV2.plist",
+    "/Library/LaunchDaemons/com.microsoft.autoupdate.helper.plist",
+    "/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.jetbrains",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -1,0 +1,20 @@
+{
+  "app": "Zoom",
+  "bundleID": "us.zoom.xos",
+  "mustFind": [
+    "~/Library/Application Support/zoom.us",
+    "~/Library/Caches/us.zoom.xos",
+    "~/Library/Preferences/us.zoom.xos.plist",
+    "~/Library/Saved Application State/us.zoom.xos.savedState",
+    "~/Library/Logs/zoom.us",
+    "/Library/Application Support/zoom.us",
+    "/Library/Audio/Plug-Ins/HAL/ZoomAudioDevice.driver"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

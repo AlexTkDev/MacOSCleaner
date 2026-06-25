@@ -99,6 +99,95 @@ public actor CandidateCollector {
             }
         }
 
+        // 8. Adobe-specific
+        let adobeVendor = identity.appName.lowercased().hasPrefix("adobe") ||
+            identity.bundleID.lowercased().hasPrefix("com.adobe.")
+        if adobeVendor {
+            let adobePaths = [
+                "\(home)/Library/Application Support/Adobe",
+                "/Library/Application Support/Adobe",
+                "\(home)/Library/Preferences/Adobe",
+                "/Library/Preferences/Adobe",
+                "\(home)/.adobe",
+                "\(home)/Creative Cloud Files",
+            ]
+            for p in adobePaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
+        // 9. Microsoft Office-specific
+        let msVendor = identity.appName.lowercased().hasPrefix("microsoft") ||
+            identity.bundleID.lowercased().hasPrefix("com.microsoft.")
+        if msVendor {
+            let msPaths = [
+                "\(home)/Library/Application Support/Microsoft",
+                "\(home)/Library/Application Support/Microsoft Office",
+                "\(home)/Library/Group Containers/UBF8T346G9.Office",
+                "\(home)/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite",
+                "/Library/Application Support/Microsoft",
+                "\(home)/Library/Containers/com.microsoft.word",
+                "\(home)/Library/Containers/com.microsoft.excel",
+                "\(home)/Library/Containers/com.microsoft.powerpoint",
+                "\(home)/Library/Containers/com.microsoft.outlook",
+                "\(home)/Library/Containers/com.microsoft.teams",
+            ]
+            for p in msPaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
+        // 10. Steam-specific
+        if identity.bundleID == "com.valvesoftware.steam" || identity.appName == "Steam" {
+            let steamPaths = [
+                "\(home)/Library/Application Support/Steam",
+            ]
+            for p in steamPaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
+        // 11. Epic Games-specific
+        if identity.bundleID == "com.epicgames.EpicGamesLauncher" || identity.appName.lowercased().contains("epic") {
+            let epicPaths = [
+                "\(home)/Library/Application Support/Epic",
+                "\(home)/Library/Application Support/Epic Games Launcher",
+            ]
+            for p in epicPaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
+        // 12. Unity-specific
+        if identity.bundleID.lowercased().hasPrefix("com.unity3d.") || identity.appName == "Unity Hub" {
+            let unityPaths = [
+                "\(home)/Library/Application Support/Unity",
+                "\(home)/Library/Application Support/Unity Hub",
+                "\(home)/.local/share/unity3d",
+            ]
+            for p in unityPaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
+        // 13. Network extension / VPN-specific
+        let isNetworkExt = identity.bundleID.lowercased().contains("littlesnitch") ||
+            identity.bundleID.lowercased().contains("nordvpn") ||
+            identity.bundleID.lowercased().contains("expressvpn") ||
+            identity.appName.lowercased().contains("vpn") ||
+            identity.appName.lowercased().contains("snitch")
+        if isNetworkExt {
+            let nePaths = [
+                "/Library/SystemExtensions",
+                "/Library/StagedExtensions",
+                "\(home)/Library/Application Support/Little Snitch",
+                "\(home)/Library/Application Support/NordVPN",
+            ]
+            for p in nePaths where fileManager.fileExists(atPath: p) {
+                candidates.insert(URL(fileURLWithPath: p))
+            }
+        }
+
         return candidates
     }
 

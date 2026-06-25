@@ -5,13 +5,12 @@
     "~/Library/Application Support/Notion",
     "~/Library/Caches/notion.id",
     "~/Library/Preferences/notion.id.plist",
-    "~/Library/Saved Application State/notion.id.savedState",
-    "~/Library/Logs/Notion"
+    "~/Library/Saved Application State/notion.id.savedState"
   ],
   "mustNotFind": [
     "com.adguard.",
     "com.apple.",
-    "md.obsidian"
+    "com.docker"
   ],
   "developerArtifacts": [],
   "scoreFloor": 30

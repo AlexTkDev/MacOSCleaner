@@ -1,0 +1,18 @@
+{
+  "app": "Little Snitch",
+  "bundleID": "at.obdev.littlesnitch",
+  "mustFind": [
+    "~/Library/Application Support/Little Snitch",
+    "~/Library/Preferences/at.obdev.littlesnitch.plist",
+    "/Library/Application Support/Little Snitch",
+    "/Library/LaunchDaemons/at.obdev.littlesnitch.*"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker",
+    "com.nordvpn"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

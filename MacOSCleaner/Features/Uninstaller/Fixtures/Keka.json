@@ -1,0 +1,16 @@
+{
+  "app": "Keka",
+  "bundleID": "com.aqueous.Keka",
+  "mustFind": [
+    "~/Library/Preferences/com.aqueous.Keka.plist",
+    "~/Library/Caches/com.aqueous.Keka",
+    "~/Library/Application Support/Keka"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

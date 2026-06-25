@@ -1,0 +1,17 @@
+{
+  "app": "Telegram",
+  "bundleID": "ru.keepcoder.Telegram",
+  "mustFind": [
+    "~/Library/Containers/ru.keepcoder.Telegram",
+    "~/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram",
+    "~/Library/Application Support/Telegram",
+    "~/Library/Caches/ru.keepcoder.Telegram"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

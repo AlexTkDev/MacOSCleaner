@@ -1,0 +1,22 @@
+{
+  "app": "Steam",
+  "bundleID": "com.valvesoftware.steam",
+  "mustFind": [
+    "~/Library/Application Support/Steam",
+    "~/Library/Preferences/com.valvesoftware.steam.plist",
+    "~/Library/Caches/com.valvesoftware.steam",
+    "~/Library/Caches/Steam",
+    "~/Library/Saved Application State/com.valvesoftware.steam.savedState"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.epicgames",
+    "com.valvesoftware.steamcmd"
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Steam/steamapps/compatdata",
+    "~/Library/Application Support/Steam/steamapps/shadercache"
+  ],
+  "scoreFloor": 30
+}

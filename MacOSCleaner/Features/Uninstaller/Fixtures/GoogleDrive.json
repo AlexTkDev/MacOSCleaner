@@ -1,0 +1,17 @@
+{
+  "app": "Google Drive",
+  "bundleID": "com.google.drive",
+  "mustFind": [
+    "~/Library/Application Support/Google/DriveFS",
+    "~/Library/Caches/com.google.drive",
+    "~/Library/Preferences/com.google.drive.plist",
+    "~/Library/Logs/Google Drive"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

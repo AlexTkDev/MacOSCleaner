@@ -1,0 +1,18 @@
+{
+  "app": "Microsoft OneDrive",
+  "bundleID": "com.microsoft.OneDrive",
+  "mustFind": [
+    "~/Library/Application Support/OneDrive",
+    "~/Library/Caches/com.microsoft.OneDrive",
+    "~/Library/Preferences/com.microsoft.OneDrive.plist",
+    "~/Library/Logs/OneDrive",
+    "~/Library/Containers/com.microsoft.OneDrive-mac"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

@@ -1,0 +1,21 @@
+{
+  "app": "Logic Pro",
+  "bundleID": "com.apple.Logic10",
+  "mustFind": [
+    "~/Library/Containers/com.apple.Logic10",
+    "~/Library/Application Support/Logic",
+    "~/Library/Caches/com.apple.Logic10",
+    "~/Library/Preferences/com.apple.Logic10.plist"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.docker",
+    "com.jetbrains"
+  ],
+  "developerArtifacts": [
+    "/Library/Audio/Plug-Ins/Components",
+    "/Library/Audio/Plug-Ins/VST",
+    "/Library/Audio/Plug-Ins/VST3"
+  ],
+  "scoreFloor": 30
+}

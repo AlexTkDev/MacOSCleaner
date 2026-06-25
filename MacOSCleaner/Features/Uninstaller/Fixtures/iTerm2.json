@@ -1,0 +1,16 @@
+{
+  "app": "iTerm2",
+  "bundleID": "com.googlecode.iterm2",
+  "mustFind": [
+    "~/Library/Preferences/com.googlecode.iterm2.plist",
+    "~/Library/Application Support/iTerm2",
+    "~/Library/Caches/com.googlecode.iterm2"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

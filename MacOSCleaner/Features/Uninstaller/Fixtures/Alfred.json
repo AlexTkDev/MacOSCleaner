@@ -1,0 +1,16 @@
+{
+  "app": "Alfred",
+  "bundleID": "com.runningwithcrayons.Alfred-Preferences",
+  "mustFind": [
+    "~/Library/Application Support/Alfred",
+    "~/Library/Caches/com.runningwithcrayons.Alfred",
+    "~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences.plist"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

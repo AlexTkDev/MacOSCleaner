@@ -1,0 +1,25 @@
+{
+  "app": "Parallels Desktop",
+  "bundleID": "com.parallels.desktop.console",
+  "mustFind": [
+    "~/Library/Preferences/com.parallels.desktop.console.plist",
+    "~/Library/Application Support/Parallels",
+    "~/Library/Caches/com.parallels.desktop.console",
+    "~/Library/Saved Application State/com.parallels.desktop.console.savedState",
+    "~/Library/Containers/com.parallels.desktop",
+    "/Library/Parallels",
+    "/Library/Preferences/Parallels",
+    "/Library/LaunchDaemons/com.parallels.desktop.launch.plist",
+    "/Library/PrivilegedHelperTools/com.parallels.desktop.launch"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Parallels/*.pvm",
+    "~/Library/Application Support/Parallels/snapshots"
+  ],
+  "scoreFloor": 30
+}

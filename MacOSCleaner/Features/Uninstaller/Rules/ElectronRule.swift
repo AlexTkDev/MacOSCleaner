@@ -13,12 +13,14 @@ public struct ElectronRule: ApplicationRule {
         "com.insomnia.app",
         "com.slack.Slack",
         "com.microsoft.teams2",
+        "com.figma.Desktop",
     ]
     public let supportedTeamIDs: Set<String> = []
     public let supportedAppNames: Set<String> = [
         "Cursor", "Visual Studio Code", "VSCode", "VSCodium",
         "Discord", "Slack", "Postman", "Obsidian", "Notion", "Insomnia",
         "Teams", "Microsoft Teams",
+        "Figma",
     ]
 
     private let electronArtifactDirs: Set<String> = [

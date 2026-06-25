@@ -1,0 +1,226 @@
+{
+  "category": "system_tools",
+  "description": "Системные утилиты, менеджеры окон, автоматизация",
+  "apps": [
+    {
+      "name": "Alfred",
+      "bundle_id": "com.runningwithcrayons.Alfred",
+      "difficulty": "medium",
+      "notes": "Использует login items, Application Support с workflows и themes.",
+      "paths": {
+        "applications": ["/Applications/Alfred 5.app", "/Applications/Alfred 4.app"],
+        "application_support": ["~/Library/Application Support/Alfred"],
+        "caches": ["~/Library/Caches/com.runningwithcrayons.Alfred"],
+        "preferences": [
+          "~/Library/Preferences/com.runningwithcrayons.Alfred.plist",
+          "~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences.plist"
+        ],
+        "saved_state": ["~/Library/Saved Application State/com.runningwithcrayons.Alfred-Preferences.savedState"],
+        "cookies": ["~/Library/Cookies/com.runningwithcrayons.Alfred.binarycookies"],
+        "login_items": ["Alfred5", "Alfred4"]
+      }
+    },
+    {
+      "name": "Bartender",
+      "bundle_id": "com.surteesstudios.Bartender",
+      "difficulty": "high",
+      "notes": "Устанавливает Audio Plugin, Scripting Additions, PrivilegedHelperTools.",
+      "paths": {
+        "applications": ["/Applications/Bartender 5.app", "/Applications/Bartender 4.app"],
+        "privileged_helper_tools": ["/Library/PrivilegedHelperTools/com.surteesstudios.Bartender.BartenderInstallHelper"],
+        "caches": ["~/Library/Caches/com.surteesstudios.Bartender"],
+        "preferences": ["~/Library/Preferences/com.surteesstudios.Bartender.plist"],
+        "cookies": ["~/Library/Cookies/com.surteesstudios.Bartender.binarycookies"],
+        "audio_plugins": ["/Library/Audio/Plug-Ins/HAL/BartenderAudioPlugIn.plugin"],
+        "scripting_additions": [
+          "/Library/ScriptingAdditions/BartenderHelper.osax",
+          "/System/Library/ScriptingAdditions/BartenderSystemHelper.osax"
+        ],
+        "launchctl": ["com.surteesstudios.Bartender.BartenderInstallHelper"]
+      }
+    },
+    {
+      "name": "BetterTouchTool",
+      "bundle_id": "com.hegenberg.BetterTouchTool",
+      "difficulty": "medium",
+      "notes": "Хранит пресеты и конфигурации в Application Support.",
+      "paths": {
+        "applications": ["/Applications/BetterTouchTool.app"],
+        "application_support": ["~/Library/Application Support/BetterTouchTool"],
+        "preferences": ["~/Library/Preferences/com.hegenberg.BetterTouchTool.plist"]
+      }
+    },
+    {
+      "name": "Karabiner-Elements",
+      "bundle_id": "org.pqrs.Karabiner-Elements",
+      "difficulty": "critical",
+      "notes": "Устанавливает драйверы (DriverKit), системные расширения, множество launchctl сервисов.",
+      "paths": {
+        "applications": ["/Applications/Karabiner-Elements.app"],
+        "launch_agents": [
+          "org.pqrs.karabiner.agent.karabiner_grabber",
+          "org.pqrs.karabiner.agent.karabiner_observer",
+          "org.pqrs.karabiner.karabiner_console_user_server",
+          "org.pqrs.karabiner.karabiner_grabber",
+          "org.pqrs.karabiner.karabiner_observer",
+          "org.pqrs.karabiner.karabiner_session_monitor",
+          "org.pqrs.karabiner.NotificationWindow"
+        ],
+        "application_support": [
+          "~/Library/Application Support/Karabiner-Elements",
+          "/Library/Application Support/org.pqrs"
+        ],
+        "caches": ["~/Library/Caches/org.pqrs.Karabiner-Elements.Updater"],
+        "preferences": ["~/Library/Preferences/org.pqrs.Karabiner-Elements.Updater.plist"],
+        "pkg_receipts": [
+          "org.pqrs.Karabiner-DriverKit-VirtualHIDDevice",
+          "org.pqrs.Karabiner-Elements"
+        ],
+        "system_extensions": ["org.pqrs.Karabiner-DriverKit-VirtualHIDDevice*"],
+        "application_scripts": ["~/Library/Application Scripts/org.pqrs.Karabiner-VirtualHIDDevice-Manager"],
+        "containers": ["~/Library/Containers/org.pqrs.Karabiner-VirtualHIDDevice-Manager"],
+        "http_storages": ["~/Library/HTTPStorages/org.pqrs.Karabiner-Elements.Settings"],
+        "other": [
+          "~/.config/karabiner",
+          "~/.local/share/karabiner",
+          "/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice"
+        ]
+      }
+    },
+    {
+      "name": "Rectangle",
+      "bundle_id": "com.knollsoft.Rectangle",
+      "difficulty": "low",
+      "notes": "Относительно простое приложение, но имеет launcher.",
+      "paths": {
+        "applications": ["/Applications/Rectangle.app"],
+        "application_support": ["~/Library/Application Support/Rectangle"],
+        "caches": ["~/Library/Caches/com.knollsoft.Rectangle"],
+        "preferences": ["~/Library/Preferences/com.knollsoft.Rectangle.plist"],
+        "http_storages": ["~/Library/HTTPStorages/com.knollsoft.Rectangle"],
+        "application_scripts": ["~/Library/Application Scripts/com.knollsoft.RectangleLauncher"],
+        "containers": ["~/Library/Containers/com.knollsoft.RectangleLauncher"],
+        "login_items": ["Rectangle"],
+        "other": ["~/Library/WebKit/com.knollsoft.Rectangle"]
+      }
+    },
+    {
+      "name": "CleanMyMac",
+      "bundle_id": "com.macpaw.CleanMyMac5",
+      "difficulty": "high",
+      "notes": "Устанавливает PrivilegedHelperTools, LaunchDaemons, множество сервисов.",
+      "paths": {
+        "applications": ["/Applications/CleanMyMac.app"],
+        "launch_agents": ["~/Library/LaunchAgents/com.macpaw.CleanMyMac5.Updater.plist"],
+        "launch_daemons": ["/Library/LaunchDaemons/com.macpaw.CleanMyMac5.Agent.plist"],
+        "privileged_helper_tools": ["/Library/PrivilegedHelperTools/com.macpaw.CleanMyMac5.Agent"],
+        "application_support": ["~/Library/Application Support/CleanMyMac_5"],
+        "caches": ["~/Library/Caches/com.macpaw.CleanMyMac5"],
+        "preferences": ["~/Library/Preferences/com.macpaw.CleanMyMac5.plist"],
+        "saved_state": ["~/Library/Saved Application State/com.macpaw.CleanMyMac5.savedState"],
+        "http_storages": [
+          "~/Library/HTTPStorages/com.macpaw.CleanMyMac5",
+          "~/Library/HTTPStorages/com.macpaw.CleanMyMac5.binarycookies"
+        ],
+        "application_scripts": ["~/Library/Application Scripts/S8EX82NJP6.com.macpaw.CleanMyMac5"],
+        "group_containers": ["~/Library/Group Containers/S8EX82NJP6.com.macpaw.CleanMyMac5"],
+        "logs": ["~/Library/Logs/com.macpaw.CleanMyMac5"],
+        "other": [
+          "/Users/Shared/CleanMyMac_5",
+          "/Library/PrivilegedHelperTools/com.macpaw.CleanMyMac5.Agent"
+        ]
+      }
+    },
+    {
+      "name": "Little Snitch",
+      "bundle_id": "at.obdev.littlesnitch",
+      "difficulty": "critical",
+      "notes": "Сетевой фильтр. Устанавливает kext/system extension, множество системных компонентов.",
+      "paths": {
+        "applications": ["/Applications/Little Snitch.app"],
+        "launch_agents": [
+          "at.obdev.littlesnitch.agent",
+          "at.obdev.littlesnitch.networkmonitor"
+        ],
+        "launch_daemons": [
+          "at.obdev.littlesnitch.daemon"
+        ],
+        "application_support": [
+          "~/Library/Application Support/Little Snitch",
+          "/Library/Application Support/Little Snitch"
+        ],
+        "caches": ["~/Library/Caches/at.obdev.littlesnitch"],
+        "preferences": [
+          "~/Library/Preferences/at.obdev.littlesnitch.plist",
+          "~/Library/Preferences/at.obdev.littlesnitch.networkmonitor.plist"
+        ],
+        "other": [
+          "/Library/Extensions/LittleSnitch.kext",
+          "/Library/StagedExtensions/Library/Extensions/LittleSnitch.kext"
+        ]
+      }
+    },
+    {
+      "name": "1Password",
+      "bundle_id": "com.1password.1password",
+      "difficulty": "medium",
+      "notes": "Парольный менеджер. Использует Safari extension, browser extensions.",
+      "paths": {
+        "applications": ["/Applications/1Password.app"],
+        "application_support": ["~/Library/Application Support/1Password"],
+        "caches": ["~/Library/Caches/com.1password.1password"],
+        "preferences": ["~/Library/Preferences/com.1password.1password.plist"],
+        "containers": ["~/Library/Containers/com.1password.1password"],
+        "group_containers": ["~/Library/Group Containers/2BUA8C4S2C.com.1password"],
+        "other": ["~/Library/Application Support/com.1password.1password"]
+      }
+    },
+    {
+      "name": "Raycast",
+      "bundle_id": "com.raycast.macos",
+      "difficulty": "medium",
+      "notes": "Альтернатива Spotlight. Хранит extensions и settings.",
+      "paths": {
+        "applications": ["/Applications/Raycast.app"],
+        "application_support": ["~/Library/Application Support/Raycast"],
+        "caches": ["~/Library/Caches/com.raycast.macos"],
+        "preferences": ["~/Library/Preferences/com.raycast.macos.plist"],
+        "saved_state": ["~/Library/Saved Application State/com.raycast.macos.savedState"],
+        "other": [
+          "~/Library/HTTPStorages/com.raycast.macos",
+          "~/Library/WebKit/com.raycast.macos"
+        ]
+      }
+    },
+    {
+      "name": "Hazel",
+      "bundle_id": "com.noodlesoft.Hazel",
+      "difficulty": "medium",
+      "notes": "Автоматизация файлов. Устанавливает плагины и helper.",
+      "paths": {
+        "applications": ["/Applications/Hazel.app"],
+        "application_support": ["~/Library/Application Support/Hazel"],
+        "preferences": ["~/Library/Preferences/com.noodlesoft.Hazel.plist"],
+        "other": [
+          "~/Library/Logs/Hazel",
+          "/Library/Application Support/Hazel"
+        ]
+      }
+    },
+    {
+      "name": "Keyboard Maestro",
+      "bundle_id": "com.stairways.keyboardmaestro.editor",
+      "difficulty": "medium",
+      "notes": "Мощная автоматизация. Хранит макросы в Application Support.",
+      "paths": {
+        "applications": ["/Applications/Keyboard Maestro.app"],
+        "application_support": ["~/Library/Application Support/Keyboard Maestro"],
+        "preferences": [
+          "~/Library/Preferences/com.stairways.keyboardmaestro.editor.plist",
+          "~/Library/Preferences/com.stairways.keyboardmaestro.engine.plist"
+        ],
+        "other": ["~/Library/Keyboard Maestro"]
+      }
+    }
+  ]
+}

@@ -4,13 +4,12 @@
   "mustFind": [
     "~/Library/Application Support/obsidian",
     "~/Library/Caches/md.obsidian",
-    "~/Library/Preferences/md.obsidian.plist",
-    "~/Library/Saved Application State/md.obsidian.savedState"
+    "~/Library/Preferences/md.obsidian.plist"
   ],
   "mustNotFind": [
     "com.adguard.",
     "com.apple.",
-    "com.microsoft.VSCode"
+    "com.docker"
   ],
   "developerArtifacts": [],
   "scoreFloor": 30

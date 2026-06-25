@@ -1,0 +1,18 @@
+{
+  "app": "Dropbox",
+  "bundleID": "com.getdropbox.dropbox",
+  "mustFind": [
+    "~/Library/Application Support/Dropbox",
+    "~/Library/Caches/com.getdropbox.dropbox",
+    "~/Library/Preferences/com.getdropbox.dropbox.plist",
+    "~/Library/Logs/Dropbox",
+    "/Library/DropboxHelperTools"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

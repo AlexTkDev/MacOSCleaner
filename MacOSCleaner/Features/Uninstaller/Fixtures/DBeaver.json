@@ -1,0 +1,16 @@
+{
+  "app": "DBeaver",
+  "bundleID": "org.jkiss.dbeaver",
+  "mustFind": [
+    "~/Library/Application Support/DBeaverData",
+    "~/Library/Caches/org.jkiss.dbeaver",
+    "~/Library/Preferences/org.jkiss.dbeaver.plist"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

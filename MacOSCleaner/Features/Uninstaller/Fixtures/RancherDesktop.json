@@ -1,0 +1,19 @@
+{
+  "app": "Rancher Desktop",
+  "bundleID": "io.rancher.desktop",
+  "mustFind": [
+    "~/Library/Application Support/rancher-desktop",
+    "~/Library/Caches/io.rancher.desktop",
+    "~/Library/Preferences/io.rancher.desktop.plist",
+    "~/Library/Saved Application State/io.rancher.desktop.savedState",
+    "/Library/PrivilegedHelperTools/io.rancher.desktop",
+    "/Library/LaunchDaemons/io.rancher.desktop"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

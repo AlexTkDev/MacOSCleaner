@@ -1,0 +1,255 @@
+{
+  "category": "media",
+  "description": "Видео, аудио, стриминг, графические редакторы",
+  "apps": [
+    {
+      "name": "Spotify",
+      "bundle_id": "com.spotify.client",
+      "difficulty": "medium",
+      "notes": "Использует web helper, startup helper. Много launchctl сервисов с wildcard.",
+      "paths": {
+        "applications": ["/Applications/Spotify.app"],
+        "launch_agents": [
+          "com.spotify.client.startuphelper",
+          "com.spotify.webhelper",
+          "*.spotify.client.*"
+        ],
+        "application_support": ["~/Library/Application Support/Spotify"],
+        "caches": [
+          "~/Library/Caches/com.spotify.client",
+          "~/Library/Caches/com.spotify.client.helper"
+        ],
+        "preferences": [
+          "~/Library/Preferences/com.spotify.client.plist",
+          "~/Library/Preferences/com.spotify.client.helper.plist"
+        ],
+        "logs": ["~/Library/Logs/Spotify"],
+        "saved_state": ["~/Library/Saved Application State/com.spotify.client.savedState"],
+        "cookies": ["~/Library/Cookies/com.spotify.client.binarycookies"],
+        "http_storages": [
+          "~/Library/HTTPStorages/com.spotify.client",
+          "~/Library/HTTPStorages/com.spotify.client.helper"
+        ],
+        "shared_file_lists": [
+          "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.spotify.client.startuphelper.sfl*"
+        ]
+      }
+    },
+    {
+      "name": "VLC",
+      "bundle_id": "org.videolan.vlc",
+      "difficulty": "low",
+      "notes": "Относительно чистое приложение, но имеет shim script и плагины.",
+      "paths": {
+        "applications": ["/Applications/VLC.app"],
+        "application_support": [
+          "~/Library/Application Support/org.videolan.vlc",
+          "~/Library/Application Support/VLC"
+        ],
+        "caches": ["~/Library/Caches/org.videolan.vlc"],
+        "preferences": [
+          "~/Library/Preferences/org.videolan.vlc",
+          "~/Library/Preferences/org.videolan.vlc.plist"
+        ],
+        "saved_state": ["~/Library/Saved Application State/org.videolan.vlc.savedState"],
+        "http_storages": ["~/Library/HTTPStorages/org.videolan.vlc"],
+        "shared_file_lists": [
+          "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/org.videolan.vlc.sfl*"
+        ]
+      }
+    },
+    {
+      "name": "OBS Studio",
+      "bundle_id": "com.obsproject.obs-studio",
+      "difficulty": "medium",
+      "notes": "Устанавливает виртуальную камеру (CoreMediaIO plugin). Много плагинов.",
+      "paths": {
+        "applications": ["/Applications/OBS.app"],
+        "application_support": ["~/Library/Application Support/obs-studio"],
+        "preferences": ["~/Library/Preferences/com.obsproject.obs-studio.plist"],
+        "saved_state": ["~/Library/Saved Application State/com.obsproject.obs-studio.savedState"],
+        "http_storages": ["~/Library/HTTPStorages/com.obsproject.obs-studio"],
+        "plugins": ["/Library/CoreMediaIO/Plug-Ins/DAL/obs-mac-virtualcam.plugin"]
+      }
+    },
+    {
+      "name": "Adobe Photoshop",
+      "bundle_id": "com.adobe.Photoshop",
+      "difficulty": "critical",
+      "notes": "Часть Adobe Creative Cloud. Огромное количество системных файлов, сервисов, плагинов.",
+      "paths": {
+        "applications": [
+          "/Applications/Adobe Photoshop 2026.app",
+          "/Applications/Adobe Photoshop 2025.app"
+        ],
+        "launch_agents": [
+          "com.adobe.ccxprocess",
+          "com.adobe.GC.AGM",
+          "com.adobe.GC.Invoker-1.0"
+        ],
+        "launch_daemons": [
+          "com.adobe.acc.installer",
+          "com.adobe.acc.installer.v2",
+          "com.adobe.AdobeDesktopService",
+          "com.adobe.agsservice",
+          "com.adobe.ARMDCHelper.cc24a91db67c90d76f411d88f17f9d7e",
+          "com.adobe.GC.Scheduler-1.0"
+        ],
+        "application_support": [
+          "~/Library/Application Support/Adobe/Adobe Photoshop 2026",
+          "~/Library/Application Support/Adobe/Adobe Photoshop 2025",
+          "~/Library/Application Support/Adobe/OOBE",
+          "~/Library/Application Support/Adobe/CEP"
+        ],
+        "caches": [
+          "~/Library/Caches/com.adobe.Photoshop",
+          "~/Library/Caches/Adobe/Photoshop"
+        ],
+        "preferences": [
+          "~/Library/Preferences/com.adobe.Photoshop.plist",
+          "~/Library/Preferences/Adobe Photoshop * Settings"
+        ],
+        "logs": [
+          "~/Library/Logs/Adobe/Photoshop",
+          "~/Library/Logs/CreativeCloud"
+        ],
+        "other": [
+          "~/Library/Preferences/Adobe/Photoshop",
+          "/Library/Application Support/Adobe/Adobe Photoshop",
+          "/Library/Application Support/Adobe/CEP/extensions",
+          "/Library/Application Support/regid.*.com.adobe",
+          "~/Library/Application Support/CrashReporter/AdobeCRDaemon_*.plist"
+        ]
+      }
+    },
+    {
+      "name": "Adobe Premiere Pro",
+      "bundle_id": "com.adobe.PremierePro",
+      "difficulty": "critical",
+      "notes": "Часть Adobe Creative Cloud. Аналогично Photoshop.",
+      "paths": {
+        "applications": [
+          "/Applications/Adobe Premiere Pro 2026.app",
+          "/Applications/Adobe Premiere Pro 2025.app"
+        ],
+        "application_support": [
+          "~/Library/Application Support/Adobe/Premiere Pro",
+          "~/Library/Application Support/Adobe/Common"
+        ],
+        "caches": ["~/Library/Caches/com.adobe.PremierePro"],
+        "preferences": ["~/Library/Preferences/com.adobe.PremierePro.plist"],
+        "logs": ["~/Library/Logs/Adobe/Premiere Pro"],
+        "other": [
+          "~/Library/Preferences/Adobe/Premiere Pro",
+          "/Library/Application Support/Adobe/Premiere Pro"
+        ]
+      }
+    },
+    {
+      "name": "Final Cut Pro",
+      "bundle_id": "com.apple.FinalCut",
+      "difficulty": "high",
+      "notes": "Apple приложение. Хранит огромные библиотеки в Movies/Final Cut Pro.",
+      "paths": {
+        "applications": ["/Applications/Final Cut Pro.app"],
+        "application_support": [
+          "~/Library/Application Support/Final Cut Pro",
+          "~/Library/Application Support/ProApps"
+        ],
+        "caches": ["~/Library/Caches/com.apple.FinalCut"],
+        "preferences": [
+          "~/Library/Preferences/com.apple.FinalCut.plist",
+          "~/Library/Preferences/com.apple.FinalCut.LSSharedFileList.plist"
+        ],
+        "saved_state": ["~/Library/Saved Application State/com.apple.FinalCut.savedState"],
+        "other": [
+          "~/Movies/Final Cut Pro",
+          "~/Library/Containers/com.apple.FinalCut"
+        ]
+      }
+    },
+    {
+      "name": "DaVinci Resolve",
+      "bundle_id": "com.blackmagic-design.DaVinciResolve",
+      "difficulty": "high",
+      "notes": "Устанавливает драйверы, панели управления, PostgreSQL для проектов.",
+      "paths": {
+        "applications": ["/Applications/DaVinci Resolve.app"],
+        "application_support": [
+          "~/Library/Application Support/Blackmagic Design/DaVinci Resolve",
+          "/Library/Application Support/Blackmagic Design"
+        ],
+        "caches": ["~/Library/Caches/com.blackmagic-design.DaVinciResolve"],
+        "preferences": ["~/Library/Preferences/com.blackmagic-design.DaVinciResolve.plist"],
+        "saved_state": ["~/Library/Saved Application State/com.blackmagic-design.DaVinciResolve.savedState"],
+        "other": [
+          "~/Library/Preferences/Blackmagic Design",
+          "/Library/Preferences/Blackmagic Design",
+          "/Library/Application Support/Blackmagic Design"
+        ]
+      }
+    },
+    {
+      "name": "iTunes/Apple Music",
+      "bundle_id": "com.apple.Music",
+      "difficulty": "medium",
+      "notes": "Системное приложение. Нельзя удалить, но можно очистить кэш и библиотеки.",
+      "paths": {
+        "application_support": [
+          "~/Library/Application Support/Music",
+          "~/Library/Application Support/iTunes"
+        ],
+        "caches": [
+          "~/Library/Caches/com.apple.Music",
+          "~/Library/Caches/com.apple.iTunes"
+        ],
+        "preferences": [
+          "~/Library/Preferences/com.apple.Music.plist",
+          "~/Library/Preferences/com.apple.iTunes.plist"
+        ],
+        "other": [
+          "~/Music/iTunes",
+          "~/Music/Music"
+        ]
+      }
+    },
+    {
+      "name": "Logic Pro",
+      "bundle_id": "com.apple.logic10",
+      "difficulty": "high",
+      "notes": "Apple приложение. Огромные библиотеки звуков.",
+      "paths": {
+        "applications": ["/Applications/Logic Pro.app"],
+        "application_support": [
+          "~/Library/Application Support/Logic",
+          "~/Library/Application Support/GarageBand"
+        ],
+        "caches": ["~/Library/Caches/com.apple.logic10"],
+        "preferences": ["~/Library/Preferences/com.apple.logic10.plist"],
+        "other": [
+          "~/Music/Audio Music Apps",
+          "~/Library/Containers/com.apple.logic10"
+        ]
+      }
+    },
+    {
+      "name": "Ableton Live",
+      "bundle_id": "com.ableton.live",
+      "difficulty": "medium",
+      "notes": "DAW. Хранит проекты и библиотеки.",
+      "paths": {
+        "applications": [
+          "/Applications/Ableton Live 12 Suite.app",
+          "/Applications/Ableton Live 11 Suite.app"
+        ],
+        "application_support": ["~/Library/Application Support/Ableton"],
+        "caches": ["~/Library/Caches/com.ableton.live"],
+        "preferences": ["~/Library/Preferences/com.ableton.live.plist"],
+        "other": [
+          "~/Music/Ableton",
+          "~/Library/Preferences/Ableton"
+        ]
+      }
+    }
+  ]
+}

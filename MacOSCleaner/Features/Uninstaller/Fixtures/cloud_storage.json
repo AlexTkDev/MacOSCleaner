@@ -1,0 +1,235 @@
+{
+  "category": "cloud_storage",
+  "description": "Облачные хранилища, синхронизация файлов",
+  "apps": [
+    {
+      "name": "Dropbox",
+      "bundle_id": "com.getdropbox.dropbox",
+      "difficulty": "critical",
+      "notes": "Устанавливает kext (ранее), Finder extensions, множество контейнеров и сервисов.",
+      "paths": {
+        "applications": ["/Applications/Dropbox.app"],
+        "launch_agents": ["com.dropbox.DropboxMacUpdate.agent"],
+        "application_support": [
+          "~/Library/Application Support/Dropbox",
+          "~/Library/Application Support/DropboxElectron",
+          "~/Library/Application Support/FileProvider/com.getdropbox.dropbox.fileprovider"
+        ],
+        "caches": [
+          "~/Library/Caches/com.dropbox.DropboxMacUpdate",
+          "~/Library/Caches/com.dropbox.DropboxUpdater",
+          "~/Library/Caches/com.getdropbox.dropbox",
+          "~/Library/Caches/com.getdropbox.DropboxMetaInstaller",
+          "~/Library/Caches/com.plausiblelabs.crashreporter.data/com.dropbox.DropboxMacUpdate"
+        ],
+        "preferences": [
+          "~/Library/Preferences/com.dropbox.DropboxMacUpdate.plist",
+          "~/Library/Preferences/com.dropbox.DropboxMonitor.plist",
+          "~/Library/Preferences/com.dropbox.tungsten.helper.plist",
+          "~/Library/Preferences/com.getdropbox.dropbox.plist",
+          "~/Library/Preferences/com.apple.FileProvider/com.getdropbox.dropbox.fileprovider"
+        ],
+        "containers": [
+          "~/Library/Containers/com.dropbox.activityprovider",
+          "~/Library/Containers/com.dropbox.alternatenotificationservice",
+          "~/Library/Containers/com.dropbox.foldertagger",
+          "~/Library/Containers/com.getdropbox.dropbox.fileprovider",
+          "~/Library/Containers/com.getdropbox.dropbox.garcon",
+          "~/Library/Containers/com.getdropbox.dropbox.TransferExtension"
+        ],
+        "group_containers": [
+          "~/Library/Group Containers/*.com.getdropbox.dropbox.sync",
+          "~/Library/Group Containers/com.dropbox.client.crashpad",
+          "~/Library/Group Containers/com.getdropbox.dropbox.garcon"
+        ],
+        "http_storages": [
+          "~/Library/HTTPStorages/com.dropbox.DropboxMacUpdate",
+          "~/Library/HTTPStorages/com.getdropbox.dropbox"
+        ],
+        "application_scripts": [
+          "~/Library/Application Scripts/*.com.getdropbox.dropbox.sync",
+          "~/Library/Application Scripts/com.dropbox.alternatenotificationservice",
+          "~/Library/Application Scripts/com.dropbox.client.crashpad",
+          "~/Library/Application Scripts/com.dropbox.foldertagger",
+          "~/Library/Application Scripts/com.getdropbox.dropbox.fileprovider",
+          "~/Library/Application Scripts/com.getdropbox.dropbox.garcon",
+          "~/Library/Application Scripts/com.getdropbox.dropbox.TransferExtension"
+        ],
+        "logs": ["~/Library/Logs/Dropbox_debug.log"],
+        "other": [
+          "~/.dropbox",
+          "~/Library/Dropbox",
+          "~/Library/CloudStorage/Dropbox",
+          "~/Library/LaunchAgents/com.dropbox.DropboxMacUpdate.agent.plist",
+          "/Library/DropboxHelperTools",
+          "/Library/Preferences/com.getdropbox.dropbox.dbkextd.plist"
+        ]
+      }
+    },
+    {
+      "name": "Google Drive",
+      "bundle_id": "com.google.drivefs",
+      "difficulty": "high",
+      "notes": "Устанавливает pkg, Finder extension. Использует Google Keystone updater (shared с Chrome).",
+      "paths": {
+        "applications": ["/Applications/Google Drive.app"],
+        "launch_agents": [
+          "com.google.GoogleUpdater.wake.system",
+          "com.google.keystone.agent",
+          "com.google.keystone.xpcservice"
+        ],
+        "launch_daemons": [
+          "com.google.keystone.daemon",
+          "com.google.keystone.system.agent",
+          "com.google.keystone.system.xpcservice"
+        ],
+        "application_support": [
+          "~/Library/Application Support/Google/DriveFS",
+          "~/Library/Application Support/FileProvider/com.google.drivefs.fpext"
+        ],
+        "caches": ["~/Library/Caches/com.google.drivefs"],
+        "preferences": [
+          "~/Library/Preferences/com.google.drivefs*.plist",
+          "~/Library/Preferences/Google Drive File Stream Helper.plist"
+        ],
+        "containers": ["~/Library/Containers/com.google.drivefs*"],
+        "group_containers": ["~/Library/Group Containers/*group.com.google.drivefs"],
+        "application_scripts": [
+          "~/Library/Application Scripts/com.google.drivefs*",
+          "~/Library/Application Scripts/EQHXZ8M8AV.group.com.google.drivefs"
+        ],
+        "pkg_receipts": [
+          "com.google.drivefs.arm64",
+          "com.google.drivefs.filesystems.dfsfuse.arm64",
+          "com.google.drivefs.filesystems.dfsfuse.x86_64",
+          "com.google.drivefs.shortcuts",
+          "com.google.drivefs.x86_64",
+          "com.google.pkg.Keystone"
+        ]
+      }
+    },
+    {
+      "name": "OneDrive",
+      "bundle_id": "com.microsoft.OneDrive",
+      "difficulty": "high",
+      "notes": "Часть Microsoft Office. Устанавливает pkg, Finder extension.",
+      "paths": {
+        "applications": ["/Applications/OneDrive.app"],
+        "launch_agents": [
+          "com.microsoft.OneDriveStandaloneUpdater",
+          "com.microsoft.OneDriveStandaloneUpdaterDaemon",
+          "com.microsoft.OneDriveUpdaterDaemon"
+        ],
+        "application_support": [
+          "~/Library/Application Support/OneDrive",
+          "~/Library/Containers/com.microsoft.OneDrive.FileProvider"
+        ],
+        "caches": [
+          "~/Library/Caches/com.microsoft.OneDriveStandaloneUpdater",
+          "~/Library/Caches/com.plausiblelabs.crashreporter.data/com.microsoft.OneDriveStandaloneUpdater"
+        ],
+        "preferences": ["~/Library/Preferences/com.microsoft.OneDrive.plist"],
+        "containers": [
+          "~/Library/Containers/com.microsoft.OneDrive.FileProvider",
+          "~/Library/Containers/com.microsoft.OneDriveLauncher",
+          "~/Library/Containers/com.microsoft.OneDrive.FinderSync"
+        ],
+        "http_storages": [
+          "~/Library/HTTPStorages/com.microsoft.OneDriveStandaloneUpdater",
+          "~/Library/HTTPStorages/com.microsoft.OneDriveStandaloneUpdater.binarycookies"
+        ],
+        "other": [
+          "~/OneDrive",
+          "~/Library/Group Containers/UBF8T346G9.OfficeOneDriveSyncIntegration"
+        ]
+      }
+    },
+    {
+      "name": "iCloud Drive",
+      "bundle_id": null,
+      "difficulty": "medium",
+      "notes": "Системный сервис. Нельзя удалить, но можно очистить кэш.",
+      "paths": {
+        "caches": [
+          "~/Library/Caches/com.apple.cloudd",
+          "~/Library/Caches/com.apple.cloudkit"
+        ],
+        "preferences": [
+          "~/Library/Preferences/com.apple.cloudd.plist",
+          "~/Library/Preferences/com.apple.cloudkit.plist"
+        ],
+        "other": [
+          "~/Library/Mobile Documents",
+          "~/Library/Application Support/CloudDocs"
+        ]
+      }
+    },
+    {
+      "name": "Box Drive",
+      "bundle_id": "com.box.desktop",
+      "difficulty": "high",
+      "notes": "Устанавливает системные расширения, kext.",
+      "paths": {
+        "applications": ["/Applications/Box.app", "/Applications/Box Drive.app"],
+        "application_support": [
+          "~/Library/Application Support/Box",
+          "~/Library/Application Support/BoxDesktop"
+        ],
+        "caches": ["~/Library/Caches/com.box.desktop"],
+        "preferences": ["~/Library/Preferences/com.box.desktop.plist"],
+        "other": [
+          "~/Box",
+          "/Library/Application Support/Box"
+        ]
+      }
+    },
+    {
+      "name": "pCloud",
+      "bundle_id": "com.pcloud.pcloud.macos",
+      "difficulty": "medium",
+      "notes": "Облачное хранилище. Может устанавливать Finder extension.",
+      "paths": {
+        "applications": ["/Applications/pCloud Drive.app"],
+        "application_support": ["~/Library/Application Support/pCloud"],
+        "caches": ["~/Library/Caches/com.pcloud.pcloud.macos"],
+        "preferences": ["~/Library/Preferences/com.pcloud.pcloud.macos.plist"],
+        "other": [
+          "~/pCloudDrive",
+          "~/Library/Containers/com.pcloud.pcloud.macos"
+        ]
+      }
+    },
+    {
+      "name": "Mega",
+      "bundle_id": "mega.mac",
+      "difficulty": "medium",
+      "notes": "Облачное хранилище. Устанавливает Finder extension.",
+      "paths": {
+        "applications": ["/Applications/MEGAsync.app"],
+        "application_support": ["~/Library/Application Support/Mega Limited/MEGAsync"],
+        "caches": ["~/Library/Caches/mega.mac"],
+        "preferences": ["~/Library/Preferences/mega.mac.plist"],
+        "other": [
+          "~/MEGA",
+          "~/Library/Containers/mega.mac"
+        ]
+      }
+    },
+    {
+      "name": "Nextcloud",
+      "bundle_id": "com.nextcloud.desktopclient",
+      "difficulty": "medium",
+      "notes": "Self-hosted облако. Использует Qt.",
+      "paths": {
+        "applications": ["/Applications/Nextcloud.app"],
+        "application_support": ["~/Library/Application Support/Nextcloud"],
+        "caches": ["~/Library/Caches/com.nextcloud.desktopclient"],
+        "preferences": ["~/Library/Preferences/com.nextcloud.desktopclient.plist"],
+        "other": [
+          "~/Nextcloud",
+          "~/Library/Containers/com.nextcloud.desktopclient"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "app": "Figma",
+  "bundleID": "com.figma.Desktop",
+  "mustFind": [
+    "~/Library/Application Support/Figma",
+    "~/Library/Caches/com.figma.Desktop",
+    "~/Library/Preferences/com.figma.Desktop.plist"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

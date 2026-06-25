@@ -1,0 +1,18 @@
+{
+  "app": "Karabiner-Elements",
+  "bundleID": "org.pqrs.Karabiner-Elements.Preferences",
+  "mustFind": [
+    "~/Library/Preferences/org.pqrs.Karabiner-Elements.plist",
+    "/Library/Application Support/org.pqrs/Karabiner-Elements",
+    "/Library/LaunchDaemons/org.pqrs.karabiner-agent.plist",
+    "/Library/LaunchDaemons/org.pqrs.karabiner-kextd.plist",
+    "/Library/Extensions/org.pqrs.karabiner.virtualhiddevice.kext"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.docker"
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

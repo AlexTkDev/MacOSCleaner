@@ -1,0 +1,24 @@
+{
+  "app": "Unity Hub",
+  "bundleID": "com.unity3d.unityhub",
+  "mustFind": [
+    "~/Library/Application Support/Unity",
+    "~/Library/Application Support/Unity Hub",
+    "~/Library/Preferences/com.unity3d.unityhub.plist",
+    "~/Library/Caches/com.unity3d.unityhub",
+    "~/Library/Caches/Unity",
+    "~/Library/Logs/Unity",
+    "~/Library/Logs/Unity Hub",
+    "~/Library/Saved Application State/com.unity3d.unityhub.savedState"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.epicgames",
+    "com.valvesoftware"
+  ],
+  "developerArtifacts": [
+    "~/Library/Unity/PackageCache"
+  ],
+  "scoreFloor": 30
+}

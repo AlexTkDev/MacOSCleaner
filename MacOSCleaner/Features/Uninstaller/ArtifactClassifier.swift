@@ -28,6 +28,8 @@ public enum ArtifactClassifier {
         "Android/sdk", ".gradle", ".android",
         ".pub-cache", ".dart_tool",
         "Docker.raw", "Docker.qcow2",
+        "steamapps/compatdata", "steamapps/shadercache",
+        "VaultCache", "PackageCache",
     ]
 
     public static func classify(

@@ -12,8 +12,31 @@ public actor ApplicationRuleRegistry {
 
     public static func createDefault() -> ApplicationRuleRegistry {
         ApplicationRuleRegistry(rules: [
+            // Category Rules
+            CloudStorageRule(),
+            VirtualizationRule(),
+            DatabaseToolsRule(),
+            TerminalRule(),
+            CommunicationRule(),
+            GitClientsRule(),
+            // Individual High-Impact Rules
+            ParallelsRule(),
+            VMwareFusionRule(),
+            DaVinciResolveRule(),
+            LogicProRule(),
+            FinalCutProRule(),
+            RancherDesktopRule(),
+            KarabinerElementsRule(),
+            LittleSnitchRule(),
+            NordVPNRule(),
+            AlfredRule(),
+            RaycastRule(),
+            // Existing Rules
             ElectronRule(), BrowserRule(), JetBrainsRule(),
             DockerRule(), XcodeRule(), AndroidStudioRule(),
+            AdobeRule(), MicrosoftOfficeRule(), SteamRule(),
+            EpicGamesRule(), UnityRule(), HomebrewRule(),
+            NetworkExtensionRule(),
         ])
     }
 
