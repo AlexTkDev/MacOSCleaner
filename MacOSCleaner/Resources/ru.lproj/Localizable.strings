@@ -230,6 +230,8 @@
 "uninstaller_expert_tip" = "В Экспертном режиме вы можете выборочно удалять остаточные файлы, такие как кэши и настройки.";
 "uninstaller_cleanup_items" = "Элементы для очистки";
 "uninstaller_scanning_apps" = "Сканирование приложений...";
+"uninstaller.deep_scanning_progress" = "Анализ файлов %d из %d...";
+"uninstaller.analyzing" = "Анализ...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
 "shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";

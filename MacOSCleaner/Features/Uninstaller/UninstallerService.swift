@@ -61,15 +61,21 @@ public actor UninstallerService {
         public let title: String
         public let category: CleanupCategory
         public let sizeBytes: Int64
+        public let url: URL
+        public var isSelected: Bool = true
 
-        public init(title: String, category: CleanupCategory, sizeBytes: Int64) {
+        public init(title: String, category: CleanupCategory, sizeBytes: Int64, url: URL, isSelected: Bool = true) {
             self.title = title
             self.category = category
             self.sizeBytes = sizeBytes
+            self.url = url
+            self.isSelected = isSelected
         }
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
-        public static func == (lhs: RelatedCleanupComponent, rhs: RelatedCleanupComponent) -> Bool { lhs.id == rhs.id }
+        public static func == (lhs: RelatedCleanupComponent, rhs: RelatedCleanupComponent) -> Bool {
+            lhs.id == rhs.id && lhs.isSelected == rhs.isSelected && lhs.sizeBytes == rhs.sizeBytes
+        }
     }
 
     public struct RelatedFile: Identifiable, Sendable, Hashable {
@@ -91,7 +97,9 @@ public actor UninstallerService {
         }
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
-        public static func == (lhs: RelatedFile, rhs: RelatedFile) -> Bool { lhs.id == rhs.id }
+        public static func == (lhs: RelatedFile, rhs: RelatedFile) -> Bool {
+            lhs.id == rhs.id && lhs.isSelected == rhs.isSelected && lhs.size == rhs.size && lhs.confidence == rhs.confidence
+        }
     }
 
     public struct AppInfo: Identifiable, Sendable, Hashable {
@@ -110,11 +118,18 @@ public actor UninstallerService {
         public var iconData: Data? = nil
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
-        public static func == (lhs: AppInfo, rhs: AppInfo) -> Bool { lhs.id == rhs.id }
+        public static func == (lhs: AppInfo, rhs: AppInfo) -> Bool {
+            lhs.id == rhs.id &&
+            lhs.relatedFiles == rhs.relatedFiles &&
+            lhs.developerComponents == rhs.developerComponents &&
+            lhs.scanState == rhs.scanState &&
+            lhs.size == rhs.size
+        }
 
         public var totalSize: Int64 {
             let relatedSize = relatedFiles.filter(\.isSelected).reduce(0) { $0 + $1.size }
-            return size + relatedSize
+            let devSize = developerComponents.filter(\.isSelected).reduce(0) { $0 + $1.sizeBytes }
+            return size + relatedSize + devSize
         }
     }
 
@@ -253,7 +268,7 @@ public actor UninstallerService {
 
             let fileSize = await getDirectorySize(url: node.url)
             let risk: DeletionRisk = node.url.path.contains("Preferences") ? .normal : .safe
-            let isSelected = assessment.tier != .possible
+            let isSelected = true
 
             let file = RelatedFile(
                 url: node.url,
@@ -270,6 +285,23 @@ public actor UninstallerService {
         return dedupAndSort(related)
     }
 
+    // MARK: - Batch Deep Scan
+
+    public func deepScanAll(apps: [AppInfo]) async -> [AppInfo] {
+        await withTaskGroup(of: AppInfo?.self, returning: [AppInfo].self) { group in
+            for app in apps {
+                group.addTask {
+                    try? await self.deepScan(app)
+                }
+            }
+            var results: [AppInfo] = []
+            for await result in group {
+                if let result { results.append(result) }
+            }
+            return results
+        }
+    }
+
     // MARK: - Backward compatibility
 
     public func scan(appURL: URL) async throws -> AppInfo {
@@ -281,7 +313,9 @@ public actor UninstallerService {
     public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
 
-        let deletionTargets = app.relatedFiles.filter(\.isSelected).map(\.url)
+        let relatedTargets = app.relatedFiles.filter(\.isSelected).map(\.url)
+        let devTargets = app.developerComponents.filter(\.isSelected).map(\.url)
+        let deletionTargets = relatedTargets + devTargets
         let snapshot = UninstallSnapshot(
             appName: app.name,
             bundleID: app.bundleID ?? "unknown",

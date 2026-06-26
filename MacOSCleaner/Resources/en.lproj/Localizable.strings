@@ -229,6 +229,8 @@
 "uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
 "uninstaller_cleanup_items" = "Cleanup Items";
 "uninstaller_scanning_apps" = "Scanning Applications...";
+"uninstaller.deep_scanning_progress" = "Analyzing files %d of %d...";
+"uninstaller.analyzing" = "Analyzing...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
 "shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";

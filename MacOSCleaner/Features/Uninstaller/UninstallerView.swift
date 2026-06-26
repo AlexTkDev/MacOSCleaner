@@ -19,6 +19,9 @@ struct UninstallerView: View {
     @State private var isLoading = false
     @State private var explainingFile: UninstallerService.RelatedFile?
     @State private var deepScanCache: [URL: UninstallerService.AppInfo] = [:]
+    @State private var isDeepScanning = false
+    @State private var deepScanCompleted = 0
+    @State private var deepScanTotal = 0
     
     private let formatter: ByteCountFormatter = {
         let f = ByteCountFormatter()
@@ -49,11 +52,40 @@ struct UninstallerView: View {
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
-                        List(filteredApps, selection: $selectedApp) { app in
-                            AppRowView(app: app, formatter: formatter, showRelatedFiles: settings.showRelatedFiles)
-                                .tag(app)
+                        VStack(spacing: 0) {
+                            if isDeepScanning {
+                                VStack(spacing: 4) {
+                                    ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
+                                        .progressViewStyle(.linear)
+                                        .padding(.horizontal, 8)
+                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 6)
+                                .background(Color(NSColor.controlBackgroundColor))
+                            }
+                            List(filteredApps) { app in
+                                let unscan = app.scanState != .deepScanned
+                                AppRowView(
+                                    app: app,
+                                    formatter: formatter,
+                                    showRelatedFiles: settings.showRelatedFiles,
+                                    isUnscannable: unscan
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    guard app.scanState == .deepScanned else { return }
+                                    selectedApp = app
+                                }
+                                .listRowBackground(
+                                    selectedApp?.url == app.url
+                                        ? Color.accentColor.opacity(0.1)
+                                        : Color.clear
+                                )
+                            }
+                            .listStyle(.inset)
                         }
-                        .listStyle(.inset)
                     }
                 }
                 .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
@@ -88,15 +120,8 @@ struct UninstallerView: View {
         .onChange(of: selectedApp?.url) { oldURL, newURL in
             guard let url = newURL else { return }
             guard let app = allApps.first(where: { $0.url == url }) else { return }
-            guard app.scanState == .discovered else { return }
-            Task {
-                if let result = try? await service.deepScan(app) {
-                    deepScanCache[result.url] = result
-                    if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
-                        allApps[idx] = result
-                    }
-                    selectedApp = result
-                }
+            if app.scanState != .deepScanned {
+                selectedApp = nil
             }
         }
         .confirmationDialog(
@@ -119,7 +144,7 @@ struct UninstallerView: View {
             Button("cancel".localized, role: .cancel) { }
         } message: {
             if let app = selectedApp {
-                let count = app.relatedFiles.filter(\.isSelected).count
+                let count = app.relatedFiles.filter(\.isSelected).count + app.developerComponents.filter(\.isSelected).count
                 if settings.bypassTrashOnUninstall {
                     Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)))
                 } else {
@@ -133,17 +158,32 @@ struct UninstallerView: View {
         isLoading = true
         Task {
             let fresh = (try? await service.scanAllApplications()) ?? []
-            allApps = fresh.map { app in
-                var updated = app
-                if let cached = deepScanCache[app.url], cached.bundleID == app.bundleID {
-                    updated.relatedFiles = cached.relatedFiles
-                    updated.developerComponents = cached.developerComponents
-                    updated.identity = cached.identity
-                    updated.scanState = cached.scanState
-                }
-                return updated
-            }
+            allApps = fresh
             isLoading = false
+
+            let total = fresh.count
+            guard total > 0 else { return }
+
+            isDeepScanning = true
+            deepScanCompleted = 0
+            deepScanTotal = total
+
+            for app in fresh {
+                if let result = try? await service.deepScan(app) {
+                    deepScanCompleted += 1
+                    if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
+                        allApps[idx] = result
+                    }
+                    if selectedApp?.url == result.url {
+                        selectedApp = result
+                    }
+                    deepScanCache[result.url] = result
+                } else {
+                    deepScanCompleted += 1
+                }
+            }
+
+            isDeepScanning = false
         }
     }
 
@@ -300,14 +340,6 @@ struct UninstallerView: View {
         if let lastUsed = app.lastUsed {
             DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day()))
         }
-        switch app.scanState {
-        case .deepScanned:
-            DetailBadge(title: "uninstaller.tier.guaranteed".localized, value: "")
-        case .scanning:
-            DetailBadge(title: "scanning".localized, value: "")
-        default:
-            EmptyView()
-        }
     }
 
     private var actionInfo: some View {
@@ -432,8 +464,16 @@ struct UninstallerView: View {
             Label("uninstaller_developer_components".localized, systemImage: "wrench.adjustable")
                 .font(.headline)
 
-            ForEach(app.developerComponents) { component in
+            ForEach(Array(app.developerComponents.enumerated()), id: \.element.id) { index, component in
                 HStack {
+                    Toggle("", isOn: Binding(
+                        get: { component.isSelected },
+                        set: { newValue in
+                            toggleDeveloperComponent(in: app, at: index, value: newValue)
+                        }
+                    ))
+                    .toggleStyle(.checkbox)
+
                     Image(systemName: "shippingbox")
                         .foregroundColor(.purple)
                         .font(.subheadline)
@@ -491,13 +531,23 @@ struct UninstallerView: View {
             }
         }
     }
+
+    private func toggleDeveloperComponent(in app: UninstallerService.AppInfo, at index: Int, value: Bool) {
+        if let appIndex = allApps.firstIndex(where: { $0.id == app.id }) {
+            allApps[appIndex].developerComponents[index].isSelected = value
+            if selectedApp?.id == app.id {
+                selectedApp = allApps[appIndex]
+            }
+        }
+    }
 }
 
 struct AppRowView: View {
     let app: UninstallerService.AppInfo
     let formatter: ByteCountFormatter
     let showRelatedFiles: Bool
-    
+    let isUnscannable: Bool
+
     var body: some View {
         HStack(spacing: 12) {
             if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
@@ -509,17 +559,24 @@ struct AppRowView: View {
                     .fill(Color.secondary.opacity(0.2))
                     .frame(width: 32, height: 32)
             }
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)
                     .font(.body)
                     .fontWeight(.medium)
-                Text(formatter.string(fromByteCount: showRelatedFiles ? app.totalSize : app.size))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if isUnscannable {
+                    Text("uninstaller.analyzing".localized)
+                        .font(.caption)
+                        .foregroundColor(.secondary.opacity(0.5))
+                } else {
+                    Text(formatter.string(fromByteCount: showRelatedFiles ? app.totalSize : app.size))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding(.vertical, 4)
+        .opacity(isUnscannable ? 0.5 : 1.0)
     }
 }
 

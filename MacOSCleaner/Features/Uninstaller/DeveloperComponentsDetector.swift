@@ -19,7 +19,8 @@ public enum DeveloperComponentsDetector {
                 if sdkSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.android_sdk".localized,
-                        category: .androidSDK, sizeBytes: sdkSize
+                        category: .androidSDK, sizeBytes: sdkSize,
+                        url: sdkURL
                     ))
                 }
             }
@@ -29,7 +30,8 @@ public enum DeveloperComponentsDetector {
                 if gradleSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.gradle_cache".localized,
-                        category: .gradleMaven, sizeBytes: gradleSize
+                        category: .gradleMaven, sizeBytes: gradleSize,
+                        url: gradleURL
                     ))
                 }
             }
@@ -42,7 +44,8 @@ public enum DeveloperComponentsDetector {
                 if derivedSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.xcode_derived_data".localized,
-                        category: .xcode, sizeBytes: derivedSize
+                        category: .xcode, sizeBytes: derivedSize,
+                        url: derivedURL
                     ))
                 }
             }
@@ -52,7 +55,8 @@ public enum DeveloperComponentsDetector {
                 if simSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.ios_simulators".localized,
-                        category: .iosSimulators, sizeBytes: simSize
+                        category: .iosSimulators, sizeBytes: simSize,
+                        url: simURL
                     ))
                 }
             }
@@ -65,7 +69,8 @@ public enum DeveloperComponentsDetector {
                 if flutterSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.flutter_cache".localized,
-                        category: .flutterDart, sizeBytes: flutterSize
+                        category: .flutterDart, sizeBytes: flutterSize,
+                        url: flutterURL
                     ))
                 }
             }
@@ -78,7 +83,8 @@ public enum DeveloperComponentsDetector {
                 if dockerSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.docker".localized,
-                        category: .docker, sizeBytes: dockerSize
+                        category: .docker, sizeBytes: dockerSize,
+                        url: dockerURL
                     ))
                 }
             }
@@ -91,7 +97,8 @@ public enum DeveloperComponentsDetector {
                 if brewSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.homebrew".localized,
-                        category: .packageManagers, sizeBytes: brewSize
+                        category: .packageManagers, sizeBytes: brewSize,
+                        url: brewURL
                     ))
                 }
             }

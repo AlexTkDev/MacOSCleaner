@@ -205,6 +205,8 @@
 "uninstaller_expert_tip" = "В Експертному режимі ви можете вибірково видаляти залишкові файли, такі як кеші та налаштування.";
 "uninstaller_cleanup_items" = "Елементи для очищення";
 "uninstaller_scanning_apps" = "Сканування додатків...";
+"uninstaller.deep_scanning_progress" = "Аналіз файлів %d із %d...";
+"uninstaller.analyzing" = "Аналіз...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
