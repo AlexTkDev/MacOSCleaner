@@ -17,7 +17,6 @@ struct UninstallerView: View {
     @State private var isTargeted = false
     @State private var showingConfirmation = false
     @State private var isLoading = false
-    @State private var explainingFile: UninstallerService.RelatedFile?
     @State private var deepScanCache: [URL: UninstallerService.AppInfo] = [:]
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
@@ -396,12 +395,11 @@ struct UninstallerView: View {
 
                         VStack(spacing: 1) {
                             ForEach(files) { file in
-                                RelatedFileRow(
-                                    file: file,
-                                    formatter: formatter,
-                                    onToggle: { toggleSelection(file, in: app) },
-                                    onExplain: { explainingFile = file }
-                                )
+                                    RelatedFileRow(
+                                        file: file,
+                                        formatter: formatter,
+                                        onToggle: { toggleSelection(file, in: app) }
+                                    )
                             }
                         }
                         .background(Color(NSColor.alternatingContentBackgroundColors[0]))
@@ -424,20 +422,6 @@ struct UninstallerView: View {
                     .foregroundColor(.secondary)
                     .padding(.top, 8)
             }
-        }
-        .sheet(item: $explainingFile) { file in
-            EvidenceExplanationView(
-                file: file,
-                context: selectedApp.flatMap { app in
-                    app.identity.map { id in
-                        ExplanationContext(
-                            bundleID: id.bundleID,
-                            appName: id.appName,
-                            teamID: id.teamID
-                        )
-                    }
-                }
-            )
         }
     }
 
@@ -518,10 +502,6 @@ struct UninstallerView: View {
         .padding(.top, app.relatedFiles.isEmpty ? 0 : 12)
     }
 
-    private func closeExplaining() {
-        explainingFile = nil
-    }
-    
     private func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
         if let appIndex = allApps.firstIndex(where: { $0.id == app.id }),
            let fileIndex = allApps[appIndex].relatedFiles.firstIndex(where: { $0.id == file.id }) {
@@ -603,7 +583,6 @@ struct RelatedFileRow: View {
     let file: UninstallerService.RelatedFile
     let formatter: ByteCountFormatter
     let onToggle: () -> Void
-    let onExplain: () -> Void
 
     var riskColor: Color {
         let path = file.url.path
@@ -636,14 +615,14 @@ struct RelatedFileRow: View {
 
             Spacer()
 
-            if !file.evidence.isEmpty {
-                Button(action: onExplain) {
-                    Image(systemName: "questionmark.circle")
-                        .foregroundColor(.accentColor)
-                }
-                .buttonStyle(.plain)
-                .help("Why this file?")
+            Button {
+                NSWorkspace.shared.activateFileViewerSelecting([file.url])
+            } label: {
+                Image(systemName: "arrow.up.forward.app")
+                    .foregroundColor(.accentColor)
             }
+            .buttonStyle(.plain)
+            .help("Reveal in Finder")
 
             Text(formatter.string(fromByteCount: file.size))
                 .font(.caption)
@@ -652,43 +631,5 @@ struct RelatedFileRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-    }
-}
-
-struct EvidenceExplanationView: View {
-    let file: UninstallerService.RelatedFile
-    let context: ExplanationContext?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                let grouped = EvidenceExplanations.explanations(for: file.evidence, context: context)
-                ForEach(EvidenceCategory.allCases, id: \.self) { category in
-                    let items = grouped[category] ?? []
-                    if !items.isEmpty {
-                        Section("uninstaller.evidence_category.\(category.rawValue)".localized) {
-                            ForEach(items, id: \.evidence) { explanation in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(explanation.title)
-                                        .font(.headline)
-                                    Text(explanation.description)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
-                    }
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("done".localized) { dismiss() }
-                }
-            }
-            .navigationTitle(file.url.lastPathComponent)
-        }
-        .frame(minWidth: 400, minHeight: 300)
     }
 }
