@@ -26,6 +26,7 @@ struct DashboardView: View {
             }
             .padding(24)
         }
+        .background(Color(NSColor.controlBackgroundColor))
         .task {
             await viewModel.refresh()
         }
@@ -33,7 +34,7 @@ struct DashboardView: View {
     
     private var systemInfoSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_system_info".localized)
+            Label("dashboard_system_info".localized, systemImage: "info.circle")
                 .font(.headline)
             
             HStack(spacing: 40) {
@@ -44,15 +45,15 @@ struct DashboardView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(Color(NSColor.controlBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
         }
     }
     
     private var diskUsageCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_disk_usage".localized)
+            Label("dashboard_disk_usage".localized, systemImage: "internaldrive")
                 .font(.headline)
             
             ZStack {
@@ -92,15 +93,14 @@ struct DashboardView: View {
             }
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
-        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
     }
     
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_statistics".localized)
+            Label("dashboard_statistics".localized, systemImage: "chart.bar")
                 .font(.headline)
             
             VStack(spacing: 20) {
@@ -111,15 +111,14 @@ struct DashboardView: View {
             Spacer()
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
-        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
     }
     
     private var recentOperationsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_recent_operations".localized)
+            Label("dashboard_recent_operations".localized, systemImage: "clock")
                 .font(.headline)
             
             if viewModel.recentTransactions.isEmpty {
@@ -127,6 +126,9 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
             } else {
                 VStack(spacing: 0) {
                     ForEach(viewModel.recentTransactions) { transaction in
@@ -136,9 +138,9 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .background(Color(NSColor.windowBackgroundColor))
+                .background(Color(NSColor.controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
             }
         }
     }
