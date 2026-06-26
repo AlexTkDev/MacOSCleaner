@@ -241,6 +241,7 @@
 		4036BE6AD403CC0E552B386A /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		408FDF60DE1F0734F49ADE65 /* ProcessesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessesView.swift; sourceTree = "<group>"; };
 		41CA662F940D168EC8F30295 /* GitClientsRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitClientsRule.swift; sourceTree = "<group>"; };
+		435BD64F29A72703BDC0B2E9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		43AFDCF6F0B36A4DCBEB9BC9 /* ProcessSafetyPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessSafetyPolicy.swift; sourceTree = "<group>"; };
 		44C2514ADFBB5E6A83A2FB55 /* ParentLinker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentLinker.swift; sourceTree = "<group>"; };
 		480EE7FEF199E55A79DB5117 /* EpicGamesRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpicGamesRule.swift; sourceTree = "<group>"; };
@@ -800,6 +801,7 @@
 			knownRegions = (
 				Base,
 				en,
+				es,
 				ru,
 				uk,
 			);
@@ -1035,6 +1037,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				EB8F8A1333721100D80BF6EE /* en */,
+				435BD64F29A72703BDC0B2E9 /* es */,
 				817EB9AE4524A850962213CB /* ru */,
 				7443B86838A9D24B07071D8A /* uk */,
 			);

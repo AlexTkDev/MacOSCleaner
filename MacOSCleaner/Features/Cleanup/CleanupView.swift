@@ -238,7 +238,7 @@ public struct CleanupView: View {
                             
                             Spacer()
                             
-                            Text("\(item.freedMB) MB")
+                            Text(String(format: "cleanup_mb_format".localized, item.freedMB))
                                 .font(.system(.subheadline, design: .monospaced))
                                 .foregroundColor(.green)
                         }
@@ -478,7 +478,7 @@ public struct CleanupView: View {
 
             Spacer()
 
-            Text("\(category.sizeMB) MB")
+            Text(String(format: "cleanup_mb_format".localized, category.sizeMB))
                 .font(.system(.body, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -501,7 +501,7 @@ public struct CleanupView: View {
                 Button {
                     viewModel.showAllItems(category.id)
                 } label: {
-                    Text("cleanup_show_all_count \(viewModel.remainingCount(category.id))")
+                    Text(String(format: "cleanup_show_all_count".localized, viewModel.remainingCount(category.id)))
                         .font(.caption)
                         .foregroundColor(.accentColor)
                 }
@@ -546,7 +546,7 @@ public struct CleanupView: View {
                     .truncationMode(.middle)
 
                 if let date = item.modificationDate {
-                    Text(date.formatted(.dateTime.day().month().year()))
+                    Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
                 }
@@ -554,7 +554,7 @@ public struct CleanupView: View {
 
             Spacer()
 
-            Text("\(item.sizeMB) MB")
+            Text(String(format: "cleanup_mb_format".localized, item.sizeMB))
                 .font(.system(.caption, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -562,7 +562,7 @@ public struct CleanupView: View {
     }
     
     private func riskBadge(for risk: OperationRisk) -> some View {
-        Text(risk.rawValue.uppercased())
+        Text(risk.localizedTitle.uppercased())
             .font(.system(size: 9, weight: .bold))
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
@@ -740,7 +740,7 @@ public struct CleanupView: View {
     }
 }
 
-// Помощник для эффекта размытия (Glassmorphism)
+// Glassmorphism blur effect helper
 struct VisualEffectView: NSViewRepresentable {
     let material: NSVisualEffectView.Material
     let blendingMode: NSVisualEffectView.BlendingMode

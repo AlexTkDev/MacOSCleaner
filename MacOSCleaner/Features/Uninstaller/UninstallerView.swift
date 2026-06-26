@@ -23,9 +23,8 @@ struct UninstallerView: View {
     @State private var deepScanTotal = 0
     
     private let formatter: ByteCountFormatter = {
-        let f = ByteCountFormatter()
+        let f = ByteCountFormatter.makeLocalized(countStyle: .file)
         f.allowedUnits = [.useAll]
-        f.countStyle = .file
         return f
     }()
 
@@ -337,7 +336,7 @@ struct UninstallerView: View {
         DetailBadge(title: "version".localized, value: app.version)
         DetailBadge(title: "size".localized, value: formatter.string(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size))
         if let lastUsed = app.lastUsed {
-            DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day()))
+            DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
         }
     }
 
@@ -466,7 +465,7 @@ struct UninstallerView: View {
                         Text(component.title)
                             .font(.subheadline)
                             .fontWeight(.medium)
-                        Text(component.category.rawValue)
+                        Text(component.category.localizedTitle)
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -622,7 +621,7 @@ struct RelatedFileRow: View {
                     .foregroundColor(.accentColor)
             }
             .buttonStyle(.plain)
-            .help("Reveal in Finder")
+            .help("uninstaller_show_in_finder".localized)
 
             Text(formatter.string(fromByteCount: file.size))
                 .font(.caption)

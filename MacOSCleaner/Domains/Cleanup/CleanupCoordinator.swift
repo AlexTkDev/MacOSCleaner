@@ -207,49 +207,55 @@ public final class CleanupCoordinator: @unchecked Sendable {
     }
     
     private func parseSkippedFromLog(_ log: String) -> SkippedCleanupItem? {
-        let patterns: [(label: String, keywords: [String])] = [
-            ("App containers", ["App containers"]),
-            ("Orphaned remnants", ["Orphaned remnants"]),
-            ("Orphaned files", ["Orphaned files"]),
-            ("Large files", ["Large files"]),
-            ("Dynamic cache discovery", ["Dynamic cache discovery"]),
-            ("App caches", ["App caches"]),
-            ("Package managers", ["Package managers"]),
-            ("Gradle + Maven", ["Gradle"]),
-            ("Flutter / Dart", ["Flutter"]),
-            ("Xcode", ["Xcode"]),
-            ("iOS Simulators", ["iOS Simulators"]),
-            ("Android caches", ["Android caches"]),
-            ("Android SDK", ["Android SDK"]),
-            ("IDE / Electron caches", ["IDE"]),
-            ("Browser caches", ["Browser caches"]),
-            ("Messaging / media", ["Messaging"]),
-            ("Docker", ["Docker"]),
-            ("Language caches", ["Language caches"]),
-            ("User logs", ["User logs"]),
-            ("System caches", ["System caches"]),
-            ("Dotfile caches", ["Dotfile caches"]),
-            ("Scattered junk", ["Scattered junk"]),
-            ("Time Machine Snapshots", ["Time Machine"]),
-            ("iOS Backups", ["iOS Backups"]),
-            ("Mail Downloads", ["Mail Downloads"]),
-            ("Saved Application State", ["Saved Application State"]),
-            ("Crash Reporter", ["Crash Reporter"]),
-            ("AssetsV2", ["AssetsV2"]),
-            ("CloudKit Cache", ["CloudKit"]),
-            ("Swift Package Manager Cache", ["SwiftPM"]),
-            ("Carthage Cache", ["Carthage"]),
-            ("Steam Cache", ["Steam"]),
-            ("Microsoft Teams Cache", ["Teams"]),
-            ("Adobe Caches", ["Adobe"]),
-            ("Chrome Extra Caches", ["Chrome"]),
+        let patterns: [(category: CleanupCategory?, keywords: [String])] = [
+            (.appContainers, ["App containers"]),
+            (.orphanedRemnants, ["Orphaned remnants"]),
+            (.orphanedFiles, ["Orphaned files"]),
+            (.largeFiles, ["Large files"]),
+            (.dynamicCacheDiscovery, ["Dynamic cache discovery"]),
+            (.appCaches, ["App caches"]),
+            (.packageManagers, ["Package managers"]),
+            (.gradleMaven, ["Gradle"]),
+            (.flutterDart, ["Flutter"]),
+            (.xcode, ["Xcode"]),
+            (.iosSimulators, ["iOS Simulators"]),
+            (.androidCaches, ["Android caches"]),
+            (.androidSDK, ["Android SDK"]),
+            (.ideCaches, ["IDE"]),
+            (.browserCaches, ["Browser caches"]),
+            (.messagingMedia, ["Messaging"]),
+            (.docker, ["Docker"]),
+            (.languageCaches, ["Language caches"]),
+            (.userLogs, ["User logs"]),
+            (.systemCaches, ["System caches"]),
+            (.dotfileCaches, ["Dotfile caches"]),
+            (.scatteredJunk, ["Scattered junk"]),
+            (.timeMachineSnapshots, ["Time Machine"]),
+            (.iosBackups, ["iOS Backups"]),
+            (.mailDownloads, ["Mail Downloads"]),
+            (.savedAppState, ["Saved Application State"]),
+            (.crashReporter, ["Crash Reporter"]),
+            (.assetsV2, ["AssetsV2"]),
+            (.cloudKitCache, ["CloudKit"]),
+            (.swiftPMCache, ["SwiftPM"]),
+            (.carthageCache, ["Carthage"]),
+            (.steamCache, ["Steam"]),
+            (.teamsCache, ["Teams"]),
+            (.adobeCaches, ["Adobe"]),
+            (.chromeExtraCaches, ["Chrome"]),
         ]
 
         guard let matched = patterns.first(where: { $0.keywords.contains(where: { log.contains($0) }) }) else {
             return nil
         }
 
-        // Extract reason — everything between "—" and ", skipped"
+        let label: String
+        if let category = matched.category {
+            label = category.localizedTitle
+        } else {
+            label = matched.keywords[0]
+        }
+
         let reason: String
         if let range = log.range(of: "— ") {
             let afterDash = log[range.upperBound...]
@@ -262,7 +268,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
             reason = "unknown"
         }
 
-        return SkippedCleanupItem(label: matched.label, reason: reason)
+        return SkippedCleanupItem(label: label, reason: reason)
     }
     
     @MainActor

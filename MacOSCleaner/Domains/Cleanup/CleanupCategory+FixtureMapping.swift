@@ -2,6 +2,10 @@ import Foundation
 
 extension CleanupCategory {
 
+    public var localizedTitle: String {
+        "category.\(rawValue)".localized
+    }
+
     public static func fromFixturePathType(_ pathType: CleanupPathType) -> [CleanupCategory] {
         switch pathType {
         case .caches:

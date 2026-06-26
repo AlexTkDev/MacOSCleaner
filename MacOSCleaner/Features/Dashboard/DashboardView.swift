@@ -59,14 +59,14 @@ struct DashboardView: View {
             ZStack {
                 Chart {
                     SectorMark(
-                        angle: .value("Used", viewModel.usedDiskSpace),
+                        angle: .value("dashboard_used".localized, viewModel.usedDiskSpace),
                         innerRadius: .ratio(0.55),
                         angularInset: 2
                     )
                     .foregroundStyle(Color.accentColor)
                     
                     SectorMark(
-                        angle: .value("Free", viewModel.freeDiskSpace),
+                        angle: .value("dashboard_free".localized, viewModel.freeDiskSpace),
                         innerRadius: .ratio(0.55),
                         angularInset: 2
                     )
@@ -75,7 +75,7 @@ struct DashboardView: View {
                 .frame(height: 200)
                 
                 VStack {
-                    Text("\(Int(viewModel.usedDiskPercentage * 100))%")
+                    Text(String(format: "dashboard_used_percent_format".localized, Int(viewModel.usedDiskPercentage * 100)))
                         .font(.system(size: 28, weight: .bold))
                         .minimumScaleFactor(0.5)
                     Text("dashboard_used".localized)
@@ -104,7 +104,7 @@ struct DashboardView: View {
                 .font(.headline)
             
             VStack(spacing: 20) {
-                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.string(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
+                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.localizedString(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
                 StatRow(title: "dashboard_cleanups".localized, value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
                 StatRow(title: "dashboard_status".localized, value: "dashboard_healthy".localized, icon: "checkmark.circle", color: .green)
             }
@@ -181,16 +181,16 @@ struct TransactionRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(transaction.timestamp, style: .date)
+                Text(transaction.timestamp.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
                     .fontWeight(.medium)
-                Text(transaction.timestamp, style: .time)
+                Text(transaction.timestamp.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale)))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            Text("+\(ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file))")
+            Text(String(format: "dashboard_freed_prefix".localized, ByteCountFormatter.localizedString(fromByteCount: totalFreed, countStyle: .file)))
                 .foregroundColor(.green)
                 .fontWeight(.bold)
         }
@@ -216,7 +216,7 @@ struct DiskStatItem: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            Text(ByteCountFormatter.string(fromByteCount: value, countStyle: .file))
+            Text(ByteCountFormatter.localizedString(fromByteCount: value, countStyle: .file))
                 .fontWeight(.medium)
         }
     }

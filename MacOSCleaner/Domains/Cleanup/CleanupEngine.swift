@@ -404,62 +404,7 @@ public actor CleanupEngine {
     // MARK: - Category Titles
 
     private static func titleForCategory(_ category: CleanupCategory) -> String {
-        switch category {
-        case .appCaches: return "User app caches"
-        case .packageManagers: return "Package managers"
-        case .gradleMaven: return "Gradle + Maven"
-        case .flutterDart: return "Flutter / Dart"
-        case .xcode: return "Xcode"
-        case .iosSimulators: return "iOS Simulators"
-        case .androidCaches: return "Android caches"
-        case .androidSDK: return "Android SDK"
-        case .ideCaches: return "IDE / Electron caches"
-        case .browserCaches: return "Browser caches"
-        case .messagingMedia: return "Messaging / media"
-        case .docker: return "Docker"
-        case .languageCaches: return "Language caches"
-        case .userLogs: return "User logs"
-        case .systemCaches: return "System caches"
-        case .appContainers: return "App containers"
-        case .dotfileCaches: return "Dotfile caches"
-        case .scatteredJunk: return "Scattered junk"
-        case .orphanedRemnants: return "Orphaned remnants"
-        case .orphanedFiles: return "Orphaned files"
-        case .largeFiles: return "Large files"
-        case .dynamicCacheDiscovery: return "Dynamic cache discovery"
-        case .timeMachineSnapshots: return "Time Machine Snapshots"
-        case .iosBackups: return "iOS Backups"
-        case .mailDownloads: return "Mail Downloads"
-        case .savedAppState: return "Saved Application State"
-        case .crashReporter: return "Crash Reporter"
-        case .assetsV2: return "AssetsV2 / iWork Templates"
-        case .cloudKitCache: return "CloudKit Cache"
-        case .swiftPMCache: return "Swift Package Manager Cache"
-        case .carthageCache: return "Carthage Cache"
-        case .steamCache: return "Steam Cache"
-        case .teamsCache: return "Microsoft Teams Cache"
-        case .adobeCaches: return "Adobe Caches"
-        case .chromeExtraCaches: return "Chrome Extra Caches"
-        case .ideOldVersions: return "Old IDE Versions"
-        case .launchAgents: return "Launch Agents"
-        case .launchDaemons: return "Launch Daemons"
-        case .privilegedHelpers: return "Privileged Helper Tools"
-        case .pkgReceipts: return "Package Receipts"
-        case .internetPlugins: return "Internet Plugins"
-        case .sharedFileLists: return "Shared File Lists"
-        case .cloudDocs: return "Cloud Docs"
-        case .photosCache: return "Photos Cache"
-        case .voiceMemos: return "Voice Memos"
-        case .garageBandLogic: return "GarageBand / Logic Pro"
-        case .iMovieFinalCut: return "iMovie / Final Cut"
-        case .garminFitbit: return "Garmin / Fitbit"
-        case .oldBackups: return "Old Backups"
-        case .dnsFlush: return "DNS Cache"
-        case .fontCache: return "Font Cache"
-        case .sleepImage: return "Sleep Image"
-        case .duplicateFiles: return "Duplicate Files"
-        case .unusedApps: return "Unused Apps"
-        }
+        category.localizedTitle
     }
 }
 
@@ -591,9 +536,9 @@ public enum CleanupEngineError: Error, LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .timeout: return "Operation timed out"
-        case .safetyViolation(let path): return "Safety violation: \(path)"
-        case .commandFailed(let msg): return "Command failed: \(msg)"
+        case .timeout: return "error_timeout".localized
+        case .safetyViolation(let path): return String(format: "error_safety_violation_format".localized, path)
+        case .commandFailed(let msg): return String(format: "error_command_failed_format".localized, msg)
         }
     }
 
@@ -612,10 +557,10 @@ public enum CleanupEngineError: Error, LocalizedError, Equatable {
 extension CleanupEngine {
 
     static func formatBytes(_ bytes: Int64) -> String {
-        if bytes < 1024 { return "\(bytes) B" }
-        if bytes < 1024 * 1024 { return String(format: "%.1f KB", Double(bytes) / 1024) }
-        if bytes < 1024 * 1024 * 1024 { return String(format: "%.1f MB", Double(bytes) / (1024 * 1024)) }
-        return String(format: "%.2f GB", Double(bytes) / (1024 * 1024 * 1024))
+        if bytes < 1024 { return String(format: "format_bytes_b".localized, bytes) }
+        if bytes < 1024 * 1024 { return String(format: "format_bytes_kb".localized, Double(bytes) / 1024) }
+        if bytes < 1024 * 1024 * 1024 { return String(format: "format_bytes_mb".localized, Double(bytes) / (1024 * 1024)) }
+        return String(format: "format_bytes_gb".localized, Double(bytes) / (1024 * 1024 * 1024))
     }
 
     static func shortPath(_ path: String) -> String {
@@ -3445,9 +3390,7 @@ extension CleanupEngine {
     }
 
     private func fmtDate(_ date: Date) -> String {
-        let fmt = DateFormatter()
-        fmt.dateStyle = .medium
-        return fmt.string(from: date)
+        DateFormatter.makeLocalized(dateStyle: .medium).string(from: date)
     }
 }
 

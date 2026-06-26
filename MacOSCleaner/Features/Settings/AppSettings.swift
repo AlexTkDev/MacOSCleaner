@@ -5,6 +5,7 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
     case english = "en"
     case russian = "ru"
     case ukrainian = "uk"
+    case spanish = "es"
 
     public var id: String { rawValue }
 
@@ -13,6 +14,7 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
         case .english: return "language.english".localized
         case .russian: return "language.russian".localized
         case .ukrainian: return "language.ukrainian".localized
+        case .spanish: return "language.spanish".localized
         }
     }
 }

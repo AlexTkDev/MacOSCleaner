@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Состояния жизненного цикла процесса очистки.
+/// States of the cleanup lifecycle.
 public enum CleanupState: Equatable, Sendable {
     case idle
     case scanning
@@ -12,29 +12,29 @@ public enum CleanupState: Equatable, Sendable {
     case cancelled
 }
 
-/// Машина состояний для управления процессом очистки.
-/// Обеспечивает только валидные переходы между состояниями.
+/// State machine for managing the cleanup process.
+/// Ensures only valid state transitions.
 @Observable
 public final class CleanupStateMachine {
     public private(set) var state: CleanupState = .idle
     
     public init() {}
     
-    /// Ошибка при невалидном переходе.
+    /// Error for invalid state transitions.
     public enum StateError: Error, LocalizedError {
         case invalidTransition(from: CleanupState, to: CleanupState)
         
         public var errorDescription: String? {
             switch self {
             case .invalidTransition(let from, let to):
-                return "Invalid transition from \(from) to \(to)"
+                return String(format: "error_invalid_transition_format".localized, "\(from)", "\(to)")
             }
         }
     }
     
-    /// Выполняет переход в новое состояние.
-    /// - Parameter newState: Целевое состояние.
-    /// - Throws: `StateError.invalidTransition` если переход невозможен.
+    /// Transitions to a new state.
+    /// - Parameter newState: The target state.
+    /// - Throws: `StateError.invalidTransition` if the transition is invalid.
     public func transition(to newState: CleanupState) throws {
         guard isValidTransition(from: state, to: newState) else {
             throw StateError.invalidTransition(from: state, to: newState)
@@ -42,13 +42,13 @@ public final class CleanupStateMachine {
         state = newState
     }
     
-    /// Сбрасывает машину состояний в начальное состояние.
+    /// Resets the state machine to the initial state.
     public func reset() {
         state = .idle
     }
     
     private func isValidTransition(from: CleanupState, to: CleanupState) -> Bool {
-        // Ошибка или отмена возможны из активных состояний
+        // Error or cancellation can occur from active states
         if to == .failed || to == .cancelled {
             return from == .scanning || from == .executing || from == .preview
         }

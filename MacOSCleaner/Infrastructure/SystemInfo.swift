@@ -8,10 +8,10 @@ public struct SystemInfo: Sendable {
     
     public static var current: SystemInfo {
         let os = ProcessInfo.processInfo.operatingSystemVersion
-        let osString = "macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
+        let osString = String(format: "os_version_format".localized, os.majorVersion, os.minorVersion, os.patchVersion)
         
         let memoryBytes = ProcessInfo.processInfo.physicalMemory
-        let memoryString = ByteCountFormatter.string(fromByteCount: Int64(memoryBytes), countStyle: .memory)
+        let memoryString = ByteCountFormatter.localizedString(fromByteCount: Int64(memoryBytes), countStyle: .memory)
         
         return SystemInfo(
             model: getModelIdentifier(),

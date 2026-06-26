@@ -30,11 +30,11 @@ public struct ProcessGroup: Identifiable, Sendable {
     }
 
     public var totalMemoryFormatted: String {
-        ByteCountFormatter.string(fromByteCount: Int64(totalMemory), countStyle: .memory)
+        ByteCountFormatter.localizedString(fromByteCount: Int64(totalMemory), countStyle: .memory)
     }
 
     public var totalCPUFormatted: String {
-        String(format: "%.1f%%", totalCPU)
+        String(format: "process_cpu_format".localized, totalCPU)
     }
 
     public var processCount: Int {

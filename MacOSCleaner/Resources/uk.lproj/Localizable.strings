@@ -52,6 +52,7 @@
 "language.english" = "Англійська";
 "language.russian" = "Російська";
 "language.ukrainian" = "Українська";
+"language.spanish" = "Іспанська";
 
 // Settings View
 "settings_title" = "Налаштування";
@@ -174,6 +175,8 @@
 // Trash
 "trash_user_label" = "Користувацький смітник";
 "trash_user_description" = "Вміст вашого смітника. Включає видалені файли.";
+"trash_access_prompt_message" = "Будь ласка, виберіть папку Смітника для надання доступу до сканування та очищення. (Вона вже вибрана, просто натисніть «Надати доступ»).";
+"trash_access_prompt_button" = "Надати доступ";
 
 // Uninstaller View
 "uninstaller_title" = "Деінсталятор";
@@ -205,7 +208,7 @@
 "uninstaller_expert_tip" = "В Експертному режимі ви можете вибірково видаляти залишкові файли, такі як кеші та налаштування.";
 "uninstaller_cleanup_items" = "Елементи для очищення";
 "uninstaller_scanning_apps" = "Сканування додатків...";
-"uninstaller.deep_scanning_progress" = "Аналіз файлів %d із %d...";
+"uninstaller.deep_scanning_progress" = "Збір залишків: %d із %d додатків...";
 "uninstaller.analyzing" = "Аналіз...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
@@ -267,6 +270,30 @@
 "settings_open_settings" = "Відкрити налаштування";
 "settings_check_permissions" = "Перевірити дозволи";
 
+// Format strings
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld МБ";
+
+// Process format strings
+"processes_view_mode_grouped" = "Групувати";
+"processes_view_mode_flat" = "Списком";
+"processes_selected_count" = "Вибрано: %lld";
+"processes_process_count" = "%lld процесів";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldгод %lldхв";
+"process_uptime_minutes_format" = "%lldхв";
+
+// Common
+"version_unknown" = "N/A";
+
+// Operation Risk
+"risk.safe" = "Безпечно";
+"risk.moderate" = "Помірно";
+"risk.dangerous" = "Небезпечно";
+"risk.protected" = "Захищено";
+
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "РОЗРОБ";
 
@@ -282,20 +309,61 @@
 "sort_name" = "Ім'я";
 "sort_threads" = "К-сть потоків";
 
-// New cleanup categories
-"time_machine_snapshots" = "Знімки Time Machine";
-"ios_backups" = "Резервні копії iOS";
-"mail_downloads" = "Завантаження Mail";
-"saved_app_state" = "Збережений стан додатків";
-"crash_reporter" = "Звіти про збої";
-"assets_v2" = "AssetsV2 / Шаблони iWork";
-"cloud_kit_cache" = "Кеш iCloud CloudKit";
-"swift_pm_cache" = "Кеш Swift Package Manager";
-"carthage_cache" = "Кеш Carthage";
-"steam_cache" = "Кеш Steam";
-"teams_cache" = "Кеш Microsoft Teams";
-"adobe_caches" = "Кеші Adobe";
-"chrome_extra_caches" = "Дод. кеші Chrome";
+// Cleanup Category Names
+"category.app_caches" = "Кеші додатків";
+"category.package_managers" = "Менеджери пакетів";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "Симулятори iOS";
+"category.android_caches" = "Кеші Android";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "Кеші IDE / Electron";
+"category.browser_caches" = "Кеші браузерів";
+"category.messaging_media" = "Месенджери / медіа";
+"category.docker" = "Docker";
+"category.language_caches" = "Кеші мов";
+"category.user_logs" = "Логи користувача";
+"category.system_caches" = "Системні кеші";
+"category.app_containers" = "Контейнери додатків";
+"category.dotfile_caches" = "Кеші точкових файлів";
+"category.scattered_junk" = "Розрізнене сміття";
+"category.orphaned_remnants" = "Залишкові файли";
+"category.orphaned_files" = "Файли-сироти";
+"category.large_files" = "Великі файли";
+"category.dynamic_cache_discovery" = "Динамічне виявлення кешу";
+"category.time_machine_snapshots" = "Знімки Time Machine";
+"category.ios_backups" = "Резервні копії iOS";
+"category.mail_downloads" = "Завантаження Mail";
+"category.saved_app_state" = "Збережений стан додатків";
+"category.crash_reporter" = "Звіти про збої";
+"category.assets_v2" = "AssetsV2 / Шаблони iWork";
+"category.cloud_kit_cache" = "Кеш iCloud CloudKit";
+"category.swift_pm_cache" = "Кеш Swift Package Manager";
+"category.carthage_cache" = "Кеш Carthage";
+"category.steam_cache" = "Кеш Steam";
+"category.teams_cache" = "Кеш Microsoft Teams";
+"category.adobe_caches" = "Кеші Adobe";
+"category.chrome_extra_caches" = "Дод. кеші Chrome";
+"category.ide_old_versions" = "Старі версії IDE";
+"category.launch_agents" = "Агенти автозапуску";
+"category.launch_daemons" = "Демони";
+"category.privileged_helpers" = "Привілейовані інструменти";
+"category.pkg_receipts" = "Квитанції пакетів";
+"category.internet_plugins" = "Плагіни інтернету";
+"category.shared_file_lists" = "Спільні списки файлів";
+"category.cloud_docs" = "Хмарні документи";
+"category.photos_cache" = "Кеш фото";
+"category.voice_memos" = "Голосові нотатки";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Старі резервні копії";
+"category.dns_flush" = "Кеш DNS";
+"category.font_cache" = "Кеш шрифтів";
+"category.sleep_image" = "Образ сну";
+"category.duplicate_files" = "Дублікати файлів";
+"category.unused_apps" = "Невикористовувані додатки";
 
 // Process View - Missing Keys
 "view_mode" = "Режим перегляду";
@@ -420,3 +488,28 @@
 "uninstaller.developer_artifacts" = "Артефакти розробника";
 "uninstaller.progress.developer_components" = "Перевірка компонентів розробника...";
 "uninstaller.footer.summary" = "Вибрано %lld файлів у %@ категоріях";
+
+// Format Helpers
+"format_bytes_b" = "%lld Б";
+"format_bytes_kb" = "%.1f КБ";
+"format_bytes_mb" = "%.1f МБ";
+"format_bytes_gb" = "%.2f ГБ";
+
+// Process Block Reasons
+"process_block_pid_format" = "PID %lld — системний критичний процес";
+"process_block_whitelist_name_format" = "%@ у вашому білому списку (захищено)";
+"process_block_whitelist_bundle_format" = "%@ у вашому білому списку (захищено)";
+"process_block_protected_format" = "%@ — захищений системний процес";
+"process_block_no_path_format" = "%@ — немає інформації про шлях, дійте обережно";
+
+// Error Messages
+"error_ps_failed_format" = "Не вдалося отримати список процесів: %@";
+"error_operation_blocked_format" = "Неможливо завершити %@: %@";
+"error_kill_failed_format" = "Не вдалося завершити %@ (код %lld): %@";
+"error_timeout" = "Час операції вичерпано";
+"error_safety_violation_format" = "Порушення безпеки: %@";
+"error_command_failed_format" = "Команда не виконана: %@";
+"error_invalid_transition_format" = "Неприпустимий перехід із %@ у %@";
+
+// OS Version
+"os_version_format" = "macOS %lld.%lld.%lld";

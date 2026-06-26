@@ -132,7 +132,7 @@ public struct ProcessesView: View {
             Menu {
                 Picker("view_mode".localized, selection: $viewModel.viewMode) {
                     ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(mode.localizedName).tag(mode)
                     }
                 }
                 Divider()
@@ -210,7 +210,7 @@ public struct ProcessesView: View {
 
             Spacer()
 
-            Text("\(viewModel.selection.count) selected")
+            Text(String(format: "processes_selected_count".localized, viewModel.selection.count))
                 .font(.caption)
                 .foregroundColor(.secondary)
 
@@ -302,7 +302,7 @@ public struct ProcessesView: View {
                         .fontWeight(.medium)
 
                     HStack(spacing: 8) {
-                        Text("\(group.processCount) processes")
+                        Text(String(format: "processes_process_count".localized, group.processCount))
                             .font(.caption)
                             .foregroundColor(.secondary)
 

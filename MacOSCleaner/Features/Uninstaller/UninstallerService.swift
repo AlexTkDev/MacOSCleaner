@@ -421,7 +421,7 @@ public actor UninstallerService {
     private func version(from url: URL) -> String {
         Bundle(url: url)?.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? Bundle(url: url)?.infoDictionary?["CFBundleVersion"] as? String
-            ?? "N/A"
+            ?? "version_unknown".localized
     }
 
     private func getDirectorySize(url: URL) async -> Int64 {

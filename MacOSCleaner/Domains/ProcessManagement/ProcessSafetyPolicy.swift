@@ -51,19 +51,19 @@ public struct ProcessSafetyPolicy: Sendable {
         let name = process.name
 
         if process.pid <= 1 {
-            return .blocked(reason: "PID \(process.pid) is a system-critical process")
+            return .blocked(reason: String(format: "process_block_pid_format".localized, process.pid))
         }
 
         if userWhitelist.contains(name) {
-            return .blocked(reason: "\(name) is in your whitelist (protected)")
+            return .blocked(reason: String(format: "process_block_whitelist_name_format".localized, name))
         }
 
         if let bundleID = process.bundleID, userWhitelist.contains(bundleID) {
-            return .blocked(reason: "\(bundleID) is in your whitelist (protected)")
+            return .blocked(reason: String(format: "process_block_whitelist_bundle_format".localized, bundleID))
         }
 
         if protectedProcesses.contains(name) {
-            return .blocked(reason: "\(name) is a protected system process")
+            return .blocked(reason: String(format: "process_block_protected_format".localized, name))
         }
 
         if userBlacklist.contains(name) {
@@ -75,7 +75,7 @@ public struct ProcessSafetyPolicy: Sendable {
         }
 
         if process.path == nil {
-            return .needsConfirmation(reason: "\(name) has no path info — proceed with caution")
+            return .needsConfirmation(reason: String(format: "process_block_no_path_format".localized, name))
         }
 
         return .allowed

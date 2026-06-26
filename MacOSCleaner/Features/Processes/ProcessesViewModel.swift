@@ -37,6 +37,13 @@ public final class ProcessesViewModel {
         case flat = "Flat"
 
         public var id: String { rawValue }
+
+        public var localizedName: String {
+            switch self {
+            case .grouped: return "processes_view_mode_grouped".localized
+            case .flat: return "processes_view_mode_flat".localized
+            }
+        }
     }
 
     public var filteredProcesses: [RunningProcess] {
@@ -97,7 +104,7 @@ public final class ProcessesViewModel {
     }
 
     public var totalMemoryFormatted: String {
-        ByteCountFormatter.string(fromByteCount: Int64(totalMemoryUsed), countStyle: .memory)
+        ByteCountFormatter.localizedString(fromByteCount: Int64(totalMemoryUsed), countStyle: .memory)
     }
 
     public init(processManager: ProcessManager = ProcessManager()) {

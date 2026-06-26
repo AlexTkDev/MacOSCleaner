@@ -52,6 +52,7 @@
 "language.english" = "English";
 "language.russian" = "Russian";
 "language.ukrainian" = "Ukrainian";
+"language.spanish" = "Spanish";
 
 // Settings View
 "settings_title" = "Settings";
@@ -200,6 +201,8 @@
 // Trash
 "trash_user_label" = "User Recycle Bin";
 "trash_user_description" = "Contents of your system Recycle Bin. Contains deleted files.";
+"trash_access_prompt_message" = "Please select the Trash folder to grant access for scanning and cleaning. (It is already selected, just click 'Grant Access')";
+"trash_access_prompt_button" = "Grant Access";
 
 // Uninstaller View
 "uninstaller_title" = "Uninstaller";
@@ -229,7 +232,7 @@
 "uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
 "uninstaller_cleanup_items" = "Cleanup Items";
 "uninstaller_scanning_apps" = "Scanning Applications...";
-"uninstaller.deep_scanning_progress" = "Analyzing files %d of %d...";
+"uninstaller.deep_scanning_progress" = "Scanning leftovers: %d of %d apps...";
 "uninstaller.analyzing" = "Analyzing...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
@@ -291,6 +294,30 @@
 "settings_open_settings" = "Open Settings";
 "settings_check_permissions" = "Check Permissions";
 
+// Format strings
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld MB";
+
+// Process format strings
+"processes_view_mode_grouped" = "Grouped";
+"processes_view_mode_flat" = "Flat";
+"processes_selected_count" = "%lld selected";
+"processes_process_count" = "%lld processes";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldh %lldm";
+"process_uptime_minutes_format" = "%lldm";
+
+// Common
+"version_unknown" = "N/A";
+
+// Operation Risk
+"risk.safe" = "Safe";
+"risk.moderate" = "Moderate";
+"risk.dangerous" = "Dangerous";
+"risk.protected" = "Protected";
+
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "DEV";
 
@@ -306,20 +333,61 @@
 "sort_name" = "Name";
 "sort_threads" = "Thread Count";
 
-// New cleanup categories
-"time_machine_snapshots" = "Time Machine Snapshots";
-"ios_backups" = "iOS Backups";
-"mail_downloads" = "Mail Downloads";
-"saved_app_state" = "Saved Application State";
-"crash_reporter" = "Crash Reporter";
-"assets_v2" = "AssetsV2 / iWork Templates";
-"cloud_kit_cache" = "iCloud CloudKit Cache";
-"swift_pm_cache" = "Swift Package Manager Cache";
-"carthage_cache" = "Carthage Cache";
-"steam_cache" = "Steam Cache";
-"teams_cache" = "Microsoft Teams Cache";
-"adobe_caches" = "Adobe Caches";
-"chrome_extra_caches" = "Chrome Extra Caches";
+// Cleanup Category Names
+"category.app_caches" = "User app caches";
+"category.package_managers" = "Package managers";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "iOS Simulators";
+"category.android_caches" = "Android caches";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "IDE / Electron caches";
+"category.browser_caches" = "Browser caches";
+"category.messaging_media" = "Messaging / media";
+"category.docker" = "Docker";
+"category.language_caches" = "Language caches";
+"category.user_logs" = "User logs";
+"category.system_caches" = "System caches";
+"category.app_containers" = "App containers";
+"category.dotfile_caches" = "Dotfile caches";
+"category.scattered_junk" = "Scattered junk";
+"category.orphaned_remnants" = "Orphaned remnants";
+"category.orphaned_files" = "Orphaned files";
+"category.large_files" = "Large files";
+"category.dynamic_cache_discovery" = "Dynamic cache discovery";
+"category.time_machine_snapshots" = "Time Machine Snapshots";
+"category.ios_backups" = "iOS Backups";
+"category.mail_downloads" = "Mail Downloads";
+"category.saved_app_state" = "Saved Application State";
+"category.crash_reporter" = "Crash Reporter";
+"category.assets_v2" = "AssetsV2 / iWork Templates";
+"category.cloud_kit_cache" = "iCloud CloudKit Cache";
+"category.swift_pm_cache" = "Swift Package Manager Cache";
+"category.carthage_cache" = "Carthage Cache";
+"category.steam_cache" = "Steam Cache";
+"category.teams_cache" = "Microsoft Teams Cache";
+"category.adobe_caches" = "Adobe Caches";
+"category.chrome_extra_caches" = "Chrome Extra Caches";
+"category.ide_old_versions" = "Old IDE Versions";
+"category.launch_agents" = "Launch Agents";
+"category.launch_daemons" = "Launch Daemons";
+"category.privileged_helpers" = "Privileged Helper Tools";
+"category.pkg_receipts" = "Package Receipts";
+"category.internet_plugins" = "Internet Plugins";
+"category.shared_file_lists" = "Shared File Lists";
+"category.cloud_docs" = "Cloud Docs";
+"category.photos_cache" = "Photos Cache";
+"category.voice_memos" = "Voice Memos";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Old Backups";
+"category.dns_flush" = "DNS Cache";
+"category.font_cache" = "Font Cache";
+"category.sleep_image" = "Sleep Image";
+"category.duplicate_files" = "Duplicate Files";
+"category.unused_apps" = "Unused Apps";
 
 // Process View - Missing Keys
 "view_mode" = "View Mode";
@@ -444,3 +512,28 @@
 "uninstaller.developer_artifacts" = "Developer Artifacts";
 "uninstaller.progress.developer_components" = "Checking developer components...";
 "uninstaller.footer.summary" = "%lld file(s) selected across %@ tiers";
+
+// Format Helpers
+"format_bytes_b" = "%lld B";
+"format_bytes_kb" = "%.1f KB";
+"format_bytes_mb" = "%.1f MB";
+"format_bytes_gb" = "%.2f GB";
+
+// Process Block Reasons
+"process_block_pid_format" = "PID %lld is a system-critical process";
+"process_block_whitelist_name_format" = "%@ is in your whitelist (protected)";
+"process_block_whitelist_bundle_format" = "%@ is in your whitelist (protected)";
+"process_block_protected_format" = "%@ is a protected system process";
+"process_block_no_path_format" = "%@ has no path info — proceed with caution";
+
+// Error Messages
+"error_ps_failed_format" = "Failed to list processes: %@";
+"error_operation_blocked_format" = "Cannot terminate %@: %@";
+"error_kill_failed_format" = "Failed to kill %@ (exit %lld): %@";
+"error_timeout" = "Operation timed out";
+"error_safety_violation_format" = "Safety violation: %@";
+"error_command_failed_format" = "Command failed: %@";
+"error_invalid_transition_format" = "Invalid transition from %@ to %@";
+
+// OS Version
+"os_version_format" = "macOS %lld.%lld.%lld";
