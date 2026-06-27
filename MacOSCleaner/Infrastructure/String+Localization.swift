@@ -12,15 +12,21 @@ public extension String {
 
 public extension ByteCountFormatter {
     static func localizedString(fromByteCount count: Int64, countStyle: ByteCountFormatter.CountStyle) -> String {
-        let f = ByteCountFormatter()
-        f.countStyle = countStyle
-        return f.string(fromByteCount: count)
+        let style: ByteCountFormatStyle.Style = (countStyle == .memory) ? .memory : .file
+        return count.formatted(.byteCount(style: style).locale(LanguageManager.shared.currentLocale))
     }
     
     static func makeLocalized(countStyle: ByteCountFormatter.CountStyle = .file) -> ByteCountFormatter {
         let f = ByteCountFormatter()
         f.countStyle = countStyle
         return f
+    }
+}
+
+public extension Int64 {
+    func formattedByteCount(style: ByteCountFormatStyle.Style = .file) -> String {
+        let locale = LanguageManager.shared.currentLocale
+        return self.formatted(.byteCount(style: style).locale(locale))
     }
 }
 

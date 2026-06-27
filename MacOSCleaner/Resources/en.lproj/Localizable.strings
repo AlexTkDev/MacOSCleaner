@@ -537,3 +537,7 @@
 
 // OS Version
 "os_version_format" = "macOS %lld.%lld.%lld";
+
+// Uninstaller Tooltips
+"uninstaller_show_in_finder" = "Show in Finder";
+"uninstaller_used_by" = "Used by %@";

@@ -124,6 +124,30 @@
 "startup_status_unloaded" = "Вивантажений";
 "startup_disable" = "Вимкнути";
 "startup_enable" = "Увімкнути";
+"startup_category_user" = "Користувацькі";
+"startup_category_third_party" = "Сторонні";
+"startup_category_system" = "Система";
+
+// Startup Filters
+"startup_filter_all" = "Усі";
+
+// Startup Category Help
+"startup_help_user" = "Служба користувача з ~/Library/. Безпечно вимикати.";
+"startup_help_third_party" = "Стороння служба з /Library/. Вимикати з обережністю.";
+"startup_help_system" = "Системна служба Apple. Не рекомендується вимикати.";
+
+// Startup Vendor Settings
+"settings_startup_vendors" = "Системні вендори";
+"startup_vendors_title" = "Системні вендори";
+"startup_vendors_description" = "Префікси міток, які вважаються системними службами.";
+"startup_vendors_description_sub" = "Служби з цими префіксами позначаються как 'Система' і не рекомендуються до вимкнення.";
+"startup_vendors_current" = "Поточні префікси";
+"startup_vendors_reset" = "Скинути";
+"startup_vendors_empty" = "Префікси не додані";
+"startup_vendors_protected" = "Захищено";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Префікс повинен містити крапку";
+"startup_vendors_error_duplicate" = "Цей префікс вже існує";
 
 // Cleanup View
 "cleanup_scanning" = "Сканування системи...";

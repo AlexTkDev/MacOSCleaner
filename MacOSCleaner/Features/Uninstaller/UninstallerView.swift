@@ -22,11 +22,11 @@ struct UninstallerView: View {
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
     
-    private let formatter: ByteCountFormatter = {
+    private var formatter: ByteCountFormatter {
         let f = ByteCountFormatter.makeLocalized(countStyle: .file)
         f.allowedUnits = [.useAll]
         return f
-    }()
+    }
 
     var filteredApps: [UninstallerService.AppInfo] {
         if searchText.isEmpty {
@@ -334,7 +334,7 @@ struct UninstallerView: View {
     @ViewBuilder
     private func badges(for app: UninstallerService.AppInfo) -> some View {
         DetailBadge(title: "version".localized, value: app.version)
-        DetailBadge(title: "size".localized, value: formatter.string(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size))
+        DetailBadge(title: "size".localized, value: ByteCountFormatter.localizedString(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size, countStyle: .file))
         if let lastUsed = app.lastUsed {
             DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
         }
@@ -363,7 +363,7 @@ struct UninstallerView: View {
     private func actionButton(for app: UninstallerService.AppInfo) -> some View {
         let sizeToReclaim = settings.showRelatedFiles ? app.totalSize : app.size
         return VStack(alignment: .trailing, spacing: 8) {
-            Text(String(format: "uninstaller_space_reclaim".localized, formatter.string(fromByteCount: sizeToReclaim)))
+            Text(String(format: "uninstaller_space_reclaim".localized, ByteCountFormatter.localizedString(fromByteCount: sizeToReclaim, countStyle: .file)))
                 .font(.headline)
             
             Button(action: { showingConfirmation = true }) {
@@ -472,7 +472,7 @@ struct UninstallerView: View {
 
                     Spacer()
 
-                    Text(formatter.string(fromByteCount: component.sizeBytes))
+                    Text(ByteCountFormatter.localizedString(fromByteCount: component.sizeBytes, countStyle: .file))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -548,7 +548,7 @@ struct AppRowView: View {
                         .font(.caption)
                         .foregroundColor(.secondary.opacity(0.5))
                 } else {
-                    Text(formatter.string(fromByteCount: showRelatedFiles ? app.totalSize : app.size))
+                    Text(ByteCountFormatter.localizedString(fromByteCount: showRelatedFiles ? app.totalSize : app.size, countStyle: .file))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -623,7 +623,7 @@ struct RelatedFileRow: View {
             .buttonStyle(.plain)
             .help("uninstaller_show_in_finder".localized)
 
-            Text(formatter.string(fromByteCount: file.size))
+            Text(ByteCountFormatter.localizedString(fromByteCount: file.size, countStyle: .file))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
