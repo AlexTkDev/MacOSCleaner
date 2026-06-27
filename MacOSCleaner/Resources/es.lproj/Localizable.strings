@@ -168,6 +168,17 @@
 "cleanup_option_modcache_sub" = "Elimina módulos de Go descargados. Se descargan de nuevo en la próxima compilación.";
 "cleanup_option_projects" = "Limpiar .dart_tool en proyectos";
 "cleanup_option_projects_sub" = "Elimina cachés de proyectos Flutter/Dart en ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
+"cleanup_option_cloud_docs" = "Limpiar Documentos de iCloud";
+"cleanup_option_cloud_docs_sub" = "Elimina el caché de documentos de iCloud. Los documentos se vuelven a descargar de iCloud bajo demanda.";
+"cleanup_option_voice_memos" = "Limpiar Notas de Voz";
+"cleanup_option_voice_memos_sub" = "Elimina las grabaciones de Notas de Voz de la biblioteca.";
+"cleanup_option_garageband_logic" = "Limpiar GarageBand / Logic";
+"cleanup_option_garageband_logic_sub" = "Elimina archivos de proyecto y cachés de GarageBand y Logic Pro.";
+"cleanup_option_imovie_final_cut" = "Limpiar iMovie / Final Cut";
+"cleanup_option_imovie_final_cut_sub" = "Elimina archivos de renderizado y bibliotecas de iMovie y Final Cut Pro.";
+"cleanup_option_sleep_image" = "Limpiar Imagen de Suspensión";
+"cleanup_option_sleep_image_sub" = "Elimina el archivo de imagen de hibernación. macOS lo recrea en el próximo sueño.";
+"cleanup_extended_title" = "Limpieza extendida";
 "cleanup_start_scan" = "Iniciar escaneo";
 "cleanup_failed" = "Limpieza fallida";
 "cleanup_failed_default" = "Ocurrió un error durante el proceso de limpieza.";

@@ -168,6 +168,17 @@
 "cleanup_option_modcache_sub" = "Removes downloaded Go modules. Re-downloads on next build.";
 "cleanup_option_projects" = "Clean .dart_tool in projects";
 "cleanup_option_projects_sub" = "Removes Flutter/Dart project caches in ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
+"cleanup_option_cloud_docs" = "Clean iCloud Documents";
+"cleanup_option_cloud_docs_sub" = "Removes iCloud document cache. Documents re-download from iCloud on demand.";
+"cleanup_option_voice_memos" = "Clean Voice Memos";
+"cleanup_option_voice_memos_sub" = "Removes Voice Memos recordings from the library.";
+"cleanup_option_garageband_logic" = "Clean GarageBand / Logic";
+"cleanup_option_garageband_logic_sub" = "Removes GarageBand and Logic Pro project files and caches.";
+"cleanup_option_imovie_final_cut" = "Clean iMovie / Final Cut";
+"cleanup_option_imovie_final_cut_sub" = "Removes iMovie and Final Cut Pro render files and libraries.";
+"cleanup_option_sleep_image" = "Clean Sleep Image";
+"cleanup_option_sleep_image_sub" = "Removes the hibernation image file. macOS recreates it on next sleep.";
+"cleanup_extended_title" = "Extended Cleanup";
 "cleanup_start_scan" = "Start Scan";
 "cleanup_failed" = "Cleanup Failed";
 "cleanup_failed_default" = "An error occurred during the cleanup process.";

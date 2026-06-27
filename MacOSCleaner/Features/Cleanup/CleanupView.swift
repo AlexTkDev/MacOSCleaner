@@ -76,53 +76,105 @@ public struct CleanupView: View {
     private var idleView: some View {
         @Bindable var vm = viewModel
         
-        VStack(spacing: 32) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [.accentColor.opacity(0.1), .clear], startPoint: .top, endPoint: .bottom))
-                    .frame(width: 120, height: 120)
+        ScrollView {
+            VStack(spacing: 28) {
+                // Hero
+                VStack(spacing: 16) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 36, weight: .regular))
+                        .foregroundStyle(.tint)
+                    
+                    VStack(spacing: 6) {
+                        Text("cleanup_ready".localized)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Text("cleanup_ready_sub".localized)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 340)
+                    }
+                }
+                .padding(.top, 40)
                 
-                Image(systemName: "sparkles")
-                    .font(.system(size: 64, weight: .light))
-                    .foregroundStyle(Color.accentColor)
+                // Options card
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("cleanup_additional_options".localized)
+                        .font(.headline)
+                    
+                    optionToggle(
+                        title: "cleanup_option_ds_store".localized,
+                        subtitle: "cleanup_option_ds_store_sub".localized,
+                        value: $vm.options.cleanDSStore
+                    )
+                    
+                    DisclosureGroup("cleanup_extended_title".localized) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            optionToggle(
+                                title: "cleanup_option_cloud_docs".localized,
+                                subtitle: "cleanup_option_cloud_docs_sub".localized,
+                                value: $vm.options.cleanCloudDocs
+                            )
+                            optionToggle(
+                                title: "cleanup_option_voice_memos".localized,
+                                subtitle: "cleanup_option_voice_memos_sub".localized,
+                                value: $vm.options.cleanVoiceMemos
+                            )
+                            optionToggle(
+                                title: "cleanup_option_garageband_logic".localized,
+                                subtitle: "cleanup_option_garageband_logic_sub".localized,
+                                value: $vm.options.cleanGarageBandLogic
+                            )
+                            optionToggle(
+                                title: "cleanup_option_imovie_final_cut".localized,
+                                subtitle: "cleanup_option_imovie_final_cut_sub".localized,
+                                value: $vm.options.cleanIMovieFinalCut
+                            )
+                            optionToggle(
+                                title: "cleanup_option_sleep_image".localized,
+                                subtitle: "cleanup_option_sleep_image_sub".localized,
+                                value: $vm.options.cleanSleepImage
+                            )
+                        }
+                        .padding(.leading, 4)
+                        .padding(.top, 8)
+                    }
+                }
+                .padding()
+                .background(Color(NSColor.controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+                
+                // Start button
+                Button(action: { viewModel.startScan() }) {
+                    Text("cleanup_start_scan".localized)
+                        .font(.headline)
+                        .frame(maxWidth: 280)
+                        .frame(height: 32)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                
+                Spacer()
             }
-            .padding(.bottom, 8)
-            
-            VStack(spacing: 12) {
-                Text("cleanup_ready".localized)
-                    .font(.system(.title, design: .rounded, weight: .bold))
-                
-                Text("cleanup_ready_sub".localized)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
-            }
-            
-            VStack(alignment: .leading, spacing: 12) {
-                Text("cleanup_additional_options".localized)
-                    .font(.headline)
-                    .padding(.bottom, 4)
-                
-                Toggle("cleanup_option_ds_store".localized, isOn: $vm.options.cleanDSStore)
-                Text("cleanup_option_ds_store_sub".localized)
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    private func optionToggle(title: String, subtitle: String, value: Binding<Bool>) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                Text(subtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .padding(.leading, 20)
             }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(10)
-            .padding(.horizontal, 40)
-            .padding(.top, 10)
-            
-            Button(action: { viewModel.startScan() }) {
-                Text("cleanup_start_scan".localized)
-                    .font(.headline)
-                    .frame(width: 180, height: 40)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            Spacer()
+            Toggle(isOn: value) { EmptyView() }
+                .toggleStyle(.switch)
+                .controlSize(.small)
         }
     }
     
