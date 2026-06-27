@@ -18,12 +18,19 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard.png" width="45%">
-  <img src="assets/screenshots/Cleanup.png" width="45%">
+  <img src="assets/screenshots/Dashboard.png" width="30%">
+  <img src="assets/screenshots/Cleanup.png" width="30%">
+  <img src="assets/screenshots/Cleanup_Scan.png" width="30%">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_Results.png" width="45%">
-  <img src="assets/screenshots/Uninstaller.png" width="45%">
+  <img src="assets/screenshots/Cleanup_Scan_Results.png" width="30%">
+  <img src="assets/screenshots/Uninstaller.png" width="30%">
+  <img src="assets/screenshots/Uninstaller_scan.png" width="30%">
+</p>
+<p align="center">
+  <img src="assets/screenshots/Processes.png" width="30%">
+  <img src="assets/screenshots/Startup_services.png" width="30%">
+  <img src="assets/screenshots/Settings.png" width="30%">
 </p>
 
 <p align="center">
@@ -34,9 +41,11 @@
 
 ## Features
 
-**Dashboard** 📊 — disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
+🌍 **Fully Localized** — English, Русский, Українська, Español. All UI, errors, logs, and system info translated dynamically. Dates and byte counts format automatically for your language.
 
-**Smart Cleanup** 🔍 — scans 54 categories at once:
+**Dashboard** 📊 — redesigned with native macOS aesthetics: `controlBackgroundColor`, rounded cards, and SF Symbols. Disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
+
+**Smart Cleanup** 🔍 — scans 54 categories with 298 built-in cleaning paths:
 
 - **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
 - **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
@@ -84,7 +93,7 @@
 - **Duplicate Files** — sha256 duplicate detection in ~/Documents, ~/Desktop, ~/Downloads, ~/Pictures, ~/Movies
 - **Unused Apps** — apps not launched in 180+ days (scan-only)
 
-All categories are always scanned. Dev-related ones show a purple "DEV" badge. Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan — you pick what to delete, then confirm.
+Cleanup tasks run in parallel across all available cores for maximum speed. All categories are always scanned. Dev-related ones show a purple "DEV" badge. Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan — you pick what to delete, then confirm.
 
 **Cleanup Options** — toggles before scan:
 - **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
@@ -94,24 +103,30 @@ All categories are always scanned. Dev-related ones show a purple "DEV" badge. R
 - **Clean iMovie / Final Cut** — includes render files and libraries (off by default)
 - **Clean Sleep Image** — removes hibernation image file (off by default)
 
-**Process Manager** ⚙️ — lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
+**Process Manager** ⚙️ — redesigned with modern macOS styling. Lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
 
-**Startup Services** 🚀 — shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
+**Startup Services** 🚀 — redesigned with modern macOS styling. Shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
 
-**App Uninstaller** 🗑️ — finds installed apps, scans for residual files (Caches, Preferences, Application Support, Logs), shows total space to reclaim. 30 specialized application rules for precise leftover detection.
+**App Uninstaller** 🗑️ — finds installed apps, scans 5 levels deep for residual files using 14 types of evidence (Bundle ID, Team ID, Spotlight, Plist contents, and more). Shows total reclaimable space and real-time scan progress. Tailored rules for over 95 popular apps including Docker, Parallels, Adobe CC, MS Office, Discord, Figma, and more.
 
-**Deep Forensics Engine** 🔬 — when an app is selected for deep scan, the engine:
-- **Identifies** the app via bundle ID, code signing (Team ID, signing authority), receipt presence, and sandbox status
-- **Probes** every candidate file against 30 evidence types across 7 categories: identity, signature, system integration, metadata, content, graph relationships, and Launch Services registration
-- **Builds an evidence graph** — links related files by parent–child relationships for propagation scoring
-- **Confidence tiers** — each file receives a tier: `.guaranteed` (≥100 score with critical evidence), `.veryLikely` (≥60), `.possible` (≥30), or `.ignore` (<30)
-- **30 application rules** — Cloud Storage, Virtualization, Database Tools, Terminal, Communication, Git Clients, Parallels, VMware Fusion, DaVinci Resolve, Logic Pro, Final Cut Pro, Rancher Desktop, Karabiner Elements, Little Snitch, NordVPN, Alfred, Raycast + Electron, Browser, JetBrains, Docker, Xcode, Android Studio, Adobe, Microsoft Office, Steam, Epic Games, Unity, Homebrew, Network Extension
-- **Developer artifacts** — detects Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew for deep uninstall
-- **Verification** — post-uninstall re-scan confirms cleanup completeness; snapshots stored for rollback
+- **Background Deep Scanning** — apps are scanned thoroughly in the background; the UI updates in real time as each app's total size is finalized
+- **Evidence-Based Forensics** — each candidate file is scored against 14 evidence types: identity, code signing, system integration, metadata, content analysis, graph relationships, and Launch Services registration
+- **Confidence Tiers** — `.guaranteed` (critical evidence), `.veryLikely`, `.possible`, or `.ignore`
+- **Developer Components** — detects and offers to clean Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew artifacts
+- **Reveal in Finder** — quick action to show any related file or folder in Finder before deleting
+- **Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file to see exactly why it was associated with the app
+- **Post-Uninstall Verification** — re-scan confirms cleanup completeness; snapshots stored for rollback
 
-**Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file in the detail view to see exactly why it was associated with the app: bundle ID match, parent directory, team ID, Launch Agent reference, etc. Every evidence type has a user-readable title and description in English, Russian, and Ukrainian.
+**Settings** — rebuilt with native macOS `Form` styles to match System Settings. Light/dark/system theme, languages (English, Русский, Українська, Español), notifications, scan-on-startup, Trash behavior, and more.
 
-**Settings** — light/dark/system theme, languages (English, Русский, Українська), notifications, scan-on-startup, Trash behavior, and more.
+---
+
+## 🐛 Bug Fixes in v1.1
+
+- **Full Disk Access (FDA):** Fixed an issue where the FDA guidance window wouldn't appear on startup, and resolved false positives in permission checks by validating restricted directories
+- **OrbStack Safety:** Accidentally deleting OrbStack paths from IDE caches — fixed. VM and Docker infrastructure are now protected
+- **Duplicate Files:** Fixed inflated disk usage numbers in the duplicate files scanner
+- **Xcode Previews:** Resolved a compilation issue preventing Xcode Canvas previews from rendering in Debug mode
 
 ---
 
@@ -162,7 +177,7 @@ MacOSCleaner/
 │  └ About/               # AboutView
 ├ Infrastructure/         # CommandRunner, SafetyManager, TrashManager, LanguageManager, PosixScanner, actors
 ├ Models/                 # CleanupItem, OperationRisk, RunningProcess, StartupService, etc.
-└ Resources/              # Localizable.strings (en/ru/uk), assets
+└ Resources/              # Localizable.strings (en/ru/uk/es), assets
 ```
 
 ---
