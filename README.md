@@ -18,23 +18,16 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard.png" width="30%">
-  <img src="assets/screenshots/Cleanup.png" width="30%">
-  <img src="assets/screenshots/Cleanup_Scan.png" width="30%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Dashboard.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Uninstaller.png" width="45%">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_Results.png" width="30%">
-  <img src="assets/screenshots/Uninstaller.png" width="30%">
-  <img src="assets/screenshots/Uninstaller_scan.png" width="30%">
-</p>
-<p align="center">
-  <img src="assets/screenshots/Processes.png" width="30%">
-  <img src="assets/screenshots/Startup_services.png" width="30%">
-  <img src="assets/screenshots/Settings.png" width="30%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Cleanup_Scan.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Processes.png" width="45%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/realese/assets/screenshots">📷 View all screenshots</a>
+  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/dev/release-1.1/assets/screenshots">📷 View all screenshots</a>
 </p>
 
 ---
