@@ -168,6 +168,17 @@
 "cleanup_option_modcache_sub" = "Удаляет скачанные модули Go. Повторно скачиваются при следующей сборке.";
 "cleanup_option_projects" = "Очистить .dart_tool в проектах";
 "cleanup_option_projects_sub" = "Удаляет кэши проектов Flutter/Dart в ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
+"cleanup_option_cloud_docs" = "Очистить iCloud Документы";
+"cleanup_option_cloud_docs_sub" = "Удаляет кэш iCloud-документов. Документы заново загружаются из iCloud по запросу.";
+"cleanup_option_voice_memos" = "Очистить голосовые заметки";
+"cleanup_option_voice_memos_sub" = "Удаляет записи голосовых заметок из библиотеки.";
+"cleanup_option_garageband_logic" = "Очистить GarageBand / Logic";
+"cleanup_option_garageband_logic_sub" = "Удаляет файлы проектов и кэши GarageBand и Logic Pro.";
+"cleanup_option_imovie_final_cut" = "Очистить iMovie / Final Cut";
+"cleanup_option_imovie_final_cut_sub" = "Удаляет файлы рендеринга и библиотеки iMovie и Final Cut Pro.";
+"cleanup_option_sleep_image" = "Очистить образ сна";
+"cleanup_option_sleep_image_sub" = "Удаляет файл гибернации (/var/vm/sleepimage). macOS воссоздаст его при следующем сне.";
+"cleanup_extended_title" = "Расширенная очистка";
 "cleanup_start_scan" = "Начать сканирование";
 "cleanup_failed" = "Ошибка очистки";
 "cleanup_failed_default" = "Произошла ошибка в процессе очистки.";
