@@ -222,10 +222,10 @@ public actor FileCleanupActor {
     }
 
     static func formatBytes(_ bytes: Int64) -> String {
-        if bytes < 1024 { return "\(bytes) B" }
-        if bytes < 1024 * 1024 { return String(format: "%.1f KB", Double(bytes) / 1024) }
-        if bytes < 1024 * 1024 * 1024 { return String(format: "%.1f MB", Double(bytes) / (1024 * 1024)) }
-        return String(format: "%.2f GB", Double(bytes) / (1024 * 1024 * 1024))
+        if bytes < 1024 { return String(format: "format_bytes_b".localized, bytes) }
+        if bytes < 1024 * 1024 { return String(format: "format_bytes_kb".localized, Double(bytes) / 1024) }
+        if bytes < 1024 * 1024 * 1024 { return String(format: "format_bytes_mb".localized, Double(bytes) / (1024 * 1024)) }
+        return String(format: "format_bytes_gb".localized, Double(bytes) / (1024 * 1024 * 1024))
     }
 
     static func shortPath(_ path: String) -> String {

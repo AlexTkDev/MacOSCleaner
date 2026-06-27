@@ -41,4 +41,54 @@ final class MockCommandRunner: CommandRunning, @unchecked Sendable {
     func commandExists(_ command: String) async -> Bool {
         availableCommands.contains(command) || commandExistsResult(command)
     }
+
+    // Forensics engine mock helpers
+    func mockCodesignTeamID(for url: URL, teamID: String) {
+        runHandler = { cmd, args in
+            if cmd == "/usr/bin/codesign" {
+                if args.contains("-dv") {
+                    if teamID.isEmpty {
+                        return CommandResult(stdout: "", stderr: "code object is not signed at all", exitCode: 1)
+                    }
+                    return CommandResult(
+                        stdout: "",
+                        stderr: """
+                        Executable=\(url.path)
+                        Format=bundle with Mach-O thin (x86_64)
+                        CodeDirectory v=20500 size=12345 flags=0x1000(runtime) hashes=123
+                        TeamIdentifier=\(teamID)
+                        """,
+                        exitCode: 0
+                    )
+                }
+            }
+            throw CommandRunnerError.executionFailed(1)
+        }
+    }
+
+    func mockMdfind(query: String, results: [String]) {
+        let original = runHandler
+        runHandler = { cmd, args in
+            if cmd == "/usr/bin/mdfind", args.contains(query) {
+                return CommandResult(stdout: results.joined(separator: "\n"), stderr: "", exitCode: 0)
+            }
+            if let handler = original {
+                return try await handler(cmd, args)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+    }
+
+    func mockPkgutil(bundleID: String, files: [String]) {
+        let original = runHandler
+        runHandler = { cmd, args in
+            if cmd == "/usr/sbin/pkgutil", args.contains("--files"), args.contains(bundleID) {
+                return CommandResult(stdout: files.joined(separator: "\n"), stderr: "", exitCode: 0)
+            }
+            if let handler = original {
+                return try await handler(cmd, args)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+    }
 }

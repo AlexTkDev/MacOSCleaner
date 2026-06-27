@@ -1,0 +1,14 @@
+{
+  "app": "MicrosoftOffice",
+  "bundleID": "com.microsoft.office",
+  "mustFind": [
+    "UBF8T346G9.Office",
+    "licensingV2",
+    "~/Library/Containers/com.microsoft.Word"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

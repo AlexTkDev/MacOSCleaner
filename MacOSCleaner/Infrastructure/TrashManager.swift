@@ -93,8 +93,8 @@ public actor TrashManager {
         
         try await MainActor.run {
             let panel = NSOpenPanel()
-            panel.message = NSLocalizedString("Please select the Trash folder to grant access for scanning and cleaning. (It is already selected, just click 'Grant Access')", comment: "")
-            panel.prompt = NSLocalizedString("Grant Access", comment: "")
+            panel.message = "trash_access_prompt_message".localized
+            panel.prompt = "trash_access_prompt_button".localized
             panel.directoryURL = trashURL
             panel.canChooseDirectories = true
             panel.canChooseFiles = false

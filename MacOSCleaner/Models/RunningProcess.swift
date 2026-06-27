@@ -47,11 +47,11 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
     }
 
     public var memoryFormatted: String {
-        ByteCountFormatter.string(fromByteCount: Int64(memoryBytes), countStyle: .memory)
+        ByteCountFormatter.localizedString(fromByteCount: Int64(memoryBytes), countStyle: .memory)
     }
 
     public var cpuFormatted: String {
-        String(format: "%.1f%%", cpuPercent)
+        String(format: "process_cpu_format".localized, cpuPercent)
     }
 
     public var uptime: TimeInterval? {
@@ -64,9 +64,9 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         let hours = Int(uptime) / 3600
         let minutes = (Int(uptime) % 3600) / 60
         if hours > 0 {
-            return "\(hours)h \(minutes)m"
+            return String(format: "process_uptime_hours_format".localized, hours, minutes)
         }
-        return "\(minutes)m"
+        return String(format: "process_uptime_minutes_format".localized, minutes)
     }
 
     public var category: ProcessCategory {
@@ -111,4 +111,13 @@ public enum ProcessCategory: String, CaseIterable, Sendable {
     case launchAgents = "Launch Agents"
     case launchDaemons = "Launch Daemons"
     case system = "System"
+
+    public var localizedTitle: String {
+        switch self {
+        case .applications: return "process.category.applications".localized
+        case .launchAgents: return "process.category.launch_agents".localized
+        case .launchDaemons: return "process.category.launch_daemons".localized
+        case .system: return "process.category.system".localized
+        }
+    }
 }

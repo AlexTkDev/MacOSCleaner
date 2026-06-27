@@ -48,6 +48,12 @@
 "dashboard_recent_operations" = "Недавні операції";
 "dashboard_no_recent_operations" = "Немає недавніх операцій";
 
+// Language Names
+"language.english" = "Англійська";
+"language.russian" = "Російська";
+"language.ukrainian" = "Українська";
+"language.spanish" = "Іспанська";
+
 // Settings View
 "settings_title" = "Налаштування";
 "settings_subtitle" = "Налаштування параметрів додатка";
@@ -118,6 +124,30 @@
 "startup_status_unloaded" = "Вивантажений";
 "startup_disable" = "Вимкнути";
 "startup_enable" = "Увімкнути";
+"startup_category_user" = "Користувацькі";
+"startup_category_third_party" = "Сторонні";
+"startup_category_system" = "Система";
+
+// Startup Filters
+"startup_filter_all" = "Усі";
+
+// Startup Category Help
+"startup_help_user" = "Служба користувача з ~/Library/. Безпечно вимикати.";
+"startup_help_third_party" = "Стороння служба з /Library/. Вимикати з обережністю.";
+"startup_help_system" = "Системна служба Apple. Не рекомендується вимикати.";
+
+// Startup Vendor Settings
+"settings_startup_vendors" = "Системні вендори";
+"startup_vendors_title" = "Системні вендори";
+"startup_vendors_description" = "Префікси міток, які вважаються системними службами.";
+"startup_vendors_description_sub" = "Служби з цими префіксами позначаються как 'Система' і не рекомендуються до вимкнення.";
+"startup_vendors_current" = "Поточні префікси";
+"startup_vendors_reset" = "Скинути";
+"startup_vendors_empty" = "Префікси не додані";
+"startup_vendors_protected" = "Захищено";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Префікс повинен містити крапку";
+"startup_vendors_error_duplicate" = "Цей префікс вже існує";
 
 // Cleanup View
 "cleanup_scanning" = "Сканування системи...";
@@ -169,6 +199,8 @@
 // Trash
 "trash_user_label" = "Користувацький смітник";
 "trash_user_description" = "Вміст вашого смітника. Включає видалені файли.";
+"trash_access_prompt_message" = "Будь ласка, виберіть папку Смітника для надання доступу до сканування та очищення. (Вона вже вибрана, просто натисніть «Надати доступ»).";
+"trash_access_prompt_button" = "Надати доступ";
 
 // Uninstaller View
 "uninstaller_title" = "Деінсталятор";
@@ -200,6 +232,8 @@
 "uninstaller_expert_tip" = "В Експертному режимі ви можете вибірково видаляти залишкові файли, такі як кеші та налаштування.";
 "uninstaller_cleanup_items" = "Елементи для очищення";
 "uninstaller_scanning_apps" = "Сканування додатків...";
+"uninstaller.deep_scanning_progress" = "Збір залишків: %d із %d додатків...";
+"uninstaller.analyzing" = "Аналіз...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
@@ -260,6 +294,30 @@
 "settings_open_settings" = "Відкрити налаштування";
 "settings_check_permissions" = "Перевірити дозволи";
 
+// Format strings
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld МБ";
+
+// Process format strings
+"processes_view_mode_grouped" = "Групувати";
+"processes_view_mode_flat" = "Списком";
+"processes_selected_count" = "Вибрано: %lld";
+"processes_process_count" = "%lld процесів";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldгод %lldхв";
+"process_uptime_minutes_format" = "%lldхв";
+
+// Common
+"version_unknown" = "N/A";
+
+// Operation Risk
+"risk.safe" = "Безпечно";
+"risk.moderate" = "Помірно";
+"risk.dangerous" = "Небезпечно";
+"risk.protected" = "Захищено";
+
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "РОЗРОБ";
 
@@ -275,17 +333,207 @@
 "sort_name" = "Ім'я";
 "sort_threads" = "К-сть потоків";
 
-// New cleanup categories
-"time_machine_snapshots" = "Знімки Time Machine";
-"ios_backups" = "Резервні копії iOS";
-"mail_downloads" = "Завантаження Mail";
-"saved_app_state" = "Збережений стан додатків";
-"crash_reporter" = "Звіти про збої";
-"assets_v2" = "AssetsV2 / Шаблони iWork";
-"cloud_kit_cache" = "Кеш iCloud CloudKit";
-"swift_pm_cache" = "Кеш Swift Package Manager";
-"carthage_cache" = "Кеш Carthage";
-"steam_cache" = "Кеш Steam";
-"teams_cache" = "Кеш Microsoft Teams";
-"adobe_caches" = "Кеші Adobe";
-"chrome_extra_caches" = "Дод. кеші Chrome";
+// Cleanup Category Names
+"category.app_caches" = "Кеші додатків";
+"category.package_managers" = "Менеджери пакетів";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "Симулятори iOS";
+"category.android_caches" = "Кеші Android";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "Кеші IDE / Electron";
+"category.browser_caches" = "Кеші браузерів";
+"category.messaging_media" = "Месенджери / медіа";
+"category.docker" = "Docker";
+"category.language_caches" = "Кеші мов";
+"category.user_logs" = "Логи користувача";
+"category.system_caches" = "Системні кеші";
+"category.app_containers" = "Контейнери додатків";
+"category.dotfile_caches" = "Кеші точкових файлів";
+"category.scattered_junk" = "Розрізнене сміття";
+"category.orphaned_remnants" = "Залишкові файли";
+"category.orphaned_files" = "Файли-сироти";
+"category.large_files" = "Великі файли";
+"category.dynamic_cache_discovery" = "Динамічне виявлення кешу";
+"category.time_machine_snapshots" = "Знімки Time Machine";
+"category.ios_backups" = "Резервні копії iOS";
+"category.mail_downloads" = "Завантаження Mail";
+"category.saved_app_state" = "Збережений стан додатків";
+"category.crash_reporter" = "Звіти про збої";
+"category.assets_v2" = "AssetsV2 / Шаблони iWork";
+"category.cloud_kit_cache" = "Кеш iCloud CloudKit";
+"category.swift_pm_cache" = "Кеш Swift Package Manager";
+"category.carthage_cache" = "Кеш Carthage";
+"category.steam_cache" = "Кеш Steam";
+"category.teams_cache" = "Кеш Microsoft Teams";
+"category.adobe_caches" = "Кеші Adobe";
+"category.chrome_extra_caches" = "Дод. кеші Chrome";
+"category.ide_old_versions" = "Старі версії IDE";
+"category.launch_agents" = "Агенти автозапуску";
+"category.launch_daemons" = "Демони";
+"category.privileged_helpers" = "Привілейовані інструменти";
+"category.pkg_receipts" = "Квитанції пакетів";
+"category.internet_plugins" = "Плагіни інтернету";
+"category.shared_file_lists" = "Спільні списки файлів";
+"category.cloud_docs" = "Хмарні документи";
+"category.photos_cache" = "Кеш фото";
+"category.voice_memos" = "Голосові нотатки";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Старі резервні копії";
+"category.dns_flush" = "Кеш DNS";
+"category.font_cache" = "Кеш шрифтів";
+"category.sleep_image" = "Образ сну";
+"category.duplicate_files" = "Дублікати файлів";
+"category.unused_apps" = "Невикористовувані додатки";
+
+// Process View - Missing Keys
+"view_mode" = "Режим перегляду";
+"sort_by" = "Сортування";
+"cancel_selection" = "Скасувати вибір";
+"select_multiple" = "Вибрати декілька";
+"select_all" = "Вибрати все";
+"deselect_all" = "Зняти виділення";
+"terminate_selected" = "Завершити вибрані";
+"force_kill_selected" = "Примусово завершити вибрані";
+"processes_terminate_all" = "Завершити всі";
+"processes_force_kill_all" = "Примусово завершити всі";
+"process.unknown" = "Невідомо";
+
+// Uninstaller - Scan Progress
+"uninstaller.progress.discovering" = "Пошук додатків...";
+"uninstaller.progress.complete" = "Сканування завершено";
+
+// Uninstaller - Confidence Tiers
+"uninstaller.tier.ignore" = "Ігнорувати";
+"uninstaller.tier.possible" = "Можливо";
+"uninstaller.tier.very_likely" = "Дуже ймовірно";
+"uninstaller.tier.guaranteed" = "Гарантовано";
+
+// Developer Components
+"developer.android_sdk" = "Android SDK";
+"developer.gradle_cache" = "Кеш Gradle";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "Симулятори iOS";
+"developer.flutter_cache" = "Кеш Flutter";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+// Evidence Categories
+"uninstaller.evidence_category.identity" = "Збіг ідентифікатора";
+"uninstaller.evidence_category.signature" = "Підпис коду";
+"uninstaller.evidence_category.system" = "Системна інтеграція";
+"uninstaller.evidence_category.metadata" = "Метадані файлу";
+"uninstaller.evidence_category.content" = "Аналіз вмісту";
+"uninstaller.evidence_category.graph" = "Поширення графа";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+// Evidence Descriptions
+"uninstaller.evidence.bundleIDExact.title" = "Збіг Bundle ID";
+"uninstaller.evidence.bundleIDExact.description" = "Ім'я збігається з ідентифікатором пакета додатка.";
+"uninstaller.evidence.bundleIDPrefix.title" = "Префікс Bundle ID";
+"uninstaller.evidence.bundleIDPrefix.description" = "Ім'я починається з ідентифікатора пакета додатка.";
+"uninstaller.evidence.appNameExact.title" = "Збіг назви додатка";
+"uninstaller.evidence.appNameExact.description" = "Ім'я збігається з назвою додатка.";
+"uninstaller.evidence.appNamePrefix.title" = "Префікс назви додатка";
+"uninstaller.evidence.appNamePrefix.description" = "Ім'я починається з назви додатка.";
+"uninstaller.evidence.executableName.title" = "Ім'я виконуваного файлу";
+"uninstaller.evidence.executableName.description" = "Ім'я збігається з виконуваним файлом додатка.";
+"uninstaller.evidence.frameworkName.title" = "Ім'я фреймворку";
+"uninstaller.evidence.frameworkName.description" = "Файл є фреймворком, який використовує додаток.";
+"uninstaller.evidence.xpcServiceName.title" = "XPC-сервіс";
+"uninstaller.evidence.xpcServiceName.description" = "Файл є XPC-сервісом додатка.";
+"uninstaller.evidence.plugInName.title" = "Ім'я плагіна";
+"uninstaller.evidence.plugInName.description" = "Файл є плагіном додатка.";
+"uninstaller.evidence.vendorName.title" = "Ім'я вендора";
+"uninstaller.evidence.vendorName.description" = "Файл належить тому ж розробнику.";
+"uninstaller.evidence.teamID.title" = "Збіг Team ID";
+"uninstaller.evidence.teamID.description" = "Підписано тією ж командою Apple Developer.";
+"uninstaller.evidence.developerSignature.title" = "Підпис розробника";
+"uninstaller.evidence.developerSignature.description" = "Підписано тим же сертифікатом розробника.";
+"uninstaller.evidence.launchAgent.title" = "Launch Agent";
+"uninstaller.evidence.launchAgent.description" = "Автозавантажувач, зареєстрований додатком.";
+"uninstaller.evidence.launchDaemon.title" = "Launch Daemon";
+"uninstaller.evidence.launchDaemon.description" = "Демон, зареєстрований додатком.";
+"uninstaller.evidence.loginItem.title" = "Елемент входу";
+"uninstaller.evidence.loginItem.description" = "Елемент автозапуску, зареєстрований додатком.";
+"uninstaller.evidence.appGroup.title" = "Група додатків";
+"uninstaller.evidence.appGroup.description" = "Належить груповому контейнеру додатка.";
+"uninstaller.evidence.container.title" = "Контейнер додатка";
+"uninstaller.evidence.container.description" = "Пісочниця додатка.";
+"uninstaller.evidence.extension.title" = "Розширення додатка";
+"uninstaller.evidence.extension.description" = "Розширення, зареєстроване додатком.";
+"uninstaller.evidence.xpcConnection.title" = "XPC-з'єднання";
+"uninstaller.evidence.xpcConnection.description" = "XPC-з'єднання, яке використовує додаток.";
+"uninstaller.evidence.packageReceipt.title" = "Квитанція пакета";
+"uninstaller.evidence.packageReceipt.description" = "Зареєстровано через квитанцію пакета.";
+"uninstaller.evidence.plistContent.title" = "Вміст Plist";
+"uninstaller.evidence.plistContent.description" = "Plist містить назву або Bundle ID додатка.";
+"uninstaller.evidence.spotlight.title" = "Індекс Spotlight";
+"uninstaller.evidence.spotlight.description" = "Знайдено через пошук Spotlight.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Атрибут пакета Spotlight";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Метадані Spotlight посилаються на пакет додатка.";
+"uninstaller.evidence.spotlightCreator.title" = "Творець Spotlight";
+"uninstaller.evidence.spotlightCreator.description" = "Метадані творця Spotlight збігаються.";
+"uninstaller.evidence.fileContent.title" = "Вміст файлу";
+"uninstaller.evidence.fileContent.description" = "Вміст файлу посилається на додаток.";
+"uninstaller.evidence.electronCache.title" = "Кеш Electron";
+"uninstaller.evidence.electronCache.description" = "Кеш додатка на Electron.";
+"uninstaller.evidence.jetBrainsConfig.title" = "Конфіг JetBrains";
+"uninstaller.evidence.jetBrainsConfig.description" = "Конфігурація IDE JetBrains.";
+"uninstaller.evidence.flutterBuild.title" = "Збірка Flutter";
+"uninstaller.evidence.flutterBuild.description" = "Артефакт збірки Flutter.";
+"uninstaller.evidence.parentDirectory.title" = "Батьківський каталог";
+"uninstaller.evidence.parentDirectory.description" = "Знайдено в каталозі, пов'язаному з додатком.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Зареєстровано в базі Launch Services.";
+
+// Permissions - Missing Access Descriptions
+"permissions.full_disk_access" = "Повний доступ до диска";
+"permissions.accessibility" = "Спеціальні можливості";
+"permissions.automation" = "Автоматизація (Apple Events)";
+"permissions.trash_access" = "Доступ до Смітника";
+"permissions.notification_provisional" = "Попередні";
+"permissions.notification_ephemeral" = "Ефемерні";
+"permissions.unknown_status" = "Невідомо";
+
+// Process Categories
+"process.category.applications" = "Додатки";
+"process.category.launch_agents" = "Агенти автозапуску";
+"process.category.launch_daemons" = "Демони";
+"process.category.system" = "Системні";
+
+// Uninstaller - Additional UI
+"uninstaller.scanning_deep" = "Глибоке сканування...";
+"uninstaller.why_this_file" = "Чому цей файл?";
+"uninstaller.related_files" = "Пов'язані файли";
+"uninstaller.developer_artifacts" = "Артефакти розробника";
+"uninstaller.progress.developer_components" = "Перевірка компонентів розробника...";
+"uninstaller.footer.summary" = "Вибрано %lld файлів у %@ категоріях";
+
+// Format Helpers
+"format_bytes_b" = "%lld Б";
+"format_bytes_kb" = "%.1f КБ";
+"format_bytes_mb" = "%.1f МБ";
+"format_bytes_gb" = "%.2f ГБ";
+
+// Process Block Reasons
+"process_block_pid_format" = "PID %lld — системний критичний процес";
+"process_block_whitelist_name_format" = "%@ у вашому білому списку (захищено)";
+"process_block_whitelist_bundle_format" = "%@ у вашому білому списку (захищено)";
+"process_block_protected_format" = "%@ — захищений системний процес";
+"process_block_no_path_format" = "%@ — немає інформації про шлях, дійте обережно";
+
+// Error Messages
+"error_ps_failed_format" = "Не вдалося отримати список процесів: %@";
+"error_operation_blocked_format" = "Неможливо завершити %@: %@";
+"error_kill_failed_format" = "Не вдалося завершити %@ (код %lld): %@";
+"error_timeout" = "Час операції вичерпано";
+"error_safety_violation_format" = "Порушення безпеки: %@";
+"error_command_failed_format" = "Команда не виконана: %@";
+"error_invalid_transition_format" = "Неприпустимий перехід із %@ у %@";
+
+// OS Version
+"os_version_format" = "macOS %lld.%lld.%lld";

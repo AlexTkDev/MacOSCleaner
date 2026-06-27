@@ -182,11 +182,11 @@ public enum ProcessManagerError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .psFailed(let stderr):
-            return "Failed to list processes: \(stderr)"
+            return String(format: "error_ps_failed_format".localized, stderr)
         case .operationBlocked(let name, let reason):
-            return "Cannot terminate \(name): \(reason)"
+            return String(format: "error_operation_blocked_format".localized, name, reason)
         case .killFailed(let name, let code, let stderr):
-            return "Failed to kill \(name) (exit \(code)): \(stderr)"
+            return String(format: "error_kill_failed_format".localized, name, code, stderr)
         }
     }
 }

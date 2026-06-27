@@ -53,7 +53,7 @@ final class CleanupOptionsTests: XCTestCase {
         let options = CleanupOptions()
         let categories = options.categories()
 
-        XCTAssertEqual(categories.count, 34)
+        XCTAssertEqual(categories.count, 48)
     }
 
     func testDSStoreEnabledAddsScatteredJunk() {

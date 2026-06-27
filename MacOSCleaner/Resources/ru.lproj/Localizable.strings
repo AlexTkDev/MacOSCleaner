@@ -3,6 +3,7 @@
 "app_title" = "Очистка";
 "sidebar_select_item" = "Выберите элемент в боковом меню";
 "close" = "Закрыть";
+"cancel_description" = "Операция была отменена пользователем.";
 "reset" = "Сбросить";
 "cancel" = "Отмена";
 "done" = "Готово";
@@ -46,6 +47,12 @@
 "dashboard_healthy" = "В норме";
 "dashboard_recent_operations" = "Недавние операции";
 "dashboard_no_recent_operations" = "Нет недавних операций";
+
+// Language Names
+"language.english" = "Английский";
+"language.russian" = "Русский";
+"language.ukrainian" = "Украинский";
+"language.spanish" = "Испанский";
 
 // Settings View
 "settings_title" = "Настройки";
@@ -194,6 +201,8 @@
 // Trash
 "trash_user_label" = "Пользовательская корзина";
 "trash_user_description" = "Содержимое вашей корзины. Включает удаленные файлы.";
+"trash_access_prompt_message" = "Пожалуйста, выберите папку Корзины для предоставления доступа к сканированию и очистке. (Она уже выбрана, просто нажмите «Предоставить доступ»).";
+"trash_access_prompt_button" = "Предоставить доступ";
 
 // Uninstaller View
 "uninstaller_title" = "Деинсталлятор";
@@ -225,6 +234,8 @@
 "uninstaller_expert_tip" = "В Экспертном режиме вы можете выборочно удалять остаточные файлы, такие как кэши и настройки.";
 "uninstaller_cleanup_items" = "Элементы для очистки";
 "uninstaller_scanning_apps" = "Сканирование приложений...";
+"uninstaller.deep_scanning_progress" = "Сбор остатков: %d из %d приложений...";
+"uninstaller.analyzing" = "Анализ...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
 "shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
@@ -285,6 +296,30 @@
 "settings_open_settings" = "Открыть настройки";
 "settings_check_permissions" = "Проверить разрешения";
 
+// Format strings
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld МБ";
+
+// Process format strings
+"processes_view_mode_grouped" = "Группировать";
+"processes_view_mode_flat" = "Списком";
+"processes_selected_count" = "Выбрано: %lld";
+"processes_process_count" = "%lld процессов";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldч %lldм";
+"process_uptime_minutes_format" = "%lldм";
+
+// Common
+"version_unknown" = "N/A";
+
+// Operation Risk
+"risk.safe" = "Безопасно";
+"risk.moderate" = "Умеренно";
+"risk.dangerous" = "Опасно";
+"risk.protected" = "Защищено";
+
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "РАЗРАБ";
 
@@ -300,17 +335,207 @@
 "sort_name" = "Имя";
 "sort_threads" = "Кол-во потоков";
 
-// New cleanup categories
-"time_machine_snapshots" = "Снимки Time Machine";
-"ios_backups" = "Резервные копии iOS";
-"mail_downloads" = "Загрузки Mail";
-"saved_app_state" = "Сохранённое состояние приложений";
-"crash_reporter" = "Отчёты о сбоях";
-"assets_v2" = "AssetsV2 / Шаблоны iWork";
-"cloud_kit_cache" = "Кэш iCloud CloudKit";
-"swift_pm_cache" = "Кэш Swift Package Manager";
-"carthage_cache" = "Кэш Carthage";
-"steam_cache" = "Кэш Steam";
-"teams_cache" = "Кэш Microsoft Teams";
-"adobe_caches" = "Кэши Adobe";
-"chrome_extra_caches" = "Доп. кэши Chrome";
+// Cleanup Category Names
+"category.app_caches" = "Кэши приложений";
+"category.package_managers" = "Менеджеры пакетов";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "Симуляторы iOS";
+"category.android_caches" = "Кэши Android";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "Кэши IDE / Electron";
+"category.browser_caches" = "Кэши браузеров";
+"category.messaging_media" = "Мессенджеры / медиа";
+"category.docker" = "Docker";
+"category.language_caches" = "Кэши языков";
+"category.user_logs" = "Логи пользователя";
+"category.system_caches" = "Системные кэши";
+"category.app_containers" = "Контейнеры приложений";
+"category.dotfile_caches" = "Кэши точечных файлов";
+"category.scattered_junk" = "Разрозненный мусор";
+"category.orphaned_remnants" = "Остаточные файлы";
+"category.orphaned_files" = "Файлы-сироты";
+"category.large_files" = "Большие файлы";
+"category.dynamic_cache_discovery" = "Динамическое обнаружение кэша";
+"category.time_machine_snapshots" = "Снимки Time Machine";
+"category.ios_backups" = "Резервные копии iOS";
+"category.mail_downloads" = "Загрузки Mail";
+"category.saved_app_state" = "Сохранённое состояние приложений";
+"category.crash_reporter" = "Отчёты о сбоях";
+"category.assets_v2" = "AssetsV2 / Шаблоны iWork";
+"category.cloud_kit_cache" = "Кэш iCloud CloudKit";
+"category.swift_pm_cache" = "Кэш Swift Package Manager";
+"category.carthage_cache" = "Кэш Carthage";
+"category.steam_cache" = "Кэш Steam";
+"category.teams_cache" = "Кэш Microsoft Teams";
+"category.adobe_caches" = "Кэши Adobe";
+"category.chrome_extra_caches" = "Доп. кэши Chrome";
+"category.ide_old_versions" = "Старые версии IDE";
+"category.launch_agents" = "Агенты автозапуска";
+"category.launch_daemons" = "Демоны";
+"category.privileged_helpers" = "Привилегированные инструменты";
+"category.pkg_receipts" = "Квитанции пакетов";
+"category.internet_plugins" = "Плагины интернета";
+"category.shared_file_lists" = "Общие списки файлов";
+"category.cloud_docs" = "Облачные документы";
+"category.photos_cache" = "Кэш фото";
+"category.voice_memos" = "Голосовые заметки";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Старые резервные копии";
+"category.dns_flush" = "Кэш DNS";
+"category.font_cache" = "Кэш шрифтов";
+"category.sleep_image" = "Образ сна";
+"category.duplicate_files" = "Дубликаты файлов";
+"category.unused_apps" = "Неиспользуемые приложения";
+
+// Process View - Missing Keys
+"view_mode" = "Режим просмотра";
+"sort_by" = "Сортировка";
+"cancel_selection" = "Отменить выбор";
+"select_multiple" = "Выбрать несколько";
+"select_all" = "Выбрать все";
+"deselect_all" = "Снять выделение";
+"terminate_selected" = "Завершить выбранные";
+"force_kill_selected" = "Принудительно завершить выбранные";
+"processes_terminate_all" = "Завершить все";
+"processes_force_kill_all" = "Принудительно завершить все";
+"process.unknown" = "Неизвестно";
+
+// Uninstaller - Scan Progress
+"uninstaller.progress.discovering" = "Поиск приложений...";
+"uninstaller.progress.complete" = "Сканирование завершено";
+
+// Uninstaller - Confidence Tiers
+"uninstaller.tier.ignore" = "Игнорировать";
+"uninstaller.tier.possible" = "Возможно";
+"uninstaller.tier.very_likely" = "Очень вероятно";
+"uninstaller.tier.guaranteed" = "Гарантировано";
+
+// Developer Components
+"developer.android_sdk" = "Android SDK";
+"developer.gradle_cache" = "Кэш Gradle";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "Симуляторы iOS";
+"developer.flutter_cache" = "Кэш Flutter";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+// Evidence Categories
+"uninstaller.evidence_category.identity" = "Совпадение идентификатора";
+"uninstaller.evidence_category.signature" = "Подпись кода";
+"uninstaller.evidence_category.system" = "Системная интеграция";
+"uninstaller.evidence_category.metadata" = "Метаданные файла";
+"uninstaller.evidence_category.content" = "Анализ содержимого";
+"uninstaller.evidence_category.graph" = "Распространение графа";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+// Evidence Descriptions
+"uninstaller.evidence.bundleIDExact.title" = "Совпадение Bundle ID";
+"uninstaller.evidence.bundleIDExact.description" = "Имя совпадает с идентификатором пакета приложения.";
+"uninstaller.evidence.bundleIDPrefix.title" = "Префикс Bundle ID";
+"uninstaller.evidence.bundleIDPrefix.description" = "Имя начинается с идентификатора пакета приложения.";
+"uninstaller.evidence.appNameExact.title" = "Совпадение имени приложения";
+"uninstaller.evidence.appNameExact.description" = "Имя совпадает с названием приложения.";
+"uninstaller.evidence.appNamePrefix.title" = "Префикс имени приложения";
+"uninstaller.evidence.appNamePrefix.description" = "Имя начинается с названия приложения.";
+"uninstaller.evidence.executableName.title" = "Имя исполняемого файла";
+"uninstaller.evidence.executableName.description" = "Имя совпадает с исполняемым файлом приложения.";
+"uninstaller.evidence.frameworkName.title" = "Имя фреймворка";
+"uninstaller.evidence.frameworkName.description" = "Файл является фреймворком, используемым приложением.";
+"uninstaller.evidence.xpcServiceName.title" = "XPC-сервис";
+"uninstaller.evidence.xpcServiceName.description" = "Файл является XPC-сервисом приложения.";
+"uninstaller.evidence.plugInName.title" = "Имя плагина";
+"uninstaller.evidence.plugInName.description" = "Файл является плагином приложения.";
+"uninstaller.evidence.vendorName.title" = "Имя вендора";
+"uninstaller.evidence.vendorName.description" = "Файл принадлежит тому же разработчику.";
+"uninstaller.evidence.teamID.title" = "Совпадение Team ID";
+"uninstaller.evidence.teamID.description" = "Подписано той же командой Apple Developer.";
+"uninstaller.evidence.developerSignature.title" = "Подпись разработчика";
+"uninstaller.evidence.developerSignature.description" = "Подписано тем же сертификатом разработчика.";
+"uninstaller.evidence.launchAgent.title" = "Launch Agent";
+"uninstaller.evidence.launchAgent.description" = "Автозагрузчик, зарегистрированный приложением.";
+"uninstaller.evidence.launchDaemon.title" = "Launch Daemon";
+"uninstaller.evidence.launchDaemon.description" = "Демон, зарегистрированный приложением.";
+"uninstaller.evidence.loginItem.title" = "Элемент входа";
+"uninstaller.evidence.loginItem.description" = "Элемент автозапуска, зарегистрированный приложением.";
+"uninstaller.evidence.appGroup.title" = "Группа приложений";
+"uninstaller.evidence.appGroup.description" = "Принадлежит групповому контейнеру приложения.";
+"uninstaller.evidence.container.title" = "Контейнер приложения";
+"uninstaller.evidence.container.description" = "Песочница приложения.";
+"uninstaller.evidence.extension.title" = "Расширение приложения";
+"uninstaller.evidence.extension.description" = "Расширение, зарегистрированное приложением.";
+"uninstaller.evidence.xpcConnection.title" = "XPC-соединение";
+"uninstaller.evidence.xpcConnection.description" = "XPC-соединение, используемое приложением.";
+"uninstaller.evidence.packageReceipt.title" = "Квитанция пакета";
+"uninstaller.evidence.packageReceipt.description" = "Зарегистрировано через квитанцию пакета.";
+"uninstaller.evidence.plistContent.title" = "Содержимое Plist";
+"uninstaller.evidence.plistContent.description" = "Plist содержит имя или Bundle ID приложения.";
+"uninstaller.evidence.spotlight.title" = "Индекс Spotlight";
+"uninstaller.evidence.spotlight.description" = "Найдено через поиск Spotlight.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Атрибут пакета Spotlight";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Метаданные Spotlight ссылаются на пакет приложения.";
+"uninstaller.evidence.spotlightCreator.title" = "Создатель Spotlight";
+"uninstaller.evidence.spotlightCreator.description" = "Метаданные создателя Spotlight совпадают.";
+"uninstaller.evidence.fileContent.title" = "Содержимое файла";
+"uninstaller.evidence.fileContent.description" = "Содержимое файла ссылается на приложение.";
+"uninstaller.evidence.electronCache.title" = "Кэш Electron";
+"uninstaller.evidence.electronCache.description" = "Кэш приложения на Electron.";
+"uninstaller.evidence.jetBrainsConfig.title" = "Конфиг JetBrains";
+"uninstaller.evidence.jetBrainsConfig.description" = "Конфигурация IDE JetBrains.";
+"uninstaller.evidence.flutterBuild.title" = "Сборка Flutter";
+"uninstaller.evidence.flutterBuild.description" = "Артефакт сборки Flutter.";
+"uninstaller.evidence.parentDirectory.title" = "Родительский каталог";
+"uninstaller.evidence.parentDirectory.description" = "Найдено в каталоге, связанном с приложением.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Зарегистрировано в базе Launch Services.";
+
+// Permissions - Missing Access Descriptions
+"permissions.full_disk_access" = "Полный доступ к диску";
+"permissions.accessibility" = "Специальные возможности";
+"permissions.automation" = "Автоматизация (Apple Events)";
+"permissions.trash_access" = "Доступ к Корзине";
+"permissions.notification_provisional" = "Предварительные";
+"permissions.notification_ephemeral" = "Эфемерные";
+"permissions.unknown_status" = "Неизвестно";
+
+// Process Categories
+"process.category.applications" = "Приложения";
+"process.category.launch_agents" = "Агенты автозапуска";
+"process.category.launch_daemons" = "Демоны";
+"process.category.system" = "Системные";
+
+// Uninstaller - Additional UI
+"uninstaller.scanning_deep" = "Глубокое сканирование...";
+"uninstaller.why_this_file" = "Почему этот файл?";
+"uninstaller.related_files" = "Связанные файлы";
+"uninstaller.developer_artifacts" = "Артефакты разработчика";
+"uninstaller.progress.developer_components" = "Проверка компонентов разработчика...";
+"uninstaller.footer.summary" = "Выбрано %lld файлов в %@ категориях";
+
+// Format Helpers
+"format_bytes_b" = "%lld Б";
+"format_bytes_kb" = "%.1f КБ";
+"format_bytes_mb" = "%.1f МБ";
+"format_bytes_gb" = "%.2f ГБ";
+
+// Process Block Reasons
+"process_block_pid_format" = "PID %lld — системный критический процесс";
+"process_block_whitelist_name_format" = "%@ в вашем белом списке (защищён)";
+"process_block_whitelist_bundle_format" = "%@ в вашем белом списке (защищён)";
+"process_block_protected_format" = "%@ — защищённый системный процесс";
+"process_block_no_path_format" = "%@ — нет информации о пути, действуйте осторожно";
+
+// Error Messages
+"error_ps_failed_format" = "Не удалось получить список процессов: %@";
+"error_operation_blocked_format" = "Невозможно завершить %@: %@";
+"error_kill_failed_format" = "Не удалось завершить %@ (код %lld): %@";
+"error_timeout" = "Время операции истекло";
+"error_safety_violation_format" = "Нарушение безопасности: %@";
+"error_command_failed_format" = "Команда не выполнена: %@";
+"error_invalid_transition_format" = "Недопустимый переход из %@ в %@";
+
+// OS Version
+"os_version_format" = "macOS %lld.%lld.%lld";

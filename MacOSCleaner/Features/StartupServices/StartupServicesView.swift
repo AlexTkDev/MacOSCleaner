@@ -27,12 +27,8 @@ public struct StartupServicesView: View {
                 serviceList
             }
         }
-        .background(Color(NSColor.windowBackgroundColor))
-        .onAppear {
-            Task {
-                await viewModel.scan()
-            }
-        }
+        .background(Color(NSColor.controlBackgroundColor))
+        .onAppear { Task { await viewModel.scan() } }
     }
 
     private var header: some View {
@@ -47,9 +43,7 @@ public struct StartupServicesView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button(action: {
-                    Task { await viewModel.scan() }
-                }) {
+                Button(action: { Task { await viewModel.scan() } }) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 14, weight: .semibold))
                 }
@@ -60,18 +54,14 @@ public struct StartupServicesView: View {
             filterPicker
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .overlay(alignment: .bottom) {
-            Divider()
-        }
+        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var filterPicker: some View {
         HStack(spacing: 8) {
             filterButton(title: "startup_filter_all".localized, tag: nil, count: viewModel.services.count)
 
-            Divider()
-                .frame(height: 16)
+            Divider().frame(height: 16)
 
             filterButton(
                 title: "startup_category_user".localized,
@@ -154,13 +144,10 @@ public struct StartupServicesView: View {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.filteredServices) { service in
                     ServiceRow(service: service) {
-                        Task {
-                            await viewModel.toggle(service: service)
-                        }
+                        Task { await viewModel.toggle(service: service) }
                     }
                     if service.id != viewModel.filteredServices.last?.id {
-                        Divider()
-                            .padding(.leading, 120)
+                        Divider().padding(.leading, 120)
                     }
                 }
             }
@@ -168,7 +155,7 @@ public struct StartupServicesView: View {
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
             .padding()
         }
     }
@@ -178,7 +165,6 @@ public struct StartupServicesView: View {
             Image(systemName: "bolt.horizontal.circle")
                 .font(.system(size: 64, weight: .thin))
                 .foregroundColor(.secondary.opacity(0.5))
-
             VStack(spacing: 8) {
                 Text("startup_no_agents".localized)
                     .font(.headline)
@@ -195,7 +181,6 @@ public struct StartupServicesView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 64, weight: .thin))
                 .foregroundColor(.orange)
-
             VStack(spacing: 8) {
                 Text("startup_scan_failed".localized)
                     .font(.headline)
@@ -205,7 +190,6 @@ public struct StartupServicesView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
-
             Button("try_again".localized) {
                 Task { await viewModel.scan() }
             }
@@ -261,10 +245,7 @@ struct CategoryBadge: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(
-            Capsule()
-                .fill(category.color.opacity(0.12))
-        )
+        .background(Capsule().fill(category.color.opacity(0.12)))
         .foregroundColor(category.color)
         .help(categoryHelpText)
         .frame(minWidth: 90)
@@ -272,12 +253,9 @@ struct CategoryBadge: View {
 
     private var categoryHelpText: String {
         switch category {
-        case .user:
-            return "startup_help_user".localized
-        case .thirdParty:
-            return "startup_help_third_party".localized
-        case .system:
-            return "startup_help_system".localized
+        case .user: return "startup_help_user".localized
+        case .thirdParty: return "startup_help_third_party".localized
+        case .system: return "startup_help_system".localized
         }
     }
 }

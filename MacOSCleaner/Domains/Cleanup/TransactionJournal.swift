@@ -1,8 +1,8 @@
 import Foundation
 import os.log
 
-/// Журнал транзакций очистки для обеспечения возможности отката и аудита.
-/// Использует формат JSONL (JSON Lines) для обеспечения отказоустойчивости при записи.
+/// Cleanup transaction journal for rollback and audit.
+/// Uses JSONL (JSON Lines) format for crash-safe writes.
 public actor TransactionJournal {
     private let journalURL: URL
     private let archiveDirectoryURL: URL
@@ -10,7 +10,7 @@ public actor TransactionJournal {
     private let decoder = JSONDecoder()
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macoscleaner", category: "TransactionJournal")
     
-    /// Максимальный размер журнала перед ротацией (10MB)
+    /// Maximum journal size before rotation (10MB)
     private let maxJournalSize: Int64 = 10 * 1024 * 1024
     
     public init(journalURL: URL? = nil) {
@@ -27,8 +27,8 @@ public actor TransactionJournal {
         try? FileManager.default.createDirectory(at: archiveDirectoryURL, withIntermediateDirectories: true)
     }
     
-    /// Записывает новую транзакцию в журнал.
-    /// - Parameter transaction: Транзакция для записи.
+    /// Writes a new transaction to the journal.
+    /// - Parameter transaction: The transaction to write.
     public func log(transaction: CleanupTransaction) throws {
         let data = try encoder.encode(transaction)
         guard var line = String(data: data, encoding: .utf8) else {
@@ -44,8 +44,8 @@ public actor TransactionJournal {
         }
     }
     
-    /// Выполняет запись строки в журнал с проверкой размера и ротацией.
-    /// Использует атомарную запись через замену всего файла (read-modify-write).
+    /// Writes a line to the journal with size check and rotation.
+    /// Uses atomic write via full file replacement (read-modify-write).
     private func performWrite(line: String) throws {
         if FileManager.default.fileExists(atPath: journalURL.path) {
             let attributes = try FileManager.default.attributesOfItem(atPath: journalURL.path)
@@ -81,7 +81,7 @@ public actor TransactionJournal {
         }
     }
     
-    /// Ротирует журнал: архивирует текущий файл и создаёт новый.
+    /// Rotates the journal: archives the current file and creates a new one.
     private func rotateJournal() throws {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
@@ -94,7 +94,7 @@ public actor TransactionJournal {
         cleanupOldArchives()
     }
     
-    /// Удаляет архивы старше 30 дней, оставляя максимум 10 архивов.
+    /// Deletes archives older than 30 days, keeping a maximum of 10 archives.
     private func cleanupOldArchives() {
         guard let files = try? FileManager.default.contentsOfDirectory(at: archiveDirectoryURL, includingPropertiesForKeys: [.creationDateKey]) else {
             return
@@ -116,7 +116,7 @@ public actor TransactionJournal {
         }
     }
     
-    /// Загружает все транзакции из журнала.
+    /// Loads all transactions from the journal.
     public func loadAll() throws -> [CleanupTransaction] {
         guard FileManager.default.fileExists(atPath: journalURL.path) else { return [] }
         let content = try String(contentsOf: journalURL, encoding: .utf8)
@@ -128,7 +128,7 @@ public actor TransactionJournal {
         }
     }
     
-    /// Загружает все транзакции из журнала и архивов.
+    /// Loads all transactions from the journal and archives.
     public func loadAllWithArchives() throws -> [CleanupTransaction] {
         var allTransactions = try loadAll()
         
@@ -147,14 +147,14 @@ public actor TransactionJournal {
         return allTransactions
     }
     
-    /// Очищает журнал транзакций.
+    /// Clears the transaction journal.
     public func clear() throws {
         if FileManager.default.fileExists(atPath: journalURL.path) {
             try FileManager.default.removeItem(at: journalURL)
         }
     }
     
-    /// Очищает журнал и все архивы.
+    /// Clears the journal and all archives.
     public func clearAll() throws {
         try clear()
         if FileManager.default.fileExists(atPath: archiveDirectoryURL.path) {
@@ -163,7 +163,7 @@ public actor TransactionJournal {
         }
     }
     
-    /// Возвращает размер журнала в байтах.
+    /// Returns the journal size in bytes.
     public func journalSize() throws -> Int64 {
         guard FileManager.default.fileExists(atPath: journalURL.path) else { return 0 }
         let attributes = try FileManager.default.attributesOfItem(atPath: journalURL.path)

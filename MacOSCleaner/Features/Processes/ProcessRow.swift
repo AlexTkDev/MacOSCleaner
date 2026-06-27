@@ -60,7 +60,7 @@ struct ProcessRow: View {
                 }
 
                 HStack(spacing: 8) {
-                    Text("PID \(process.pid)")
+                    Text(String(format: "process_pid_format".localized, process.pid))
                         .font(.caption)
                         .foregroundColor(.secondary)
 

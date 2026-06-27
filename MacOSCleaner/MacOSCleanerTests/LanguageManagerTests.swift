@@ -5,7 +5,7 @@ final class LanguageManagerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        // Сбросим язык по умолчанию на английский перед каждым тестом
+        // Reset to English before each test
         LanguageManager.shared.setLanguage(.english)
     }
     
@@ -23,8 +23,12 @@ final class LanguageManagerTests: XCTestCase {
         XCTAssertEqual("welcome_msg".localized, "З поверненням!")
     }
     
+    func testLocalizationSwitchToSpanish() {
+        LanguageManager.shared.setLanguage(.spanish)
+        XCTAssertEqual("welcome_msg".localized, "¡Bienvenido de nuevo!")
+    }
+    
     func testLocalizationWithArgs() {
-        // Мы не добавляли ключей с аргументами, но можем проверить форматирование
         let template = "Hello %@"
         let formatted = template.localizedWithArgs("Alex")
         XCTAssertEqual(formatted, "Hello Alex")

@@ -22,11 +22,8 @@ struct MacOSCleanerApp: App {
         let engine = CleanupEngine(commandRunner: commandRunner)
         self.cleanupViewModel = CleanupViewModel(engine: engine, journal: journal, settings: appSettings)
 
-        // Request permissions at startup
-        let manager = permissionsManager
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            manager.showGuidanceIfNeeded()
-        }
+        // Preload Launch Services cache
+        Task { await LSRegisterCache().warmup() }
     }
     
     private static func installCrashHandlers() {
@@ -66,13 +63,13 @@ struct MacOSCleanerApp: App {
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
-                Button("About MacOS Cleaner") {
+                Button("about_title".localized) {
                     openWindow(id: "about")
                 }
             }
         }
         
-        Window("About MacOS Cleaner", id: "about") {
+        Window("about_title".localized, id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)

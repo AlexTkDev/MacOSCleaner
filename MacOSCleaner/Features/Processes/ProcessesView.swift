@@ -22,8 +22,6 @@ public struct ProcessesView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
 
-            Divider()
-
             if isEditMode {
                 selectionToolbar
             }
@@ -50,7 +48,7 @@ public struct ProcessesView: View {
                 }
             }
         }
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.controlBackgroundColor))
         .alert(
             "processes_confirm_terminate".localized,
             isPresented: Binding(
@@ -127,17 +125,14 @@ public struct ProcessesView: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(Color.red.opacity(0.1))
-                )
+                .background(Capsule().fill(Color.red.opacity(0.1)))
                 .foregroundColor(.red)
             }
 
             Menu {
                 Picker("view_mode".localized, selection: $viewModel.viewMode) {
                     ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(mode.localizedName).tag(mode)
                     }
                 }
                 Divider()
@@ -164,9 +159,7 @@ public struct ProcessesView: View {
             }
             .buttonStyle(.bordered)
 
-            Button(action: {
-                viewModel.showBlacklistAlert = true
-            }) {
+            Button(action: { viewModel.showBlacklistAlert = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "xmark.circle")
                         .font(.system(size: 14, weight: .semibold))
@@ -179,9 +172,7 @@ public struct ProcessesView: View {
             .buttonStyle(.bordered)
             .help("processes_tooltip_blacklist".localized)
 
-            Button(action: {
-                viewModel.showWhitelistAlert = true
-            }) {
+            Button(action: { viewModel.showWhitelistAlert = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "lock.circle")
                         .font(.system(size: 14, weight: .semibold))
@@ -194,9 +185,7 @@ public struct ProcessesView: View {
             .buttonStyle(.bordered)
             .help("processes_tooltip_whitelist".localized)
 
-            Button(action: {
-                Task { await viewModel.scan() }
-            }) {
+            Button(action: { Task { await viewModel.scan() } }) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 14, weight: .semibold))
             }
@@ -204,42 +193,34 @@ public struct ProcessesView: View {
             .help("processes_tooltip_refresh".localized)
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var selectionToolbar: some View {
         HStack(spacing: 12) {
-            Button(action: {
-                viewModel.selectAll()
-            }) {
+            Button(action: viewModel.selectAll) {
                 Label("select_all".localized, systemImage: "checkmark.circle")
             }
             .buttonStyle(.bordered)
 
-            Button(action: {
-                viewModel.deselectAll()
-            }) {
+            Button(action: viewModel.deselectAll) {
                 Label("deselect_all".localized, systemImage: "circle")
             }
             .buttonStyle(.bordered)
 
             Spacer()
 
-            Text("\(viewModel.selection.count) selected")
+            Text(String(format: "processes_selected_count".localized, viewModel.selection.count))
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            Button(action: {
-                Task { await viewModel.terminateSelected() }
-            }) {
+            Button(action: { Task { await viewModel.terminateSelected() } }) {
                 Label("terminate_selected".localized, systemImage: "xmark.circle")
             }
             .buttonStyle(.bordered)
             .disabled(viewModel.selection.isEmpty)
 
-            Button(role: .destructive, action: {
-                Task { await viewModel.forceKillSelected() }
-            }) {
+            Button(role: .destructive, action: { Task { await viewModel.forceKillSelected() } }) {
                 Label("force_kill_selected".localized, systemImage: "exclamationmark.triangle")
             }
             .buttonStyle(.bordered)
@@ -247,19 +228,21 @@ public struct ProcessesView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var searchField: some View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
+                .font(.system(size: 12))
             TextField("processes_search".localized, text: $viewModel.searchText)
                 .textFieldStyle(.plain)
+                .font(.system(size: 13))
         }
-        .padding(6)
+        .padding(8)
         .background(Color(NSColor.textBackgroundColor))
-        .cornerRadius(6)
+        .cornerRadius(8)
     }
 
     private var groupedProcessList: some View {
@@ -271,6 +254,11 @@ public struct ProcessesView: View {
                 }
             }
             .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .padding()
         }
     }
 
@@ -283,6 +271,11 @@ public struct ProcessesView: View {
                 }
             }
             .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .padding()
         }
     }
 
@@ -309,7 +302,7 @@ public struct ProcessesView: View {
                         .fontWeight(.medium)
 
                     HStack(spacing: 8) {
-                        Text("\(group.processCount) processes")
+                        Text(String(format: "processes_process_count".localized, group.processCount))
                             .font(.caption)
                             .foregroundColor(.secondary)
 
@@ -334,15 +327,10 @@ public struct ProcessesView: View {
                 Spacer()
 
                 Menu {
-                    Button(action: {
-                        Task { await viewModel.terminateGroup(group) }
-                    }) {
+                    Button(action: { Task { await viewModel.terminateGroup(group) } }) {
                         Label("processes_terminate_all".localized, systemImage: "xmark.circle")
                     }
-
-                    Button(role: .destructive, action: {
-                        Task { await viewModel.forceKillGroup(group) }
-                    }) {
+                    Button(role: .destructive, action: { Task { await viewModel.forceKillGroup(group) } }) {
                         Label("processes_force_kill_all".localized, systemImage: "exclamationmark.triangle")
                     }
                 } label: {
@@ -426,7 +414,7 @@ public struct ProcessesView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
-            HStack {
+            HStack(spacing: 8) {
                 TextField("processes_blacklist_placeholder".localized, text: $viewModel.newBlacklistEntry)
                     .textFieldStyle(.roundedBorder)
                 Button("add".localized) {
@@ -442,9 +430,7 @@ public struct ProcessesView: View {
                         Text(name)
                             .font(.system(.body, design: .monospaced))
                         Spacer()
-                        Button(action: {
-                            Task { await viewModel.removeFromBlacklist(name) }
-                        }) {
+                        Button(action: { Task { await viewModel.removeFromBlacklist(name) } }) {
                             Image(systemName: "minus.circle")
                                 .foregroundColor(.red)
                         }
@@ -472,7 +458,7 @@ public struct ProcessesView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
-            HStack {
+            HStack(spacing: 8) {
                 TextField("processes_whitelist_placeholder".localized, text: $viewModel.newWhitelistEntry)
                     .textFieldStyle(.roundedBorder)
                 Button("add".localized) {
@@ -488,9 +474,7 @@ public struct ProcessesView: View {
                         Text(name)
                             .font(.system(.body, design: .monospaced))
                         Spacer()
-                        Button(action: {
-                            Task { await viewModel.removeFromWhitelist(name) }
-                        }) {
+                        Button(action: { Task { await viewModel.removeFromWhitelist(name) } }) {
                             Image(systemName: "minus.circle")
                                 .foregroundColor(.red)
                         }
@@ -523,9 +507,7 @@ private struct AppIconView: View {
                 .font(.system(size: 18))
                 .foregroundColor(.secondary)
                 .frame(width: 24)
-                .task {
-                    await loadIcon()
-                }
+                .task { await loadIcon() }
         }
     }
 

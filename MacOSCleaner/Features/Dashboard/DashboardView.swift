@@ -26,6 +26,7 @@ struct DashboardView: View {
             }
             .padding(24)
         }
+        .background(Color(NSColor.controlBackgroundColor))
         .task {
             await viewModel.refresh()
         }
@@ -33,7 +34,7 @@ struct DashboardView: View {
     
     private var systemInfoSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_system_info".localized)
+            Label("dashboard_system_info".localized, systemImage: "info.circle")
                 .font(.headline)
             
             HStack(spacing: 40) {
@@ -44,28 +45,28 @@ struct DashboardView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(Color(NSColor.controlBackgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
         }
     }
     
     private var diskUsageCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_disk_usage".localized)
+            Label("dashboard_disk_usage".localized, systemImage: "internaldrive")
                 .font(.headline)
             
             ZStack {
                 Chart {
                     SectorMark(
-                        angle: .value("Used", viewModel.usedDiskSpace),
+                        angle: .value("dashboard_used".localized, viewModel.usedDiskSpace),
                         innerRadius: .ratio(0.55),
                         angularInset: 2
                     )
                     .foregroundStyle(Color.accentColor)
                     
                     SectorMark(
-                        angle: .value("Free", viewModel.freeDiskSpace),
+                        angle: .value("dashboard_free".localized, viewModel.freeDiskSpace),
                         innerRadius: .ratio(0.55),
                         angularInset: 2
                     )
@@ -74,7 +75,7 @@ struct DashboardView: View {
                 .frame(height: 200)
                 
                 VStack {
-                    Text("\(Int(viewModel.usedDiskPercentage * 100))%")
+                    Text(String(format: "dashboard_used_percent_format".localized, Int(viewModel.usedDiskPercentage * 100)))
                         .font(.system(size: 28, weight: .bold))
                         .minimumScaleFactor(0.5)
                     Text("dashboard_used".localized)
@@ -92,34 +93,32 @@ struct DashboardView: View {
             }
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
-        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
     }
     
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_statistics".localized)
+            Label("dashboard_statistics".localized, systemImage: "chart.bar")
                 .font(.headline)
             
             VStack(spacing: 20) {
-                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.string(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
+                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.localizedString(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
                 StatRow(title: "dashboard_cleanups".localized, value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
                 StatRow(title: "dashboard_status".localized, value: "dashboard_healthy".localized, icon: "checkmark.circle", color: .green)
             }
             Spacer()
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color(NSColor.controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
-        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
     }
     
     private var recentOperationsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("dashboard_recent_operations".localized)
+            Label("dashboard_recent_operations".localized, systemImage: "clock")
                 .font(.headline)
             
             if viewModel.recentTransactions.isEmpty {
@@ -127,6 +126,9 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
             } else {
                 VStack(spacing: 0) {
                     ForEach(viewModel.recentTransactions) { transaction in
@@ -136,9 +138,9 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .background(Color(NSColor.windowBackgroundColor))
+                .background(Color(NSColor.controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
             }
         }
     }
@@ -179,16 +181,16 @@ struct TransactionRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(transaction.timestamp, style: .date)
+                Text(transaction.timestamp.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
                     .fontWeight(.medium)
-                Text(transaction.timestamp, style: .time)
+                Text(transaction.timestamp.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale)))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            Text("+\(ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file))")
+            Text(String(format: "dashboard_freed_prefix".localized, ByteCountFormatter.localizedString(fromByteCount: totalFreed, countStyle: .file)))
                 .foregroundColor(.green)
                 .fontWeight(.bold)
         }
@@ -214,7 +216,7 @@ struct DiskStatItem: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            Text(ByteCountFormatter.string(fromByteCount: value, countStyle: .file))
+            Text(ByteCountFormatter.localizedString(fromByteCount: value, countStyle: .file))
                 .fontWeight(.medium)
         }
     }

@@ -1,0 +1,15 @@
+{
+  "app": "EpicGames",
+  "bundleID": "com.epicgames.EpicGamesLauncher",
+  "mustFind": [
+    "Epic",
+    "~/Library/Caches/com.epicgames.EpicGamesLauncher"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [
+    "~/.config/Epic"
+  ],
+  "scoreFloor": 30
+}

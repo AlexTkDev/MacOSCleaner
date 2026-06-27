@@ -1,0 +1,15 @@
+{
+  "app": "Unity",
+  "bundleID": "com.unity3d.UnityEditor5",
+  "mustFind": [
+    "~/Library/Application Support/Unity",
+    "~/Library/Caches/com.unity3d.UnityEditor5"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Unity/Asset Store"
+  ],
+  "scoreFloor": 30
+}

@@ -1,0 +1,14 @@
+{
+  "app": "NordVPN",
+  "bundleID": "com.nordvpn.macos",
+  "mustFind": [
+    "LaunchDaemons",
+    "PrivilegedHelperTools",
+    "~/Library/Caches/com.nordvpn.macos"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [],
+  "scoreFloor": 30
+}

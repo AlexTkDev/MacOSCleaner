@@ -1,0 +1,16 @@
+{
+  "app": "Adobe Creative Cloud",
+  "bundleID": "com.adobe.acc.AdobeCreativeCloud",
+  "mustFind": [
+    "Application Support/Adobe",
+    "Preferences/Adobe",
+    "~/Library/Caches/com.adobe.acc"
+  ],
+  "mustNotFind": [
+    "com.apple."
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Adobe/Creative Cloud Libraries"
+  ],
+  "scoreFloor": 30
+}

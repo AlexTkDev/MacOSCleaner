@@ -41,33 +41,42 @@ public final class PermissionsManager {
     /// Checks if the application has Full Disk Access by attempting to read protected paths.
     public static func checkFullDiskAccess() -> Bool {
         let fm = FileManager.default
-        let home = NSHomeDirectory()
         
-        let testPaths = [
-            "/Library/Application Support",
-            home + "/Library/Caches",
-            home + "/Library/Application Support",
-            home + "/Library/Mail",
-            home + "/Library/Messages",
-            home + "/Library/Safari",
-            home + "/Library/Keychains",
-            home + "/Library/Calendars",
-            home + "/Library/Contacts",
+        // Directories with restricted permissions — listing contents requires FDA
+        let protectedPaths = [
+            "/Library/Application Support/com.apple.TCC",
+            "/private/var/db/dslocal",
         ]
         
-        var failedPaths: [String] = []
-        for path in testPaths {
+        var checked = false
+        for path in protectedPaths {
             guard fm.fileExists(atPath: path) else { continue }
+            checked = true
             do {
                 _ = try fm.contentsOfDirectory(atPath: path)
             } catch {
-                failedPaths.append(path)
+                Logger.permissions.warning("FDA check failed at: \(path)")
+                return false
             }
         }
         
-        if !failedPaths.isEmpty {
-            Logger.permissions.warning("FDA check failed for: \(failedPaths.joined(separator: ", "))")
-            return false
+        // Fallback for older macOS — try Keychains with attribute check
+        if !checked {
+            let keychains = "/Library/Keychains"
+            if fm.fileExists(atPath: keychains) {
+                do {
+                    // attributesOfItem requires read access to the item metadata,
+                    // which is a stronger check than listing parent directory
+                    _ = try fm.attributesOfItem(atPath: keychains)
+                    if let items = try? fm.contentsOfDirectory(atPath: keychains),
+                       let first = items.first {
+                        _ = try fm.attributesOfItem(atPath: keychains + "/" + first)
+                    }
+                } catch {
+                    Logger.permissions.warning("FDA check failed at: \(keychains)")
+                    return false
+                }
+            }
         }
         
         Logger.permissions.info("Full Disk Access check passed")
@@ -117,16 +126,16 @@ public final class PermissionsManager {
     public var missingPermissions: [String] {
         var missing: [String] = []
         if !hasFullDiskAccess {
-            missing.append("Full Disk Access")
+            missing.append("permissions.full_disk_access".localized)
         }
         if !hasAccessibility {
-            missing.append("Accessibility")
+            missing.append("permissions.accessibility".localized)
         }
         if !hasAutomation {
-            missing.append("Automation (Apple Events)")
+            missing.append("permissions.automation".localized)
         }
         if !hasTrashAccess {
-            missing.append("Trash Access")
+            missing.append("permissions.trash_access".localized)
         }
         return missing
     }

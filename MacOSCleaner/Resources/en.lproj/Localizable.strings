@@ -48,6 +48,12 @@
 "dashboard_recent_operations" = "Recent Operations";
 "dashboard_no_recent_operations" = "No recent operations";
 
+// Language Names
+"language.english" = "English";
+"language.russian" = "Russian";
+"language.ukrainian" = "Ukrainian";
+"language.spanish" = "Spanish";
+
 // Settings View
 "settings_title" = "Settings";
 "settings_subtitle" = "Configure app preferences";
@@ -195,6 +201,8 @@
 // Trash
 "trash_user_label" = "User Recycle Bin";
 "trash_user_description" = "Contents of your system Recycle Bin. Contains deleted files.";
+"trash_access_prompt_message" = "Please select the Trash folder to grant access for scanning and cleaning. (It is already selected, just click 'Grant Access')";
+"trash_access_prompt_button" = "Grant Access";
 
 // Uninstaller View
 "uninstaller_title" = "Uninstaller";
@@ -224,6 +232,8 @@
 "uninstaller_expert_tip" = "In Expert Mode you can selectively remove leftovers like caches and preferences.";
 "uninstaller_cleanup_items" = "Cleanup Items";
 "uninstaller_scanning_apps" = "Scanning Applications...";
+"uninstaller.deep_scanning_progress" = "Scanning leftovers: %d of %d apps...";
+"uninstaller.analyzing" = "Analyzing...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
 "shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
@@ -284,6 +294,30 @@
 "settings_open_settings" = "Open Settings";
 "settings_check_permissions" = "Check Permissions";
 
+// Format strings
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld MB";
+
+// Process format strings
+"processes_view_mode_grouped" = "Grouped";
+"processes_view_mode_flat" = "Flat";
+"processes_selected_count" = "%lld selected";
+"processes_process_count" = "%lld processes";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldh %lldm";
+"process_uptime_minutes_format" = "%lldm";
+
+// Common
+"version_unknown" = "N/A";
+
+// Operation Risk
+"risk.safe" = "Safe";
+"risk.moderate" = "Moderate";
+"risk.dangerous" = "Dangerous";
+"risk.protected" = "Protected";
+
 // Cleanup Dev Badge
 "cleanup_dev_badge" = "DEV";
 
@@ -299,17 +333,211 @@
 "sort_name" = "Name";
 "sort_threads" = "Thread Count";
 
-// New cleanup categories
-"time_machine_snapshots" = "Time Machine Snapshots";
-"ios_backups" = "iOS Backups";
-"mail_downloads" = "Mail Downloads";
-"saved_app_state" = "Saved Application State";
-"crash_reporter" = "Crash Reporter";
-"assets_v2" = "AssetsV2 / iWork Templates";
-"cloud_kit_cache" = "iCloud CloudKit Cache";
-"swift_pm_cache" = "Swift Package Manager Cache";
-"carthage_cache" = "Carthage Cache";
-"steam_cache" = "Steam Cache";
-"teams_cache" = "Microsoft Teams Cache";
-"adobe_caches" = "Adobe Caches";
-"chrome_extra_caches" = "Chrome Extra Caches";
+// Cleanup Category Names
+"category.app_caches" = "User app caches";
+"category.package_managers" = "Package managers";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "iOS Simulators";
+"category.android_caches" = "Android caches";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "IDE / Electron caches";
+"category.browser_caches" = "Browser caches";
+"category.messaging_media" = "Messaging / media";
+"category.docker" = "Docker";
+"category.language_caches" = "Language caches";
+"category.user_logs" = "User logs";
+"category.system_caches" = "System caches";
+"category.app_containers" = "App containers";
+"category.dotfile_caches" = "Dotfile caches";
+"category.scattered_junk" = "Scattered junk";
+"category.orphaned_remnants" = "Orphaned remnants";
+"category.orphaned_files" = "Orphaned files";
+"category.large_files" = "Large files";
+"category.dynamic_cache_discovery" = "Dynamic cache discovery";
+"category.time_machine_snapshots" = "Time Machine Snapshots";
+"category.ios_backups" = "iOS Backups";
+"category.mail_downloads" = "Mail Downloads";
+"category.saved_app_state" = "Saved Application State";
+"category.crash_reporter" = "Crash Reporter";
+"category.assets_v2" = "AssetsV2 / iWork Templates";
+"category.cloud_kit_cache" = "iCloud CloudKit Cache";
+"category.swift_pm_cache" = "Swift Package Manager Cache";
+"category.carthage_cache" = "Carthage Cache";
+"category.steam_cache" = "Steam Cache";
+"category.teams_cache" = "Microsoft Teams Cache";
+"category.adobe_caches" = "Adobe Caches";
+"category.chrome_extra_caches" = "Chrome Extra Caches";
+"category.ide_old_versions" = "Old IDE Versions";
+"category.launch_agents" = "Launch Agents";
+"category.launch_daemons" = "Launch Daemons";
+"category.privileged_helpers" = "Privileged Helper Tools";
+"category.pkg_receipts" = "Package Receipts";
+"category.internet_plugins" = "Internet Plugins";
+"category.shared_file_lists" = "Shared File Lists";
+"category.cloud_docs" = "Cloud Docs";
+"category.photos_cache" = "Photos Cache";
+"category.voice_memos" = "Voice Memos";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Old Backups";
+"category.dns_flush" = "DNS Cache";
+"category.font_cache" = "Font Cache";
+"category.sleep_image" = "Sleep Image";
+"category.duplicate_files" = "Duplicate Files";
+"category.unused_apps" = "Unused Apps";
+
+// Process View - Missing Keys
+"view_mode" = "View Mode";
+"sort_by" = "Sort By";
+"cancel_selection" = "Cancel Selection";
+"select_multiple" = "Select Multiple";
+"select_all" = "Select All";
+"deselect_all" = "Deselect All";
+"terminate_selected" = "Terminate Selected";
+"force_kill_selected" = "Force Kill Selected";
+"processes_terminate_all" = "Terminate All";
+"processes_force_kill_all" = "Force Kill All";
+"process.unknown" = "Unknown";
+
+// Uninstaller - Scan Progress
+"uninstaller.progress.discovering" = "Discovering applications...";
+"uninstaller.progress.complete" = "Scan complete";
+
+// Uninstaller - Confidence Tiers
+"uninstaller.tier.ignore" = "Ignore";
+"uninstaller.tier.possible" = "Possible";
+"uninstaller.tier.very_likely" = "Very Likely";
+"uninstaller.tier.guaranteed" = "Guaranteed";
+
+// Developer Components
+"developer.android_sdk" = "Android SDK";
+"developer.gradle_cache" = "Gradle Cache";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "iOS Simulators";
+"developer.flutter_cache" = "Flutter Cache";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+// Evidence Categories
+"uninstaller.evidence_category.identity" = "Identity Match";
+"uninstaller.evidence_category.signature" = "Code Signature";
+"uninstaller.evidence_category.system" = "System Integration";
+"uninstaller.evidence_category.metadata" = "File Metadata";
+"uninstaller.evidence_category.content" = "Content Analysis";
+"uninstaller.evidence_category.graph" = "Graph Propagation";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+// Evidence Descriptions
+"uninstaller.evidence.bundleIDExact.title" = "Bundle ID Matches";
+"uninstaller.evidence.bundleIDExact.description" = "Name matches the app's bundle identifier.";
+"uninstaller.evidence.bundleIDPrefix.title" = "Bundle ID Prefix";
+"uninstaller.evidence.bundleIDPrefix.description" = "Name starts with '%@'.";
+"uninstaller.evidence.appNameExact.title" = "App Name Matches";
+"uninstaller.evidence.appNameExact.description" = "Name matches the application name.";
+"uninstaller.evidence.appNamePrefix.title" = "App Name Prefix";
+"uninstaller.evidence.appNamePrefix.description" = "Name starts with the application name.";
+"uninstaller.evidence.executableName.title" = "Executable Name";
+"uninstaller.evidence.executableName.description" = "Name matches the app's executable.";
+"uninstaller.evidence.frameworkName.title" = "Framework Name";
+"uninstaller.evidence.frameworkName.description" = "File is a framework used by the app.";
+"uninstaller.evidence.xpcServiceName.title" = "XPC Service";
+"uninstaller.evidence.xpcServiceName.description" = "File is an XPC service used by the app.";
+"uninstaller.evidence.plugInName.title" = "Plug-in Name";
+"uninstaller.evidence.plugInName.description" = "File is a plug-in used by the app.";
+"uninstaller.evidence.vendorName.title" = "Vendor Name";
+"uninstaller.evidence.vendorName.description" = "File belongs to the same vendor.";
+"uninstaller.evidence.teamID.title" = "Team ID Match";
+"uninstaller.evidence.teamID.description" = "Signed by team %@, matching the application.";
+"uninstaller.evidence.developerSignature.title" = "Developer Signature";
+"uninstaller.evidence.developerSignature.description" = "Signed by the same developer certificate.";
+"uninstaller.evidence.launchAgent.title" = "Launch Agent";
+"uninstaller.evidence.launchAgent.description" = "A launch agent registered by the app.";
+"uninstaller.evidence.launchDaemon.title" = "Launch Daemon";
+"uninstaller.evidence.launchDaemon.description" = "A launch daemon registered by the app.";
+"uninstaller.evidence.loginItem.title" = "Login Item";
+"uninstaller.evidence.loginItem.description" = "A login item registered by the app.";
+"uninstaller.evidence.appGroup.title" = "App Group";
+"uninstaller.evidence.appGroup.description" = "Belongs to the app's group container.";
+"uninstaller.evidence.container.title" = "App Container";
+"uninstaller.evidence.container.description" = "Application sandbox container.";
+"uninstaller.evidence.extension.title" = "App Extension";
+"uninstaller.evidence.extension.description" = "App extension registered by the app.";
+"uninstaller.evidence.xpcConnection.title" = "XPC Connection";
+"uninstaller.evidence.xpcConnection.description" = "An XPC connection used by the app.";
+"uninstaller.evidence.packageReceipt.title" = "Package Receipt";
+"uninstaller.evidence.packageReceipt.description" = "Registered via a package receipt.";
+"uninstaller.evidence.plistContent.title" = "Plist Content";
+"uninstaller.evidence.plistContent.description" = "Property list contains the app's name or bundle ID.";
+"uninstaller.evidence.spotlight.title" = "Spotlight Index";
+"uninstaller.evidence.spotlight.description" = "Found via Spotlight search.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Spotlight Bundle Attribute";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Spotlight metadata reports bundle identifier '%@'.";
+"uninstaller.evidence.spotlightCreator.title" = "Spotlight Creator";
+"uninstaller.evidence.spotlightCreator.description" = "Spotlight creator metadata matches.";
+"uninstaller.evidence.fileContent.title" = "File Content";
+"uninstaller.evidence.fileContent.description" = "File content references the app.";
+"uninstaller.evidence.electronCache.title" = "Electron Cache";
+"uninstaller.evidence.electronCache.description" = "Electron-based app cache.";
+"uninstaller.evidence.jetBrainsConfig.title" = "JetBrains Config";
+"uninstaller.evidence.jetBrainsConfig.description" = "JetBrains IDE configuration.";
+"uninstaller.evidence.flutterBuild.title" = "Flutter Build";
+"uninstaller.evidence.flutterBuild.description" = "Flutter build artifact.";
+"uninstaller.evidence.parentDirectory.title" = "Parent Directory";
+"uninstaller.evidence.parentDirectory.description" = "Found in a directory related to the app.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Registered in the Launch Services database.";
+
+// Permissions - Missing Access Descriptions
+"permissions.full_disk_access" = "Full Disk Access";
+"permissions.accessibility" = "Accessibility";
+"permissions.automation" = "Automation (Apple Events)";
+"permissions.trash_access" = "Trash Access";
+"permissions.notification_provisional" = "Provisional";
+"permissions.notification_ephemeral" = "Ephemeral";
+"permissions.unknown_status" = "Unknown";
+
+// Process Categories
+"process.category.applications" = "Applications";
+"process.category.launch_agents" = "Launch Agents";
+"process.category.launch_daemons" = "Launch Daemons";
+"process.category.system" = "System";
+
+// Uninstaller - Additional UI
+"uninstaller.scanning_deep" = "Deep Scanning...";
+"uninstaller.why_this_file" = "Why this file?";
+"uninstaller.related_files" = "Related Files";
+"uninstaller.developer_artifacts" = "Developer Artifacts";
+"uninstaller.progress.developer_components" = "Checking developer components...";
+"uninstaller.footer.summary" = "%lld file(s) selected across %@ tiers";
+
+// Format Helpers
+"format_bytes_b" = "%lld B";
+"format_bytes_kb" = "%.1f KB";
+"format_bytes_mb" = "%.1f MB";
+"format_bytes_gb" = "%.2f GB";
+
+// Process Block Reasons
+"process_block_pid_format" = "PID %lld is a system-critical process";
+"process_block_whitelist_name_format" = "%@ is in your whitelist (protected)";
+"process_block_whitelist_bundle_format" = "%@ is in your whitelist (protected)";
+"process_block_protected_format" = "%@ is a protected system process";
+"process_block_no_path_format" = "%@ has no path info — proceed with caution";
+
+// Error Messages
+"error_ps_failed_format" = "Failed to list processes: %@";
+"error_operation_blocked_format" = "Cannot terminate %@: %@";
+"error_kill_failed_format" = "Failed to kill %@ (exit %lld): %@";
+"error_timeout" = "Operation timed out";
+"error_safety_violation_format" = "Safety violation: %@";
+"error_command_failed_format" = "Command failed: %@";
+"error_invalid_transition_format" = "Invalid transition from %@ to %@";
+
+// OS Version
+"os_version_format" = "macOS %lld.%lld.%lld";
+
+// Uninstaller Tooltips
+"uninstaller_show_in_finder" = "Show in Finder";
+"uninstaller_used_by" = "Used by %@";

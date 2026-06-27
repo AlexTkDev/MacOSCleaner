@@ -1,0 +1,21 @@
+{
+  "app": "Cursor",
+  "bundleID": "com.todesktop.230313mzl4w4u92",
+  "mustFind": [
+    "~/Library/Application Support/Cursor",
+    "~/Library/Caches/com.todesktop.230313mzl4w4u92",
+    "~/Library/Preferences/com.todesktop.230313mzl4w4u92.plist",
+    "~/Library/Saved Application State/com.todesktop.230313mzl4w4u92.savedState",
+    "~/Library/Logs/Cursor"
+  ],
+  "mustNotFind": [
+    "com.adguard.",
+    "com.apple.",
+    "com.microsoft.VSCode"
+  ],
+  "developerArtifacts": [
+    "~/Library/Application Support/Cursor/generated",
+    "~/Library/Application Support/Cursor/CachedExtensionVSIXs"
+  ],
+  "scoreFloor": 30
+}
