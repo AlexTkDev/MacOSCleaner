@@ -82,6 +82,22 @@
 "settings_forget_description" = "Clear all saved data and reset settings to their defaults.";
 "settings_reset_button" = "Reset All Settings";
 
+// Uninstaller Scan Mode
+"settings_uninstaller" = "Uninstaller";
+"scan_mode" = "Scan Mode";
+"scan_mode.safe" = "Safe";
+"scan_mode.balanced" = "Balanced";
+"scan_mode.balanced.default" = "Default";
+"scan_mode.safe.desc" = "Finds only high-confidence files matched by Bundle ID, app name, or package receipts. Does not use Spotlight. Minimal risk of removing shared files.";
+"scan_mode.balanced.desc" = "Full scan including Spotlight (mdfind), extended paths, and all possible matches. Finds more residuals including non-standard locations. Recommended for thorough cleanup.";
+
+// Update Checker
+"update.check" = "Check for Updates";
+"update.available" = "Version %@ is available";
+"update.download" = "Download on GitHub";
+"update.up_to_date" = "Up to date";
+"update.checking" = "Checking...";
+
 // Settings Tooltips
 "settings_tooltip_language" = "Select the interface language for the application.";
 

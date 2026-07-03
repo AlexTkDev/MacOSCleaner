@@ -108,6 +108,27 @@ struct UninstallerView: View {
         .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
         .toolbar {
             ToolbarItem(placement: .automatic) {
+                // Scan mode badge
+                HStack(spacing: 4) {
+                    Image(systemName: settings.uninstallerScanMode == .safe ? "shield.checkmark" : "scale.3d")
+                    Text(settings.uninstallerScanMode.localizedName)
+                }
+                .font(.caption)
+                .fontWeight(.medium)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .foregroundStyle(
+                    settings.uninstallerScanMode == .safe ? Color.blue : Color.green
+                )
+                .background(
+                    Capsule().fill(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+                )
+                .overlay(
+                    Capsule().strokeBorder(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, 6)
+            }
+            ToolbarItem(placement: .automatic) {
                 Button(action: loadApps) {
                     Image(systemName: "arrow.clockwise")
                 }
@@ -167,7 +188,7 @@ struct UninstallerView: View {
             deepScanTotal = total
 
             for app in fresh {
-                if let result = try? await service.deepScan(app) {
+                if let result = try? await service.deepScan(app, mode: settings.uninstallerScanMode) {
                     deepScanCompleted += 1
                     if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
                         allApps[idx] = result

@@ -6,6 +6,7 @@ struct RootView: View {
     let journal: TransactionJournal
     let appSettings: AppSettings
     @Bindable var permissionsManager: PermissionsManager
+    @Binding var availableUpdate: String?
 
     var body: some View {
         NavigationSplitView {
@@ -60,7 +61,8 @@ struct RootView: View {
                     Task {
                         try? await journal.clear()
                     }
-                }
+                },
+                availableUpdate: $availableUpdate
             )
         }
     }
@@ -78,6 +80,7 @@ struct RootView: View {
         ),
         journal: journal,
         appSettings: settings,
-        permissionsManager: PermissionsManager()
+        permissionsManager: PermissionsManager(),
+        availableUpdate: .constant(nil)
     )
 }
