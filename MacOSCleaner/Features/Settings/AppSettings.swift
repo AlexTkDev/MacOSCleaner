@@ -70,6 +70,27 @@ public enum RefreshInterval: String, CaseIterable, Identifiable {
     }
 }
 
+public enum ScanMode: String, CaseIterable, Identifiable, Sendable {
+    case safe
+    case balanced
+
+    public var id: String { rawValue }
+
+    public var localizedName: String {
+        switch self {
+        case .safe: return "scan_mode.safe".localized
+        case .balanced: return "scan_mode.balanced".localized
+        }
+    }
+
+    public var localizedDescription: String {
+        switch self {
+        case .safe: return "scan_mode.safe.desc".localized
+        case .balanced: return "scan_mode.balanced.desc".localized
+        }
+    }
+}
+
 public enum ProcessSortOption: String, CaseIterable, Identifiable {
     case cpu = "CPU"
     case memory = "Memory"
@@ -105,6 +126,7 @@ public final class AppSettings {
         static let emptyTrashImmediately = "settings_emptyTrashImmediately"
         static let processRefreshInterval = "settings_processRefreshInterval"
         static let processSortOption = "settings_processSortOption"
+        static let uninstallerScanMode = "settings_uninstallerScanMode"
     }
 
     // MARK: - General
@@ -152,6 +174,10 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(bypassTrashOnUninstall, forKey: Keys.bypassTrashOnUninstall) }
     }
 
+    public var uninstallerScanMode: ScanMode {
+        didSet { UserDefaults.standard.set(uninstallerScanMode.rawValue, forKey: Keys.uninstallerScanMode) }
+    }
+
     // MARK: - Advanced
 
     public var showRelatedFiles: Bool {
@@ -193,6 +219,7 @@ public final class AppSettings {
         self.emptyTrashImmediately = defaults.bool(forKey: Keys.emptyTrashImmediately)
         self.processRefreshInterval = RefreshInterval(rawValue: defaults.string(forKey: Keys.processRefreshInterval) ?? "") ?? .manual
         self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
+        self.uninstallerScanMode = ScanMode(rawValue: defaults.string(forKey: Keys.uninstallerScanMode) ?? "") ?? .balanced
 
         LanguageManager.shared.setLanguage(lang)
 
@@ -209,7 +236,7 @@ public final class AppSettings {
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
             Keys.showRelatedFiles, Keys.emptyTrashImmediately,
-            Keys.processRefreshInterval, Keys.processSortOption
+            Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode
         ]
         for key in allKeys {
             defaults.removeObject(forKey: key)
@@ -226,6 +253,7 @@ public final class AppSettings {
         emptyTrashImmediately = false
         processRefreshInterval = .manual
         processSortOption = .cpu
+        uninstallerScanMode = .balanced
 
         LanguageManager.shared.setLanguage(.english)
     }

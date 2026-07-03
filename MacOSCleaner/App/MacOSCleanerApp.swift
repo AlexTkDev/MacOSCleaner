@@ -15,6 +15,8 @@ struct MacOSCleanerApp: App {
     private let cleanupViewModel: CleanupViewModel
     private let appSettings = AppSettings()
     private let permissionsManager = PermissionsManager()
+    private let updateChecker = UpdateChecker()
+    @State private var availableUpdate: String? = nil
     
     init() {
         Self.installCrashHandlers()
@@ -58,8 +60,12 @@ struct MacOSCleanerApp: App {
                 cleanupViewModel: cleanupViewModel,
                 journal: journal,
                 appSettings: appSettings,
-                permissionsManager: permissionsManager
+                permissionsManager: permissionsManager,
+                availableUpdate: $availableUpdate
             )
+            .task {
+                availableUpdate = await updateChecker.checkForUpdate()
+            }
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -70,7 +76,7 @@ struct MacOSCleanerApp: App {
         }
         
         Window("about_title".localized, id: "about") {
-            AboutView()
+            AboutView(availableUpdate: availableUpdate)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

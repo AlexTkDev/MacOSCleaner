@@ -82,6 +82,22 @@
 "settings_forget_description" = "Очистить все сохраненные данные и восстановить настройки по умолчанию.";
 "settings_reset_button" = "Сбросить все настройки";
 
+// Uninstaller Scan Mode
+"settings_uninstaller" = "Деинсталлятор";
+"scan_mode" = "Режим сканирования";
+"scan_mode.safe" = "Безопасный";
+"scan_mode.balanced" = "Сбалансированный";
+"scan_mode.balanced.default" = "По умолчанию";
+"scan_mode.safe.desc" = "Находит только файлы с высокой уверенностью совпадения: по Bundle ID, имени приложения или пакетным квитанциям. Не использует Spotlight. Минимальный риск затронуть файлы других приложений.";
+"scan_mode.balanced.desc" = "Полный скан: включая Spotlight (mdfind), расширенные пути и все возможные совпадения. Находит больше остатков, включая файлы в нестандартных местах. Рекомендуется для максимальной чистоты.";
+
+// Update Checker
+"update.check" = "Проверить обновления";
+"update.available" = "Доступна версия %@";
+"update.download" = "Скачать на GitHub";
+"update.up_to_date" = "Актуальная версия";
+"update.checking" = "Проверяем...";
+
 // Settings Tooltips
 "settings_tooltip_language" = "Выберите язык интерфейса приложения.";
 

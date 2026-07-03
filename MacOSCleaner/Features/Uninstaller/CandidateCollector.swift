@@ -9,9 +9,10 @@ public actor CandidateCollector {
         self.commandRunner = commandRunner
     }
 
-    public func collect(identity: AppIdentity) async -> Set<URL> {
+    public func collect(identity: AppIdentity, mode: ScanMode = .balanced) async -> Set<URL> {
         var candidates = Set<URL>()
         let home = NSHomeDirectory()
+        let maxDepth = mode == .safe ? 3 : 5
 
         // 1. Fixed popular paths
         let basePaths = [
@@ -36,7 +37,7 @@ public actor CandidateCollector {
 
         for base in basePaths {
             let url = URL(fileURLWithPath: base)
-            candidates.formUnion(await shallowScan(url, identity: identity))
+            candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
         }
 
         // 2. Deep scan critical folders
@@ -52,7 +53,7 @@ public actor CandidateCollector {
         ]
         for dir in deepFolders {
             let url = URL(fileURLWithPath: dir)
-            candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: 5))
+            candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth))
         }
 
         // 3. pkgutil receipts
@@ -67,9 +68,11 @@ public actor CandidateCollector {
             }
         }
 
-        // 4. mdfind
-        let mdfindCandidates = await runMdfind(identity: identity)
-        candidates.formUnion(mdfindCandidates)
+        // 4. mdfind (balanced only)
+        if mode == .balanced {
+            let mdfindCandidates = await runMdfind(identity: identity)
+            candidates.formUnion(mdfindCandidates)
+        }
 
         // 5. App-specific Electron paths
         if identity.isElectron {
@@ -79,12 +82,12 @@ public actor CandidateCollector {
             }
         }
 
-        // 6. JetBrains-specific
-        if identity.isJetBrains {
+        // 6. JetBrains-specific (balanced only)
+        if mode == .balanced, identity.isJetBrains {
             let jbPath = "\(home)/Library/Application Support/JetBrains"
             if fileManager.fileExists(atPath: jbPath) {
-                candidates.formUnion(await shallowScan(URL(fileURLWithPath: jbPath), identity: identity))
-                candidates.formUnion(await deepScan(URL(fileURLWithPath: jbPath), identity: identity, depth: 0, maxDepth: 4))
+                candidates.formUnion(await shallowScan(URL(fileURLWithPath: jbPath), identity: identity, mode: mode))
+                candidates.formUnion(await deepScan(URL(fileURLWithPath: jbPath), identity: identity, depth: 0, maxDepth: maxDepth))
             }
         }
 
@@ -191,13 +194,13 @@ public actor CandidateCollector {
         return candidates
     }
 
-    private func shallowScan(_ url: URL, identity: AppIdentity) async -> Set<URL> {
+    private func shallowScan(_ url: URL, identity: AppIdentity, mode: ScanMode = .balanced) async -> Set<URL> {
         var found = Set<URL>()
         guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil) else {
             return found
         }
         for item in contents {
-            if matchCandidate(item, identity: identity) {
+            if matchCandidate(item, identity: identity, mode: mode) {
                 found.insert(item)
             }
         }
@@ -211,7 +214,7 @@ public actor CandidateCollector {
             return found
         }
         for item in contents {
-            if matchCandidate(item, identity: identity) {
+            if matchCandidate(item, identity: identity, mode: .balanced) {
                 found.insert(item)
             }
             var isDir: ObjCBool = false
@@ -223,16 +226,22 @@ public actor CandidateCollector {
         return found
     }
 
-    private func matchCandidate(_ url: URL, identity: AppIdentity) -> Bool {
+    private func matchCandidate(_ url: URL, identity: AppIdentity, mode: ScanMode = .balanced) -> Bool {
         let name = url.lastPathComponent
         let lowerName = name.lowercased()
 
+        // Exact matches — always checked
         if name == identity.bundleID || name.hasPrefix(identity.bundleID + ".") {
             return true
         }
         if name == identity.appName || name.hasPrefix(identity.appName + " ") || name.hasPrefix(identity.appName + ".") {
             return true
         }
+
+        // Safe mode: only exact matches above
+        if mode == .safe { return false }
+
+        // Balanced: vendor, contains, executable matching
         if identity.vendorNames.contains(name) {
             return true
         }

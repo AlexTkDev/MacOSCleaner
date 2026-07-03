@@ -31,6 +31,7 @@
 		20777F77163CF80A0DACE3F2 /* LittleSnitch.json in Resources */ = {isa = PBXBuildFile; fileRef = EFB823E397459E29F026EFB6 /* LittleSnitch.json */; };
 		2282CB50ADC015170FFA009C /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1587E61B0489D075EE10BA3D /* AppSettings.swift */; };
 		24BC2B8C0ADE2ECE5177F6CB /* ApplicationRuleRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 586694A909DE65B53CC8EDA0 /* ApplicationRuleRegistryTests.swift */; };
+		28F537E447426249322A7AE8 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC6DDA4FC825892B619F2CD /* UpdateChecker.swift */; };
 		2994E7C0CD0AB5AA8E3FD4D8 /* Evidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D051655B09FA196A2BD952F2 /* Evidence.swift */; };
 		29F1245AEC8E7426A89D8597 /* CleanupNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71786FFCFB9821335C9B9E8 /* CleanupNotifier.swift */; };
 		2AE8B02C185575DD27F1BF83 /* ArtifactClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 906E6511D36A808F61A68A15 /* ArtifactClassifierTests.swift */; };
@@ -319,6 +320,7 @@
 		BCD1414A4103E729B6946047 /* FileCleanupActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCleanupActor.swift; sourceTree = "<group>"; };
 		BDB01768AF4C46245AB56A1E /* NordVPNRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordVPNRule.swift; sourceTree = "<group>"; };
 		BE06D2D275499CE3A8A513EF /* UnityRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnityRule.swift; sourceTree = "<group>"; };
+		BFC6DDA4FC825892B619F2CD /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		C145D57FE94451F56F45C7DD /* PlistAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistAnalyzer.swift; sourceTree = "<group>"; };
 		C1C7373D2284E648D835B122 /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
 		C26CC1A76E88A0BBF3B47E5A /* CodeSignatureInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSignatureInfo.swift; sourceTree = "<group>"; };
@@ -705,6 +707,7 @@
 				0F6BA430DBA22418A7A0D0D8 /* String+Localization.swift */,
 				180E53446953349EB5FB2E04 /* SystemInfo.swift */,
 				93C5FD8CA29FB9E59A400223 /* TrashManager.swift */,
+				BFC6DDA4FC825892B619F2CD /* UpdateChecker.swift */,
 			);
 			path = Infrastructure;
 			sourceTree = "<group>";
@@ -1014,6 +1017,7 @@
 				E656F0232A7C09D30D3A8B70 /* UninstallerService.swift in Sources */,
 				2005604ECBBC2DF0D8C637F0 /* UninstallerView.swift in Sources */,
 				7C4418AE4F14E22136AA7514 /* UnityRule.swift in Sources */,
+				28F537E447426249322A7AE8 /* UpdateChecker.swift in Sources */,
 				E698B04DFC7EFEF7435E7DC3 /* VMwareFusionRule.swift in Sources */,
 				E741DC06901A23C9D9DC2267 /* VerificationEngine.swift in Sources */,
 				2D792A2983E94EDE263F97BC /* VerificationReport.swift in Sources */,
@@ -1070,7 +1074,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = singlefile;
@@ -1165,7 +1169,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;

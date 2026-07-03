@@ -3,6 +3,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    var availableUpdate: String? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -46,6 +47,10 @@ struct AboutView: View {
 
     private var content: some View {
         VStack(spacing: 16) {
+            if let update = availableUpdate {
+                updateBanner(version: update)
+            }
+
             developerCard
             linksCard
 
@@ -58,6 +63,36 @@ struct AboutView: View {
                 .controlSize(.large)
         }
         .padding(20)
+    }
+
+    private func updateBanner(version: String) -> some View {
+        Button {
+            NSWorkspace.shared.open(UpdateChecker.releasesURL)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "bell.badge.fill")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .symbolRenderingMode(.multicolor)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(String(format: "update.available".localized, version))
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("update.download".localized + " →")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(
+                LinearGradient(colors: [.blue, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .shadow(color: .blue.opacity(0.3), radius: 5, y: 2)
+        }
+        .buttonStyle(.plain)
     }
 
     private var developerCard: some View {
@@ -97,5 +132,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView()
+    AboutView(availableUpdate: "1.2.0")
 }

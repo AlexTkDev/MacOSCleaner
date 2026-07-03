@@ -204,7 +204,7 @@ public actor UninstallerService {
 
     // MARK: - Deep Forensics
 
-    public func deepScan(_ app: AppInfo) async throws -> AppInfo {
+    public func deepScan(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
         let identity: AppIdentity
         if let existing = app.identity {
             identity = existing
@@ -218,7 +218,7 @@ public actor UninstallerService {
 
         let graph = EvidenceGraph(identity: identity)
 
-        async let relatedTask: [RelatedFile] = runDeepRelatedFiles(identity: identity, graph: graph)
+        async let relatedTask: [RelatedFile] = runDeepRelatedFiles(identity: identity, graph: graph, mode: mode)
         async let developerTask: [RelatedCleanupComponent] = DeveloperComponentsDetector.detect(
             appName: identity.appName,
             bundleID: identity.bundleID
@@ -232,9 +232,9 @@ public actor UninstallerService {
         return updated
     }
 
-    private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph) async -> [RelatedFile] {
+    private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph, mode: ScanMode = .balanced) async -> [RelatedFile] {
         let collector = CandidateCollector(commandRunner: commandRunner)
-        let candidates = await collector.collect(identity: identity)
+        let candidates = await collector.collect(identity: identity, mode: mode)
         let probe = EvidenceProbe(commandRunner: commandRunner, codesignCache: codesignCache, plistCache: plistCache)
 
         // Record evidence
@@ -257,8 +257,11 @@ public actor UninstallerService {
         let assessments = ConfidenceEngine.assessAll(nodes, identity: identity)
         var related: [(RelatedFile, ConfidenceTier)] = []
 
+        // Safe mode: only veryLikely and guaranteed; balanced: possible and above
+        let minimumTier: ConfidenceTier = mode == .safe ? .veryLikely : .possible
+
         for (node, assessment) in zip(nodes, assessments) {
-            guard assessment.tier != .ignore else { continue }
+            guard assessment.tier >= minimumTier else { continue }
             guard (try? safetyManager.validate(url: node.url)) != nil else { continue }
             guard node.url.path != identity.bundleURL.path else { continue }
             guard !identity.bundleURL.path.hasPrefix(node.url.path + "/") else { continue }
@@ -268,11 +271,10 @@ public actor UninstallerService {
 
             let fileSize = await getDirectorySize(url: node.url)
             let risk: DeletionRisk = node.url.path.contains("Preferences") ? .normal : .safe
-            let isSelected = true
 
             let file = RelatedFile(
                 url: node.url,
-                isSelected: isSelected,
+                isSelected: true,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,

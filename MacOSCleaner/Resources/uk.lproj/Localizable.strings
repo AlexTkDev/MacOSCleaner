@@ -82,6 +82,22 @@
 "settings_forget_description" = "Очистити всі збережені дані та відновити налаштування за замовчуванням.";
 "settings_reset_button" = "Скинути всі налаштування";
 
+// Uninstaller Scan Mode
+"settings_uninstaller" = "Деінсталятор";
+"scan_mode" = "Режим сканування";
+"scan_mode.safe" = "Безпечний";
+"scan_mode.balanced" = "Збалансований";
+"scan_mode.balanced.default" = "За замовчуванням";
+"scan_mode.safe.desc" = "Знаходить лише файли з високою впевненістю збігу: за Bundle ID, назвою програми або пакетними квитанціями. Не використовує Spotlight. Мінімальний ризик зачепити файли інших програм.";
+"scan_mode.balanced.desc" = "Повне сканування: включаючи Spotlight (mdfind), розширені шляхи та всі можливі збіги. Знаходить більше залишків, включаючи файли в нестандартних місцях. Рекомендується для максимального очищення.";
+
+// Update Checker
+"update.check" = "Перевірити оновлення";
+"update.available" = "Доступна версія %@";
+"update.download" = "Завантажити на GitHub";
+"update.up_to_date" = "Актуальна версія";
+"update.checking" = "Перевіряємо...";
+
 // Settings Tooltips
 "settings_tooltip_language" = "Виберіть мову інтерфейсу додатка.";
 

@@ -7,15 +7,19 @@ struct SettingsView: View {
     @Bindable var settings: AppSettings
     let permissionsManager: PermissionsManager
     let onForget: () -> Void
+    @Binding var availableUpdate: String?
+
     @State private var showResetConfirmation = false
     @State private var trashManager = TrashManager()
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var isCheckingForUpdates = false
 
     var body: some View {
         Form {
             permissionsSection
             generalSection
             processesSection
+            uninstallerSection
             startupSection
             trashDeletionSection
             advancedSection
@@ -112,6 +116,34 @@ struct SettingsView: View {
 
             Toggle("settings_auto_scan".localized, isOn: $settings.autoScanOnStartup)
                 .tooltip("settings_tooltip_auto_scan".localized, enabled: settings.showTooltips)
+
+            HStack {
+                Text("update.check".localized)
+                Spacer()
+                if isCheckingForUpdates {
+                    ProgressView().controlSize(.small)
+                    Text("update.checking".localized).foregroundStyle(.secondary)
+                } else if let version = availableUpdate {
+                    Button {
+                        NSWorkspace.shared.open(UpdateChecker.releasesURL)
+                    } label: {
+                        Text(String(format: "update.available".localized, version))
+                    }
+                    .buttonStyle(.link)
+                } else {
+                    Text("update.up_to_date".localized).foregroundStyle(.secondary)
+                    Button {
+                        Task {
+                            isCheckingForUpdates = true
+                            availableUpdate = await UpdateChecker().checkForUpdate()
+                            isCheckingForUpdates = false
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         } header: {
             Label("settings_general".localized, systemImage: "gearshape")
         }
@@ -136,6 +168,56 @@ struct SettingsView: View {
             .tooltip("settings_tooltip_sort_by".localized, enabled: settings.showTooltips)
         } header: {
             Label("settings_processes".localized, systemImage: "cpu")
+        }
+    }
+
+    // MARK: - Uninstaller
+
+    private var uninstallerSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 10) {
+                Picker("scan_mode".localized, selection: $settings.uninstallerScanMode) {
+                    ForEach(ScanMode.allCases) { mode in
+                        Text(mode.localizedName).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                ForEach(ScanMode.allCases) { mode in
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: settings.uninstallerScanMode == mode
+                              ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(settings.uninstallerScanMode == mode
+                                             ? (mode == .safe ? Color.blue : Color.green)
+                                             : Color.secondary)
+                            .font(.caption)
+                            .padding(.top, 2)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(mode.localizedName)
+                                    .font(.callout)
+                                    .fontWeight(.medium)
+                                if mode == .balanced {
+                                    Text("scan_mode.balanced.default".localized)
+                                        .font(.caption2)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 1)
+                                        .background(Color.green.opacity(0.15))
+                                        .foregroundStyle(.green)
+                                        .clipShape(Capsule())
+                                }
+                            }
+                            Text(mode.localizedDescription)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+        } header: {
+            Label("settings_uninstaller".localized, systemImage: "trash.slash")
         }
     }
 
@@ -291,6 +373,11 @@ private extension View {
 }
 
 #Preview {
-    SettingsView(settings: AppSettings(), permissionsManager: PermissionsManager(), onForget: {})
-        .frame(width: 700, height: 700)
+    SettingsView(
+        settings: AppSettings(),
+        permissionsManager: PermissionsManager(),
+        onForget: {},
+        availableUpdate: .constant("1.5.0")
+    )
+    .frame(width: 700, height: 700)
 }
