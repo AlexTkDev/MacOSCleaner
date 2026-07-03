@@ -9,7 +9,7 @@
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343.svg?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF.svg?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
-[![Version: 1.1](https://img.shields.io/badge/Release-1.1-brightgreen.svg)]()
+[![Version: 1.1.1](https://img.shields.io/badge/Release-1.1.1-brightgreen.svg)]()
 
 🧹 Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.
 
@@ -18,16 +18,16 @@
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Dashboard.png" width="45%">
-  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Uninstaller.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1.1/assets/screenshots/Dashboard.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1.1/assets/screenshots/Uninstaller.png" width="45%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Cleanup_Scan.png" width="45%">
-  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1/assets/screenshots/Processes.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1.1/assets/screenshots/Cleanup_Scan.png" width="45%">
+  <img src="https://raw.githubusercontent.com/AlexTkDev/MacOSCleaner/dev/release-1.1.1/assets/screenshots/Processes.png" width="45%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/dev/release-1.1/assets/screenshots">📷 View all screenshots</a>
+  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/dev/release-1.1.1/assets/screenshots">📷 View all screenshots</a>
 </p>
 
 ---
@@ -102,6 +102,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **App Uninstaller** 🗑️ — finds installed apps, scans 5 levels deep for residual files using 14 types of evidence (Bundle ID, Team ID, Spotlight, Plist contents, and more). Shows total reclaimable space and real-time scan progress. Tailored rules for over 95 popular apps including Docker, Parallels, Adobe CC, MS Office, Discord, Figma, and more.
 
+- **Scan Modes (Safe / Balanced)** — choose between *Safe* mode (exact matches only, no Spotlight, highest confidence files) and *Balanced* mode (full deep scan including Spotlight and fuzzy matching) to tailor uninstallation aggressiveness
 - **Background Deep Scanning** — apps are scanned thoroughly in the background; the UI updates in real time as each app's total size is finalized
 - **Evidence-Based Forensics** — each candidate file is scored against 14 evidence types: identity, code signing, system integration, metadata, content analysis, graph relationships, and Launch Services registration
 - **Confidence Tiers** — `.guaranteed` (critical evidence), `.veryLikely`, `.possible`, or `.ignore`
@@ -110,16 +111,9 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 - **Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file to see exactly why it was associated with the app
 - **Post-Uninstall Verification** — re-scan confirms cleanup completeness; snapshots stored for rollback
 
+**Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
+
 **Settings** — rebuilt with native macOS `Form` styles to match System Settings. Light/dark/system theme, languages (English, Русский, Українська, Español), notifications, scan-on-startup, Trash behavior, and more.
-
----
-
-## 🐛 Bug Fixes in v1.1
-
-- **Full Disk Access (FDA):** Fixed an issue where the FDA guidance window wouldn't appear on startup, and resolved false positives in permission checks by validating restricted directories
-- **OrbStack Safety:** Accidentally deleting OrbStack paths from IDE caches — fixed. VM and Docker infrastructure are now protected
-- **Duplicate Files:** Fixed inflated disk usage numbers in the duplicate files scanner
-- **Xcode Previews:** Resolved a compilation issue preventing Xcode Canvas previews from rendering in Debug mode
 
 ---
 
