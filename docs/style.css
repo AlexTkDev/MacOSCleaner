@@ -16,6 +16,9 @@
   
   --card-bg: rgba(255, 255, 255, 0.6);
   --card-hover: rgba(255, 255, 255, 0.9);
+
+  --grid-color: rgba(128, 128, 128, 0.05);
+  --mouse-glow: rgba(0, 113, 227, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,6 +35,9 @@
     
     --card-bg: rgba(40, 40, 40, 0.3);
     --card-hover: rgba(60, 60, 60, 0.5);
+
+    --grid-color: rgba(255, 255, 255, 0.06);
+    --mouse-glow: rgba(41, 151, 255, 0.16);
   }
 }
 
@@ -46,6 +52,12 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
+  background-image: 
+    radial-gradient(circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--mouse-glow), transparent 80%),
+    linear-gradient(var(--grid-color) 1px, transparent 1px), 
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-attachment: fixed;
 }
 
 /* Background animated gradients */
