@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>macOS Cleaner — Free up disk space</title>
+  <meta name="description" content="Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      /* Light theme (default) */
+      --bg-color: #f0f2f5;
+      --text-main: #1d1d1f;
+      --text-muted: #86868b;
+      --accent: #0071e3;
+      --accent-glow: rgba(0, 113, 227, 0.4);
+      
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      
+      --card-bg: rgba(255, 255, 255, 0.6);
+      --card-hover: rgba(255, 255, 255, 0.9);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #050505;
+        --text-main: #f5f5f7;
+        --text-muted: #a1a1a6;
+        --accent: #2997ff;
+        --accent-glow: rgba(41, 151, 255, 0.3);
+        
+        --glass-bg: rgba(30, 30, 30, 0.4);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        
+        --card-bg: rgba(40, 40, 40, 0.3);
+        --card-hover: rgba(60, 60, 60, 0.5);
+      }
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Background animated gradients */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(140px);
+      z-index: -1;
+      opacity: 0.6;
+      animation: float 20s infinite alternate;
+      pointer-events: none;
+    }
+    body::before {
+      background: radial-gradient(circle, rgba(0,113,227,0.4) 0%, rgba(0,0,0,0) 70%);
+      top: -100px;
+      left: -100px;
+    }
+    body::after {
+      background: radial-gradient(circle, rgba(147,51,234,0.3) 0%, rgba(0,0,0,0) 70%);
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -10s;
+    }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(50px, 50px) scale(1.1); }
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Navigation - Floating Glass */
+    nav {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      box-shadow: var(--glass-shadow);
+      padding: 8px 16px;
+      transition: all 0.3s ease;
+      width: max-content;
+      max-width: 90vw;
+    }
+    
+    nav .container {
+      display: flex;
+      gap: 16px;
+      padding: 0;
+      align-items: center;
+      height: 40px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    nav .container::-webkit-scrollbar { display: none; }
+    
+    nav a {
+      text-decoration: none;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    nav a:hover {
+      background: rgba(128, 128, 128, 0.15);
+      color: var(--accent);
+    }
+    
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 180px 0 80px;
+      position: relative;
+    }
+    
+    .logo {
+      width: 110px;
+      height: 110px;
+      margin-bottom: 28px;
+      border-radius: 26px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+      animation: logoFloat 6s ease-in-out infinite;
+    }
+    
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    
+    .hero h1 {
+      font-size: 4.2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--text-main) 0%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 36px;
+    }
+    
+    .badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      margin-bottom: 48px;
+    }
+    
+    .badge {
+      padding: 6px 18px;
+      border-radius: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    
+    /* Buttons */
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 36px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px var(--accent-glow);
+      filter: brightness(1.1);
+    }
+    
+    .btn-secondary {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      background: var(--card-hover);
+    }
+    
+    .btn .arrow {
+      transition: transform 0.3s ease;
+    }
+    
+    .btn:hover .arrow {
+      transform: translateX(4px);
+    }
+    
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: -20px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .stat-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: var(--glass-shadow);
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stat-card .num {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    
+    .stat-card .label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    /* Sections */
+    section {
+      padding: 100px 0;
+      position: relative;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .section-header .num {
+      display: inline-block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-glow);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+    
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .grid-bento {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      background: radial-gradient(circle at 10% 20%, rgba(0, 113, 227, 0.05) 0%, var(--card-hover) 80%);
+      border-color: var(--accent);
+      box-shadow: 0 20px 48px rgba(0,0,0,0.15);
+    }
+    
+    .card.span-2 {
+      grid-column: span 2;
+    }
+    .card.span-3 {
+      grid-column: span 3;
+    }
+    
+    .card .icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+    }
+    .card:hover .icon-wrap {
+      transform: scale(1.1) rotate(5deg);
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+    
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    .card p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    
+    /* Carousel Screenshots */
+    .carousel-container {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 24px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--glass-border);
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.4s ease-in-out;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      box-sizing: border-box;
+      display: block;
+      position: relative;
+    }
+    .carousel-slide img {
+      width: 100%;
+      display: block;
+    }
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      padding: 12px 16px;
+      cursor: pointer;
+      border-radius: 50%;
+      font-size: 20px;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    .carousel-btn:hover {
+      background: var(--card-hover);
+    }
+    .carousel-btn.prev { left: 16px; }
+    .carousel-btn.next { right: 16px; }
+    
+    .carousel-dots {
+      text-align: center;
+      margin-top: 24px;
+    }
+    .carousel-dots .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 6px;
+      background: var(--glass-border);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .carousel-dots .dot.active {
+      background: var(--accent);
+      transform: scale(1.3);
+    }
+    
+    .screenshots-more {
+      text-align: center;
+      margin-top: 40px;
+    }
+    
+    .screenshots-more a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 14px 28px;
+      background: var(--glass-bg);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      transition: all 0.2s;
+    }
+    
+    .screenshots-more a:hover {
+      background: var(--card-hover);
+      transform: translateY(-2px);
+    }
+    
+    /* Release Cards */
+    .release-group {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .release-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-left: 4px solid var(--accent);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--glass-shadow);
+    }
+    
+    .release-card .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 16px;
+    }
+    
+    .release-card ul {
+      list-style: none;
+    }
+    
+    .release-card ul li {
+      padding: 8px 0 8px 28px;
+      position: relative;
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+    
+    .release-card ul li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    
+    .release-card ul li strong {
+      color: var(--text-main);
+    }
+    
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 48px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent) 0%, transparent 100%);
+    }
+    
+    .step {
+      position: relative;
+      margin-bottom: 32px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--glass-border);
+      transition: transform 0.3s;
+    }
+    
+    .step:hover {
+      transform: translateX(5px);
+    }
+    
+    .step .num-dot {
+      position: absolute;
+      left: -46px;
+      top: 32px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 0 0 6px var(--bg-color), 0 4px 12px var(--accent-glow);
+    }
+    
+    .step h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .step p {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+    
+    /* Tree */
+    .tree-wrap {
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(24px);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow-x: auto;
+    }
+    
+    .tree {
+      font-family: 'SF Mono', Consolas, Menlo, monospace;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    
+    .tree .folder { color: #61afef; font-weight: 600; }
+    .tree .file { color: #abb2bf; }
+    .tree .comment { color: #5c6370; font-style: italic; }
+    
+    /* Download Banner */
+    .download-banner {
+      text-align: center;
+      background: linear-gradient(135deg, rgba(0,113,227,0.1), rgba(147,51,234,0.1));
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      padding: 64px 24px;
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .download-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    
+    .download-banner .actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 36px;
+    }
+    
+    .download-banner .req {
+      margin-top: 24px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 48px 0;
+      border-top: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 40px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+    }
+    
+    footer a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    footer a:hover {
+      color: var(--accent);
+    }
+    
+    footer .sep {
+      margin: 0 12px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .grid-bento {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .card.span-2, .card.span-3 {
+        grid-column: span 2;
+      }
+    }
+    @media (max-width: 768px) {
+      body::before, body::after {
+        width: 300px;
+        height: 300px;
+        filter: blur(80px);
+      }
+      .container {
+        padding: 0 16px;
+      }
+      section {
+        padding: 60px 0;
+      }
+      .hero {
+        padding: 120px 0 48px;
+      }
+      .hero h1 {
+        font-size: 2.4rem;
+        letter-spacing: -0.03em;
+      }
+      .hero p {
+        font-size: 1.05rem;
+        margin-bottom: 24px;
+      }
+      .hero-actions {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto 32px;
+      }
+      .hero-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .badges {
+        margin-bottom: 32px;
+      }
+      .badge {
+        padding: 4px 12px;
+        font-size: 0.8rem;
+      }
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 0;
+      }
+      .stat-card {
+        padding: 16px;
+      }
+      .stat-card .num {
+        font-size: 2rem;
+      }
+      .stat-card .label {
+        font-size: 0.8rem;
+      }
+      .grid-2, .grid-3, .grid-bento {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .card.span-2, .card.span-3 {
+        grid-column: span 1;
+      }
+      .card {
+        padding: 24px;
+      }
+      nav {
+        width: calc(100% - 32px);
+        top: 12px;
+        padding: 4px 8px;
+      }
+      nav a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+      .timeline {
+        padding-left: 24px;
+      }
+      .step {
+        padding: 20px;
+      }
+      .step .num-dot {
+        left: -28px;
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+        top: 24px;
+        box-shadow: 0 0 0 4px var(--bg-color);
+      }
+      .carousel-btn {
+        padding: 8px 12px;
+        font-size: 16px;
+      }
+      .carousel-btn.prev { left: 8px; }
+      .carousel-btn.next { right: 8px; }
+      .download-banner {
+        padding: 40px 16px;
+      }
+      .download-banner h2 {
+        font-size: 1.6rem;
+      }
+      .download-banner .actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 280px;
+        margin: 24px auto 0;
+      }
+      .download-banner .actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    @media (max-width: 480px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="#features">Features</a>
+    <a href="#cleaned">What Gets Cleaned</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#release">Release Notes</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#download">Download</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="container">
+    <img class="logo" src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/.github/logo.png?raw=true" alt="macOS Cleaner">
+    <h1>macOS Cleaner</h1>
+    <p>Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
+        ⬇ Download v1.1.1 <span class="arrow">→</span>
+      </a>
+      <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner">
+        View on GitHub
+      </a>
+    </div>
+    <div class="badges">
+      <span class="badge">Swift 6 + SwiftUI</span>
+      <span class="badge">macOS 15.5+</span>
+      <span class="badge">Apple Silicon</span>
+      <span class="badge">4 Languages</span>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="position:relative;z-index:2">
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">54</div><div class="label">Scan categories</div></div>
+    <div class="stat-card"><div class="num">298</div><div class="label">Cleaning paths</div></div>
+    <div class="stat-card"><div class="num">95+</div><div class="label">Uninstall rules</div></div>
+    <div class="stat-card"><div class="num">4</div><div class="label">Languages</div></div>
+  </div>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section id="features">
+  <div class="container">
+    <div class="section-header">
+      <h2>Features</h2>
+      <p>Everything you need to keep your Mac clean</p>
+    </div>
+    <div class="grid-bento">
+      <div class="card">
+        <div class="icon-wrap">📊</div>
+        <h3>Dashboard</h3>
+        <p>Disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history &amp; stats — native macOS aesthetics with rounded cards and SF Symbols.</p>
+      </div>
+      <div class="card span-2">
+        <div class="icon-wrap">🔍</div>
+        <h3>Smart Cleanup</h3>
+        <p>Scans 54 categories with 298 built-in paths. App caches, browsers, package managers, dev tools, Docker, system caches, orphaned files. Runs in parallel across all cores.</p>
+      </div>
+      <div class="card span-2">
+        <div class="icon-wrap">🗑</div>
+        <h3>App Uninstaller</h3>
+        <p>Deep 5-level residual discovery using 14 evidence types. Safe &amp; Balanced scan modes. Tailored rules for 95+ popular apps. Real-time progress and verification.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">⚙</div>
+        <h3>Process Manager</h3>
+        <p>List running processes, terminate or force-kill them. Critical system processes are protected natively by ProcessSafetyPolicy.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🚀</div>
+        <h3>Startup Services</h3>
+        <p>View all LaunchAgents from <code>~/Library/LaunchAgents</code>, their load status, and enable or disable them with ease.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🔄</div>
+        <h3>Smart Updates</h3>
+        <p>Automatic lightweight update check on startup via GitHub Releases. No background daemons, no persistent tracking, no extra dependencies.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🔒</div>
+        <h3>Safety First</h3>
+        <p>Everything goes to Trash via <code>trashItem(at:)</code> — always recoverable. SIP and system paths blocked. Permanent deletion is opt-in.</p>
+      </div>
+      <div class="card span-3">
+        <div class="icon-wrap">🌍</div>
+        <h3>Fully Localized</h3>
+        <p>English, Русский, Українська, Español. All UI, errors, logs, and system info translated dynamically. Dates and byte counts format correctly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHAT GETS CLEANED ===== -->
+<section id="cleaned">
+  <div class="container">
+    <div class="section-header">
+      <h2>What Gets Cleaned</h2>
+      <p>Every category is always scanned; risk badges appear after scan</p>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon-wrap">📱</div>
+        <h3>App Caches</h3>
+        <p>Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📦</div>
+        <h3>Package Managers</h3>
+        <p>Homebrew, npm, yarn, pnpm, CocoaPods — native cleanup commands for each package manager</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">💻</div>
+        <h3>Dev Tools</h3>
+        <p>Xcode DerivedData, iOS Simulators, Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, Go, Rust, Python, Node.js, Ruby, Java, Julia, Bazel, ccache, vcpkg</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🖥</div>
+        <h3>IDE Caches</h3>
+        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime Text, Atom, Eclipse, opencode, Claude, ChatGPT, Gemini, Perplexity, Figma, Notion, Postman, Insomnia</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🌐</div>
+        <h3>Browser Sub-Caches</h3>
+        <p>Firefox cache2, Safari LocalStorage/Databases, Chrome Code Cache/GPUCache/Service Worker, Edge/Brave/Arc Code Cache</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">⚡</div>
+        <h3>System &amp; More</h3>
+        <p>System caches (QuickLook, fonts, Spotlight, Siri, CloudKit), Docker, Time Machine snapshots, iOS backups, Mail downloads, crash reports, duplicate files</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🗂</div>
+        <h3>Orphaned Files</h3>
+        <p>Leftovers from uninstalled apps in HTTPStorages, WebKit, Cookies, <code>/Users/Shared</code>. Dynamic discovery of large reverse-DNS caches in <code>~/Library/Caches</code>.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📀</div>
+        <h3>Large Files</h3>
+        <p>Old DMG/pkg/iso/zip installers, <code>node_modules</code> (recursive), iPhone backups, IPSW firmware. iWork templates (~800 MB, re-downloaded on demand).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREENSHOTS ===== -->
+<section id="screenshots">
+  <div class="container">
+    <div class="section-header">
+      <h2>Screenshots</h2>
+      <p>See it in action</p>
+    </div>
+    <div class="carousel-container">
+      <div class="carousel-track">
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard.png?raw=true" alt="Dashboard" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan.png?raw=true" alt="Cleanup Scan" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller.png?raw=true" alt="Uninstaller" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes.png?raw=true" alt="Processes" loading="lazy"></a>
+      </div>
+      <button class="carousel-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+      <button class="carousel-btn next" onclick="moveSlide(1)">&#10095;</button>
+    </div>
+    <div class="carousel-dots">
+      <span class="dot active" onclick="currentSlide(0)"></span>
+      <span class="dot" onclick="currentSlide(1)"></span>
+      <span class="dot" onclick="currentSlide(2)"></span>
+      <span class="dot" onclick="currentSlide(3)"></span>
+    </div>
+    <div class="screenshots-more">
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/relese/assets/screenshots">📷 View all screenshots →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RELEASE NOTES ===== -->
+<section id="release">
+  <div class="container">
+    <div class="section-header">
+      <h2>Latest Release — v1.1.1</h2>
+      <p>Two highly requested features: Uninstaller scan modes and automatic update checker</p>
+    </div>
+    <div class="release-group">
+      <div class="release-card">
+        <div class="tag">🛡️ Uninstaller Scan Modes</div>
+        <p style="font-size:1rem;color:var(--text-muted);margin-bottom:12px">Choose how aggressive the Uninstaller should be when finding leftover files:</p>
+        <ul>
+          <li><strong>Safe Mode</strong> — Only finds high-confidence files (matching by Bundle ID, exact app name, or receipts). Completely disables Spotlight (<code>mdfind</code>) and fuzzy matching. Minimizes risk of accidentally affecting shared files.</li>
+          <li><strong>Balanced Mode</strong> (Default) — Performs a full deep scan, including Spotlight and extended paths, to find all possible leftovers. Recommended for thorough cleanups.</li>
+        </ul>
+        <p style="font-size:0.95rem;color:var(--text-muted);margin-top:12px">Switch between modes anytime in Settings → Uninstaller.</p>
+      </div>
+      <div class="release-card">
+        <div class="tag">🔄 Smart Update Checker</div>
+        <ul>
+          <li>Automatically checks for new versions on startup directly via GitHub Releases.</li>
+          <li>Gentle native notification in the About window and Settings when an update is available.</li>
+          <li><strong>Privacy First</strong> — no background daemons, no persistent tracking, and no extra dependencies.</li>
+          <li>Manual check available in Settings → General tab.</li>
+        </ul>
+      </div>
+      <div class="release-card">
+        <div class="tag">🛠️ Enhancements &amp; Fixes</div>
+        <ul>
+          <li>Clear badges in the Uninstaller view to indicate the active scan mode.</li>
+          <li>Fully localized new features — English, Русский, Українська, Español.</li>
+        </ul>
+        <div style="margin-top:24px">
+          <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">
+            View all releases <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <h2>How It Works</h2>
+      <p>Built for Apple Silicon with full parallelism</p>
+    </div>
+    <div class="timeline">
+      <div class="step">
+        <div class="num-dot">1</div>
+        <h4>Scan</h4>
+        <p>Stack-based iterator batches work and deduplicates inodes. Size calculations are cached to avoid redundant work. All categories run in parallel across all available cores for maximum speed.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">2</div>
+        <h4>Review</h4>
+        <p>Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan. You pick what to delete, then confirm. Dev-related tasks show a purple "DEV" badge.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">3</div>
+        <h4>Trash</h4>
+        <p>Everything goes to Trash via <code>trashItem(at:)</code> — always recoverable. SafetyManager blocks access to <code>/System</code>, <code>/usr</code>, <code>/bin</code>, <code>~/.ssh</code>, and other critical paths.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">4</div>
+        <h4>Verify</h4>
+        <p>Post-cleanup confirmation with reclaimable space summary. Snapshots stored for rollback. Full audit log via OSLog — open Console.app and filter by <code>com.alextkdev.macos-cleaner</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ===== TECH STACK ===== -->
+<section id="tech">
+  <div class="container">
+    <div class="section-header">
+      <h2>Tech Stack</h2>
+      <p>Modern native macOS development</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="icon-wrap">🦅</div>
+        <h3>Swift 6</h3>
+        <p>Actors, <code>async/await</code>, structured task groups. Strict concurrency checking enabled. Value types preferred. Whole-module optimization with <code>-O</code> flag.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🎨</div>
+        <h3>SwiftUI</h3>
+        <p><code>@Observable</code>, <code>NavigationSplitView</code>, Charts framework. Native macOS Forms in Settings. Light/dark/system theme support.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🏗</div>
+        <h3>XcodeGen</h3>
+        <p>Single <code>project.yml</code> as the single source of truth. No manual .xcodeproj conflicts. Whole-module optimization enabled.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📝</div>
+        <h3>OSLog</h3>
+        <p>Unified logging with structured subsystems. Filter in Console.app with <code>com.alextkdev.macos-cleaner</code>. No third-party loggers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DOWNLOAD ===== -->
+<section id="download">
+  <div class="container">
+    <div class="download-banner">
+      <div class="section-header" style="margin-bottom:0">
+        <h2>Download</h2>
+        <p>Latest version: <strong>v1.1.1</strong></p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
+          ⬇ Download DMG <span class="arrow">→</span>
+        </a>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner">Source Code</a>
+      </div>
+      <div class="req">
+        <strong>Requirements:</strong> macOS 15.5+, Apple Silicon (M1–M5), XcodeGen for building from source
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <a href="https://github.com/AlexTkDev/MacOSCleaner">GitHub</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report Issue</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/main/LICENSE">License</a>
+    <p style="margin-top:16px; opacity: 0.7;">macOS Cleaner &mdash; Custom Non-Commercial License &copy; 2026 AlexTkDev</p>
+  </div>
+</footer>
+
+<script>
+  let slideIndex = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.dot');
+  const track = document.querySelector('.carousel-track');
+  let autoPlayTimer;
+
+  function updateCarousel() {
+    if (!track || slides.length === 0) return;
+    track.style.transform = `translateX(-${slideIndex * 100}%)`;
+    dots.forEach(dot => dot.classList.remove('active'));
+    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
+  }
+
+  function moveSlide(n) {
+    slideIndex += n;
+    if (slideIndex >= slides.length) slideIndex = 0;
+    if (slideIndex < 0) slideIndex = slides.length - 1;
+    updateCarousel();
+    resetAutoPlay();
+  }
+
+  function currentSlide(n) {
+    slideIndex = n;
+    updateCarousel();
+    resetAutoPlay();
+  }
+
+  function startAutoPlay() {
+    autoPlayTimer = setInterval(() => {
+      slideIndex = (slideIndex + 1) % slides.length;
+      updateCarousel();
+    }, 4000);
+  }
+
+  function resetAutoPlay() {
+    clearInterval(autoPlayTimer);
+    startAutoPlay();
+  }
+
+  startAutoPlay();
+</script>
+</body>
+</html>
