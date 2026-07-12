@@ -1,6 +1,5 @@
-name: Announcements
-description: Official project news and updates
 title: "[Announcement] "
+
 body:
   - type: markdown
     attributes:
@@ -23,7 +22,7 @@ body:
     id: announcement
     attributes:
       label: Announcement
-      description: Write the announcement.
-      placeholder: What's new?
+      description: What's new?
+      placeholder: Tell the community what's new...
     validations:
       required: true
