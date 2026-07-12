@@ -1,0 +1,29 @@
+name: Announcements
+description: Official project news and updates
+title: "[Announcement] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Welcome to MacOSCleaner Discussions
+
+        This is the place to share feedback, suggest new features, ask questions, and discuss ideas for improving MacOSCleaner.
+
+        Your feedback helps shape future releases.
+
+        **Use Discussions for:**
+        - 💡 Feature requests
+        - 💬 Feedback
+        - ❓ Questions
+        - 🗣 General discussions
+
+        For bug reports and reproducible issues, please use GitHub Issues.
+
+  - type: textarea
+    id: announcement
+    attributes:
+      label: Announcement
+      description: Write the announcement.
+      placeholder: What's new?
+    validations:
+      required: true
