@@ -115,3 +115,7 @@ GEMINI.md
 build/
 PLAN.md
 macos-cache-cleanup.sh
+xcuserdata/
+*.xcuserstate
+opencode.json
+.agents
