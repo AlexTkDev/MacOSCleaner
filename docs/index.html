@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>macOS Cleaner — Free up disk space</title>
+  <meta name="description" content="Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="#features">Features</a>
+    <a href="#cleaned">What Gets Cleaned</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#release">Release Notes</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#download">Download</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="container">
+    <img class="logo" src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/.github/logo.png?raw=true" alt="macOS Cleaner">
+    <h1>macOS Cleaner</h1>
+    <p>Free up disk space by cleaning caches, temp files, app leftovers, and more. Everything goes to Trash — nothing is gone forever unless you say so.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
+        ⬇ Download v1.1.1 <span class="arrow">→</span>
+      </a>
+      <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner">
+        View on GitHub
+      </a>
+    </div>
+    <div class="badges">
+      <span class="badge">Swift 6 + SwiftUI</span>
+      <span class="badge">macOS 15.5+</span>
+      <span class="badge">Apple Silicon</span>
+      <span class="badge">4 Languages support</span>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="position:relative;z-index:2">
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">54</div><div class="label">Scan categories</div></div>
+    <div class="stat-card"><div class="num">298</div><div class="label">Cleaning paths</div></div>
+    <div class="stat-card"><div class="num">95+</div><div class="label">Uninstall rules</div></div>
+    <div class="stat-card"><div class="num">4</div><div class="label">Languages</div></div>
+  </div>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section id="features">
+  <div class="container">
+    <div class="section-header">
+      <h2>Features</h2>
+      <p>Everything you need to keep your Mac clean</p>
+    </div>
+    <div class="grid-bento">
+      <div class="card">
+        <div class="icon-wrap">📊</div>
+        <h3>Dashboard</h3>
+        <p>Disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history &amp; stats — native macOS aesthetics with rounded cards and SF Symbols.</p>
+      </div>
+      <div class="card span-2">
+        <div class="icon-wrap">🔍</div>
+        <h3>Smart Cleanup</h3>
+        <p>Scans 54 categories with 298 built-in paths. App caches, browsers, package managers, dev tools, Docker, system caches, orphaned files. Runs in parallel across all cores.</p>
+      </div>
+      <div class="card span-2">
+        <div class="icon-wrap">🗑</div>
+        <h3>App Uninstaller</h3>
+        <p>Deep 5-level residual discovery using 14 evidence types. Safe &amp; Balanced scan modes. Tailored rules for 95+ popular apps. Real-time progress and verification.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">⚙</div>
+        <h3>Process Manager</h3>
+        <p>List running processes, terminate or force-kill them. Critical system processes are protected natively by ProcessSafetyPolicy.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🚀</div>
+        <h3>Startup Services</h3>
+        <p>View all LaunchAgents from <code>~/Library/LaunchAgents</code>, their load status, and enable or disable them with ease.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🔄</div>
+        <h3>Smart Updates</h3>
+        <p>Automatic lightweight update check on startup via GitHub Releases. No background daemons, no persistent tracking, no extra dependencies.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🔒</div>
+        <h3>Safety First</h3>
+        <p>Everything goes to Trash via <code>trashItem(at:)</code> — always recoverable. SIP and system paths blocked. Permanent deletion is opt-in.</p>
+      </div>
+      <div class="card span-3">
+        <div class="icon-wrap">🌍</div>
+        <h3>Fully Localized</h3>
+        <p>English, Русский, Українська, Español. All UI, errors, logs, and system info translated dynamically. Dates and byte counts format correctly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHAT GETS CLEANED ===== -->
+<section id="cleaned">
+  <div class="container">
+    <div class="section-header">
+      <h2>What Gets Cleaned</h2>
+      <p>Every category is always scanned; risk badges appear after scan</p>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon-wrap">📱</div>
+        <h3>App Caches</h3>
+        <p>Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📦</div>
+        <h3>Package Managers</h3>
+        <p>Homebrew, npm, yarn, pnpm, CocoaPods — native cleanup commands for each package manager</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">💻</div>
+        <h3>Dev Tools</h3>
+        <p>Xcode DerivedData, iOS Simulators, Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, Go, Rust, Python, Node.js, Ruby, Java, Julia, Bazel, ccache, vcpkg</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🖥</div>
+        <h3>IDE Caches</h3>
+        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Nova, Sublime Text, Atom, Eclipse, opencode, Claude, ChatGPT, Gemini, Perplexity, Figma, Notion, Postman, Insomnia</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🌐</div>
+        <h3>Browser Sub-Caches</h3>
+        <p>Firefox cache2, Safari LocalStorage/Databases, Chrome Code Cache/GPUCache/Service Worker, Edge/Brave/Arc Code Cache</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">⚡</div>
+        <h3>System &amp; More</h3>
+        <p>System caches (QuickLook, fonts, Spotlight, Siri, CloudKit), Docker, Time Machine snapshots, iOS backups, Mail downloads, crash reports, duplicate files</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🗂</div>
+        <h3>Orphaned Files</h3>
+        <p>Leftovers from uninstalled apps in HTTPStorages, WebKit, Cookies, <code>/Users/Shared</code>. Dynamic discovery of large reverse-DNS caches in <code>~/Library/Caches</code>.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📀</div>
+        <h3>Large Files</h3>
+        <p>Old DMG/pkg/iso/zip installers, <code>node_modules</code> (recursive), iPhone backups, IPSW firmware. iWork templates (~800 MB, re-downloaded on demand).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREENSHOTS ===== -->
+<section id="screenshots">
+  <div class="container">
+    <div class="section-header">
+      <h2>Screenshots</h2>
+      <p>See it in action</p>
+    </div>
+    <div class="carousel-container">
+      <div class="carousel-track">
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard.png?raw=true" alt="Dashboard" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan.png?raw=true" alt="Cleanup Scan" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller.png?raw=true" alt="Uninstaller" loading="lazy"></a>
+        <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes.png?raw=true" alt="Processes" loading="lazy"></a>
+      </div>
+      <button class="carousel-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+      <button class="carousel-btn next" onclick="moveSlide(1)">&#10095;</button>
+    </div>
+    <div class="carousel-dots">
+      <span class="dot active" onclick="currentSlide(0)"></span>
+      <span class="dot" onclick="currentSlide(1)"></span>
+      <span class="dot" onclick="currentSlide(2)"></span>
+      <span class="dot" onclick="currentSlide(3)"></span>
+    </div>
+    <div class="screenshots-more">
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/relese/assets/screenshots">📷 View all screenshots →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RELEASE NOTES ===== -->
+<section id="release">
+  <div class="container">
+    <div class="section-header">
+      <h2>Latest Release — v1.1.1</h2>
+      <p>Two highly requested features: Uninstaller scan modes and automatic update checker</p>
+    </div>
+    <div class="release-group">
+      <div class="release-card">
+        <div class="tag">🛡️ Uninstaller Scan Modes</div>
+        <p style="font-size:1rem;color:var(--text-muted);margin-bottom:12px">Choose how aggressive the Uninstaller should be when finding leftover files:</p>
+        <ul>
+          <li><strong>Safe Mode</strong> — Only finds high-confidence files (matching by Bundle ID, exact app name, or receipts). Completely disables Spotlight (<code>mdfind</code>) and fuzzy matching. Minimizes risk of accidentally affecting shared files.</li>
+          <li><strong>Balanced Mode</strong> (Default) — Performs a full deep scan, including Spotlight and extended paths, to find all possible leftovers. Recommended for thorough cleanups.</li>
+        </ul>
+        <p style="font-size:0.95rem;color:var(--text-muted);margin-top:12px">Switch between modes anytime in Settings → Uninstaller.</p>
+      </div>
+      <div class="release-card">
+        <div class="tag">🔄 Smart Update Checker</div>
+        <ul>
+          <li>Automatically checks for new versions on startup directly via GitHub Releases.</li>
+          <li>Gentle native notification in the About window and Settings when an update is available.</li>
+          <li><strong>Privacy First</strong> — no background daemons, no persistent tracking, and no extra dependencies.</li>
+          <li>Manual check available in Settings → General tab.</li>
+        </ul>
+      </div>
+      <div class="release-card">
+        <div class="tag">🛠️ Enhancements &amp; Fixes</div>
+        <ul>
+          <li>Clear badges in the Uninstaller view to indicate the active scan mode.</li>
+          <li>Fully localized new features — English, Русский, Українська, Español.</li>
+        </ul>
+        <div style="margin-top:24px">
+          <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">
+            View all releases <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <h2>How It Works</h2>
+      <p>Built for Apple Silicon with full parallelism</p>
+    </div>
+    <div class="timeline">
+      <div class="step">
+        <div class="num-dot">1</div>
+        <h4>Scan</h4>
+        <p>Stack-based iterator batches work and deduplicates inodes. Size calculations are cached to avoid redundant work. All categories run in parallel across all available cores for maximum speed.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">2</div>
+        <h4>Review</h4>
+        <p>Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan. You pick what to delete, then confirm. Dev-related tasks show a purple "DEV" badge.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">3</div>
+        <h4>Trash</h4>
+        <p>Everything goes to Trash via <code>trashItem(at:)</code> — always recoverable. SafetyManager blocks access to <code>/System</code>, <code>/usr</code>, <code>/bin</code>, <code>~/.ssh</code>, and other critical paths.</p>
+      </div>
+      <div class="step">
+        <div class="num-dot">4</div>
+        <h4>Verify</h4>
+        <p>Post-cleanup confirmation with reclaimable space summary. Snapshots stored for rollback. Full audit log via OSLog — open Console.app and filter by <code>com.alextkdev.macos-cleaner</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TECH STACK ===== -->
+<section id="tech">
+  <div class="container">
+    <div class="section-header">
+      <h2>Tech Stack</h2>
+      <p>Modern native macOS development</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="icon-wrap">🦅</div>
+        <h3>Swift 6</h3>
+        <p>Actors, <code>async/await</code>, structured task groups. Strict concurrency checking enabled. Value types preferred. Whole-module optimization with <code>-O</code> flag.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🎨</div>
+        <h3>SwiftUI</h3>
+        <p><code>@Observable</code>, <code>NavigationSplitView</code>, Charts framework. Native macOS Forms in Settings. Light/dark/system theme support.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">🏗</div>
+        <h3>XcodeGen</h3>
+        <p>Single <code>project.yml</code> as the single source of truth. No manual .xcodeproj conflicts. Whole-module optimization enabled.</p>
+      </div>
+      <div class="card">
+        <div class="icon-wrap">📝</div>
+        <h3>OSLog</h3>
+        <p>Unified logging with structured subsystems. Filter in Console.app with <code>com.alextkdev.macos-cleaner</code>. No third-party loggers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DOWNLOAD ===== -->
+<section id="download">
+  <div class="container">
+    <div class="download-banner">
+      <div class="section-header" style="margin-bottom:0">
+        <h2>Download</h2>
+        <p>Latest version: <strong>v1.1.1</strong></p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
+          ⬇ Download DMG <span class="arrow">→</span>
+        </a>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/AlexTkDev/MacOSCleaner">Source Code</a>
+      </div>
+      <div class="req">
+        <strong>Requirements:</strong> macOS 15.5+, Apple Silicon (M1–M5), XcodeGen for building from source
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <a href="https://github.com/AlexTkDev/MacOSCleaner">GitHub</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report Issue</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/main/LICENSE">License</a>
+    <p style="margin-top:16px; opacity: 0.7;">macOS Cleaner &mdash; Custom Non-Commercial License &copy; 2026 AlexTkDev</p>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>
