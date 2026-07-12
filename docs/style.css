@@ -149,18 +149,104 @@ nav a:hover {
   position: relative;
 }
 
+.logo-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .logo {
   width: 110px;
   height: 110px;
-  margin-bottom: 28px;
   border-radius: 26px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.2);
-  animation: logoFloat 6s ease-in-out infinite;
+  transition: transform 0.3s ease;
 }
 
-@keyframes logoFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+.logo-container:hover .logo {
+  transform: scale(1.05);
+}
+
+.broom {
+  position: absolute;
+  font-size: 2.5rem;
+  bottom: -15px;
+  right: -15px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: rotate(0deg) scale(0.6);
+  transform-origin: 80% 20%;
+}
+
+.logo-container:hover .broom {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  animation: sweep 1.2s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0%, 100% { transform: rotate(0deg) translate(0, 0); }
+  25% { transform: rotate(-18deg) translate(-14px, 4px); }
+  50% { transform: rotate(8deg) translate(6px, -2px); }
+  75% { transform: rotate(-18deg) translate(-14px, 4px); }
+}
+
+.dust {
+  position: absolute;
+  font-size: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.logo-container:hover .dust {
+  opacity: 1;
+}
+
+.logo-container:hover .dust-1 { animation: dust-fly-1 1.5s infinite; }
+.logo-container:hover .dust-2 { animation: dust-fly-2 1.5s infinite; }
+.logo-container:hover .dust-3 { animation: dust-fly-3 1.5s infinite; }
+
+@keyframes dust-fly-1 {
+  0% { transform: translate(0, 0) scale(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translate(-50px, -30px) scale(1.2); opacity: 0; }
+}
+
+@keyframes dust-fly-2 {
+  0% { transform: translate(0, 0) scale(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translate(50px, -20px) scale(1.1); opacity: 0; }
+}
+
+@keyframes dust-fly-3 {
+  0% { transform: translate(0, 0) scale(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translate(-20px, 40px) scale(0.8); opacity: 0; }
+}
+
+.hero-title-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.hero-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(60%, -100%);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
 .hero h1 {
@@ -168,7 +254,7 @@ nav a:hover {
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.1;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   background: linear-gradient(135deg, var(--text-main) 0%, var(--text-muted) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -208,6 +294,22 @@ nav a:hover {
   gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.trust-checklist {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.trust-checklist span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn {
@@ -413,19 +515,29 @@ section {
   border-radius: 24px;
   box-shadow: var(--glass-shadow);
   border: 1px solid var(--glass-border);
+  aspect-ratio: 16 / 10;
+  background: rgba(0, 0, 0, 0.2);
 }
 .carousel-track {
   display: flex;
+  height: 100%;
   transition: transform 0.4s ease-in-out;
 }
 .carousel-slide {
   min-width: 100%;
+  height: 100%;
   box-sizing: border-box;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
 }
 .carousel-slide img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   display: block;
 }
 .carousel-btn {
@@ -719,6 +831,11 @@ footer .sep {
   .hero h1 {
     font-size: 2.4rem;
     letter-spacing: -0.03em;
+  }
+  .hero-tag {
+    position: static;
+    transform: none;
+    margin-bottom: 12px;
   }
   .hero p {
     font-size: 1.05rem;
