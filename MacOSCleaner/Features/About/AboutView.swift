@@ -132,5 +132,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: "1.2.0")
+    AboutView(availableUpdate: "2.0.0")
 }

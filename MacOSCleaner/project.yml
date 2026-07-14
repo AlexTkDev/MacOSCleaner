@@ -20,8 +20,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 1.1.1
-        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 2.0.0
+        CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic

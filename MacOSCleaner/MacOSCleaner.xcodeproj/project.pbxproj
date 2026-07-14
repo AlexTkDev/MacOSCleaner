@@ -1074,7 +1074,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = singlefile;
@@ -1169,7 +1169,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
