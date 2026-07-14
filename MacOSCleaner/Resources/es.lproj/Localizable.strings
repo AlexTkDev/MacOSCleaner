@@ -70,6 +70,13 @@
 "dashboard_healthy" = "Saludable";
 "dashboard_recent_operations" = "Operaciones recientes";
 "dashboard_no_recent_operations" = "Sin operaciones recientes";
+"dashboard_radar_caches" = "Cachés";
+"dashboard_radar_logs" = "Registros";
+"dashboard_radar_dev" = "Desarrollo";
+"dashboard_radar_apps" = "Aplicaciones";
+"dashboard_radar_media" = "Medios";
+"dashboard_radar_other" = "Otros";
+"dashboard_radar_tooltip_format" = "%@: %@";
 
 // Language Names
 "language.english" = "Inglés";

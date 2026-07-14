@@ -70,6 +70,13 @@
 "dashboard_healthy" = "В норме";
 "dashboard_recent_operations" = "Недавние операции";
 "dashboard_no_recent_operations" = "Нет недавних операций";
+"dashboard_radar_caches" = "Кэши";
+"dashboard_radar_logs" = "Логи";
+"dashboard_radar_dev" = "Разработка";
+"dashboard_radar_apps" = "Программы";
+"dashboard_radar_media" = "Медиа";
+"dashboard_radar_other" = "Прочее";
+"dashboard_radar_tooltip_format" = "%@: %@";
 
 /* Language Names */
 "language.english" = "Английский";

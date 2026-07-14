@@ -70,6 +70,13 @@
 "dashboard_healthy" = "Healthy";
 "dashboard_recent_operations" = "Recent Operations";
 "dashboard_no_recent_operations" = "No recent operations";
+"dashboard_radar_caches" = "Caches";
+"dashboard_radar_logs" = "Logs";
+"dashboard_radar_dev" = "Development";
+"dashboard_radar_apps" = "Applications";
+"dashboard_radar_media" = "Media";
+"dashboard_radar_other" = "Other";
+"dashboard_radar_tooltip_format" = "%@: %@";
 
 /* Language Names */
 "language.english" = "English";

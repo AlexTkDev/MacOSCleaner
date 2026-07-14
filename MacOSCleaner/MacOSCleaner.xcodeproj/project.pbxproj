@@ -44,6 +44,7 @@
 		2FBBF85D96918E09A80C5939 /* DeveloperComponentsDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD2376BA6F50A27A67E4736 /* DeveloperComponentsDetector.swift */; };
 		31B9F1688720FBE10F8F3B46 /* MicrosoftOffice.json in Resources */ = {isa = PBXBuildFile; fileRef = D1E2968239F9E780D1928B58 /* MicrosoftOffice.json */; };
 		32D15D3B2B3404DE9662CEA5 /* EvidenceCategoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2854706813F7B138A3E1A17C /* EvidenceCategoryTests.swift */; };
+		332803EC2632D55C1CA2C21D /* RadarChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC46B82149E32DE965863BC /* RadarChartView.swift */; };
 		338946DFC3F61C72FCC52D5E /* AdobeRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8D50E5702E806D30909278 /* AdobeRule.swift */; };
 		36CFC6F9A71EE6AA66E178C5 /* LaunchctlCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B625D7C04F6EC419FA5F0764 /* LaunchctlCache.swift */; };
 		370555A1E46A82B05D6374B0 /* CleanupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16400AE1862B76A844B01CFC /* CleanupView.swift */; };
@@ -92,6 +93,7 @@
 		7F80CDAE8621DF99A473AB3B /* CleanupStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D39CB998D05F06C7122FCA3 /* CleanupStateMachine.swift */; };
 		81622E787C1700C4F73D32CB /* BrowserRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF63D60CE321A50740AB3 /* BrowserRule.swift */; };
 		87EDEF516A814FC99DCA0B31 /* BackgroundItemsReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C3847C35AB0FA0E8C80210 /* BackgroundItemsReader.swift */; };
+		89BAEC96A8994A5092900B77 /* LiquidGlass+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F30EB8C917D9A5DB59EB765 /* LiquidGlass+Compatibility.swift */; };
 		8E3DECCD5B86A373058DED54 /* StartupServicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0086F9F7800BFD540E5F25E /* StartupServicesViewModel.swift */; };
 		8F1C2ACF00DF4A34A6CA9862 /* AnimatedScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6703835CE5100161449E56 /* AnimatedScanView.swift */; };
 		92E0F73F02E1797F191A0BCD /* RaycastRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB502AA9A1CC1FB93686DC00 /* RaycastRule.swift */; };
@@ -204,6 +206,7 @@
 		08402BF5E1C6101310B2B476 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		086A1B781AA3F6ACC5AFA252 /* Cursor.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Cursor.json; sourceTree = "<group>"; };
 		08A2575EBBEE5EC6B202760B /* AlfredRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlfredRule.swift; sourceTree = "<group>"; };
+		0AC46B82149E32DE965863BC /* RadarChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChartView.swift; sourceTree = "<group>"; };
 		0BB6DE85A7D910E1F0424CEF /* TransactionJournalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionJournalTests.swift; sourceTree = "<group>"; };
 		0C92C74A3F932664D5001998 /* BaselineFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaselineFixture.swift; sourceTree = "<group>"; };
 		0D0235DC89C6C2BDB34309D1 /* DiskAnalyzerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskAnalyzerView.swift; sourceTree = "<group>"; };
@@ -256,6 +259,7 @@
 		4C881B157A7F5ACBF84D7E64 /* LanguageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManagerTests.swift; sourceTree = "<group>"; };
 		4D39CB998D05F06C7122FCA3 /* CleanupStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupStateMachine.swift; sourceTree = "<group>"; };
 		4EA68BEDE6F540E3477849FC /* SafetyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyManager.swift; sourceTree = "<group>"; };
+		4F30EB8C917D9A5DB59EB765 /* LiquidGlass+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LiquidGlass+Compatibility.swift"; sourceTree = "<group>"; };
 		4F8E546AF7573B471B314407 /* DiskScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskScannerTests.swift; sourceTree = "<group>"; };
 		50C1C6C0C2F943213529B9BC /* AppDiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDiscoveryTests.swift; sourceTree = "<group>"; };
 		51B066CCFCE8479C82161FDF /* AppIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentityTests.swift; sourceTree = "<group>"; };
@@ -704,6 +708,7 @@
 				280CD515ADC8F97A79AD7B12 /* DashboardView.swift */,
 				DB8F5E087C85389E6C6C2B26 /* DashboardView.swift.back */,
 				A5EFE9DE1E343AF8F2490C67 /* DashboardViewModel.swift */,
+				0AC46B82149E32DE965863BC /* RadarChartView.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -719,6 +724,7 @@
 				78EEF9CB2BE762A51083464F /* FileManager+Size.swift */,
 				91A11C06D6D12353C59E09EF /* FileScanner.swift */,
 				08402BF5E1C6101310B2B476 /* LanguageManager.swift */,
+				4F30EB8C917D9A5DB59EB765 /* LiquidGlass+Compatibility.swift */,
 				9E5214D1AD87C67377076C08 /* NotificationManager.swift */,
 				70E3A139737CC8A7ECBD1900 /* PermissionsManager.swift */,
 				F514077EE94AA6AF042FE5B0 /* PosixScanner.swift */,
@@ -993,6 +999,7 @@
 				9A045237ED42AC3CC1C06031 /* LanguageManager.swift in Sources */,
 				DDF1A3BD13DF7AA1C39EA144 /* LaunchServiceManager.swift in Sources */,
 				36CFC6F9A71EE6AA66E178C5 /* LaunchctlCache.swift in Sources */,
+				89BAEC96A8994A5092900B77 /* LiquidGlass+Compatibility.swift in Sources */,
 				0428CB5B74191FAFF78C6F48 /* LittleSnitchRule.swift in Sources */,
 				9CEF93EA4AC1719CDF985A58 /* LogicProRule.swift in Sources */,
 				D5736DBAF67A7BA78B39290F /* MacOSCleanerApp.swift in Sources */,
@@ -1020,6 +1027,7 @@
 				AEBD6F435B4BC89EB6A27021 /* ProcessSafetyPolicy.swift in Sources */,
 				9E12B9110CAF741A51367B1C /* ProcessesView.swift in Sources */,
 				7F6B179C933B447BD9F76FCA /* ProcessesViewModel.swift in Sources */,
+				332803EC2632D55C1CA2C21D /* RadarChartView.swift in Sources */,
 				FF78CCB002655FB528308A84 /* RancherDesktopRule.swift in Sources */,
 				92E0F73F02E1797F191A0BCD /* RaycastRule.swift in Sources */,
 				2C15EA5886E20334BA912869 /* RetryPolicy.swift in Sources */,
@@ -1107,7 +1115,7 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -1202,7 +1210,7 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;

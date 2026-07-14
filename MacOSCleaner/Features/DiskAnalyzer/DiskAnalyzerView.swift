@@ -1,42 +1,5 @@
 import SwiftUI
 
-// Compatibility helpers for macOS 27 Liquid Glass if SDK doesn't have them yet
-#if !hasFeature(LiquidGlass)
-public struct GlassEffectContainer<Content: View>: View {
-    let spacing: CGFloat?
-    let content: () -> Content
-    
-    public init(spacing: CGFloat? = nil, @ViewBuilder content: @escaping () -> Content) {
-        self.spacing = spacing
-        self.content = content
-    }
-    
-    public var body: some View {
-        VStack(spacing: spacing) {
-            content()
-        }
-    }
-}
-
-public extension View {
-    func glassEffect() -> some View {
-        self.background(VisualEffectView(material: .hudWindow, blendingMode: .withinWindow).clipShape(RoundedRectangle(cornerRadius: 12)))
-    }
-    
-    func glassEffect(_ glass: String = "", in shape: some Shape = RoundedRectangle(cornerRadius: 12)) -> some View {
-        self.background(VisualEffectView(material: .hudWindow, blendingMode: .withinWindow).clipShape(shape))
-    }
-    
-    func glassEffectID(_ id: AnyHashable, in namespace: Namespace.ID) -> some View {
-        self
-    }
-    
-    func glassEffectTransition(_ transition: Any) -> some View {
-        self
-    }
-}
-#endif
-
 public struct DiskAnalyzerView: View {
     @State private var viewModel = DiskAnalyzerViewModel()
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency

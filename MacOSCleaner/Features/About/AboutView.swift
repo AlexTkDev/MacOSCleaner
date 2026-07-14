@@ -79,9 +79,15 @@ struct AboutView: View {
                     Text(String(format: "update.available".localized, version))
                         .font(.headline)
                         .foregroundStyle(.white)
+                        .lineLimit(nil)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("update.download".localized + " →")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.8))
+                        .lineLimit(nil)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
@@ -113,6 +119,9 @@ struct AboutView: View {
         VStack(spacing: 0) {
             Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                 Label("about_problem_link".localized, systemImage: "exclamationmark.bubble.fill")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .contentShape(Rectangle())
@@ -120,6 +129,9 @@ struct AboutView: View {
             Divider().padding(.leading, 44)
             Link(destination: URL(string: "https://www.linkedin.com/in/aleksandrtk/")!) {
                 Label("about_linkedin".localized, systemImage: "person.crop.circle.badge.plus")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .contentShape(Rectangle())

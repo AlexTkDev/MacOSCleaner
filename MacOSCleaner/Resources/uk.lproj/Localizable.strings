@@ -70,6 +70,13 @@
 "dashboard_healthy" = "У нормі";
 "dashboard_recent_operations" = "Недавні операції";
 "dashboard_no_recent_operations" = "Немає недавніх операцій";
+"dashboard_radar_caches" = "Кеші";
+"dashboard_radar_logs" = "Логи";
+"dashboard_radar_dev" = "Розробка";
+"dashboard_radar_apps" = "Програми";
+"dashboard_radar_media" = "Медіа";
+"dashboard_radar_other" = "Інше";
+"dashboard_radar_tooltip_format" = "%@: %@";
 
 /* Language Names */
 "language.english" = "Англійська";
