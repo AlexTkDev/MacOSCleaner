@@ -264,7 +264,7 @@ public struct CleanupView: View {
                     Text("cleanup_complete".localized)
                         .font(.system(.title2, design: .rounded, weight: .bold))
                     
-                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedMB))
+                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedBytes.formattedByteCount()))
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
@@ -290,7 +290,7 @@ public struct CleanupView: View {
                             
                             Spacer()
                             
-                            Text(String(format: "cleanup_mb_format".localized, item.freedMB))
+                            Text(item.freedBytes.formattedByteCount())
                                 .font(.system(.subheadline, design: .monospaced))
                                 .foregroundColor(.green)
                         }
@@ -428,7 +428,7 @@ public struct CleanupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(viewModel.selectedSizeMB == 0)
+                .disabled(viewModel.selectedSizeBytes == 0)
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
@@ -530,7 +530,7 @@ public struct CleanupView: View {
 
             Spacer()
 
-            Text(String(format: "cleanup_mb_format".localized, category.sizeMB))
+            Text(category.sizeBytes.formattedByteCount())
                 .font(.system(.body, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -606,7 +606,7 @@ public struct CleanupView: View {
 
             Spacer()
 
-            Text(String(format: "cleanup_mb_format".localized, item.sizeMB))
+            Text(item.sizeBytes.formattedByteCount())
                 .font(.system(.caption, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -729,7 +729,7 @@ public struct CleanupView: View {
     private var footer: some View {
         HStack(spacing: 12) {
             if viewModel.state == .preview {
-                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeMB))
+                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount()))
                     .fontWeight(.semibold)
                     .foregroundColor(.accentColor)
             }
@@ -784,7 +784,7 @@ public struct CleanupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
-                .disabled(viewModel.selectedSizeMB == 0)
+                .disabled(viewModel.selectedSizeBytes == 0)
             }
         }
         .padding()

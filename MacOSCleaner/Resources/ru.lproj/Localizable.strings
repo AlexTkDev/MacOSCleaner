@@ -1,4 +1,4 @@
-// Common
+/* Common */
 "welcome_msg" = "С возвращением!";
 "app_title" = "Очистка";
 "sidebar_select_item" = "Выберите элемент в боковом меню";
@@ -13,15 +13,38 @@
 "size" = "Размер";
 "last_used" = "Последний запуск";
 
-// Sidebar / Navigation Menu
+/* Sidebar / Navigation Menu */
 "menu_dashboard" = "Обзор";
 "menu_cleanup" = "Очистка";
 "menu_startup_services" = "Автозапуск";
 "menu_startup_vendors" = "Вендоры автозапуска";
 "menu_uninstaller" = "Деинсталлятор";
 "menu_settings" = "Настройки";
+"menu_disk_space" = "Анализатор диска";
 
-// About View
+/* Disk Analyzer Screen */
+"disk_analyzer_title" = "Анализатор диска";
+"disk_analyzer_scan" = "Сканировать папку";
+"disk_analyzer_scanning" = "Сканирование...";
+"disk_analyzer_back" = "Назад";
+"disk_analyzer_delete_confirm" = "Переместить выбранные элементы в Корзину?";
+"delete_action" = "Удалить";
+"disk_analyzer_show_in_finder" = "Показать в Finder";
+"disk_analyzer_move_to_trash" = "В Корзину";
+"disk_analyzer_select_folder" = "Выбрать папку для сканирования";
+"disk_analyzer_empty" = "Папка пуста или еще не просканирована";
+"disk_analyzer_no_permissions" = "Нет прав доступа к этой папке";
+"disk_analyzer_category_all" = "Все";
+"disk_analyzer_category_video" = "Видео";
+"disk_analyzer_category_audio" = "Аудио";
+"disk_analyzer_category_apps" = "Программы";
+"disk_analyzer_category_docs" = "Документы";
+"disk_analyzer_category_archives" = "Архивы";
+"disk_analyzer_category_dev" = "Разработка";
+"disk_analyzer_category_other" = "Другое";
+
+
+/* About View */
 "about_title" = "О программе MacOS Cleaner";
 "about_version" = "Версия %@";
 "about_developer" = "Разработчик: AlexTkDev";
@@ -29,7 +52,7 @@
 "about_linkedin" = "Профиль LinkedIn";
 "about_copyright" = "© 2026 AlexTkDev. Все права защищены.";
 
-// Dashboard View
+/* Dashboard View */
 "dashboard_title" = "Обзор";
 "dashboard_system_info" = "Информация о системе";
 "dashboard_model" = "Модель";
@@ -48,13 +71,13 @@
 "dashboard_recent_operations" = "Недавние операции";
 "dashboard_no_recent_operations" = "Нет недавних операций";
 
-// Language Names
+/* Language Names */
 "language.english" = "Английский";
 "language.russian" = "Русский";
 "language.ukrainian" = "Украинский";
 "language.spanish" = "Испанский";
 
-// Settings View
+/* Settings View */
 "settings_title" = "Настройки";
 "settings_subtitle" = "Настройка параметров приложения";
 "settings_general" = "Общие";
@@ -82,7 +105,7 @@
 "settings_forget_description" = "Очистить все сохраненные данные и восстановить настройки по умолчанию.";
 "settings_reset_button" = "Сбросить все настройки";
 
-// Uninstaller Scan Mode
+/* Uninstaller Scan Mode */
 "settings_uninstaller" = "Деинсталлятор";
 "scan_mode" = "Режим сканирования";
 "scan_mode.safe" = "Безопасный";
@@ -91,17 +114,17 @@
 "scan_mode.safe.desc" = "Находит только файлы с высокой уверенностью совпадения: по Bundle ID, имени приложения или пакетным квитанциям. Не использует Spotlight. Минимальный риск затронуть файлы других приложений.";
 "scan_mode.balanced.desc" = "Полный скан: включая Spotlight (mdfind), расширенные пути и все возможные совпадения. Находит больше остатков, включая файлы в нестандартных местах. Рекомендуется для максимальной чистоты.";
 
-// Update Checker
+/* Update Checker */
 "update.check" = "Проверить обновления";
 "update.available" = "Доступна версия %@";
 "update.download" = "Скачать на GitHub";
 "update.up_to_date" = "Актуальная версия";
 "update.checking" = "Проверяем...";
 
-// Settings Tooltips
+/* Settings Tooltips */
 "settings_tooltip_language" = "Выберите язык интерфейса приложения.";
 
-// Notification Status
+/* Notification Status */
 "settings_notifications_status" = "Статус уведомлений";
 "settings_notifications_granted" = "Разрешено";
 "settings_notifications_denied" = "Запрещено (открыть Настройки)";
@@ -120,15 +143,15 @@
 "settings_tooltip_skip_expert" = "Пропускать выбор файлов в Экспертном режиме и сразу удалять приложения со всеми найденными связанными файлами.";
 "settings_tooltip_forget" = "Удалить все сохраненные настройки и восстановить параметры по умолчанию.";
 
-// Settings Reset Dialog
+/* Settings Reset Dialog */
 "settings_reset_confirm_title" = "Сбросить все настройки?";
 "settings_reset_confirm_button" = "Сбросить всё";
 "settings_reset_confirm_message" = "Это приведет к очистке всех сохраненных данных и сбросу всех настроек до значений по умолчанию. Это действие нельзя отменить.";
 
-// Trash & Deletion Warning
+/* Trash & Deletion Warning */
 "settings_trash_warning" = "Эти настройки делают удаление необратимым. Файлы, обходящие Корзину или удаляемые из неё сразу, восстановить нельзя.";
 
-// Startup Services View
+/* Startup Services View */
 "startup_title" = "Автозапуск";
 "startup_subtitle" = "Управление агентами автозагрузки.";
 "startup_refresh" = "Обновить список";
@@ -141,33 +164,42 @@
 "startup_disable" = "Отключить";
 "startup_enable" = "Включить";
 
-// Startup Categories
+/* Startup Categories */
 "startup_category_user" = "Мои сервисы";
 "startup_category_third_party" = "Сторонние";
 "startup_category_system" = "Системные";
 
-// Startup Filters
+/* Startup Filters */
 "startup_filter_all" = "Все";
 
-// Startup Category Help
+/* Startup Category Help */
 "startup_help_user" = "Пользовательский сервис из ~/Library/. Безопасно отключать.";
-"startup_help_third_party" = "Сторонний сервис из /Library/. Можно отключать с осторожностью.";
-"startup_help_system" = "Системный сервис Apple. Не рекомендуется отключать.";
+"startup_help_third_party" = "Сторонний сервис из /Library/. Безопасно отключать.";
+"cleanup_summary" = "Сводка удаленных файлов";
+"cleanup_skipped" = "Не удалось очистить";
+"cleanup_selected" = "Выбрано: %@";
+"cleanup_hide_logs" = "Скрыть логи";
+"cleanup_show_logs" = "Показать логи";
+"cleanup_copy" = "Копировать";
+"cleanup_copy_logs" = "Копировать логи";
+"cleanup_now" = "Очистить сейчас";
+"cleanup_manual_instructions" = "Инструкции для ручной очистки";
+"cleanup_scan_results" = "Результаты сканирования";
+"cleanup_scan_results_sub" = "Выберите элементы для удаления и нажмите 'Очистить сейчас'.";
+"cleanup_recommended" = "Рекомендуется к удалению";
+"cleanup_deselect_all" = "Снять выделение";
+"cleanup_select_all" = "Выбрать все";
+"cleanup_show_all_count" = "Показать все (ещё %lld)";
+"cleanup_debug_log" = "Отладочный лог (%lld строк)";
+ 
+/* Cleanup Notifications */
+"cleanup_scan_complete_title" = "Сканирование завершено";
+"cleanup_scan_complete_body" = "Найдено файлов для удаления: %@.";
+"cleanup_emptying_trash" = "Очистка корзины...";
+"cleanup_complete_title" = "Очистка завершена";
+"cleanup_complete_body" = "Успешно освобождено %@.";
 
-// Startup Vendor Settings
-"settings_startup_vendors" = "Системные вендоры";
-"startup_vendors_title" = "Системные вендоры";
-"startup_vendors_description" = "Префиксы лейблов, которые считаются системными сервисами.";
-"startup_vendors_description_sub" = "Сервисы с такими префиксами помечаются как 'Системные' и не рекомендуются к отключению.";
-"startup_vendors_current" = "Текущие префиксы";
-"startup_vendors_reset" = "Сбросить";
-"startup_vendors_empty" = "Нет добавленных префиксов";
-"startup_vendors_protected" = "Защищён";
-"startup_vendors_placeholder" = "com.vendor.";
-"startup_vendors_error_no_dot" = "Префикс должен содержать точку";
-"startup_vendors_error_duplicate" = "Такой префикс уже существует";
-
-// Cleanup View
+/* Cleanup View */
 "cleanup_scanning" = "Сканирование системы...";
 "cleanup_clean" = "Система чиста";
 "cleanup_clean_sub" = "В ходе сканирования не было найдено ненужных файлов.";
@@ -200,7 +232,7 @@
 "cleanup_failed_default" = "Произошла ошибка в процессе очистки.";
 "cleanup_script_logs" = "Логи выполнения:";
 "cleanup_complete" = "Очистка завершена";
-"cleanup_complete_sub" = "Успешно освобождено %lld МБ дискового пространства.";
+"cleanup_complete_sub" = "Успешно освобождено %@ дискового пространства.";
 "cleanup_summary" = "Сводка удаленных файлов";
 "cleanup_skipped" = "Не удалось очистить";
 "cleanup_selected" = "Выбрано: %lld МБ";
@@ -218,20 +250,20 @@
 "cleanup_show_all_count" = "Показать все (ещё %lld)";
 "cleanup_debug_log" = "Отладочный лог (%lld строк)";
 
-// Cleanup Notifications
+/* Cleanup Notifications */
 "cleanup_scan_complete_title" = "Сканирование завершено";
 "cleanup_scan_complete_body" = "Найдено файлов для удаления: %lld МБ.";
 "cleanup_emptying_trash" = "Очистка корзины...";
 "cleanup_complete_title" = "Очистка завершена";
-"cleanup_complete_body" = "Успешно освобождено %lld МБ.";
+"cleanup_complete_body" = "Успешно освобождено %@.";
 
-// Trash
+/* Trash */
 "trash_user_label" = "Пользовательская корзина";
 "trash_user_description" = "Содержимое вашей корзины. Включает удаленные файлы.";
 "trash_access_prompt_message" = "Пожалуйста, выберите папку Корзины для предоставления доступа к сканированию и очистке. (Она уже выбрана, просто нажмите «Предоставить доступ»).";
 "trash_access_prompt_button" = "Предоставить доступ";
 
-// Uninstaller View
+/* Uninstaller View */
 "uninstaller_title" = "Деинсталлятор";
 "uninstaller_search" = "Поиск приложений";
 "uninstaller_reload" = "Обновить список";
@@ -267,7 +299,7 @@
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
 "shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
 
-// Processes View
+/* Processes View */
 "menu_processes" = "Процессы";
 "processes_title" = "Процессы";
 "processes_subtitle" = "Управление запущенными системными процессами.";
@@ -300,7 +332,7 @@
 "processes_whitelist_placeholder" = "Имя процесса для защиты...";
 "add" = "Добавить";
 
-// Permissions
+/* Permissions */
 "permissions_title" = "Требуются разрешения";
 "permissions_subtitle" = "MacOSCleaner нужен доступ к системным папкам для очистки.";
 "permissions_fda_description" = "Необходим для доступа к ~/Library/Caches, ~/Library/Application Support и другим системным папкам.";
@@ -317,18 +349,18 @@
 "permissions_status_required" = "Требуется";
 "permissions_window_title" = "Разрешения";
 
-// Settings Permissions
+/* Settings Permissions */
 "settings_permissions" = "Разрешения";
 "settings_fda_description" = "Необходим для очистки системных кэшей и данных приложений.";
 "settings_open_settings" = "Открыть настройки";
 "settings_check_permissions" = "Проверить разрешения";
 
-// Format strings
+/* Format strings */
 "dashboard_used_percent_format" = "%lld%%";
 "dashboard_freed_prefix" = "+%@";
 "cleanup_mb_format" = "%lld МБ";
 
-// Process format strings
+/* Process format strings */
 "processes_view_mode_grouped" = "Группировать";
 "processes_view_mode_flat" = "Списком";
 "processes_selected_count" = "Выбрано: %lld";
@@ -338,31 +370,31 @@
 "process_uptime_hours_format" = "%lldч %lldм";
 "process_uptime_minutes_format" = "%lldм";
 
-// Common
+/* Common */
 "version_unknown" = "N/A";
 
-// Operation Risk
+/* Operation Risk */
 "risk.safe" = "Безопасно";
 "risk.moderate" = "Умеренно";
 "risk.dangerous" = "Опасно";
 "risk.protected" = "Защищено";
 
-// Cleanup Dev Badge
+/* Cleanup Dev Badge */
 "cleanup_dev_badge" = "РАЗРАБ";
 
-// Refresh Interval (Settings -> Processes)
+/* Refresh Interval (Settings -> Processes) */
 "refresh_manual" = "Вручную";
 "refresh_5s" = "Каждые 5 секунд";
 "refresh_10s" = "Каждые 10 секунд";
 "refresh_30s" = "Каждые 30 секунд";
 
-// Sort By (Settings -> Processes)
+/* Sort By (Settings -> Processes) */
 "sort_cpu" = "Загрузка CPU";
 "sort_memory" = "Использование памяти";
 "sort_name" = "Имя";
 "sort_threads" = "Кол-во потоков";
 
-// Cleanup Category Names
+/* Cleanup Category Names */
 "category.app_caches" = "Кэши приложений";
 "category.package_managers" = "Менеджеры пакетов";
 "category.gradle_maven" = "Gradle + Maven";
@@ -418,7 +450,7 @@
 "category.duplicate_files" = "Дубликаты файлов";
 "category.unused_apps" = "Неиспользуемые приложения";
 
-// Process View - Missing Keys
+/* Process View - Missing Keys */
 "view_mode" = "Режим просмотра";
 "sort_by" = "Сортировка";
 "cancel_selection" = "Отменить выбор";
@@ -431,17 +463,17 @@
 "processes_force_kill_all" = "Принудительно завершить все";
 "process.unknown" = "Неизвестно";
 
-// Uninstaller - Scan Progress
+/* Uninstaller - Scan Progress */
 "uninstaller.progress.discovering" = "Поиск приложений...";
 "uninstaller.progress.complete" = "Сканирование завершено";
 
-// Uninstaller - Confidence Tiers
+/* Uninstaller - Confidence Tiers */
 "uninstaller.tier.ignore" = "Игнорировать";
 "uninstaller.tier.possible" = "Возможно";
 "uninstaller.tier.very_likely" = "Очень вероятно";
 "uninstaller.tier.guaranteed" = "Гарантировано";
 
-// Developer Components
+/* Developer Components */
 "developer.android_sdk" = "Android SDK";
 "developer.gradle_cache" = "Кэш Gradle";
 "developer.xcode_derived_data" = "Xcode Derived Data";
@@ -450,7 +482,7 @@
 "developer.docker" = "Docker";
 "developer.homebrew" = "Homebrew";
 
-// Evidence Categories
+/* Evidence Categories */
 "uninstaller.evidence_category.identity" = "Совпадение идентификатора";
 "uninstaller.evidence_category.signature" = "Подпись кода";
 "uninstaller.evidence_category.system" = "Системная интеграция";
@@ -459,7 +491,7 @@
 "uninstaller.evidence_category.graph" = "Распространение графа";
 "uninstaller.evidence_category.launch_services" = "Launch Services";
 
-// Evidence Descriptions
+/* Evidence Descriptions */
 "uninstaller.evidence.bundleIDExact.title" = "Совпадение Bundle ID";
 "uninstaller.evidence.bundleIDExact.description" = "Имя совпадает с идентификатором пакета приложения.";
 "uninstaller.evidence.bundleIDPrefix.title" = "Префикс Bundle ID";
@@ -519,7 +551,7 @@
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Зарегистрировано в базе Launch Services.";
 
-// Permissions - Missing Access Descriptions
+/* Permissions - Missing Access Descriptions */
 "permissions.full_disk_access" = "Полный доступ к диску";
 "permissions.accessibility" = "Специальные возможности";
 "permissions.automation" = "Автоматизация (Apple Events)";
@@ -528,13 +560,13 @@
 "permissions.notification_ephemeral" = "Эфемерные";
 "permissions.unknown_status" = "Неизвестно";
 
-// Process Categories
+/* Process Categories */
 "process.category.applications" = "Приложения";
 "process.category.launch_agents" = "Агенты автозапуска";
 "process.category.launch_daemons" = "Демоны";
 "process.category.system" = "Системные";
 
-// Uninstaller - Additional UI
+/* Uninstaller - Additional UI */
 "uninstaller.scanning_deep" = "Глубокое сканирование...";
 "uninstaller.why_this_file" = "Почему этот файл?";
 "uninstaller.related_files" = "Связанные файлы";
@@ -542,20 +574,20 @@
 "uninstaller.progress.developer_components" = "Проверка компонентов разработчика...";
 "uninstaller.footer.summary" = "Выбрано %lld файлов в %@ категориях";
 
-// Format Helpers
+/* Format Helpers */
 "format_bytes_b" = "%lld Б";
 "format_bytes_kb" = "%.1f КБ";
 "format_bytes_mb" = "%.1f МБ";
 "format_bytes_gb" = "%.2f ГБ";
 
-// Process Block Reasons
+/* Process Block Reasons */
 "process_block_pid_format" = "PID %lld — системный критический процесс";
 "process_block_whitelist_name_format" = "%@ в вашем белом списке (защищён)";
 "process_block_whitelist_bundle_format" = "%@ в вашем белом списке (защищён)";
 "process_block_protected_format" = "%@ — защищённый системный процесс";
 "process_block_no_path_format" = "%@ — нет информации о пути, действуйте осторожно";
 
-// Error Messages
+/* Error Messages */
 "error_ps_failed_format" = "Не удалось получить список процессов: %@";
 "error_operation_blocked_format" = "Невозможно завершить %@: %@";
 "error_kill_failed_format" = "Не удалось завершить %@ (код %lld): %@";
@@ -564,5 +596,5 @@
 "error_command_failed_format" = "Команда не выполнена: %@";
 "error_invalid_transition_format" = "Недопустимый переход из %@ в %@";
 
-// OS Version
+/* OS Version */
 "os_version_format" = "macOS %lld.%lld.%lld";

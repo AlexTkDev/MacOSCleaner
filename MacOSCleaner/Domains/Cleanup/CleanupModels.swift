@@ -18,6 +18,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
     public let id: UUID
     public let label: String
     public var sizeMB: Int
+    public var sizeBytes: Int64
     public let risk: OperationRisk
     public var isSelected: Bool
     public let isDeletable: Bool
@@ -31,6 +32,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
         id: UUID = UUID(),
         label: String,
         sizeMB: Int,
+        sizeBytes: Int64 = 0,
         risk: OperationRisk,
         isSelected: Bool = true,
         isDeletable: Bool,
@@ -43,6 +45,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
         self.id = id
         self.label = label
         self.sizeMB = sizeMB
+        self.sizeBytes = sizeBytes == 0 ? Int64(sizeMB) * 1024 * 1024 : sizeBytes
         self.risk = risk
         self.isSelected = isSelected
         self.isDeletable = isDeletable
@@ -56,6 +59,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
     public static func == (lhs: CleanupPreviewItem, rhs: CleanupPreviewItem) -> Bool {
         lhs.id == rhs.id &&
         lhs.sizeMB == rhs.sizeMB &&
+        lhs.sizeBytes == rhs.sizeBytes &&
         lhs.isSelected == rhs.isSelected &&
         lhs.children == rhs.children &&
         lhs.description == rhs.description &&
@@ -67,6 +71,13 @@ public struct CleanupResultItem: Identifiable, Sendable {
     public let id: UUID = UUID()
     public let label: String
     public let freedMB: Int
+    public let freedBytes: Int64
+    
+    public init(label: String, freedMB: Int, freedBytes: Int64? = nil) {
+        self.label = label
+        self.freedMB = freedMB
+        self.freedBytes = freedBytes ?? Int64(freedMB) * 1024 * 1024
+    }
 }
 
 public struct SkippedCleanupItem: Identifiable, Sendable {

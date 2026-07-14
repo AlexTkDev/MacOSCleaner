@@ -180,7 +180,7 @@ private func deriveVendorNames(bundleID: String, appName: String, authority: Str
     let staticAliases: [String: Set<String>] = [
         "jetbrains": ["JetBrains", "IntelliJ", "PyCharm", "DataGrip", "GoLand", "WebStorm", "RubyMine", "CLion", "Rider", "AppCode"],
         "adobe": ["Adobe"],
-        "microsoft": ["Microsoft", "Office", "Teams", "VS", "Code"],
+        "microsoft": ["Microsoft", "Office", "Teams", "VSCode"],
         "google": ["Google"],
         "docker": ["Docker"],
         "oracle": ["Oracle"],

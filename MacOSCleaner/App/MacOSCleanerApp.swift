@@ -3,8 +3,15 @@ import OSLog
 
 private let crashLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner", category: "Crash")
 
+class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+}
+
 @main
 struct MacOSCleanerApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     // Note: AppIntents/linkd errors (com.apple.linkd.autoShortcut connection failures)
     // are expected system noise on some macOS versions. They cannot be fixed in app code
     // as they originate from the system's AppIntents framework initialization.

@@ -52,10 +52,12 @@ public enum CleanupEngineEvent: Sendable {
 public struct CleanupEngineResult: Sendable {
     public let label: String
     public let freedMB: Int
+    public let freedBytes: Int64
 
-    public init(label: String, freedMB: Int) {
+    public init(label: String, freedMB: Int, freedBytes: Int64? = nil) {
         self.label = label
         self.freedMB = freedMB
+        self.freedBytes = freedBytes ?? Int64(freedMB) * 1024 * 1024
     }
 }
 

@@ -23,6 +23,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
     public var totalSteps: Int = 1
     public var stepTitle: String = ""
     public var totalFreedMB: Int = 0
+    public var totalFreedBytes: Int64 = 0
     public var cleanedItems: [CleanupResultItem] = []
     public var skippedItems: [SkippedCleanupItem] = []
     public var lastError: String? = nil
@@ -94,6 +95,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     let trashItem = CleanupPreviewItem(
                         label: localizedLabel,
                         sizeMB: trashSizeMB,
+                        sizeBytes: trashSizeBytes,
                         risk: .safe,
                         isSelected: true,
                         isDeletable: true,
@@ -105,7 +107,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 try self.stateMachine.transition(to: .preview)
                 
                 self.notifier.sendScanComplete(
-                    selectedSizeMB: self.itemManager.selectedSizeMB,
+                    selectedSizeBytes: self.itemManager.selectedSizeBytes,
                     showNotifications: self.settings.showNotifications
                 )
             } catch let error {
@@ -130,6 +132,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedMB = 0
+                self.totalFreedBytes = 0
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
@@ -154,8 +157,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 for result in results {
                     self.totalFreedMB += result.freedMB
-                    self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB))
-                    records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: Int64(result.freedMB * 1024 * 1024)))
+                    self.totalFreedBytes += result.freedBytes
+                    self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB, freedBytes: result.freedBytes))
+                    records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))
                 }
                 
                 // Check for skipped categories from logs
@@ -176,7 +180,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     
                     let trashLabel = "trash_user_label".localized
                     self.totalFreedMB += deletedMB
-                    self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB))
+                    self.totalFreedBytes += deletedBytes
+                    self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
                     records.append(OperationRecord(id: UUID(), itemPath: "~/.Trash", status: "success", bytesFreed: deletedBytes))
                 }
                 
@@ -189,7 +194,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 }
                 
                 self.notifier.sendCleanupComplete(
-                    totalFreedMB: self.totalFreedMB,
+                    totalFreedBytes: self.totalFreedBytes,
                     showNotifications: self.settings.showNotifications
                 )
                 

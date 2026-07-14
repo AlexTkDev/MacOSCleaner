@@ -1,4 +1,4 @@
-// Common
+/* Common */
 "welcome_msg" = "Welcome back!";
 "app_title" = "Cleaner";
 "sidebar_select_item" = "Select an item from the sidebar";
@@ -13,15 +13,38 @@
 "size" = "Size";
 "last_used" = "Last Used";
 
-// Sidebar / Navigation Menu
+/* Sidebar / Navigation Menu */
 "menu_dashboard" = "Dashboard";
 "menu_cleanup" = "Cleanup";
 "menu_startup_services" = "Startup Services";
 "menu_startup_vendors" = "Startup Vendors";
 "menu_uninstaller" = "Uninstaller";
 "menu_settings" = "Settings";
+"menu_disk_space" = "Disk Analyzer";
 
-// About View
+/* Disk Analyzer Screen */
+"disk_analyzer_title" = "Disk Space Analyzer";
+"disk_analyzer_scan" = "Scan Folder";
+"disk_analyzer_scanning" = "Scanning...";
+"disk_analyzer_back" = "Back";
+"disk_analyzer_delete_confirm" = "Move selected items to Trash?";
+"delete_action" = "Delete";
+"disk_analyzer_show_in_finder" = "Show in Finder";
+"disk_analyzer_move_to_trash" = "Move to Trash";
+"disk_analyzer_select_folder" = "Select Folder to Scan";
+"disk_analyzer_empty" = "Folder is empty or not scanned yet";
+"disk_analyzer_no_permissions" = "No access permissions for this folder";
+"disk_analyzer_category_all" = "All";
+"disk_analyzer_category_video" = "Video";
+"disk_analyzer_category_audio" = "Audio";
+"disk_analyzer_category_apps" = "Apps";
+"disk_analyzer_category_docs" = "Documents";
+"disk_analyzer_category_archives" = "Archives";
+"disk_analyzer_category_dev" = "Developer";
+"disk_analyzer_category_other" = "Other";
+
+
+/* About View */
 "about_title" = "About MacOS Cleaner";
 "about_version" = "Version %@";
 "about_developer" = "Developed by AlexTkDev";
@@ -29,7 +52,7 @@
 "about_linkedin" = "LinkedIn Profile";
 "about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
 
-// Dashboard View
+/* Dashboard View */
 "dashboard_title" = "Dashboard";
 "dashboard_system_info" = "System Information";
 "dashboard_model" = "Model";
@@ -48,13 +71,13 @@
 "dashboard_recent_operations" = "Recent Operations";
 "dashboard_no_recent_operations" = "No recent operations";
 
-// Language Names
+/* Language Names */
 "language.english" = "English";
 "language.russian" = "Russian";
 "language.ukrainian" = "Ukrainian";
 "language.spanish" = "Spanish";
 
-// Settings View
+/* Settings View */
 "settings_title" = "Settings";
 "settings_subtitle" = "Configure app preferences";
 "settings_general" = "General";
@@ -82,7 +105,7 @@
 "settings_forget_description" = "Clear all saved data and reset settings to their defaults.";
 "settings_reset_button" = "Reset All Settings";
 
-// Uninstaller Scan Mode
+/* Uninstaller Scan Mode */
 "settings_uninstaller" = "Uninstaller";
 "scan_mode" = "Scan Mode";
 "scan_mode.safe" = "Safe";
@@ -91,17 +114,17 @@
 "scan_mode.safe.desc" = "Finds only high-confidence files matched by Bundle ID, app name, or package receipts. Does not use Spotlight. Minimal risk of removing shared files.";
 "scan_mode.balanced.desc" = "Full scan including Spotlight (mdfind), extended paths, and all possible matches. Finds more residuals including non-standard locations. Recommended for thorough cleanup.";
 
-// Update Checker
+/* Update Checker */
 "update.check" = "Check for Updates";
 "update.available" = "Version %@ is available";
 "update.download" = "Download on GitHub";
 "update.up_to_date" = "Up to date";
 "update.checking" = "Checking...";
 
-// Settings Tooltips
+/* Settings Tooltips */
 "settings_tooltip_language" = "Select the interface language for the application.";
 
-// Notification Status
+/* Notification Status */
 "settings_notifications_status" = "Notification Status";
 "settings_notifications_granted" = "Allowed";
 "settings_notifications_denied" = "Denied (open System Settings)";
@@ -120,15 +143,15 @@
 "settings_tooltip_skip_expert" = "Skip the Expert Mode file selection step and immediately uninstall applications with all associated files selected.";
 "settings_tooltip_forget" = "Remove all saved preferences and restore factory defaults.";
 
-// Settings Reset Dialog
+/* Settings Reset Dialog */
 "settings_reset_confirm_title" = "Reset All Settings?";
 "settings_reset_confirm_button" = "Reset All";
 "settings_reset_confirm_message" = "This will clear all saved data and reset every setting to its default value. This action cannot be undone.";
 
-// Trash & Deletion Warning
+/* Trash & Deletion Warning */
 "settings_trash_warning" = "These settings make deletion irreversible. Files bypassing or immediately emptied from the Trash cannot be recovered.";
 
-// Startup Services View
+/* Startup Services View */
 "startup_title" = "Startup Services";
 "startup_subtitle" = "Manage agents that start automatically.";
 "startup_refresh" = "Refresh list";
@@ -141,20 +164,20 @@
 "startup_disable" = "Disable";
 "startup_enable" = "Enable";
 
-// Startup Categories
+/* Startup Categories */
 "startup_category_user" = "My Services";
 "startup_category_third_party" = "Third-party";
 "startup_category_system" = "System";
 
-// Startup Filters
+/* Startup Filters */
 "startup_filter_all" = "All";
 
-// Startup Category Help
+/* Startup Category Help */
 "startup_help_user" = "User service from ~/Library/. Safe to disable.";
 "startup_help_third_party" = "Third-party service from /Library/. Can be disabled with caution.";
 "startup_help_system" = "Apple system service. Not recommended to disable.";
 
-// Startup Vendor Settings
+/* Startup Vendor Settings */
 "settings_startup_vendors" = "System Vendors";
 "startup_vendors_title" = "System Vendors";
 "startup_vendors_description" = "Label prefixes considered as system services.";
@@ -167,7 +190,7 @@
 "startup_vendors_error_no_dot" = "Prefix must contain a dot";
 "startup_vendors_error_duplicate" = "This prefix already exists";
 
-// Cleanup View
+/* Cleanup View */
 "cleanup_scanning" = "Scanning System...";
 "cleanup_clean" = "System is Clean";
 "cleanup_clean_sub" = "No unnecessary files were found during the scan.";
@@ -199,11 +222,10 @@
 "cleanup_failed" = "Cleanup Failed";
 "cleanup_failed_default" = "An error occurred during the cleanup process.";
 "cleanup_script_logs" = "Script Logs:";
-"cleanup_complete" = "Cleanup Complete";
-"cleanup_complete_sub" = "Successfully freed %lld MB of disk space.";
+"cleanup_complete" = "Cleanup Complete";"cleanup_complete_sub" = "Successfully freed %@ of disk space.";
 "cleanup_summary" = "Deleted Items Summary";
 "cleanup_skipped" = "Could Not Clean";
-"cleanup_selected" = "Selected: %lld MB";
+"cleanup_selected" = "Selected: %@";
 "cleanup_hide_logs" = "Hide Logs";
 "cleanup_show_logs" = "Show Logs";
 "cleanup_copy" = "Copy";
@@ -217,21 +239,21 @@
 "cleanup_select_all" = "Select All";
 "cleanup_show_all_count" = "Show all (%lld more)";
 "cleanup_debug_log" = "Debug Log (%lld lines)";
-
-// Cleanup Notifications
+ 
+/* Cleanup Notifications */
 "cleanup_scan_complete_title" = "Scan Complete";
-"cleanup_scan_complete_body" = "Found %lld MB of files to clean.";
+"cleanup_scan_complete_body" = "Found %@ of files to clean.";
 "cleanup_emptying_trash" = "Emptying Recycle Bin...";
 "cleanup_complete_title" = "Cleanup Complete";
-"cleanup_complete_body" = "Successfully freed %lld MB.";
+"cleanup_complete_body" = "Successfully freed %@.";
 
-// Trash
+/* Trash */
 "trash_user_label" = "User Recycle Bin";
 "trash_user_description" = "Contents of your system Recycle Bin. Contains deleted files.";
 "trash_access_prompt_message" = "Please select the Trash folder to grant access for scanning and cleaning. (It is already selected, just click 'Grant Access')";
 "trash_access_prompt_button" = "Grant Access";
 
-// Uninstaller View
+/* Uninstaller View */
 "uninstaller_title" = "Uninstaller";
 "uninstaller_search" = "Search Apps";
 "uninstaller_reload" = "Reload Applications";
@@ -265,7 +287,7 @@
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
 "shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
 
-// Processes View
+/* Processes View */
 "menu_processes" = "Processes";
 "processes_title" = "Processes";
 "processes_subtitle" = "Manage running system processes.";
@@ -298,7 +320,7 @@
 "processes_whitelist_placeholder" = "Process name to protect...";
 "add" = "Add";
 
-// Permissions
+/* Permissions */
 "permissions_title" = "Permissions Required";
 "permissions_subtitle" = "MacOSCleaner needs access to system folders for cleanup.";
 "permissions_fda_description" = "Required to access ~/Library/Caches, ~/Library/Application Support, and other system folders.";
@@ -315,18 +337,18 @@
 "permissions_status_required" = "Required";
 "permissions_window_title" = "Permissions";
 
-// Settings Permissions
+/* Settings Permissions */
 "settings_permissions" = "Permissions";
 "settings_fda_description" = "Required for cleaning system caches and application data.";
 "settings_open_settings" = "Open Settings";
 "settings_check_permissions" = "Check Permissions";
 
-// Format strings
+/* Format strings */
 "dashboard_used_percent_format" = "%lld%%";
 "dashboard_freed_prefix" = "+%@";
 "cleanup_mb_format" = "%lld MB";
 
-// Process format strings
+/* Process format strings */
 "processes_view_mode_grouped" = "Grouped";
 "processes_view_mode_flat" = "Flat";
 "processes_selected_count" = "%lld selected";
@@ -336,31 +358,31 @@
 "process_uptime_hours_format" = "%lldh %lldm";
 "process_uptime_minutes_format" = "%lldm";
 
-// Common
+/* Common */
 "version_unknown" = "N/A";
 
-// Operation Risk
+/* Operation Risk */
 "risk.safe" = "Safe";
 "risk.moderate" = "Moderate";
 "risk.dangerous" = "Dangerous";
 "risk.protected" = "Protected";
 
-// Cleanup Dev Badge
+/* Cleanup Dev Badge */
 "cleanup_dev_badge" = "DEV";
 
-// Refresh Interval (Settings -> Processes)
+/* Refresh Interval (Settings -> Processes) */
 "refresh_manual" = "Manual";
 "refresh_5s" = "Every 5 seconds";
 "refresh_10s" = "Every 10 seconds";
 "refresh_30s" = "Every 30 seconds";
 
-// Sort By (Settings -> Processes)
+/* Sort By (Settings -> Processes) */
 "sort_cpu" = "CPU Usage";
 "sort_memory" = "Memory Usage";
 "sort_name" = "Name";
 "sort_threads" = "Thread Count";
 
-// Cleanup Category Names
+/* Cleanup Category Names */
 "category.app_caches" = "User app caches";
 "category.package_managers" = "Package managers";
 "category.gradle_maven" = "Gradle + Maven";
@@ -416,7 +438,7 @@
 "category.duplicate_files" = "Duplicate Files";
 "category.unused_apps" = "Unused Apps";
 
-// Process View - Missing Keys
+/* Process View - Missing Keys */
 "view_mode" = "View Mode";
 "sort_by" = "Sort By";
 "cancel_selection" = "Cancel Selection";
@@ -429,17 +451,17 @@
 "processes_force_kill_all" = "Force Kill All";
 "process.unknown" = "Unknown";
 
-// Uninstaller - Scan Progress
+/* Uninstaller - Scan Progress */
 "uninstaller.progress.discovering" = "Discovering applications...";
 "uninstaller.progress.complete" = "Scan complete";
 
-// Uninstaller - Confidence Tiers
+/* Uninstaller - Confidence Tiers */
 "uninstaller.tier.ignore" = "Ignore";
 "uninstaller.tier.possible" = "Possible";
 "uninstaller.tier.very_likely" = "Very Likely";
 "uninstaller.tier.guaranteed" = "Guaranteed";
 
-// Developer Components
+/* Developer Components */
 "developer.android_sdk" = "Android SDK";
 "developer.gradle_cache" = "Gradle Cache";
 "developer.xcode_derived_data" = "Xcode Derived Data";
@@ -448,7 +470,7 @@
 "developer.docker" = "Docker";
 "developer.homebrew" = "Homebrew";
 
-// Evidence Categories
+/* Evidence Categories */
 "uninstaller.evidence_category.identity" = "Identity Match";
 "uninstaller.evidence_category.signature" = "Code Signature";
 "uninstaller.evidence_category.system" = "System Integration";
@@ -457,7 +479,7 @@
 "uninstaller.evidence_category.graph" = "Graph Propagation";
 "uninstaller.evidence_category.launch_services" = "Launch Services";
 
-// Evidence Descriptions
+/* Evidence Descriptions */
 "uninstaller.evidence.bundleIDExact.title" = "Bundle ID Matches";
 "uninstaller.evidence.bundleIDExact.description" = "Name matches the app's bundle identifier.";
 "uninstaller.evidence.bundleIDPrefix.title" = "Bundle ID Prefix";
@@ -517,7 +539,7 @@
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Registered in the Launch Services database.";
 
-// Permissions - Missing Access Descriptions
+/* Permissions - Missing Access Descriptions */
 "permissions.full_disk_access" = "Full Disk Access";
 "permissions.accessibility" = "Accessibility";
 "permissions.automation" = "Automation (Apple Events)";
@@ -526,13 +548,13 @@
 "permissions.notification_ephemeral" = "Ephemeral";
 "permissions.unknown_status" = "Unknown";
 
-// Process Categories
+/* Process Categories */
 "process.category.applications" = "Applications";
 "process.category.launch_agents" = "Launch Agents";
 "process.category.launch_daemons" = "Launch Daemons";
 "process.category.system" = "System";
 
-// Uninstaller - Additional UI
+/* Uninstaller - Additional UI */
 "uninstaller.scanning_deep" = "Deep Scanning...";
 "uninstaller.why_this_file" = "Why this file?";
 "uninstaller.related_files" = "Related Files";
@@ -540,20 +562,20 @@
 "uninstaller.progress.developer_components" = "Checking developer components...";
 "uninstaller.footer.summary" = "%lld file(s) selected across %@ tiers";
 
-// Format Helpers
+/* Format Helpers */
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
 "format_bytes_mb" = "%.1f MB";
 "format_bytes_gb" = "%.2f GB";
 
-// Process Block Reasons
+/* Process Block Reasons */
 "process_block_pid_format" = "PID %lld is a system-critical process";
 "process_block_whitelist_name_format" = "%@ is in your whitelist (protected)";
 "process_block_whitelist_bundle_format" = "%@ is in your whitelist (protected)";
 "process_block_protected_format" = "%@ is a protected system process";
 "process_block_no_path_format" = "%@ has no path info — proceed with caution";
 
-// Error Messages
+/* Error Messages */
 "error_ps_failed_format" = "Failed to list processes: %@";
 "error_operation_blocked_format" = "Cannot terminate %@: %@";
 "error_kill_failed_format" = "Failed to kill %@ (exit %lld): %@";
@@ -562,9 +584,9 @@
 "error_command_failed_format" = "Command failed: %@";
 "error_invalid_transition_format" = "Invalid transition from %@ to %@";
 
-// OS Version
+/* OS Version */
 "os_version_format" = "macOS %lld.%lld.%lld";
 
-// Uninstaller Tooltips
+/* Uninstaller Tooltips */
 "uninstaller_show_in_finder" = "Show in Finder";
 "uninstaller_used_by" = "Used by %@";
