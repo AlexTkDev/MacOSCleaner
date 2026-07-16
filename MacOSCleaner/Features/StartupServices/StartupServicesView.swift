@@ -1,33 +1,32 @@
 import SwiftUI
 
 public struct StartupServicesView: View {
-    @State private var viewModel: StartupServicesViewModel
-
-    public init(viewModel: StartupServicesViewModel = StartupServicesViewModel()) {
-        _viewModel = State(initialValue: viewModel)
-    }
+    @State private var viewModel = StartupServicesViewModel()
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     public var body: some View {
-        VStack(spacing: 0) {
-            header
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                header
 
-            if viewModel.isLoading {
-                AnimatedScanView(
-                    title: "startup_scanning".localized,
-                    subtitle: "",
-                    currentStep: 0,
-                    totalSteps: 1
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.lastError {
-                errorView(error)
-            } else if viewModel.services.isEmpty {
-                emptyView
-            } else {
-                serviceList
+                if viewModel.isLoading {
+                    AnimatedScanView(
+                        title: "startup_scanning".localized,
+                        subtitle: "",
+                        currentStep: 0,
+                        totalSteps: 1
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = viewModel.lastError {
+                    errorView(error)
+                } else if viewModel.services.isEmpty {
+                    emptyView
+                } else {
+                    serviceList
+                }
             }
+            .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
-        .background(Color(NSColor.controlBackgroundColor))
         .onAppear { Task { await viewModel.scan() } }
     }
 
@@ -47,14 +46,13 @@ public struct StartupServicesView: View {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 14, weight: .semibold))
                 }
-                .buttonStyle(.bordered)
+                .glassButtonStyle()
                 .help("startup_refresh".localized)
             }
 
             filterPicker
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var filterPicker: some View {
@@ -153,9 +151,7 @@ public struct StartupServicesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .glassEffect()
             .padding()
         }
     }

@@ -1,54 +1,54 @@
 import SwiftUI
 
 public struct ProcessesView: View {
-    @State private var viewModel: ProcessesViewModel
+    @State private var viewModel = ProcessesViewModel()
     @State private var isEditMode = false
-
-    public init(viewModel: ProcessesViewModel = ProcessesViewModel()) {
-        _viewModel = State(initialValue: viewModel)
-    }
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     public var body: some View {
-        VStack(spacing: 0) {
-            header
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                header
 
-            HStack(spacing: 12) {
-                searchField
-                Spacer()
-                Text("\(viewModel.filteredProcesses.count)/\(viewModel.processes.count)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
+                HStack(spacing: 12) {
+                    searchField
+                    Spacer()
+                    Text("\(viewModel.filteredProcesses.count)/\(viewModel.processes.count)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
 
-            if isEditMode {
-                selectionToolbar
-            }
+                if isEditMode {
+                    selectionToolbar
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
 
-            if viewModel.isLoading {
-                AnimatedScanView(
-                    title: "processes_scanning".localized,
-                    subtitle: "",
-                    currentStep: 0,
-                    totalSteps: 1
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.lastError {
-                errorView(error)
-            } else if viewModel.filteredProcesses.isEmpty && !viewModel.searchText.isEmpty {
-                emptySearchView
-            } else if viewModel.processes.isEmpty {
-                emptyView
-            } else {
-                if viewModel.viewMode == .grouped {
-                    groupedProcessList
+                if viewModel.isLoading {
+                    AnimatedScanView(
+                        title: "processes_scanning".localized,
+                        subtitle: "",
+                        currentStep: 0,
+                        totalSteps: 1
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = viewModel.lastError {
+                    errorView(error)
+                } else if viewModel.filteredProcesses.isEmpty && !viewModel.searchText.isEmpty {
+                    emptySearchView
+                } else if viewModel.processes.isEmpty {
+                    emptyView
                 } else {
-                    flatProcessList
+                    if viewModel.viewMode == .grouped {
+                        groupedProcessList
+                    } else {
+                        flatProcessList
+                    }
                 }
             }
+            .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
-        .background(Color(NSColor.controlBackgroundColor))
         .alert(
             "processes_confirm_terminate".localized,
             isPresented: Binding(
@@ -157,7 +157,7 @@ public struct ProcessesView: View {
                 Image(systemName: "ellipsis.circle")
                     .font(.system(size: 14, weight: .semibold))
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
 
             Button(action: { viewModel.showBlacklistAlert = true }) {
                 HStack(spacing: 4) {
@@ -169,7 +169,7 @@ public struct ProcessesView: View {
                     }
                 }
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .help("processes_tooltip_blacklist".localized)
 
             Button(action: { viewModel.showWhitelistAlert = true }) {
@@ -182,18 +182,17 @@ public struct ProcessesView: View {
                     }
                 }
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .help("processes_tooltip_whitelist".localized)
 
             Button(action: { Task { await viewModel.scan() } }) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 14, weight: .semibold))
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .help("processes_tooltip_refresh".localized)
         }
         .padding()
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var selectionToolbar: some View {
@@ -201,12 +200,12 @@ public struct ProcessesView: View {
             Button(action: viewModel.selectAll) {
                 Label("select_all".localized, systemImage: "checkmark.circle")
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
 
             Button(action: viewModel.deselectAll) {
                 Label("deselect_all".localized, systemImage: "circle")
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
 
             Spacer()
 
@@ -217,18 +216,17 @@ public struct ProcessesView: View {
             Button(action: { Task { await viewModel.terminateSelected() } }) {
                 Label("terminate_selected".localized, systemImage: "xmark.circle")
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .disabled(viewModel.selection.isEmpty)
 
             Button(role: .destructive, action: { Task { await viewModel.forceKillSelected() } }) {
                 Label("force_kill_selected".localized, systemImage: "exclamationmark.triangle")
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .disabled(viewModel.selection.isEmpty)
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var searchField: some View {
@@ -255,9 +253,7 @@ public struct ProcessesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .glassEffect()
             .padding()
         }
     }
@@ -272,9 +268,7 @@ public struct ProcessesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .glassEffect()
             .padding()
         }
     }

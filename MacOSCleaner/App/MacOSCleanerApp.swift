@@ -24,6 +24,7 @@ struct MacOSCleanerApp: App {
     private let permissionsManager = PermissionsManager()
     private let updateChecker = UpdateChecker()
     @State private var availableUpdate: String? = nil
+    @State private var isCheckingForUpdates = false
     
     init() {
         Self.installCrashHandlers()
@@ -79,6 +80,33 @@ struct MacOSCleanerApp: App {
                 Button("about_title".localized) {
                     openWindow(id: "about")
                 }
+                Button(isCheckingForUpdates ? "update.checking".localized : "update.check".localized) {
+                    isCheckingForUpdates = true
+                    Task { @MainActor in
+                        let result = await updateChecker.checkForUpdate()
+                        availableUpdate = result
+                        isCheckingForUpdates = false
+                        
+                        let alert = NSAlert()
+                        alert.messageText = "update.check".localized
+                        if let result {
+                            alert.informativeText = String(format: "update.available".localized, result)
+                            alert.addButton(withTitle: "update.download".localized)
+                            alert.addButton(withTitle: "cancel".localized)
+                            let response = alert.runModal()
+                            if response == .alertFirstButtonReturn {
+                                NSWorkspace.shared.open(UpdateChecker.releasesURL)
+                            }
+                        } else {
+                            let accessory = NSHostingView(rootView: UpToDateAlertView())
+                            accessory.frame = NSRect(x: 0, y: 0, width: 300, height: 70)
+                            alert.accessoryView = accessory
+                            alert.addButton(withTitle: "close".localized)
+                            alert.runModal()
+                        }
+                    }
+                }
+                .disabled(isCheckingForUpdates)
             }
         }
         
@@ -93,5 +121,35 @@ struct MacOSCleanerApp: App {
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+    }
+}
+
+struct UpToDateAlertView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("update.up_to_date_message".localized)
+                .font(.system(size: 13))
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("update.releases_label".localized)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    Link("https://github.com/AlexTkDev/MacOSCleaner/releases", destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases")!)
+                        .font(.system(size: 11))
+                }
+                
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("update.website_label".localized)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    Link("https://alextkdev.github.io/MacOSCleaner/", destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!)
+                        .font(.system(size: 11))
+                }
+            }
+        }
+        .frame(width: 300, height: 70, alignment: .leading)
     }
 }

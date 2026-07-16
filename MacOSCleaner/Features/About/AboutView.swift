@@ -22,7 +22,7 @@ struct AboutView: View {
                 .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
 
             VStack(spacing: 2) {
-                Text("app_title".localized)
+                Text("MacOS Cleaner")
                     .font(.title)
                     .fontWeight(.bold)
                 Text(String(format: "about_version".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "version_unknown".localized))
@@ -117,6 +117,16 @@ struct AboutView: View {
 
     private var linksCard: some View {
         VStack(spacing: 0) {
+            Link(destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!) {
+                Label("about_website".localized, systemImage: "globe")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .contentShape(Rectangle())
+            }
+            Divider().padding(.leading, 44)
             Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                 Label("about_problem_link".localized, systemImage: "exclamationmark.bubble.fill")
                     .lineLimit(nil)

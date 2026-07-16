@@ -50,6 +50,7 @@
 "about_developer" = "Desarrollado por AlexTkDev";
 "about_problem_link" = "Si tiene un problema con la aplicación, avíseme aquí";
 "about_linkedin" = "Perfil de LinkedIn";
+"about_website" = "Sitio web";
 "about_copyright" = "© 2026 AlexTkDev. Todos los derechos reservados.";
 
 // Dashboard View
@@ -126,6 +127,9 @@
 "update.available" = "Versión %@ disponible";
 "update.download" = "Descargar en GitHub";
 "update.up_to_date" = "Versión actual";
+"update.up_to_date_message" = "Está utilizando la última versión de la aplicación.";
+"update.releases_label" = "Lanzamientos:";
+"update.website_label" = "Sitio web:";
 "update.checking" = "Comprobando...";
 
 // Settings Tooltips

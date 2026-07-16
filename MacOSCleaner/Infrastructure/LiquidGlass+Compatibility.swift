@@ -47,4 +47,91 @@ public extension View {
         self
     }
 }
+
+public struct VisualEffectView: NSViewRepresentable {
+    let material: NSVisualEffectView.Material
+    let blendingMode: NSVisualEffectView.BlendingMode
+    
+    public init(material: NSVisualEffectView.Material, blendingMode: NSVisualEffectView.BlendingMode) {
+        self.material = material
+        self.blendingMode = blendingMode
+    }
+    
+    public func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = material
+        view.blendingMode = blendingMode
+        view.state = .active
+        return view
+    }
+    
+    public func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+        nsView.material = material
+        nsView.blendingMode = blendingMode
+    }
+}
 #endif
+
+public extension View {
+    @ViewBuilder
+    func glassButtonStyle() -> some View {
+        if #available(macOS 26.0, *) {
+            self.buttonStyle(.glass)
+        } else {
+            self.buttonStyle(.bordered)
+        }
+    }
+    
+    func destructiveGlassButtonStyle() -> some View {
+        self.buttonStyle(DestructiveGlassButtonStyle())
+    }
+}
+
+public struct DestructiveGlassButtonStyle: ButtonStyle {
+    public init() {}
+    
+    public func makeBody(configuration: Configuration) -> some View {
+        DestructiveGlassButton(configuration: configuration)
+    }
+}
+
+private struct DestructiveGlassButton: View {
+    let configuration: ButtonStyle.Configuration
+    @State private var isHovered = false
+    
+    var body: some View {
+        configuration.label
+            .foregroundColor(.white)
+            .padding(.vertical, 8)
+            .frame(maxWidth: 300)
+            .background(
+                ZStack {
+                    if #available(macOS 26.0, *) {
+                        #if hasFeature(LiquidGlass)
+                        Color.clear.glassEffect(.regular.tint(isHovered ? .red : Color(white: 0.15)).interactive())
+                        #else
+                        Color.clear.background(.ultraThinMaterial)
+                        #endif
+                    } else {
+                        Color.clear.background(.ultraThinMaterial)
+                    }
+                    
+                    if isHovered {
+                        Color.red.opacity(configuration.isPressed ? 0.35 : 0.2)
+                    } else {
+                        Color(white: 0.1).opacity(configuration.isPressed ? 0.5 : 0.3)
+                    }
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isHovered ? Color.red.opacity(0.6) : Color.white.opacity(0.12), lineWidth: 1.5)
+            )
+            .scaleEffect(isHovered ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
+            .onHover { hovering in
+                isHovered = hovering
+            }
+    }
+}

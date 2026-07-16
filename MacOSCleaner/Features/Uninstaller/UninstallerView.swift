@@ -10,6 +10,7 @@ private extension Logger {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
     @State private var allApps: [UninstallerService.AppInfo] = []
     @State private var selectedApp: UninstallerService.AppInfo?
@@ -37,72 +38,75 @@ struct UninstallerView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                // Apps List
-                VStack(spacing: 0) {
-                    if isLoading {
-                        AnimatedScanView(
-                            title: "uninstaller_scanning_apps".localized,
-                            subtitle: service.progress.message,
-                            currentStep: service.progress.currentStep,
-                            totalSteps: service.progress.totalSteps
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        VStack(spacing: 0) {
-                            if isDeepScanning {
-                                VStack(spacing: 4) {
-                                    ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
-                                        .progressViewStyle(.linear)
-                                        .padding(.horizontal, 8)
-                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
+        GlassEffectContainer {
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    // Apps List
+                    VStack(spacing: 0) {
+                        if isLoading {
+                            AnimatedScanView(
+                                title: "uninstaller_scanning_apps".localized,
+                                subtitle: service.progress.message,
+                                currentStep: service.progress.currentStep,
+                                totalSteps: service.progress.totalSteps
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            VStack(spacing: 0) {
+                                if isDeepScanning {
+                                    VStack(spacing: 4) {
+                                        ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
+                                            .progressViewStyle(.linear)
+                                            .padding(.horizontal, 8)
+                                        Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.vertical, 6)
+                                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
                                 }
-                                .padding(.vertical, 6)
-                                .background(Color(NSColor.controlBackgroundColor))
-                            }
-                            List(filteredApps) { app in
-                                let unscan = app.scanState != .deepScanned
-                                AppRowView(
-                                    app: app,
-                                    formatter: formatter,
-                                    showRelatedFiles: settings.showRelatedFiles,
-                                    isUnscannable: unscan
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    guard app.scanState == .deepScanned else { return }
-                                    selectedApp = app
+                                List(filteredApps) { app in
+                                    let unscan = app.scanState != .deepScanned
+                                    AppRowView(
+                                        app: app,
+                                        formatter: formatter,
+                                        showRelatedFiles: settings.showRelatedFiles,
+                                        isUnscannable: unscan
+                                    )
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        guard app.scanState == .deepScanned else { return }
+                                        selectedApp = app
+                                    }
+                                    .listRowBackground(
+                                        selectedApp?.url == app.url
+                                            ? Color.accentColor.opacity(0.1)
+                                            : Color.clear
+                                    )
                                 }
-                                .listRowBackground(
-                                    selectedApp?.url == app.url
-                                        ? Color.accentColor.opacity(0.1)
-                                        : Color.clear
-                                )
+                                .listStyle(.inset)
                             }
-                            .listStyle(.inset)
                         }
                     }
-                }
-                .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
-                .background(Color(NSColor.controlBackgroundColor))
-                
-                Divider()
-                
-                // Detail Area
-                ZStack {
-                    if let app = selectedApp {
-                        appDetailView(app)
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        dropZoneView
-                            .frame(maxWidth: .infinity)
+                    .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
+                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                    
+                    Divider()
+                    
+                    // Detail Area
+                    ZStack {
+                        if let app = selectedApp {
+                            appDetailView(app)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            dropZoneView
+                                .frame(maxWidth: .infinity)
+                        }
                     }
+                    .layoutPriority(1) // Occupy remaining space
                 }
-                .layoutPriority(1) // Occupy remaining space
             }
+            .background(Color(NSColor.windowBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.1))
         }
         .navigationTitle("uninstaller_title".localized)
         .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
@@ -132,6 +136,7 @@ struct UninstallerView: View {
                 Button(action: loadApps) {
                     Image(systemName: "arrow.clockwise")
                 }
+                .glassButtonStyle()
                 .help("uninstaller_reload".localized)
             }
         }
@@ -393,8 +398,7 @@ struct UninstallerView: View {
                     .frame(maxWidth: 300)
                     .frame(height: 32)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
+            .destructiveGlassButtonStyle()
             .controlSize(.large)
         }
     }
@@ -422,12 +426,7 @@ struct UninstallerView: View {
                                     )
                             }
                         }
-                        .background(Color(NSColor.alternatingContentBackgroundColors[0]))
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                        )
+                        .glassEffect()
                     }
                 }
             }
@@ -499,12 +498,7 @@ struct UninstallerView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(Color.purple.opacity(0.04))
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.purple.opacity(0.2), lineWidth: 1)
-                )
+                .glassEffect(.regular.tint(.purple))
             }
 
             HStack {
@@ -515,7 +509,7 @@ struct UninstallerView: View {
                 Button("uninstaller_open_cleanup".localized) {
                     navigateToCleanup()
                 }
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle()
                 .controlSize(.small)
             }
         }

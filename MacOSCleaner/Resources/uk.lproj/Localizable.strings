@@ -50,6 +50,7 @@
 "about_developer" = "Розробник: AlexTkDev";
 "about_problem_link" = "Якщо виникла проблема з додатком, повідомте мені тут";
 "about_linkedin" = "Профіль LinkedIn";
+"about_website" = "Веб-сайт";
 "about_copyright" = "© 2026 AlexTkDev. Усі права захищені.";
 
 /* Dashboard View */
@@ -126,6 +127,9 @@
 "update.available" = "Доступна версія %@";
 "update.download" = "Завантажити на GitHub";
 "update.up_to_date" = "Актуальна версія";
+"update.up_to_date_message" = "Ви використовуєте актуальну версію програми.";
+"update.releases_label" = "Релізи:";
+"update.website_label" = "Веб-сайт:";
 "update.checking" = "Перевіряємо...";
 
 /* Settings Tooltips */

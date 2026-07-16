@@ -1,37 +1,40 @@
 import SwiftUI
 
 public struct CleanupView: View {
-    @State private var viewModel: CleanupViewModel
+    let viewModel: CleanupViewModel
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var logHeight: CGFloat = 160
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
     public init(viewModel: CleanupViewModel) {
-        _viewModel = State(initialValue: viewModel)
+        self.viewModel = viewModel
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Divider()
-            
-            footer
-        }
-        .background(
-            ZStack {
-                Color(NSColor.windowBackgroundColor)
-                if viewModel.state == .scanning || viewModel.state == .executing {
-                    LinearGradient(
-                        colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                }
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                Divider()
+                
+                footer
             }
-        )
+            .background(
+                ZStack {
+                    Color(NSColor.windowBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15)
+                    if viewModel.state == .scanning || viewModel.state == .executing {
+                        LinearGradient(
+                            colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+                }
+            )
+        }
     }
     
     @ViewBuilder
@@ -777,36 +780,18 @@ public struct CleanupView: View {
                 Button("reset".localized) {
                     viewModel.reset()
                 }
+                .glassButtonStyle()
                 .keyboardShortcut(.cancelAction)
                 
                 Button("cleanup_now".localized) {
                     viewModel.executeCleanup()
                 }
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle()
                 .keyboardShortcut(.defaultAction)
                 .disabled(viewModel.selectedSizeBytes == 0)
             }
         }
         .padding()
-        .background(VisualEffectView(material: .titlebar, blendingMode: .withinWindow))
-    }
-}
-
-// Glassmorphism blur effect helper
-struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
-    
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blendingMode
-        view.state = .active
-        return view
-    }
-    
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
-        nsView.blendingMode = blendingMode
+        .glassEffect()
     }
 }

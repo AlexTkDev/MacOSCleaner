@@ -50,6 +50,7 @@
 "about_developer" = "Developed by AlexTkDev";
 "about_problem_link" = "If you have a problem with the app, let me know here";
 "about_linkedin" = "LinkedIn Profile";
+"about_website" = "Website";
 "about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
 
 /* Dashboard View */
@@ -126,6 +127,9 @@
 "update.available" = "Version %@ is available";
 "update.download" = "Download on GitHub";
 "update.up_to_date" = "Up to date";
+"update.up_to_date_message" = "You are using the latest version of the application.";
+"update.releases_label" = "Releases:";
+"update.website_label" = "Website:";
 "update.checking" = "Checking...";
 
 /* Settings Tooltips */
