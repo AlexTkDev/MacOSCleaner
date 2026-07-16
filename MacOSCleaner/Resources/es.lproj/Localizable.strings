@@ -34,6 +34,7 @@
 "disk_analyzer_select_folder" = "Seleccionar carpeta para escanear";
 "disk_analyzer_empty" = "La carpeta está vacía o no ha sido escaneada";
 "disk_analyzer_no_permissions" = "Sin permisos de acceso para esta carpeta";
+"folder" = "Carpeta";
 "disk_analyzer_category_all" = "Todo";
 "disk_analyzer_category_video" = "Vídeo";
 "disk_analyzer_category_audio" = "Audio";

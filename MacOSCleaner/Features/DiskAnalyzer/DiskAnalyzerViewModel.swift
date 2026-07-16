@@ -43,6 +43,8 @@ public final class DiskAnalyzerViewModel {
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+        panel.message = "disk_analyzer_select_folder".localized
+        panel.prompt = "disk_analyzer_scan".localized
         
         if panel.runModal() == .OK, let url = panel.url {
             startScan(for: url)

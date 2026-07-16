@@ -34,6 +34,7 @@
 "disk_analyzer_select_folder" = "Вибрати папку для сканирования";
 "disk_analyzer_empty" = "Папка порожня або ще не просканована";
 "disk_analyzer_no_permissions" = "Немає прав доступу до цієї папки";
+"folder" = "Папка";
 "disk_analyzer_category_all" = "Все";
 "disk_analyzer_category_video" = "Відео";
 "disk_analyzer_category_audio" = "Аудіо";

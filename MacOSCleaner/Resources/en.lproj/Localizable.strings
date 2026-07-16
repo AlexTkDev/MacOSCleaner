@@ -34,6 +34,7 @@
 "disk_analyzer_select_folder" = "Select Folder to Scan";
 "disk_analyzer_empty" = "Folder is empty or not scanned yet";
 "disk_analyzer_no_permissions" = "No access permissions for this folder";
+"folder" = "Folder";
 "disk_analyzer_category_all" = "All";
 "disk_analyzer_category_video" = "Video";
 "disk_analyzer_category_audio" = "Audio";
