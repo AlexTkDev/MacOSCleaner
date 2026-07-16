@@ -794,6 +794,19 @@ struct CleanupFileRow: View {
 
                 Spacer()
 
+                if let path = item.path {
+                    Button {
+                        let resolvedPath = (path as NSString).expandingTildeInPath
+                        let url = URL(fileURLWithPath: resolvedPath)
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    } label: {
+                        Image(systemName: "arrow.up.forward.app")
+                            .foregroundColor(.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_show_in_finder".localized)
+                }
+
                 if settings.enableAI && AIExplanationService.shared.isAvailable, let path = item.path {
                     Button {
                         withAnimation(.spring()) {
