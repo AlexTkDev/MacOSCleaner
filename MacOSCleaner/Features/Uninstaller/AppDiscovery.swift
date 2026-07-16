@@ -26,13 +26,19 @@ public actor AppDiscovery {
         }
 
         // Application Support (Google Updater, etc.)
-        let appSupport = "\(NSHomeDirectory())/Library/Application Support"
-        if let result = try? await commandRunner.run(
-            command: "/usr/bin/find",
-            arguments: [appSupport, "-maxdepth", "4", "-name", "*.app", "-type", "d", "-prune"]
-        ) {
-            for path in result.stdout.components(separatedBy: .newlines) where !path.isEmpty {
-                urls.append(URL(fileURLWithPath: path))
+        let appSupportDirs = [
+            "\(NSHomeDirectory())/Library/Application Support",
+            "/Library/Application Support"
+        ]
+
+        for appSupport in appSupportDirs {
+            if let result = try? await commandRunner.run(
+                command: "/usr/bin/find",
+                arguments: [appSupport, "-maxdepth", "4", "-name", "*.app", "-type", "d", "-prune"]
+            ) {
+                for path in result.stdout.components(separatedBy: .newlines) where !path.isEmpty {
+                    urls.append(URL(fileURLWithPath: path))
+                }
             }
         }
 

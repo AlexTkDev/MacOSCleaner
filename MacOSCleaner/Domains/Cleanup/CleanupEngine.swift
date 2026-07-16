@@ -323,9 +323,9 @@ public actor CleanupEngine {
 
     private static func timeoutForCategory(_ category: CleanupCategory) -> Duration {
         switch category {
-        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions:
+        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions, .userLogs:
             return .seconds(120)
-        case .xcode, .iosSimulators:
+        case .xcode, .iosSimulators, .appCaches, .ideCaches, .flutterDart, .systemCaches, .androidCaches, .gradleMaven, .dotfileCaches, .browserCaches, .chromeExtraCaches, .steamCache, .teamsCache, .adobeCaches, .cloudKitCache, .swiftPMCache, .carthageCache, .photosCache:
             return .seconds(300)
         case .scatteredJunk:
             return .seconds(600)

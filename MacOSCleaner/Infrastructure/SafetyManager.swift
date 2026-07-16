@@ -45,8 +45,11 @@ public struct SafetyManager: Sendable {
         
         let defaultExceptions = [
             "\(home)/Library",
+            "/Library/Application Support",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
+            "/Library/Receipts",
+            "/Library/Internet Plug-Ins",
             "/private/var/folders",
             "/private/tmp",
             "/tmp",

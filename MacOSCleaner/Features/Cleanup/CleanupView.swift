@@ -4,7 +4,7 @@ public struct CleanupView: View {
     let viewModel: CleanupViewModel
     @State private var showLogs = false
     @State private var showCopiedHint = false
-    @State private var logHeight: CGFloat = 160
+    @State private var scrollTaskBox = ScrollTaskBox()
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
@@ -15,8 +15,20 @@ public struct CleanupView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                content
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
+                    VSplitView {
+                        content
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .frame(minHeight: 200)
+                        
+                        logPanel
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 400)
+                    }
+                } else {
+                    content
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
                 
                 Divider()
                 
@@ -394,12 +406,6 @@ public struct CleanupView: View {
                 totalSteps: viewModel.totalSteps,
                 onCancel: { viewModel.cancel() }
             )
-            
-            if showLogs && !viewModel.scriptLogs.isEmpty {
-                Divider()
-                    .padding(.horizontal)
-                logPanel
-            }
         }
         .padding(.top, 20)
     }
@@ -489,12 +495,6 @@ public struct CleanupView: View {
                         .foregroundColor(Color(NSColor.separatorColor)),
                     alignment: .top
                 )
-            }
-
-            if showLogs && !viewModel.scriptLogs.isEmpty {
-                Divider()
-                logPanel
-                    .frame(maxWidth: .infinity)
             }
         }
     }
@@ -626,7 +626,11 @@ public struct CleanupView: View {
                 
                 Spacer()
                 
-                Button(action: { showLogs = false }) {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showLogs = false
+                    }
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.secondary)
                 }
@@ -640,28 +644,6 @@ public struct CleanupView: View {
                     .frame(height: 1)
                     .foregroundColor(Color(NSColor.separatorColor)),
                 alignment: .bottom
-            )
-            .overlay(
-                // Resize Handle Area
-                Rectangle()
-                    .fill(Color.clear)
-                    .frame(height: 4)
-                    .contentShape(Rectangle())
-                    .onHover { inside in
-                        if inside {
-                            NSCursor.resizeUpDown.set()
-                        } else {
-                            NSCursor.arrow.set()
-                        }
-                    }
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                let delta = value.location.y - value.startLocation.y
-                                logHeight = max(100, min(600, logHeight - delta))
-                            }
-                    ),
-                alignment: .top
             )
             
             ScrollViewReader { proxy in
@@ -678,28 +660,39 @@ public struct CleanupView: View {
                     }
                     .padding(8)
                 }
-                .frame(height: logHeight)
                 .background(Color.black.opacity(0.12))
                 .onChange(of: viewModel.scriptLogs.count) { _, _ in
-                    if let last = viewModel.scriptLogs.indices.last {
-                        proxy.scrollTo(last, anchor: .bottom)
+                    scrollTaskBox.task?.cancel()
+                    scrollTaskBox.task = Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(50))
+                        guard !Task.isCancelled else { return }
+                        if let last = viewModel.scriptLogs.indices.last {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                proxy.scrollTo(last, anchor: .bottom)
+                            }
+                        }
                     }
                 }
             }
         }
+        .background(Color(NSColor.windowBackgroundColor))
     }
     
     private var footer: some View {
         HStack(spacing: 12) {
             if viewModel.state == .preview {
-                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount()))
+                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
                     .fontWeight(.semibold)
                     .foregroundColor(.accentColor)
             }
             
             if !viewModel.scriptLogs.isEmpty {
                 HStack(spacing: 16) {
-                    Button(action: { showLogs.toggle() }) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showLogs.toggle()
+                        }
+                    }) {
                         HStack(spacing: 4) {
                             Image(systemName: showLogs ? "chevron.down.square" : "chevron.up.square")
                             Text(showLogs ? "cleanup_hide_logs".localized : "cleanup_show_logs".localized)
@@ -833,7 +826,7 @@ struct CleanupFileRow: View {
                         
                         if isGenerating {
                             HStack(spacing: 8) {
-                                ProgressView().controlSize(.small)
+                                ProgressView().controlSize(.small).frame(width: 16, height: 16)
                                 Text("uninstaller_ai_explaining".localized)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -883,4 +876,8 @@ struct CleanupFileRow: View {
             }
         }
     }
+}
+
+private final class ScrollTaskBox {
+    var task: Task<Void, Never>?
 }

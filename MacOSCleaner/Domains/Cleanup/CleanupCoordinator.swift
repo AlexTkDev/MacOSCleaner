@@ -29,6 +29,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
     public var lastError: String? = nil
     public var scriptLogs: [String] = []
     
+    private var pendingLogs: [String] = []
+    private var isLogFlushScheduled = false
+    
     public init(
         engine: CleanupEngine,
         journal: TransactionJournal,
@@ -70,6 +73,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.itemManager.clear()
                 self.lastError = nil
                 self.scriptLogs = []
+                self.pendingLogs = []
+                self.isLogFlushScheduled = false
                 self.skippedItems = []
                 
                 // Close running apps before scan for better cache cleanup
@@ -83,6 +88,10 @@ public final class CleanupCoordinator: @unchecked Sendable {
                         self.handleEngineEvent(event)
                     }
                 }
+                
+                // Allow final main-actor logs to process, then flush
+                try? await Task.sleep(for: .milliseconds(100))
+                self.flushLogs()
                 
                 if self.settings.emptyTrashDuringCleanup {
                     let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
@@ -111,6 +120,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     showNotifications: self.settings.showNotifications
                 )
             } catch let error {
+                self.flushLogs()
                 Logger.coordinator.error("startScan failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 do {
@@ -136,6 +146,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
+                self.pendingLogs = []
+                self.isLogFlushScheduled = false
                 
                 let isTrashSelected = self.itemManager.items.contains { item in
                     item.isSelected && item.label == "trash_user_label".localized
@@ -154,6 +166,10 @@ public final class CleanupCoordinator: @unchecked Sendable {
                         self.handleEngineEvent(event)
                     }
                 }
+                
+                // Allow final main-actor logs to process, then flush
+                try? await Task.sleep(for: .milliseconds(100))
+                self.flushLogs()
                 
                 for result in results {
                     self.totalFreedMB += result.freedMB
@@ -200,6 +216,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 try self.stateMachine.transition(to: .completed)
             } catch let error {
+                self.flushLogs()
                 Logger.coordinator.error("executeCleanup failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 do {
@@ -356,10 +373,30 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: category, description: nil)
             }
         case .log(let message):
-            self.scriptLogs.append(message)
+            self.pendingLogs.append(message)
+            self.scheduleLogFlushIfNeeded()
         case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
             let effectiveParent = parentName ?? category
             self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: category, parentName: effectiveParent)
         }
+    }
+    
+    @MainActor
+    private func scheduleLogFlushIfNeeded() {
+        guard !isLogFlushScheduled else { return }
+        isLogFlushScheduled = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+            self.flushLogs()
+        }
+    }
+    
+    @MainActor
+    private func flushLogs() {
+        if !pendingLogs.isEmpty {
+            self.scriptLogs.append(contentsOf: self.pendingLogs)
+            self.pendingLogs.removeAll()
+        }
+        isLogFlushScheduled = false
     }
 }

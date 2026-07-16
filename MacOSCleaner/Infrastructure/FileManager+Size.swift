@@ -69,6 +69,8 @@ extension FileManager {
     /// 2. `lastPathComponent` matches `excludedFileNames`
     /// 3. Any ancestor directory name matches `excludedDirectoryNames`
     public static func shouldExclude(url: URL) -> Bool {
+        if url.path.hasPrefix("/System") { return true }
+
         let ext = url.pathExtension.lowercased()
         if excludedExtensions.contains(ext) { return true }
 

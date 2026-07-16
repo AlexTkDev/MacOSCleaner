@@ -30,7 +30,12 @@ public extension ByteCountFormatter {
 }
 
 public extension Int64 {
-    func formattedByteCount(style: ByteCountFormatStyle.Style = .file) -> String {
+    func formattedByteCount(style: ByteCountFormatStyle.Style = .file, forceGB: Bool = false) -> String {
+        if forceGB {
+            let formatter = ByteCountFormatter.makeLocalized(countStyle: style == .memory ? .memory : .file)
+            formatter.allowedUnits = .useGB
+            return formatter.string(fromByteCount: self)
+        }
         if abs(self) < 1000 {
             let isRussian = LanguageManager.shared.currentLocale.language.languageCode?.identifier == "ru" ||
                             LanguageManager.shared.currentLocale.language.languageCode?.identifier == "uk"

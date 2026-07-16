@@ -187,29 +187,7 @@
 /* Startup Category Help */
 "startup_help_user" = "Пользовательский сервис из ~/Library/. Безопасно отключать.";
 "startup_help_third_party" = "Сторонний сервис из /Library/. Безопасно отключать.";
-"cleanup_summary" = "Сводка удаленных файлов";
-"cleanup_skipped" = "Не удалось очистить";
-"cleanup_selected" = "Выбрано: %@";
-"cleanup_hide_logs" = "Скрыть логи";
-"cleanup_show_logs" = "Показать логи";
-"cleanup_copy" = "Копировать";
-"cleanup_copy_logs" = "Копировать логи";
-"cleanup_now" = "Очистить сейчас";
-"cleanup_manual_instructions" = "Инструкции для ручной очистки";
-"cleanup_scan_results" = "Результаты сканирования";
-"cleanup_scan_results_sub" = "Выберите элементы для удаления и нажмите 'Очистить сейчас'.";
-"cleanup_recommended" = "Рекомендуется к удалению";
-"cleanup_deselect_all" = "Снять выделение";
-"cleanup_select_all" = "Выбрать все";
-"cleanup_show_all_count" = "Показать все (ещё %lld)";
-"cleanup_debug_log" = "Отладочный лог (%lld строк)";
  
-/* Cleanup Notifications */
-"cleanup_scan_complete_title" = "Сканирование завершено";
-"cleanup_scan_complete_body" = "Найдено файлов для удаления: %@.";
-"cleanup_emptying_trash" = "Очистка корзины...";
-"cleanup_complete_title" = "Очистка завершена";
-"cleanup_complete_body" = "Успешно освобождено %@.";
 
 /* Cleanup View */
 "cleanup_scanning" = "Сканирование системы...";
@@ -247,7 +225,7 @@
 "cleanup_complete_sub" = "Успешно освобождено %@ дискового пространства.";
 "cleanup_summary" = "Сводка удаленных файлов";
 "cleanup_skipped" = "Не удалось очистить";
-"cleanup_selected" = "Выбрано: %lld МБ";
+"cleanup_selected" = "Выбрано: %@";
 "cleanup_hide_logs" = "Скрыть логи";
 "cleanup_show_logs" = "Показать логи";
 "cleanup_copy" = "Копировать";
@@ -264,7 +242,7 @@
 
 /* Cleanup Notifications */
 "cleanup_scan_complete_title" = "Сканирование завершено";
-"cleanup_scan_complete_body" = "Найдено файлов для удаления: %lld МБ.";
+"cleanup_scan_complete_body" = "Найдено файлов для удаления: %@.";
 "cleanup_emptying_trash" = "Очистка корзины...";
 "cleanup_complete_title" = "Очистка завершена";
 "cleanup_complete_body" = "Успешно освобождено %@.";

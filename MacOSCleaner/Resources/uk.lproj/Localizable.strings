@@ -185,29 +185,8 @@
 /* Startup Category Help */
 "startup_help_user" = "Служба користувача з ~/Library/. Безпечно вимикати.";
 "startup_help_third_party" = "Стороння служба з /Library/. Безпечно вимикати.";
-"cleanup_summary" = "Зведення видалених файлів";
-"cleanup_skipped" = "Не вдалося очистити";
-"cleanup_selected" = "Вибрано: %@";
-"cleanup_hide_logs" = "Приховати логи";
-"cleanup_show_logs" = "Показати логи";
-"cleanup_copy" = "Копіювати";
-"cleanup_copy_logs" = "Копиювати логи";
-"cleanup_now" = "Очистити зараз";
-"cleanup_manual_instructions" = "Інструкції для ручного очищення";
-"cleanup_scan_results" = "Результати сканирування";
-"cleanup_scan_results_sub" = "Виберіть елементи для видалення та натисніть 'Очистити зараз'.";
-"cleanup_recommended" = "Рекомендується до видалення";
-"cleanup_deselect_all" = "Зняти виділення";
-"cleanup_select_all" = "Вибрати все";
-"cleanup_show_all_count" = "Показати все (ще %lld)";
-"cleanup_debug_log" = "Блокнот відладки (%lld рядків)";
  
-/* Cleanup Notifications */
-"cleanup_scan_complete_title" = "Сканування завершено";
-"cleanup_scan_complete_body" = "Знайдено файлів для видалення: %@.";
-"cleanup_emptying_trash" = "Очищення смітника...";
-"cleanup_complete_title" = "Очищення завершено";
-"cleanup_complete_body" = "Успішно звільнено %@.";
+"cleanup_scanning" = "Сканування системи...";
 "cleanup_clean" = "Система чиста";
 "cleanup_clean_sub" = "Під час сканування не було знайдено непотрібних файлів.";
 "cleanup_rescan" = "Повторити сканування";
@@ -242,7 +221,7 @@
 "cleanup_complete_sub" = "Успішно звільнено %@ дискового простору.";
 "cleanup_summary" = "Зведення видалених файлів";
 "cleanup_skipped" = "Не вдалося очистити";
-"cleanup_selected" = "Вибрано: %lld МБ";
+"cleanup_selected" = "Вибрано: %@";
 "cleanup_hide_logs" = "Приховати логи";
 "cleanup_show_logs" = "Показати логи";
 "cleanup_copy" = "Копіювати";
@@ -259,7 +238,7 @@
 
 /* Cleanup Notifications */
 "cleanup_scan_complete_title" = "Сканування завершено";
-"cleanup_scan_complete_body" = "Знайдено файлів для видалення: %lld МБ.";
+"cleanup_scan_complete_body" = "Знайдено файлів для видалення: %@.";
 "cleanup_emptying_trash" = "Очищення смітника...";
 "cleanup_complete_title" = "Очищення завершено";
 "cleanup_complete_body" = "Успішно звільнено %@.";

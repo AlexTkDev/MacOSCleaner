@@ -35,7 +35,7 @@ public actor FileCleanupActor {
             let size = (try? fm.attributesOfItem(atPath: path)[.size] as? Int64) ?? 0
             if dryRun {
                 progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(size))"))
-                return (size, Self.fileItemForPath(path))
+                return (size, Self.fileItemForPath(path, size: size, isDirectory: false))
             }
             try? fm.removeItem(at: url)
             progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(size))"))
@@ -45,7 +45,7 @@ public actor FileCleanupActor {
         let before = await getDirectorySize(path)
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            return (before, Self.fileItemForPath(path))
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
         }
 
         let contents = try fm.contentsOfDirectory(atPath: path)
@@ -77,7 +77,7 @@ public actor FileCleanupActor {
 
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            return (before, Self.fileItemForPath(path))
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
         }
 
         try? fm.removeItem(atPath: path)
@@ -138,7 +138,7 @@ public actor FileCleanupActor {
         }
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(removedCount) items older than \(days) days (\(Self.formatBytes(freed)))"))
-            return (freed, Self.fileItemForPath(path))
+            return (freed, Self.fileItemForPath(path, size: freed, isDirectory: true))
         } else {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) old items, freed \(Self.formatBytes(freed))"))
         }
@@ -177,7 +177,7 @@ public actor FileCleanupActor {
 
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(removedCount) items older than \(days) days (\(Self.formatBytes(freed)))"))
-            return (freed, Self.fileItemForPath(path))
+            return (freed, Self.fileItemForPath(path, size: freed, isDirectory: true))
         } else {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) old items, freed \(Self.formatBytes(freed))"))
         }
@@ -207,18 +207,11 @@ public actor FileCleanupActor {
         ))
     }
 
-    static func fileItemForPath(_ path: String) -> CleanupFileItem? {
+    static func fileItemForPath(_ path: String, size: Int64, isDirectory: Bool) -> CleanupFileItem? {
         let fm = FileManager.default
         let attrs = try? fm.attributesOfItem(atPath: path)
         let modDate = attrs?[.modificationDate] as? Date
-        let isDir = (attrs?[.type] as? FileAttributeType) == .typeDirectory
-        let size: Int64
-        if isDir {
-            size = fm.getDirectorySize(url: URL(fileURLWithPath: path))
-        } else {
-            size = (attrs?[.size] as? Int64) ?? 0
-        }
-        return CleanupFileItem(path: path, sizeBytes: size, modificationDate: modDate, isDirectory: isDir)
+        return CleanupFileItem(path: path, sizeBytes: size, modificationDate: modDate, isDirectory: isDirectory)
     }
 
     static func formatBytes(_ bytes: Int64) -> String {
