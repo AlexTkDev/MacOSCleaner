@@ -126,8 +126,6 @@ struct PermissionsView: View {
         }
     }
 
-    @State private var showingWarning = false
-    
     private var dismissBar: some View {
         HStack {
             Button("permissions_dismiss_temp".localized) {
@@ -139,19 +137,19 @@ struct PermissionsView: View {
             Spacer()
 
             Button("permissions_dismiss_permanent".localized) {
-                showingWarning = true
+                GlassOverlayManager.shared.showAlert(
+                    title: "permissions_warning_title".localized,
+                    message: "permissions_warning_message".localized,
+                    type: .warning,
+                    primaryButtonTitle: "permissions_warning_confirm".localized,
+                    primaryAction: {
+                        permissionsManager.dismissGuidancePermanently()
+                    }
+                )
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)
             .font(.caption)
-            .alert("permissions_warning_title".localized, isPresented: $showingWarning) {
-                Button("permissions_warning_confirm".localized, role: .destructive) {
-                    permissionsManager.dismissGuidancePermanently()
-                }
-                Button("cancel".localized, role: .cancel) { }
-            } message: {
-                Text("permissions_warning_message".localized)
-            }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)

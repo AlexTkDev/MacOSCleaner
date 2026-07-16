@@ -60,33 +60,49 @@ public struct DiskAnalyzerView: View {
     }
     
     private var categoryFilterView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(FileCategory.allCases, id: \.self) { category in
-                    Button(action: {
-                        withAnimation {
-                            viewModel.selectedCategory = category
+        HStack {
+            Spacer()
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(FileCategory.allCases, id: \.self) { category in
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                viewModel.selectedCategory = category
+                            }
+                        }) {
+                            Text(category.localizedName)
+                                .font(.callout)
+                                .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
                         }
-                    }) {
-                        Text(category.localizedName)
-                            .font(.callout)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
+                        .buttonStyle(.plain)
+                        .background(
+                            Group {
+                                if viewModel.selectedCategory == category {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.accentColor)
+                                } else {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.primary.opacity(0.04))
+                                        .glassEffect()
+                                }
+                            }
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .tint(viewModel.selectedCategory == category ? .accentColor : nil)
                 }
+                .padding(.vertical, 4)
+                .padding(.horizontal, 4)
             }
-            .padding(.horizontal, 4)
+            Spacer()
         }
     }
     
     private var scanningView: some View {
         VStack(spacing: 20) {
             Spacer()
-            ProgressView()
-                .scaleEffect(1.2)
+            LiquidGlassLoaderView(size: 56)
             
             Text("disk_analyzer_scanning".localized)
                 .font(.headline)

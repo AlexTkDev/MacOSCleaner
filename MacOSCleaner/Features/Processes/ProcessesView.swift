@@ -54,50 +54,6 @@ public struct ProcessesView: View {
             }
             .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
-        .alert(
-            "processes_confirm_terminate".localized,
-            isPresented: Binding(
-                get: { viewModel.confirmKill != nil },
-                set: { if !$0 { viewModel.confirmKill = nil } }
-            )
-        ) {
-            Button("cancel".localized, role: .cancel) { viewModel.confirmKill = nil }
-            Button("processes_terminate".localized, role: .destructive) {
-                if let proc = viewModel.confirmKill {
-                    Task { await viewModel.terminate(proc) }
-                }
-            }
-        } message: {
-            if let proc = viewModel.confirmKill {
-                Text(String(
-                    format: "processes_confirm_terminate_message".localized,
-                    proc.name,
-                    proc.pid
-                ))
-            }
-        }
-        .alert(
-            "processes_confirm_force".localized,
-            isPresented: Binding(
-                get: { viewModel.confirmForceKill != nil },
-                set: { if !$0 { viewModel.confirmForceKill = nil } }
-            )
-        ) {
-            Button("cancel".localized, role: .cancel) { viewModel.confirmForceKill = nil }
-            Button("processes_force_kill".localized, role: .destructive) {
-                if let proc = viewModel.confirmForceKill {
-                    Task { await viewModel.forceKill(proc) }
-                }
-            }
-        } message: {
-            if let proc = viewModel.confirmForceKill {
-                Text(String(
-                    format: "processes_confirm_force_message".localized,
-                    proc.name,
-                    proc.pid
-                ))
-            }
-        }
         .sheet(isPresented: $viewModel.showBlacklistAlert) {
             blacklistSheet
         }
@@ -349,8 +305,28 @@ public struct ProcessesView: View {
             permission: viewModel.checkPermission(process),
             isSelected: viewModel.selection.contains(process.pid),
             settings: settings,
-            onTerminate: { viewModel.confirmKill = process },
-            onForceKill: { viewModel.confirmForceKill = process },
+            onTerminate: {
+                GlassOverlayManager.shared.showAlert(
+                    title: "processes_confirm_terminate".localized,
+                    message: String(format: "processes_confirm_terminate_message".localized, process.name, process.pid),
+                    type: .warning,
+                    primaryButtonTitle: "processes_terminate".localized,
+                    primaryAction: {
+                        Task { await viewModel.terminate(process) }
+                    }
+                )
+            },
+            onForceKill: {
+                GlassOverlayManager.shared.showAlert(
+                    title: "processes_confirm_force".localized,
+                    message: String(format: "processes_confirm_force_message".localized, process.name, process.pid),
+                    type: .critical,
+                    primaryButtonTitle: "processes_force_kill".localized,
+                    primaryAction: {
+                        Task { await viewModel.forceKill(process) }
+                    }
+                )
+            },
             onToggleSelection: { viewModel.toggleSelection(process) }
         )
     }

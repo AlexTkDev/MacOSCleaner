@@ -61,8 +61,7 @@ struct DashboardView: View {
             
             if viewModel.isCategoriesLoading {
                 VStack(spacing: 12) {
-                    ProgressView()
-                        .scaleEffect(1.2)
+                    LiquidGlassLoaderView(size: 48)
                     Text("disk_analyzer_scanning".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)

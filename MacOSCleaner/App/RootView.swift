@@ -9,27 +9,40 @@ struct RootView: View {
     @Binding var availableUpdate: String?
 
     var body: some View {
-        NavigationSplitView {
-            List(NavigationItem.allCases, selection: $selectedItem) { item in
-                NavigationLink(value: item) {
-                    Label(item.localizedTitle, systemImage: item.systemImage)
-                        .padding(.vertical, 2)
+        ZStack {
+            NavigationSplitView {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(NavigationItem.allCases) { item in
+                            SidebarItemRow(
+                                item: item,
+                               isSelected: selectedItem == item,
+                               action: {
+                                   withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                       selectedItem = item
+                                   }
+                               }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.top, 12)
+                }
+                .navigationTitle("app_title".localized)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+            } detail: {
+                if let selectedItem {
+                    contentView(for: selectedItem)
+                        .frame(minWidth: 800, minHeight: 600)
+                } else {
+                    Text("sidebar_select_item".localized)
+                        .foregroundColor(.secondary)
+                        .frame(minWidth: 800, minHeight: 600)
                 }
             }
-            .listStyle(.sidebar)
-            .navigationTitle("app_title".localized)
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
-        } detail: {
-            if let selectedItem {
-                contentView(for: selectedItem)
-                    .frame(minWidth: 800, minHeight: 600)
-            } else {
-                Text("sidebar_select_item".localized)
-                    .foregroundColor(.secondary)
-                    .frame(minWidth: 800, minHeight: 600)
-            }
+            
+            GlassOverlayView(manager: GlassOverlayManager.shared)
         }
-
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }
@@ -86,3 +99,54 @@ struct RootView: View {
         availableUpdate: .constant(nil)
     )
 }
+
+struct SidebarItemRow: View {
+    let item: NavigationItem
+    let isSelected: Bool
+    let action: () -> Void
+    
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: item.systemImage)
+                    .font(.title3)
+                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                    .frame(width: 24, height: 24)
+                
+                Text(item.localizedTitle)
+                    .font(.body)
+                    .fontWeight(isSelected ? .semibold : .medium)
+                    .foregroundColor(isSelected ? .primary : .secondary)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .background(
+                Group {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.accentColor.opacity(0.12))
+                            .glassEffect()
+                    } else if isHovered {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.primary.opacity(0.04))
+                    } else {
+                        Color.clear
+                    }
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .animation(.easeInOut(duration: 0.15), value: isSelected)
+            .animation(.easeInOut(duration: 0.1), value: isHovered)
+        }
+        .buttonStyle(.plain)
+        .onHover { hover in
+            isHovered = hover
+        }
+    }
+}
+
