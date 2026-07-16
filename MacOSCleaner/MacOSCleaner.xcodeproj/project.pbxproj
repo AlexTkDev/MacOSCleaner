@@ -63,6 +63,7 @@
 		513AE7B833D9E160B63C5761 /* ProbeCaches.swift in Sources */ = {isa = PBXBuildFile; fileRef = F107148C0A34FAB65F2D6093 /* ProbeCaches.swift */; };
 		51555D0F365275801D2D72F6 /* UninstallerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8008E88C0D03BB15C65998D /* UninstallerServiceTests.swift */; };
 		546A45B9B4E4879BAD95CB97 /* CleanupEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBBE8FE6EC8F248C9C4E6B3 /* CleanupEngineTests.swift */; };
+		563EDE1CCFEABCA331B73FE8 /* AIExplanationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BFF3789AF359896177DB28 /* AIExplanationServiceTests.swift */; };
 		5665E32E91F5C6C213D3AAEA /* CleanupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9A4348B3774A855AC83B1B /* CleanupViewModel.swift */; };
 		56FB37504DA9E64D73AD4B3A /* DatabaseToolsRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11E52499AE453EB667A3BE9 /* DatabaseToolsRule.swift */; };
 		5805C9625FA33C2762194266 /* MockCommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F77DB5F928748036C709D4 /* MockCommandRunner.swift */; };
@@ -136,6 +137,7 @@
 		BC7D6B5A297C83B50F760387 /* LaunchServiceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F86A55A2FB7771CD468CEC /* LaunchServiceManagerTests.swift */; };
 		BC7F5459F452CC98A955FAEB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A917B441A9E588D76A1B96E /* SettingsView.swift */; };
 		BD2107BAF6691B18A67B1297 /* MicrosoftOfficeRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AC424333F1C8F21BE5E13A /* MicrosoftOfficeRule.swift */; };
+		BE001A911CF544C6C3749874 /* AIExplanationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80737533F19438ECBAE806ED /* AIExplanationService.swift */; };
 		BE3FBA22FA22D8E3A69F5A34 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280CD515ADC8F97A79AD7B12 /* DashboardView.swift */; };
 		C11A27392992E4545E99913A /* BackgroundItemsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2204402B7AA52282DCCA42CA /* BackgroundItemsCache.swift */; };
 		C29BE4B2467ED58C79E26C05 /* EvidenceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDF1D35AF956F43314C4153 /* EvidenceSource.swift */; };
@@ -231,6 +233,7 @@
 		26A12A1159CFA31A969B390C /* EpicGames.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = EpicGames.json; sourceTree = "<group>"; };
 		280CD515ADC8F97A79AD7B12 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		2854706813F7B138A3E1A17C /* EvidenceCategoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceCategoryTests.swift; sourceTree = "<group>"; };
+		28BFF3789AF359896177DB28 /* AIExplanationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIExplanationServiceTests.swift; sourceTree = "<group>"; };
 		29B6468D52060304776E6A48 /* CloudStorageRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStorageRule.swift; sourceTree = "<group>"; };
 		2AEFAD66300B87C16924F4D7 /* CleanupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupModels.swift; sourceTree = "<group>"; };
 		3245FE8F18E51D3347743E37 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
@@ -294,6 +297,7 @@
 		78F806B7312BFC1297D8E172 /* DirectorySizeCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectorySizeCache.swift; sourceTree = "<group>"; };
 		7B1DD590DCE0D34A3129D242 /* CommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunner.swift; sourceTree = "<group>"; };
 		7BA3A02A464DC643AB220B58 /* JetBrainsRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JetBrainsRule.swift; sourceTree = "<group>"; };
+		80737533F19438ECBAE806ED /* AIExplanationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIExplanationService.swift; sourceTree = "<group>"; };
 		817EB9AE4524A850962213CB /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		829209F31C2C64485ADD1F74 /* DiskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskItem.swift; sourceTree = "<group>"; };
 		8329098CAFECCA528C771F2F /* Unity.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Unity.json; sourceTree = "<group>"; };
@@ -456,6 +460,7 @@
 		4205BD74C801701EFF72A5ED /* MacOSCleanerTests */ = {
 			isa = PBXGroup;
 			children = (
+				28BFF3789AF359896177DB28 /* AIExplanationServiceTests.swift */,
 				50C1C6C0C2F943213529B9BC /* AppDiscoveryTests.swift */,
 				51B066CCFCE8479C82161FDF /* AppIdentityTests.swift */,
 				8526E6E523335A441DE17858 /* AppSettingsTests.swift */,
@@ -567,6 +572,7 @@
 		6BD0CE8DB3A2303D2E44D9CA /* Uninstaller */ = {
 			isa = PBXGroup;
 			children = (
+				80737533F19438ECBAE806ED /* AIExplanationService.swift */,
 				197DA9FDB4A034B4100A2AFB /* AppDiscovery.swift */,
 				A3BC06C9BBE41099A9D54344 /* AppIdentity.swift */,
 				90B1C1E9B0FFC93988C69561 /* ApplicationRuleRegistry.swift */,
@@ -886,6 +892,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				563EDE1CCFEABCA331B73FE8 /* AIExplanationServiceTests.swift in Sources */,
 				7D40740FE6271009DC9CE325 /* AppDiscoveryTests.swift in Sources */,
 				E8FCD36679805EF63D4D8C94 /* AppIdentityTests.swift in Sources */,
 				3A9F6B68130F3DAF5916234B /* AppSettingsTests.swift in Sources */,
@@ -930,6 +937,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE001A911CF544C6C3749874 /* AIExplanationService.swift in Sources */,
 				5D2C3AC6D520ED512CFDE893 /* AboutView.swift in Sources */,
 				338946DFC3F61C72FCC52D5E /* AdobeRule.swift in Sources */,
 				E2A1FB396CE5BDACF63C9D9E /* AlfredRule.swift in Sources */,
@@ -1109,7 +1117,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
@@ -1204,7 +1212,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleaner;
 				SDKROOT = macosx;
@@ -1228,7 +1236,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleanerTests;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
@@ -1304,7 +1312,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = input.MacOSCleanerTests;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;

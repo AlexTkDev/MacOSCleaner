@@ -7,7 +7,7 @@ targets:
   MacOSCleaner:
     type: application
     platform: macOS
-    deploymentTarget: "15.5"
+    deploymentTarget: "26.0"
     sources:
       - App
       - Domains
@@ -47,7 +47,7 @@ targets:
   MacOSCleanerTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "15.5"
+    deploymentTarget: "26.0"
     sources:
       - MacOSCleanerTests
     dependencies:

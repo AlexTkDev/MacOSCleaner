@@ -1,9 +1,14 @@
 import SwiftUI
 
 public struct ProcessesView: View {
+    let settings: AppSettings
     @State private var viewModel = ProcessesViewModel()
     @State private var isEditMode = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    public init(settings: AppSettings) {
+        self.settings = settings
+    }
 
     public var body: some View {
         GlassEffectContainer {
@@ -343,6 +348,7 @@ public struct ProcessesView: View {
             process: process,
             permission: viewModel.checkPermission(process),
             isSelected: viewModel.selection.contains(process.pid),
+            settings: settings,
             onTerminate: { viewModel.confirmKill = process },
             onForceKill: { viewModel.confirmForceKill = process },
             onToggleSelection: { viewModel.toggleSelection(process) }
@@ -512,5 +518,5 @@ private struct AppIconView: View {
 }
 
 #Preview {
-    ProcessesView()
+    ProcessesView(settings: AppSettings())
 }

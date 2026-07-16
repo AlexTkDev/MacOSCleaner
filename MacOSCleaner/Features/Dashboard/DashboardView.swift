@@ -13,10 +13,6 @@ struct DashboardView: View {
         GlassEffectContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("dashboard_title".localized)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
                     HStack(alignment: .top, spacing: 20) {
                         diskUsageCard
                         rightColumn

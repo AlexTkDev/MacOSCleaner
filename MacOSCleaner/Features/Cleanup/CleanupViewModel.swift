@@ -29,7 +29,10 @@ public final class CleanupViewModel {
     public var selectedItem: CleanupPreviewItem? { itemManager.selectedItem }
     public var expandedCategoryIds: Set<UUID> { itemManager.expandedCategoryIds }
 
+    public let settings: AppSettings
+
     public init(engine: CleanupEngine, journal: TransactionJournal, settings: AppSettings, trashManager: TrashManager = TrashManager()) {
+        self.settings = settings
         let itemManager = CleanupItemManager()
         self.itemManager = itemManager
         self.coordinator = CleanupCoordinator(

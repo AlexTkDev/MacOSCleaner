@@ -610,3 +610,20 @@
 
 /* OS Version */
 "os_version_format" = "macOS %lld.%lld.%lld";
+
+/* Apple Intelligence settings */
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "Локальные ИИ-объяснения";
+"settings_tooltip_enable_ai" = "Использовать локальные языковые модели на устройстве для объяснения связанных файлов и служб автозагрузки.";
+"settings_ai_status" = "Статус ИИ";
+"settings_ai_status_disabled" = "Отключен";
+"settings_ai_status_ready" = "Готов";
+"settings_ai_status_unsupported_device" = "Устройство не поддерживает";
+"settings_ai_status_not_enabled" = "Не включен в системных настройках";
+"settings_ai_status_downloading" = "Скачивание модели...";
+"settings_ai_status_unavailable" = "Недоступен";
+
+/* AI Explanations */
+"uninstaller_explain_with_ai" = "Объяснить с помощью ИИ";
+"uninstaller_ai_explaining" = "Генерация объяснения...";
+"uninstaller_ai_failed" = "ИИ недоступен или не удалось создать описание.";

@@ -601,3 +601,20 @@
 
 // OS Version
 "os_version_format" = "macOS %lld.%lld.%lld";
+
+/* Apple Intelligence settings */
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "Explicaciones locales de IA";
+"settings_tooltip_enable_ai" = "Utiliza modelos de lenguaje locales en el dispositivo para explicar archivos asociados y servicios de arranque.";
+"settings_ai_status" = "Estado de IA";
+"settings_ai_status_disabled" = "Desactivado";
+"settings_ai_status_ready" = "Listo";
+"settings_ai_status_unsupported_device" = "Dispositivo no compatible";
+"settings_ai_status_not_enabled" = "No activado en Ajustes del Sistema";
+"settings_ai_status_downloading" = "Descargando modelo...";
+"settings_ai_status_unavailable" = "No disponible";
+
+/* AI Explanations */
+"uninstaller_explain_with_ai" = "Explicar con IA";
+"uninstaller_ai_explaining" = "Generando explicación...";
+"uninstaller_ai_failed" = "La IA no está disponible o no pudo generar la explicación.";

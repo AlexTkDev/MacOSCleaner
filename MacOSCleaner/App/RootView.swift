@@ -48,11 +48,11 @@ struct RootView: View {
         case .cleanup:
             CleanupView(viewModel: cleanupViewModel)
         case .diskSpace:
-            DiskAnalyzerView()
+            DiskAnalyzerView(settings: appSettings)
         case .processes:
-            ProcessesView()
+            ProcessesView(settings: appSettings)
         case .startupServices:
-            StartupServicesView()
+            StartupServicesView(settings: appSettings)
         case .uninstaller:
             UninstallerView(settings: appSettings, navigateToCleanup: { selectedItem = .cleanup })
         case .settings:

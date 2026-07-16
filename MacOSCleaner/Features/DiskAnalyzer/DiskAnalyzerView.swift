@@ -1,10 +1,13 @@
 import SwiftUI
 
 public struct DiskAnalyzerView: View {
+    let settings: AppSettings
     @State private var viewModel = DiskAnalyzerViewModel()
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
-    public init() {}
+    public init(settings: AppSettings) {
+        self.settings = settings
+    }
     
     public var body: some View {
         GlassEffectContainer {
@@ -134,7 +137,7 @@ public struct DiskAnalyzerView: View {
         ScrollView {
             LazyVStack(spacing: 1) {
                 ForEach(viewModel.filteredItems) { item in
-                    DiskItemRow(item: item, onNavigate: {
+                    DiskItemRow(item: item, settings: settings, onNavigate: {
                         withAnimation {
                             viewModel.navigateTo(item: item)
                         }
@@ -157,86 +160,168 @@ public struct DiskAnalyzerView: View {
 
 struct DiskItemRow: View {
     let item: DiskItem
+    let settings: AppSettings
     let onNavigate: () -> Void
     let onShowInFinder: () -> Void
     let onDelete: () -> Void
     
     @State private var isHovered = false
     @State private var showingDeleteConfirmation = false
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: iconName)
-                .font(.title3)
-                .foregroundColor(iconColor)
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.name)
-                    .font(.body)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                Image(systemName: iconName)
+                    .font(.title3)
+                    .foregroundColor(iconColor)
+                    .frame(width: 24, height: 24)
                 
-                if item.isDirectory {
-                    Text("folder".localized)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            Text(item.size.formattedByteCount())
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(.secondary)
-                .padding(.trailing, 8)
-            
-            if isHovered {
-                HStack(spacing: 4) {
-                    Button(action: onShowInFinder) {
-                        Image(systemName: "magnifyingglass")
-                    }
-                    .buttonStyle(.plain)
-                    .help("disk_analyzer_show_in_finder".localized)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.name)
+                        .font(.body)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                     
-                    Button(action: {
-                        showingDeleteConfirmation = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
+                    if item.isDirectory {
+                        Text("folder".localized)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                if settings.enableAI && AIExplanationService.shared.isAvailable {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation()
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("disk_analyzer_move_to_trash".localized)
+                    .help("uninstaller_explain_with_ai".localized)
                 }
-                .transition(.opacity)
+                
+                Text(item.size.formattedByteCount())
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.secondary)
+                    .padding(.trailing, 8)
+                
+                if isHovered {
+                    HStack(spacing: 4) {
+                        Button(action: onShowInFinder) {
+                            Image(systemName: "magnifyingglass")
+                        }
+                        .buttonStyle(.plain)
+                        .help("disk_analyzer_show_in_finder".localized)
+                        
+                        Button(action: {
+                            showingDeleteConfirmation = true
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                        .help("disk_analyzer_move_to_trash".localized)
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .contentShape(Rectangle())
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
+            )
+            .onHover { hover in
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isHovered = hover
+                }
+            }
+            .onTapGesture {
+                if item.isDirectory {
+                    onNavigate()
+                }
+            }
+            .confirmationDialog(
+                "disk_analyzer_delete_confirm".localized,
+                isPresented: $showingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("delete_action".localized, role: .destructive) {
+                    onDelete()
+                }
+                Button("cancel".localized, role: .cancel) {}
+            }
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 36)
+                .padding(.bottom, 4)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .contentShape(Rectangle())
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
-        )
-        .onHover { hover in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isHovered = hover
+    }
+    
+    private func generateAIExplanation() {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainDiskFile(
+                    fileName: item.name,
+                    filePath: item.url.path,
+                    sizeFormatted: item.size.formattedByteCount(),
+                    fileType: item.fileType.localizedName,
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
             }
-        }
-        .onTapGesture {
-            if item.isDirectory {
-                onNavigate()
-            }
-        }
-        .confirmationDialog(
-            "disk_analyzer_delete_confirm".localized,
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("delete_action".localized, role: .destructive) {
-                onDelete()
-            }
-            Button("cancel".localized, role: .cancel) {}
         }
     }
     

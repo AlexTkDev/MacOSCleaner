@@ -602,3 +602,20 @@
 /* Uninstaller Tooltips */
 "uninstaller_show_in_finder" = "Show in Finder";
 "uninstaller_used_by" = "Used by %@";
+
+/* Apple Intelligence settings */
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "Enable Local AI Explanations";
+"settings_tooltip_enable_ai" = "Use local on-device language models to explain associated files and startup services.";
+"settings_ai_status" = "AI Status";
+"settings_ai_status_disabled" = "Disabled";
+"settings_ai_status_ready" = "Ready";
+"settings_ai_status_unsupported_device" = "Device Not Eligible";
+"settings_ai_status_not_enabled" = "Not Enabled in System Settings";
+"settings_ai_status_downloading" = "Downloading Model Assets...";
+"settings_ai_status_unavailable" = "Unavailable";
+
+/* AI Explanations */
+"uninstaller_explain_with_ai" = "Explain with AI";
+"uninstaller_ai_explaining" = "Generating explanation...";
+"uninstaller_ai_failed" = "AI is not available or failed to generate description.";

@@ -34,6 +34,8 @@
 
 ## Features
 
+🧠 **Apple Intelligence** — Native local AI explanations powered by `FoundationModels` (requires macOS 26.0+). Operates fully offline, executing on the Neural Engine (Apple Silicon) with zero cost and maximum privacy. Explains files, caches, running processes, and startup agents in detail to help you make informed decisions. Prompts are optimized in English for higher model reasoning, with explanations output in your preferred UI language (English, Русский, Українська, Español). Fully toggleable in settings, featuring real-time model status tracking.
+
 🌍 **Fully Localized** — English, Русский, Українська, Español. All UI, errors, logs, and system info translated dynamically. Dates and byte counts format automatically for your language.
 
 **Dashboard** 📊 — redesigned with native macOS aesthetics: `controlBackgroundColor`, rounded cards, and SF Symbols. Disk usage chart, system info (model, CPU, RAM, macOS version), cleanup history and stats.
@@ -144,34 +146,9 @@ Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories exe
 
 ---
 
-## Project Structure
-
-```
-MacOSCleaner/
-├ App/                    # Entry point, RootView, sidebar navigation
-├ Domains/
-│  ├ Cleanup/             # Coordinator, Engine, StateMachine, ItemManager, Notifier, Models, EmbeddedCleanupPaths
-│  ├ ProcessManagement/   # ProcessManager, ProcessSafetyPolicy
-│  └ StartupServices/     # LaunchServiceManager
-├ Features/
-│  ├ Dashboard/           # DashboardView + ViewModel
-│  ├ Cleanup/             # CleanupView + ViewModel, AnimatedScanView
-│  ├ Processes/           # ProcessesView + ViewModel, ProcessRow
-│  ├ Settings/            # SettingsView, AppSettings, StartupVendorSettings
-│  ├ Uninstaller/         # 30 application rules, forensics engine, caches, UI
-│  ├ StartupServices/     # StartupServicesView + ViewModel
-│  ├ Permissions/         # PermissionsView
-│  └ About/               # AboutView
-├ Infrastructure/         # CommandRunner, SafetyManager, TrashManager, LanguageManager, PosixScanner, actors
-├ Models/                 # CleanupItem, OperationRisk, RunningProcess, StartupService, etc.
-└ Resources/              # Localizable.strings (en/ru/uk/es), assets
-```
-
----
-
 ## Quick Start
 
-**Requirements:** macOS 15.5+, Xcode 16+, [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+**Requirements:** macOS 26.0+, Xcode 18+, [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 
 ```bash
 cd MacOSCleaner

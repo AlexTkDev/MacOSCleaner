@@ -4,11 +4,16 @@ struct ProcessRow: View {
     let process: RunningProcess
     let permission: KillPermission
     let isSelected: Bool
+    let settings: AppSettings
     let onTerminate: () -> Void
     let onForceKill: () -> Void
     let onToggleSelection: () -> Void
 
     @State private var appIcon: NSImage?
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -119,6 +124,22 @@ struct ProcessRow: View {
                     }
                 }
 
+                if settings.enableAI && AIExplanationService.shared.isAvailable {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation()
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_explain_with_ai".localized)
+                }
+
                 if case .blocked(let reason) = permission {
                     Text(reason)
                         .font(.caption)
@@ -142,6 +163,37 @@ struct ProcessRow: View {
                     .menuStyle(.borderlessButton)
                     .frame(width: 30)
                 }
+            }
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 64)
+                .padding(.bottom, 4)
             }
         }
         .padding(.vertical, 10)
@@ -168,6 +220,36 @@ struct ProcessRow: View {
         case .blocked: return .orange
         case .needsConfirmation: return .yellow
         case .allowed: return .accentColor
+        }
+    }
+
+    private func generateAIExplanation() {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainProcess(
+                    processName: process.name,
+                    pid: process.pid,
+                    filePath: process.path ?? "Unknown path",
+                    cpuPercent: process.cpuPercent,
+                    memoryFormatted: process.memoryFormatted,
+                    uptimeFormatted: process.uptimeFormatted ?? "Unknown uptime",
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
         }
     }
 }

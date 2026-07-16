@@ -549,8 +549,10 @@ public struct CleanupView: View {
             set: { _ in viewModel.toggleCategoryExpansion(category.id) }
         )) {
             ForEach(viewModel.visibleItems(for: category.id)) { item in
-                fileRow(item)
-                    .padding(.leading, 8)
+                CleanupFileRow(item: item, settings: viewModel.settings) {
+                    viewModel.toggleSelection(for: item.id)
+                }
+                .padding(.leading, 8)
             }
             if viewModel.hasMoreItems(category.id) {
                 Button {
@@ -573,49 +575,7 @@ public struct CleanupView: View {
         )
     }
 
-    // MARK: - File Row
-
-    private func fileRow(_ item: CleanupPreviewItem) -> some View {
-        HStack(spacing: 8) {
-            if item.isDeletable {
-                Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 12))
-                    .foregroundColor(item.isSelected ? .accentColor : .secondary)
-                    .frame(width: 18, height: 18)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        viewModel.toggleSelection(for: item.id)
-                    }
-            } else {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .frame(width: 18, height: 18)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.path ?? item.label)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-
-                if let date = item.modificationDate {
-                    Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            Spacer()
-
-            Text(item.sizeBytes.formattedByteCount())
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical, 2)
-    }
-    
+    // MARK: - Risk Badge
     private func riskBadge(for risk: OperationRisk) -> some View {
         Text(risk.localizedTitle.uppercased())
             .font(.system(size: 9, weight: .bold))
@@ -793,5 +753,134 @@ public struct CleanupView: View {
         }
         .padding()
         .glassEffect()
+    }
+}
+
+struct CleanupFileRow: View {
+    let item: CleanupPreviewItem
+    let settings: AppSettings
+    let onToggleSelection: () -> Void
+
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                if item.isDeletable {
+                    Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 12))
+                        .foregroundColor(item.isSelected ? .accentColor : .secondary)
+                        .frame(width: 18, height: 18)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onToggleSelection()
+                        }
+                } else {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .frame(width: 18, height: 18)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.path ?? item.label)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    if let date = item.modificationDate {
+                        Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                if settings.enableAI && AIExplanationService.shared.isAvailable, let path = item.path {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation(path: path)
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_explain_with_ai".localized)
+                }
+
+                Text(item.sizeBytes.formattedByteCount())
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 2)
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 26)
+                .padding(.bottom, 4)
+            }
+        }
+    }
+
+    private func generateAIExplanation(path: String) {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainCleanupFile(
+                    fileName: item.label,
+                    filePath: path,
+                    category: item.category ?? "Cache/Temporary Data",
+                    sizeFormatted: item.sizeBytes.formattedByteCount(),
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
+        }
     }
 }
