@@ -35,14 +35,14 @@
 "disk_analyzer_empty" = "Папка порожня або ще не просканована";
 "disk_analyzer_no_permissions" = "Немає прав доступу до цієї папки";
 "folder" = "Папка";
+"disk_analyzer_category_empty" = "Файлів категорії «%@» не знайдено на вашому Mac";
 "disk_analyzer_category_all" = "Все";
 "disk_analyzer_category_video" = "Відео";
 "disk_analyzer_category_audio" = "Аудіо";
-"disk_analyzer_category_apps" = "Програми";
+"disk_analyzer_category_photo" = "Фото";
+"disk_analyzer_category_apps" = "Dev-збірки";
 "disk_analyzer_category_docs" = "Документи";
 "disk_analyzer_category_archives" = "Архів";
-"disk_analyzer_category_dev" = "Розробка";
-"disk_analyzer_category_other" = "Інше";
 
 
 /* About View */
@@ -350,8 +350,11 @@
 "permissions_step4" = "Поверніться до MacOSCleaner і натисніть 'Перевірити статус'.";
 "permissions_open_settings" = "Відкрити System Settings";
 "permissions_check_status" = "Перевірити статус";
-"permissions_dismiss_temp" = "Пропустити";
+"permissions_dismiss_temp" = "Пропустити поки";
 "permissions_dismiss_permanent" = "Більше не показувати";
+"permissions_warning_title" = "Ви впевнені?";
+"permissions_warning_message" = "Без повного доступу до диску додаток не зможе знайти та видалити багато непотрібних файлів. Якість очистки сильно постраждає.";
+"permissions_warning_confirm" = "Ніколи не дозволяти";
 "permissions_status_granted" = "Надано";
 "permissions_status_required" = "Потрібно";
 "permissions_window_title" = "Дозволи";

@@ -18,7 +18,7 @@ public struct DiskAnalyzerView: View {
                 
                 if viewModel.isScanning {
                     scanningView
-                } else if viewModel.items.isEmpty {
+                } else if viewModel.filteredItems.isEmpty {
                     emptyView
                 } else {
                     itemsListView
@@ -35,20 +35,6 @@ public struct DiskAnalyzerView: View {
     
     private var headerView: some View {
         HStack(spacing: 12) {
-            if !viewModel.pathStack.isEmpty {
-                Button(action: {
-                    withAnimation {
-                        viewModel.navigateBack()
-                    }
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.headline)
-                        .padding(8)
-                }
-                .buttonStyle(.plain)
-                .background(Circle().fill(Color.secondary.opacity(0.2)))
-            }
-            
             VStack(alignment: .leading, spacing: 4) {
                 Text("disk_analyzer_title".localized)
                     .font(.title2)
@@ -125,9 +111,15 @@ public struct DiskAnalyzerView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
             
-            Text("disk_analyzer_empty".localized)
-                .font(.headline)
-                .foregroundColor(.secondary)
+            if viewModel.items.isEmpty {
+                Text("disk_analyzer_empty".localized)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            } else {
+                Text(String(format: "disk_analyzer_category_empty".localized, viewModel.selectedCategory.localizedName))
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -137,11 +129,7 @@ public struct DiskAnalyzerView: View {
         ScrollView {
             LazyVStack(spacing: 1) {
                 ForEach(viewModel.filteredItems) { item in
-                    DiskItemRow(item: item, settings: settings, onNavigate: {
-                        withAnimation {
-                            viewModel.navigateTo(item: item)
-                        }
-                    }, onShowInFinder: {
+                    DiskItemRow(item: item, settings: settings, onShowInFinder: {
                         viewModel.showInFinder(item: item)
                     }, onDelete: {
                         viewModel.moveToTrash(item: item)
@@ -161,7 +149,6 @@ public struct DiskAnalyzerView: View {
 struct DiskItemRow: View {
     let item: DiskItem
     let settings: AppSettings
-    let onNavigate: () -> Void
     let onShowInFinder: () -> Void
     let onDelete: () -> Void
     
@@ -190,6 +177,12 @@ struct DiskItemRow: View {
                         Text("folder".localized)
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                    } else {
+                        Text(item.url.path)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.head)
                     }
                 }
                 
@@ -246,11 +239,6 @@ struct DiskItemRow: View {
             .onHover { hover in
                 withAnimation(.easeInOut(duration: 0.1)) {
                     isHovered = hover
-                }
-            }
-            .onTapGesture {
-                if item.isDirectory {
-                    onNavigate()
                 }
             }
             .confirmationDialog(
@@ -332,10 +320,10 @@ struct DiskItemRow: View {
         switch item.fileType {
         case .video: return "play.rectangle.fill"
         case .audio: return "music.note"
+        case .photo: return "photo.fill"
         case .apps: return "app.badge.fill"
         case .docs: return "doc.text.fill"
         case .archives: return "doc.zip.fill"
-        case .dev: return "curlybraces"
         default: return "doc.fill"
         }
     }
@@ -347,10 +335,10 @@ struct DiskItemRow: View {
         switch item.fileType {
         case .video: return .purple
         case .audio: return .pink
+        case .photo: return .cyan
         case .apps: return .orange
         case .docs: return .green
         case .archives: return .yellow
-        case .dev: return .teal
         default: return .secondary
         }
     }

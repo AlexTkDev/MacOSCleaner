@@ -35,14 +35,14 @@
 "disk_analyzer_empty" = "La carpeta está vacía o no ha sido escaneada";
 "disk_analyzer_no_permissions" = "Sin permisos de acceso para esta carpeta";
 "folder" = "Carpeta";
+"disk_analyzer_category_empty" = "No se encontraron archivos en la categoría '%@'";
 "disk_analyzer_category_all" = "Todo";
 "disk_analyzer_category_video" = "Vídeo";
 "disk_analyzer_category_audio" = "Audio";
-"disk_analyzer_category_apps" = "Aplicaciones";
+"disk_analyzer_category_photo" = "Fotos";
+"disk_analyzer_category_apps" = "Dev-Builds";
 "disk_analyzer_category_docs" = "Documentos";
 "disk_analyzer_category_archives" = "Archivos";
-"disk_analyzer_category_dev" = "Desarrollo";
-"disk_analyzer_category_other" = "Otro";
 
 
 // About View
@@ -346,8 +346,11 @@
 "permissions_step4" = "Vuelva a MacOSCleaner y haga clic en 'Verificar estado'.";
 "permissions_open_settings" = "Abrir Ajustes del sistema";
 "permissions_check_status" = "Verificar estado";
-"permissions_dismiss_temp" = "Saltar por ahora";
+"permissions_dismiss_temp" = "Omitir por ahora";
 "permissions_dismiss_permanent" = "No mostrar de nuevo";
+"permissions_warning_title" = "¿Estás seguro?";
+"permissions_warning_message" = "Sin el Acceso Total al Disco, la aplicación no podrá encontrar ni limpiar muchos archivos innecesarios. La calidad de la limpieza se verá afectada considerablemente.";
+"permissions_warning_confirm" = "Nunca permitir";
 "permissions_status_granted" = "Concedido";
 "permissions_status_required" = "Requerido";
 "permissions_window_title" = "Permisos";

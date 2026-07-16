@@ -126,8 +126,8 @@ struct PermissionsView: View {
         }
     }
 
-    // MARK: - Dismiss
-
+    @State private var showingWarning = false
+    
     private var dismissBar: some View {
         HStack {
             Button("permissions_dismiss_temp".localized) {
@@ -139,11 +139,19 @@ struct PermissionsView: View {
             Spacer()
 
             Button("permissions_dismiss_permanent".localized) {
-                permissionsManager.dismissGuidancePermanently()
+                showingWarning = true
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)
             .font(.caption)
+            .alert("permissions_warning_title".localized, isPresented: $showingWarning) {
+                Button("permissions_warning_confirm".localized, role: .destructive) {
+                    permissionsManager.dismissGuidancePermanently()
+                }
+                Button("cancel".localized, role: .cancel) { }
+            } message: {
+                Text("permissions_warning_message".localized)
+            }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)

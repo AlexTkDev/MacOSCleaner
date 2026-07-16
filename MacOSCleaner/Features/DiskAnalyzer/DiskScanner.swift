@@ -6,7 +6,7 @@ public actor DiskScanner {
     
     public init() {}
     
-    /// Scans a directory and returns its immediate children with calculated sizes.
+    /// Scans a directory and returns its files (flattened) with calculated sizes.
     public func scan(
         directoryURL: URL,
         onProgress: @Sendable @escaping (String) -> Void
@@ -20,84 +20,80 @@ public actor DiskScanner {
         }
         
         let fm = FileManager.default
-        var isDir: ObjCBool = false
-        guard fm.fileExists(atPath: directoryURL.path, isDirectory: &isDir), isDir.boolValue else {
+        let keys: [URLResourceKey] = [.fileSizeKey, .isDirectoryKey]
+        
+        guard let enumerator = fm.enumerator(
+            at: directoryURL,
+            includingPropertiesForKeys: keys,
+            options: [.skipsHiddenFiles],
+            errorHandler: { url, error in
+                return true // Skip access errors and continue
+            }
+        ) else {
             return []
         }
         
-        // 1. Get immediate children
-        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey]
-        let childrenURLs = try fm.contentsOfDirectory(
-            at: directoryURL,
-            includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles]
-        )
-        
         var results: [DiskItem] = []
-        var dirsToScan: [URL] = []
+        var appsToCalculate: [URL] = []
+        var count = 0
+        let minSize: Int64 = 1024 * 1024 // 1 MB
         
-        for url in childrenURLs {
+        while let fileURL = enumerator.nextObject() as? URL {
             if Task.isCancelled { break }
             
-            // Check exclusion
-            if FileManager.shouldExclude(url: url) {
+            if FileManager.shouldExclude(url: fileURL) {
+                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                    enumerator.skipDescendants()
+                }
                 continue
             }
             
-            guard let resourceValues = try? url.resourceValues(forKeys: Set(keys)) else {
-                continue
-            }
+            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
+            let isDir = values.isDirectory ?? false
             
-            let isDirectory = resourceValues.isDirectory ?? false
-            if isDirectory {
-                // If it's a bundle like .app, we treat it as a file/app category
-                if url.pathExtension.lowercased() == "app" {
-                    let size = await calculateDirectorySize(url: url)
-                    results.append(DiskItem(
-                        url: url,
-                        name: url.lastPathComponent,
-                        isDirectory: false,
-                        size: size,
-                        fileType: .apps
-                    ))
-                } else {
-                    dirsToScan.append(url)
+            if isDir {
+                if fileURL.pathExtension.lowercased() == "app" {
+                    enumerator.skipDescendants()
+                    appsToCalculate.append(fileURL)
                 }
             } else {
-                let size = Int64(resourceValues.fileSize ?? 0)
-                results.append(DiskItem(
-                    url: url,
-                    name: url.lastPathComponent,
-                    isDirectory: false,
-                    size: size,
-                    fileType: FileCategory.from(url: url)
-                ))
+                let size = Int64(values.fileSize ?? 0)
+                if size > minSize {
+                    results.append(DiskItem(
+                        url: fileURL,
+                        name: fileURL.lastPathComponent,
+                        isDirectory: false,
+                        size: size,
+                        fileType: FileCategory.from(url: fileURL)
+                    ))
+                }
+            }
+            
+            count += 1
+            if count % 1000 == 0 {
+                onProgress(fileURL.lastPathComponent)
+                await Task.yield()
             }
         }
         
         if Task.isCancelled { return results }
         
-        // 2. Scan directories in parallel using TaskGroup
-        let scannedDirs = try await withThrowingTaskGroup(of: DiskItem?.self) { group in
-            for dirURL in dirsToScan {
+        // Calculate .app sizes in parallel
+        let appItems = try await withThrowingTaskGroup(of: DiskItem?.self) { group in
+            for appURL in appsToCalculate {
                 group.addTask {
                     if Task.isCancelled { return nil }
-                    let name = dirURL.lastPathComponent
-                    onProgress(name)
-                    
-                    let size = await self.calculateDirectorySize(url: dirURL)
-                    
-                    // Also recursively scan 1 level deeper to show children inside if expanded
-                    let children = await self.scanSubdirectoryOneLevel(url: dirURL)
-                    
-                    return DiskItem(
-                        url: dirURL,
-                        name: name,
-                        isDirectory: true,
-                        size: size,
-                        children: children,
-                        fileType: .other
-                    )
+                    let size = await self.calculateDirectorySize(url: appURL)
+                    if size > minSize {
+                        return DiskItem(
+                            url: appURL,
+                            name: appURL.lastPathComponent,
+                            isDirectory: false,
+                            size: size,
+                            fileType: .apps
+                        )
+                    }
+                    return nil
                 }
             }
             
@@ -110,64 +106,10 @@ public actor DiskScanner {
             return list
         }
         
-        results.append(contentsOf: scannedDirs)
+        results.append(contentsOf: appItems)
         
         // Sort by size descending
         return results.sorted { $0.size > $1.size }
-    }
-    
-    private func scanSubdirectoryOneLevel(url: URL) async -> [DiskItem] {
-        let fm = FileManager.default
-        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey]
-        guard let childrenURLs = try? fm.contentsOfDirectory(
-            at: url,
-            includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles]
-        ) else {
-            return []
-        }
-        
-        var list: [DiskItem] = []
-        for child in childrenURLs {
-            if Task.isCancelled { break }
-            if FileManager.shouldExclude(url: child) { continue }
-            
-            guard let values = try? child.resourceValues(forKeys: Set(keys)) else { continue }
-            let isDir = values.isDirectory ?? false
-            
-            if isDir {
-                if child.pathExtension.lowercased() == "app" {
-                    let size = await calculateDirectorySize(url: child)
-                    list.append(DiskItem(
-                        url: child,
-                        name: child.lastPathComponent,
-                        isDirectory: false,
-                        size: size,
-                        fileType: .apps
-                    ))
-                } else {
-                    let size = await calculateDirectorySize(url: child)
-                    list.append(DiskItem(
-                        url: child,
-                        name: child.lastPathComponent,
-                        isDirectory: true,
-                        size: size,
-                        fileType: .other
-                    ))
-                }
-            } else {
-                let size = Int64(values.fileSize ?? 0)
-                list.append(DiskItem(
-                    url: child,
-                    name: child.lastPathComponent,
-                    isDirectory: false,
-                    size: size,
-                    fileType: FileCategory.from(url: child)
-                ))
-            }
-        }
-        
-        return list.sorted { $0.size > $1.size }
     }
     
     private func calculateDirectorySize(url: URL) async -> Int64 {
@@ -189,13 +131,6 @@ public actor DiskScanner {
         while let fileURL = enumerator.nextObject() as? URL {
             if Task.isCancelled { break }
             
-            if FileManager.shouldExclude(url: fileURL) {
-                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
-                    enumerator.skipDescendants()
-                }
-                continue
-            }
-            
             guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
             let isDir = values.isDirectory ?? false
             
@@ -204,7 +139,7 @@ public actor DiskScanner {
             }
             
             count += 1
-            if count % 500 == 0 {
+            if count % 1000 == 0 {
                 await Task.yield()
             }
         }
