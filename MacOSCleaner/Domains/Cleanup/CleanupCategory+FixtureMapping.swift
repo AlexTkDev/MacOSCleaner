@@ -6,6 +6,14 @@ extension CleanupCategory {
         "category.\(rawValue)".localized
     }
 
+    /// Maps scanner/engine group labels to the localized category title used in the preview UI.
+    public static func localizedGroupTitle(for scannerLabel: String) -> String {
+        for category in CleanupCategory.allCases where category.previewLabels.contains(scannerLabel) {
+            return category.localizedTitle
+        }
+        return scannerLabel
+    }
+
     public var previewLabels: Set<String> {
         var labels: Set<String> = [localizedTitle]
 
@@ -17,22 +25,29 @@ extension CleanupCategory {
             labels.insert("Package managers")
             labels.formUnion(["Homebrew cache", "npm cache", "yarn cache", "pnpm store", "CocoaPods cache"])
         case .gradleMaven:
+            labels.insert("Gradle + Maven")
             labels.insert("Gradle caches + wrapper + daemon")
         case .flutterDart:
+            labels.insert("Flutter / Dart")
             labels.insert("Dart/Flutter package caches")
         case .xcode:
+            labels.insert("Xcode")
             labels.insert("Xcode cleanup")
         case .iosSimulators:
+            labels.insert("iOS Simulators")
             labels.insert("Simulator caches")
         case .androidCaches:
+            labels.insert("Android caches")
             labels.insert("Android build caches")
         case .androidSDK:
+            labels.insert("Android SDK")
             labels.insert("Android SDK cleanup")
         case .ideCaches:
             labels.insert("IDE / Electron caches")
         case .browserCaches:
             labels.insert("Browser caches")
         case .messagingMedia:
+            labels.insert("Messaging / media")
             labels.insert("Messaging / media caches")
         case .docker:
             labels.insert("Docker")
@@ -43,6 +58,7 @@ extension CleanupCategory {
         case .systemCaches:
             labels.insert("System caches")
         case .appContainers:
+            labels.insert("App containers")
             labels.insert("App container caches")
         case .dotfileCaches:
             labels.insert("Dotfile caches")
@@ -83,6 +99,7 @@ extension CleanupCategory {
         case .chromeExtraCaches:
             labels.insert("Chrome Extra Caches")
         case .ideOldVersions:
+            labels.insert("Old IDE Versions")
             labels.insert("Old IDE versions")
         case .launchAgents:
             labels.insert("Launch Agents")

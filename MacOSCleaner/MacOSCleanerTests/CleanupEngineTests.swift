@@ -737,6 +737,51 @@ struct CleanupEngineTests {
         #expect(categories.contains(.chromeExtraCaches))
     }
 
+    // MARK: - CleanupItemManager selection totals
+
+    @Test("Selected size deduplicates the same path across categories")
+    func selectedSizeDeduplicatesPaths() {
+        let manager = CleanupItemManager()
+        let sharedPath = "~/.gradle/caches"
+
+        manager.appendFileItem(
+            path: sharedPath,
+            sizeBytes: 4_000_000_000,
+            modificationDate: nil,
+            isDirectory: true,
+            category: "Gradle + Maven",
+            parentName: nil
+        )
+        manager.appendFileItem(
+            path: sharedPath,
+            sizeBytes: 4_000_000_000,
+            modificationDate: nil,
+            isDirectory: true,
+            category: "Dotfile caches",
+            parentName: nil
+        )
+
+        #expect(manager.selectedSizeBytes == 4_000_000_000)
+    }
+
+    @Test("Selected size ignores duplicate aggregate rows when path children exist")
+    func selectedSizeIgnoresAggregateDuplicates() {
+        let manager = CleanupItemManager()
+        let path = "~/Library/Developer/Xcode/DerivedData"
+
+        manager.appendFileItem(
+            path: path,
+            sizeBytes: 30_000_000_000,
+            modificationDate: nil,
+            isDirectory: true,
+            category: "IDE / Electron caches",
+            parentName: nil
+        )
+        manager.appendPreviewItem("IDE / Electron caches", size: 30_000, deletable: true, parentName: "IDE / Electron caches", description: nil)
+
+        #expect(manager.selectedSizeBytes == 30_000_000_000)
+    }
+
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {

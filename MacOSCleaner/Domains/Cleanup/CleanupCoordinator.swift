@@ -369,15 +369,16 @@ public final class CleanupCoordinator: @unchecked Sendable {
             }
         case .categoryResult(let category, let label, let freedMB):
             Logger.coordinator.debug("CategoryResult event: cat=\(category), label=\(label, privacy: .public), freed=\(freedMB)")
-            if freedMB > 0 {
+            if freedMB > 0, !hasPathBackedPreviewItems(for: category, label: label) {
                 self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: category, description: nil)
             }
         case .log(let message):
             self.pendingLogs.append(message)
             self.scheduleLogFlushIfNeeded()
         case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
-            let effectiveParent = parentName ?? category
-            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: category, parentName: effectiveParent)
+            let localizedCategory = CleanupCategory.localizedGroupTitle(for: category)
+            let effectiveParent = parentName.map { CleanupCategory.localizedGroupTitle(for: $0) } ?? localizedCategory
+            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: localizedCategory, parentName: effectiveParent)
         }
     }
     
@@ -391,6 +392,17 @@ public final class CleanupCoordinator: @unchecked Sendable {
         }
     }
     
+    @MainActor
+    private func hasPathBackedPreviewItems(for category: String, label: String) -> Bool {
+        itemManager.items.contains { item in
+            let matchesCategory = item.label == category
+                || CleanupCategory.localizedGroupTitle(for: item.label) == category
+                || item.label == label
+            guard matchesCategory else { return false }
+            return item.children.contains { $0.path != nil }
+        }
+    }
+
     @MainActor
     private func flushLogs() {
         if !pendingLogs.isEmpty {

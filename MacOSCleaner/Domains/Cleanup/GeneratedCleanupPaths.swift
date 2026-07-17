@@ -69,8 +69,6 @@ public enum GeneratedCleanupPaths {
         CleanupPath(path: "~/Library/Caches/com.sublimetext.4", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/com.torusknot.SourceTreeNotMAS", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/dev.zed.Zed", category: .ideCaches),
-        CleanupPath(path: "~/Library/Developer/CoreSimulator/Caches", category: .ideCaches),
-        CleanupPath(path: "~/Library/Developer/Xcode/DerivedData", category: .ideCaches),
     ]
 
     public static let appCaches: [CleanupPath] = [
@@ -166,7 +164,6 @@ public enum GeneratedCleanupPaths {
         CleanupPath(path: "~/.aws/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.cargo/registry/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/gcloud/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.gradle/caches", category: .dotfileCaches),
         CleanupPath(path: "~/.kube/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.minikube/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.pyenv/cache", category: .dotfileCaches),

@@ -32,7 +32,8 @@ public final class CleanupItemManager {
     }
 
     public var selectedSizeBytes: Int64 {
-        items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1) }
+        var seenPaths = Set<String>()
+        return items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
     }
 
     // MARK: - File Item Append (new hierarchical flow)
@@ -214,12 +215,27 @@ public final class CleanupItemManager {
         }
     }
 
-    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
+    private static func selectedSizeBytes(for item: CleanupPreviewItem, seenPaths: inout Set<String>) -> Int64 {
         if item.children.isEmpty {
-            return item.isSelected ? item.sizeBytes : 0
+            guard item.isSelected else { return 0 }
+            if let path = item.path {
+                let normalized = normalizePath(path)
+                guard seenPaths.insert(normalized).inserted else { return 0 }
+            }
+            return item.sizeBytes
         }
 
-        return item.children.reduce(0) { $0 + selectedSizeBytes(for: $1) }
+        return item.children.reduce(0) { $0 + selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
+    }
+
+    private static func normalizePath(_ path: String) -> String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return (path as NSString).standardizingPath.replacingOccurrences(of: home, with: "~")
+    }
+
+    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
+        var seenPaths = Set<String>()
+        return selectedSizeBytes(for: item, seenPaths: &seenPaths)
     }
 
     private func hasPreviewItem(for category: CleanupCategory) -> Bool {
