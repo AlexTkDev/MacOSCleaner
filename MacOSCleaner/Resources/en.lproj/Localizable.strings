@@ -357,6 +357,7 @@
 "settings_fda_description" = "Required for cleaning system caches and application data.";
 "settings_open_settings" = "Open Settings";
 "settings_check_permissions" = "Check Permissions";
+"settings_show_permission_guide" = "Grant Full Disk Access";
 
 /* Format strings */
 "dashboard_used_percent_format" = "%lld%%";

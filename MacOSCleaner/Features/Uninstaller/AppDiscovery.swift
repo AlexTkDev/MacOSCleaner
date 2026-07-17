@@ -56,6 +56,15 @@ public actor AppDiscovery {
             }
         }
 
-        return Array(Set(urls))
+        return Array(Set(urls)).filter { !isSystemComponent($0) }
+    }
+
+    /// Apple's own apps are uninstallable only when installed in /Applications (Xcode, GarageBand, etc.).
+    /// A `com.apple.*` bundle anywhere else (Application Support, DerivedData) is an OS component
+    /// (e.g. Script Editor templates in /Library/Application Support/Script Editor) and must not be listed.
+    private func isSystemComponent(_ url: URL) -> Bool {
+        guard !url.path.hasPrefix("/Applications/") else { return false }
+        guard let bundleID = Bundle(url: url)?.bundleIdentifier else { return false }
+        return bundleID.hasPrefix("com.apple.")
     }
 }

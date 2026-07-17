@@ -46,6 +46,12 @@ struct AboutView: View {
     }
 
     private var content: some View {
+        GlassEffectContainer {
+            contentStack
+        }
+    }
+
+    private var contentStack: some View {
         VStack(spacing: 16) {
             if let update = availableUpdate {
                 updateBanner(version: update)
@@ -111,8 +117,7 @@ struct AboutView: View {
             Spacer()
         }
         .padding(14)
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .glassCard(cornerRadius: 10)
     }
 
     private var linksCard: some View {
@@ -147,8 +152,7 @@ struct AboutView: View {
                     .contentShape(Rectangle())
             }
         }
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .glassCard(cornerRadius: 10)
         .buttonStyle(.plain)
     }
 }

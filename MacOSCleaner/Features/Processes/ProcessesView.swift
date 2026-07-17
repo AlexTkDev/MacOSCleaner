@@ -4,7 +4,6 @@ public struct ProcessesView: View {
     let settings: AppSettings
     @State private var viewModel = ProcessesViewModel()
     @State private var isEditMode = false
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     public init(settings: AppSettings) {
         self.settings = settings
@@ -52,7 +51,6 @@ public struct ProcessesView: View {
                     }
                 }
             }
-            .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
         .sheet(isPresented: $viewModel.showBlacklistAlert) {
             blacklistSheet
@@ -199,9 +197,9 @@ public struct ProcessesView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
         }
-        .padding(8)
-        .background(Color(NSColor.textBackgroundColor))
-        .cornerRadius(8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .glassCapsule()
     }
 
     private var groupedProcessList: some View {
@@ -214,7 +212,7 @@ public struct ProcessesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .glassEffect()
+            .glassCard()
             .padding()
         }
     }
@@ -229,7 +227,7 @@ public struct ProcessesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .glassEffect()
+            .glassCard()
             .padding()
         }
     }

@@ -5,8 +5,6 @@ public struct CleanupView: View {
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var scrollTaskBox = ScrollTaskBox()
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
     public init(viewModel: CleanupViewModel) {
         self.viewModel = viewModel
@@ -34,18 +32,15 @@ public struct CleanupView: View {
                 
                 footer
             }
-            .background(
-                ZStack {
-                    Color(NSColor.windowBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15)
-                    if viewModel.state == .scanning || viewModel.state == .executing {
-                        LinearGradient(
-                            colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    }
+            .background {
+                if viewModel.state == .scanning || viewModel.state == .executing {
+                    LinearGradient(
+                        colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
                 }
-            )
+            }
         }
     }
     
@@ -157,9 +152,8 @@ public struct CleanupView: View {
                     }
                 }
                 .padding()
-                .background(Color(NSColor.controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+                .glassCard(cornerRadius: 12)
+                .padding(.horizontal, 32)
                 
                 // Start button
                 Button(action: { viewModel.startScan() }) {

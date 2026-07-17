@@ -28,6 +28,7 @@ struct SettingsView: View {
             resetSection
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .confirmationDialog(
             "settings_reset_confirm_title".localized,
             isPresented: $showResetConfirmation,
@@ -82,6 +83,15 @@ struct SettingsView: View {
                 Label("settings_check_permissions".localized, systemImage: "arrow.clockwise")
             }
             .buttonStyle(.plain)
+
+            if !permissionsManager.hasFullDiskAccess {
+                Button {
+                    permissionsManager.requestGuidanceAgain()
+                } label: {
+                    Label("settings_show_permission_guide".localized, systemImage: "hand.raised")
+                }
+                .buttonStyle(.plain)
+            }
         } header: {
             Label("settings_permissions".localized, systemImage: "lock.shield")
         }

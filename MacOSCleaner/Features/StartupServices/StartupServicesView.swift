@@ -3,7 +3,6 @@ import SwiftUI
 public struct StartupServicesView: View {
     let settings: AppSettings
     @State private var viewModel = StartupServicesViewModel()
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     public var body: some View {
         GlassEffectContainer {
@@ -26,7 +25,6 @@ public struct StartupServicesView: View {
                     serviceList
                 }
             }
-            .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
         .onAppear { Task { await viewModel.scan() } }
     }
@@ -120,16 +118,16 @@ public struct StartupServicesView: View {
                                   : Color.secondary.opacity(0.1))
                     )
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                Capsule()
                     .fill(viewModel.filter == tag
                           ? (color ?? Color.accentColor).opacity(0.1)
                           : Color.clear)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 6)
+                Capsule()
                     .stroke(viewModel.filter == tag
                             ? (color ?? Color.accentColor).opacity(0.3)
                             : Color.clear, lineWidth: 1)
@@ -152,7 +150,7 @@ public struct StartupServicesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .glassEffect()
+            .glassCard()
             .padding()
         }
     }

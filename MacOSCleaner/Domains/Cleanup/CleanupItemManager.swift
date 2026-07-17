@@ -28,23 +28,11 @@ public final class CleanupItemManager {
     }
 
     public var selectedSizeMB: Int {
-        var total = 0
-        for item in items {
-            if item.isSelected {
-                total += item.sizeMB
-            }
-        }
-        return total
+        Int(selectedSizeBytes / (1024 * 1024))
     }
 
     public var selectedSizeBytes: Int64 {
-        var total: Int64 = 0
-        for item in items {
-            if item.isSelected {
-                total += item.sizeBytes
-            }
-        }
-        return total
+        items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1) }
     }
 
     // MARK: - File Item Append (new hierarchical flow)
@@ -167,6 +155,14 @@ public final class CleanupItemManager {
         }
     }
 
+    public func selectedCleanupCategories(from categories: [CleanupCategory]) -> [CleanupCategory] {
+        let selectedLabels = Set(items.filter { Self.selectedSizeBytes(for: $0) > 0 }.map(\.label))
+
+        return categories.filter { category in
+            !category.previewLabels.isDisjoint(with: selectedLabels) || !hasPreviewItem(for: category)
+        }
+    }
+
     // MARK: - Expansion
 
     public func toggleCategoryExpansion(_ categoryId: UUID) {
@@ -215,6 +211,20 @@ public final class CleanupItemManager {
         item.isSelected = isSelected
         for i in item.children.indices {
             updateItemSelection(&item.children[i], isSelected: isSelected)
+        }
+    }
+
+    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
+        if item.children.isEmpty {
+            return item.isSelected ? item.sizeBytes : 0
+        }
+
+        return item.children.reduce(0) { $0 + selectedSizeBytes(for: $1) }
+    }
+
+    private func hasPreviewItem(for category: CleanupCategory) -> Bool {
+        items.contains { item in
+            category.previewLabels.contains(item.label)
         }
     }
 

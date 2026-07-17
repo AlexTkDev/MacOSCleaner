@@ -85,6 +85,7 @@ struct UninstallerView: View {
                                     )
                                 }
                                 .listStyle(.inset)
+                                .scrollContentBackground(.hidden)
                             }
                         }
                     }
@@ -106,7 +107,6 @@ struct UninstallerView: View {
                     .layoutPriority(1) // Occupy remaining space
                 }
             }
-            .background(Color(NSColor.windowBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.1))
         }
         .navigationTitle("uninstaller_title".localized)
         .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
@@ -403,7 +403,7 @@ struct UninstallerView: View {
                                     )
                             }
                         }
-                        .glassEffect()
+                        .glassCard(cornerRadius: 12)
                     }
                 }
             }

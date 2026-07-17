@@ -72,6 +72,87 @@ public struct VisualEffectView: NSViewRepresentable {
 }
 #endif
 
+// MARK: - macOS 27 Shared Surfaces
+
+public extension View {
+    /// Liquid Glass card surface with macOS 27 rounded chrome (hairline border + soft shadow).
+    func glassCard(cornerRadius: CGFloat = 16) -> some View {
+        modifier(GlassCardModifier(cornerRadius: cornerRadius))
+    }
+
+    /// Capsule Liquid Glass surface for chips and search fields.
+    func glassCapsule() -> some View {
+        // Explicit Glass type avoids ambiguity between the shim and SwiftUI.Glass (SDK 26+).
+        glassEffect(Glass.regular, in: Capsule())
+    }
+
+    /// Wallpaper-tinted screen background behind glass panels (macOS 27 look).
+    func macOS27ScreenBackground() -> some View {
+        modifier(MacOS27ScreenBackgroundModifier())
+    }
+}
+
+private struct GlassCardModifier: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private static let borderColor: Color = Color.primary.opacity(0.07)
+
+    func body(content: Content) -> some View {
+        Group {
+            if reduceTransparency {
+                content.background(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(Color(NSColor.controlBackgroundColor))
+                )
+            } else {
+                content.glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+            }
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .strokeBorder(Self.borderColor, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.07), radius: 12, y: 4)
+    }
+}
+
+private struct MacOS27ScreenBackgroundModifier: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        content.background {
+            if reduceTransparency {
+                Color(NSColor.windowBackgroundColor).ignoresSafeArea()
+            } else {
+                ZStack {
+                    Color(NSColor.windowBackgroundColor)
+                    LinearGradient(
+                        stops: [
+                            .init(color: warmTint, location: 0.0),
+                            .init(color: .clear, location: 0.55),
+                            .init(color: coolTint, location: 1.0),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
+                .ignoresSafeArea()
+            }
+        }
+    }
+
+    // Warm champagne → cool lavender-grey, echoing the macOS 27 wallpaper palette.
+    private var warmTint: Color {
+        Color(red: 0.95, green: 0.86, blue: 0.70).opacity(colorScheme == .dark ? 0.10 : 0.26)
+    }
+
+    private var coolTint: Color {
+        Color(red: 0.56, green: 0.58, blue: 0.72).opacity(colorScheme == .dark ? 0.14 : 0.18)
+    }
+}
+
 public extension View {
     @ViewBuilder
     func glassButtonStyle() -> some View {

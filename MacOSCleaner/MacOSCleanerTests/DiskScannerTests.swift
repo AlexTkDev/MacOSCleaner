@@ -66,6 +66,6 @@ final class DiskScannerTests: XCTestCase {
         XCTAssertEqual(FileCategory.from(url: audioURL), .audio)
         XCTAssertEqual(FileCategory.from(url: appURL), .apps)
         XCTAssertEqual(FileCategory.from(url: docURL), .docs)
-        XCTAssertEqual(FileCategory.from(url: devURL), .dev)
+        XCTAssertEqual(FileCategory.from(url: devURL), .all)
     }
 }

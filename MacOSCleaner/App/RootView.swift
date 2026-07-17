@@ -31,14 +31,16 @@ struct RootView: View {
                 .navigationTitle("app_title".localized)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
             } detail: {
-                if let selectedItem {
-                    contentView(for: selectedItem)
-                        .frame(minWidth: 800, minHeight: 600)
-                } else {
-                    Text("sidebar_select_item".localized)
-                        .foregroundColor(.secondary)
-                        .frame(minWidth: 800, minHeight: 600)
+                Group {
+                    if let selectedItem {
+                        contentView(for: selectedItem)
+                    } else {
+                        Text("sidebar_select_item".localized)
+                            .foregroundColor(.secondary)
+                    }
                 }
+                .frame(minWidth: 800, minHeight: 600)
+                .macOS27ScreenBackground()
             }
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
@@ -48,6 +50,8 @@ struct RootView: View {
         }
         .onAppear {
             appSettings.applyTheme()
+        }
+        .task {
             permissionsManager.refresh()
             permissionsManager.showGuidanceIfNeeded()
         }
@@ -128,18 +132,18 @@ struct SidebarItemRow: View {
             .background(
                 Group {
                     if isSelected {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 10)
                             .fill(Color.accentColor.opacity(0.12))
                             .glassEffect()
                     } else if isHovered {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.primary.opacity(0.04))
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.primary.opacity(0.05))
                     } else {
                         Color.clear
                     }
                 }
             )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
             .animation(.easeInOut(duration: 0.15), value: isSelected)
             .animation(.easeInOut(duration: 0.1), value: isHovered)
         }

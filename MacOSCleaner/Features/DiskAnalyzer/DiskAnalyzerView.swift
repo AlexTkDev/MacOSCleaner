@@ -3,7 +3,6 @@ import SwiftUI
 public struct DiskAnalyzerView: View {
     let settings: AppSettings
     @State private var viewModel = DiskAnalyzerViewModel()
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
     public init(settings: AppSettings) {
         self.settings = settings
@@ -73,23 +72,23 @@ public struct DiskAnalyzerView: View {
                             Text(category.localizedName)
                                 .font(.callout)
                                 .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
-                                .padding(.horizontal, 10)
+                                .padding(.horizontal, 12)
                                 .padding(.vertical, 4)
                         }
                         .buttonStyle(.plain)
                         .background(
                             Group {
                                 if viewModel.selectedCategory == category {
-                                    RoundedRectangle(cornerRadius: 8)
+                                    Capsule()
                                         .fill(Color.accentColor)
                                 } else {
-                                    RoundedRectangle(cornerRadius: 8)
+                                    Capsule()
                                         .fill(Color.primary.opacity(0.04))
-                                        .glassEffect()
+                                        .glassCapsule()
                                 }
                             }
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(Capsule())
                     }
                 }
                 .padding(.vertical, 4)
@@ -155,10 +154,7 @@ public struct DiskAnalyzerView: View {
             .padding(.horizontal, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.2))
-        )
+        .glassCard(cornerRadius: 12)
     }
 }
 

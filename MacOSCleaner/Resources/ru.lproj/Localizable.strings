@@ -347,6 +347,7 @@
 "settings_fda_description" = "Необходим для очистки системных кэшей и данных приложений.";
 "settings_open_settings" = "Открыть настройки";
 "settings_check_permissions" = "Проверить разрешения";
+"settings_show_permission_guide" = "Предоставить полный доступ к диску";
 
 /* Format strings */
 "dashboard_used_percent_format" = "%lld%%";

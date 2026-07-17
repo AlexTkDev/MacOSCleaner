@@ -173,7 +173,7 @@ public actor CleanupEngine {
         var results: [CleanupEngineResult] = []
         let total = categories.count
 
-        let maxConcurrency = ProcessInfo.processInfo.activeProcessorCount
+        let maxConcurrency = dryRun ? ProcessInfo.processInfo.activeProcessorCount : 1
 
         var pending = Array(categories.enumerated())
         var completedCount = 0
@@ -641,15 +641,10 @@ extension CleanupEngine {
             "\(home)/Library/Application Support/Google/GoogleUpdater",
             "\(home)/Library/Google/GoogleSoftwareUpdate",
             "\(home)/Library/HTTPStorages/com.google.GoogleUpdater",
-            "\(home)/Library/Caches/org.carthage.CarthageKit",
-            "\(home)/Library/Caches/CocoaPods",
-            "\(home)/Library/Caches/pip",
-            "\(home)/Library/Caches/Homebrew",
             "\(home)/Library/Caches/ms-playwright-go",
             "\(home)/Library/Caches/com.spotify.client",
             "\(home)/Library/Caches/com.apple.dt.Xcode",
             "\(home)/Library/Caches/com.apple.dt.instruments",
-            "\(home)/Library/Caches/org.swift.swiftpm",
             "\(home)/Library/Caches/com.plausiblelabs.crashreporter.data",
             "\(home)/Library/Caches/JetBrains",
             "\(home)/Library/Caches/@opencode-aidesktop-updater"
@@ -1764,6 +1759,7 @@ extension CleanupEngine {
             // Python
             "\(home)/Library/Caches/pypoetry",
             "\(home)/Library/Caches/uv",
+            "\(home)/Library/Caches/pip",
             "\(home)/.cache/pip",
             "\(home)/.cache/pypoetry",
             "\(home)/.cache/uv",
@@ -2665,7 +2661,13 @@ extension CleanupEngine {
                 } else {
                     reviewItems.append((entry, size))
                     progress?(.log("  ℹ \(entry) — \(Self.formatBytes(size)) (review manually)"))
-                    emitFileItem(CleanupFileItem(path: entryPath, sizeBytes: size, modificationDate: nil, isDirectory: true), category: "Dynamic cache discovery", parentName: "Review manually", progress: progress)
+                    progress?(.preview(
+                        label: "\(entry) — \(Self.shortPath(entryPath))",
+                        sizeMB: Int(size / (1024 * 1024)),
+                        deletable: false,
+                        parent: "Review manually",
+                        description: "Review this cache manually before deleting it."
+                    ))
                 }
             } else {
                 // In cleanup mode: only auto-clean safe patterns >= threshold

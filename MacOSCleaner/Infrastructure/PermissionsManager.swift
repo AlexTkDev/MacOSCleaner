@@ -27,15 +27,21 @@ public final class PermissionsManager {
     
     /// Whether the user has dismissed the guidance permanently.
     public private(set) var guidanceDismissed = false
-    
+
+    /// Whether Full Disk Access was ever granted (persisted across launches).
+    public private(set) var fdaEverGranted = false
+
     private let userDefaultsKey = "com.macoscleaner.guidanceDismissed"
-    
+    private let fdaGrantedKey = "com.macoscleaner.fdaGranted"
+
     public init() {
         self.guidanceDismissed = UserDefaults.standard.bool(forKey: userDefaultsKey)
+        self.fdaEverGranted = UserDefaults.standard.bool(forKey: fdaGrantedKey)
         self.hasFullDiskAccess = Self.checkFullDiskAccess()
         self.hasAccessibility = Self.checkAccessibility()
         self.hasAutomation = Self.checkAutomation()
         self.hasTrashAccess = Self.checkTrashAccess()
+        persistFDAState()
     }
     
     /// Checks if the application has Full Disk Access by attempting to read protected paths.
@@ -111,9 +117,18 @@ public final class PermissionsManager {
         hasAccessibility = Self.checkAccessibility()
         hasAutomation = Self.checkAutomation()
         hasTrashAccess = Self.checkTrashAccess()
-        
+        persistFDAState()
+
         if hasFullDiskAccess && showGuidance {
             showGuidance = false
+        }
+    }
+
+    /// Persists the Full Disk Access grant so the app remembers it across launches.
+    private func persistFDAState() {
+        if hasFullDiskAccess {
+            fdaEverGranted = true
+            UserDefaults.standard.set(true, forKey: fdaGrantedKey)
         }
     }
     
@@ -185,5 +200,17 @@ public final class PermissionsManager {
     /// Temporarily dismisses the guidance (will show again next launch).
     public func dismissGuidanceTemporarily() {
         showGuidance = false
+    }
+
+    /// Re-enables the permission guidance after a permanent dismissal and shows it,
+    /// for when the user changes their mind (e.g. from Settings).
+    public func requestGuidanceAgain() {
+        guidanceDismissed = false
+        UserDefaults.standard.set(false, forKey: userDefaultsKey)
+        refresh()
+        if !hasFullDiskAccess {
+            showGuidance = true
+        }
+        Logger.permissions.info("Guidance re-enabled by user")
     }
 }

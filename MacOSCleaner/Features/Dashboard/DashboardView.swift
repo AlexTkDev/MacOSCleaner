@@ -3,7 +3,6 @@ import Charts
 
 struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
     init(journal: TransactionJournal) {
         _viewModel = StateObject(wrappedValue: DashboardViewModel(journal: journal))
@@ -22,7 +21,6 @@ struct DashboardView: View {
                 }
                 .padding(24)
             }
-            .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
         }
         .task {
             await viewModel.refresh()
@@ -51,7 +49,7 @@ struct DashboardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect()
+        .glassCard()
     }
     
     private var diskUsageCard: some View {
@@ -85,7 +83,7 @@ struct DashboardView: View {
             }
         }
         .padding()
-        .glassEffect()
+        .glassCard()
     }
     
     private var statsCard: some View {
@@ -101,7 +99,7 @@ struct DashboardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect()
+        .glassCard()
     }
     
     private var recentOperationsSection: some View {
@@ -114,7 +112,7 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
-                    .glassEffect()
+                    .glassCard()
             } else {
                 VStack(spacing: 0) {
                     ForEach(viewModel.recentTransactions) { transaction in
@@ -124,7 +122,7 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .glassEffect()
+                .glassCard()
             }
         }
     }

@@ -150,7 +150,9 @@ private func scanHelpers(url: URL) async -> Set<String> {
     return Set(helperNames.map { $0.deletingPathExtension().lastPathComponent })
 }
 
-private let vendorStopwords: Set<String> = ["com", "org", "net", "io", "app", "co", "inc", "ltd", "llc", "uk", "us", "eu"]
+// "apple" is a stopword: deriving vendor "Apple" from com.apple.* bundle IDs makes
+// OS-owned dirs like /Library/Application Support/Apple match as residuals.
+private let vendorStopwords: Set<String> = ["com", "org", "net", "io", "app", "co", "inc", "ltd", "llc", "uk", "us", "eu", "apple"]
 
 private func deriveVendorNames(bundleID: String, appName: String, authority: String?) -> Set<String> {
     var names = Set<String>()
@@ -161,7 +163,7 @@ private func deriveVendorNames(bundleID: String, appName: String, authority: Str
         names.insert(p.capitalized)
         names.insert(p.prefix(1).uppercased() + p.dropFirst())
     }
-    if let first = parts.first(where: { !vendorStopwords.contains($0.lowercased()) }) {
+    if let first = parts.first(where: { $0.count >= 4 && !vendorStopwords.contains($0.lowercased()) }) {
         names.insert(first.capitalized)
     }
 

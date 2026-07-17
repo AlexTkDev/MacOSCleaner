@@ -6,6 +6,125 @@ extension CleanupCategory {
         "category.\(rawValue)".localized
     }
 
+    public var previewLabels: Set<String> {
+        var labels: Set<String> = [localizedTitle]
+
+        switch self {
+        case .appCaches:
+            labels.insert("App caches")
+            labels.insert("Selected app caches")
+        case .packageManagers:
+            labels.insert("Package managers")
+            labels.formUnion(["Homebrew cache", "npm cache", "yarn cache", "pnpm store", "CocoaPods cache"])
+        case .gradleMaven:
+            labels.insert("Gradle caches + wrapper + daemon")
+        case .flutterDart:
+            labels.insert("Dart/Flutter package caches")
+        case .xcode:
+            labels.insert("Xcode cleanup")
+        case .iosSimulators:
+            labels.insert("Simulator caches")
+        case .androidCaches:
+            labels.insert("Android build caches")
+        case .androidSDK:
+            labels.insert("Android SDK cleanup")
+        case .ideCaches:
+            labels.insert("IDE / Electron caches")
+        case .browserCaches:
+            labels.insert("Browser caches")
+        case .messagingMedia:
+            labels.insert("Messaging / media caches")
+        case .docker:
+            labels.insert("Docker")
+        case .languageCaches:
+            labels.insert("Language caches")
+        case .userLogs:
+            labels.insert("User logs")
+        case .systemCaches:
+            labels.insert("System caches")
+        case .appContainers:
+            labels.insert("App container caches")
+        case .dotfileCaches:
+            labels.insert("Dotfile caches")
+        case .scatteredJunk:
+            labels.insert("Scattered junk")
+        case .orphanedRemnants:
+            labels.insert("Orphaned remnants")
+        case .orphanedFiles:
+            labels.insert("Orphaned files")
+        case .largeFiles:
+            labels.insert("Large files")
+        case .dynamicCacheDiscovery:
+            labels.formUnion(["Dynamic cache discovery", "Auto-cleanable", "Review manually"])
+        case .timeMachineSnapshots:
+            labels.insert("Time Machine Snapshots")
+        case .iosBackups:
+            labels.insert("iOS Backups")
+        case .mailDownloads:
+            labels.insert("Mail Downloads")
+        case .savedAppState:
+            labels.insert("Saved Application State")
+        case .crashReporter:
+            labels.insert("Crash Reporter")
+        case .assetsV2:
+            labels.insert("AssetsV2 / iWork Templates")
+        case .cloudKitCache:
+            labels.insert("CloudKit Cache")
+        case .swiftPMCache:
+            labels.insert("Swift Package Manager Cache")
+        case .carthageCache:
+            labels.insert("Carthage Cache")
+        case .steamCache:
+            labels.insert("Steam Cache")
+        case .teamsCache:
+            labels.insert("Microsoft Teams Cache")
+        case .adobeCaches:
+            labels.insert("Adobe Caches")
+        case .chromeExtraCaches:
+            labels.insert("Chrome Extra Caches")
+        case .ideOldVersions:
+            labels.insert("Old IDE versions")
+        case .launchAgents:
+            labels.insert("Launch Agents")
+        case .launchDaemons:
+            labels.insert("Launch Daemons")
+        case .privilegedHelpers:
+            labels.insert("Privileged Helper Tools")
+        case .pkgReceipts:
+            labels.insert("Package Receipts")
+        case .internetPlugins:
+            labels.insert("Internet Plugins")
+        case .sharedFileLists:
+            labels.insert("Shared File Lists")
+        case .cloudDocs:
+            labels.insert("Cloud Docs")
+        case .photosCache:
+            labels.insert("Photos Cache")
+        case .voiceMemos:
+            labels.insert("Voice Memos")
+        case .garageBandLogic:
+            labels.insert("GarageBand / Logic Pro")
+        case .iMovieFinalCut:
+            labels.insert("iMovie / Final Cut")
+        case .garminFitbit:
+            labels.insert("Garmin / Fitbit")
+        case .oldBackups:
+            labels.insert("Old Backups")
+        case .dnsFlush:
+            labels.insert("DNS Cache")
+        case .fontCache:
+            labels.insert("Font Cache")
+        case .sleepImage:
+            labels.insert("Sleep Image")
+        case .duplicateFiles:
+            labels.insert("Duplicate Files")
+        case .unusedApps:
+            labels.insert("Unused Apps")
+        }
+
+        return labels
+    }
+
     public static func fromFixturePathType(_ pathType: CleanupPathType) -> [CleanupCategory] {
         switch pathType {
         case .caches:

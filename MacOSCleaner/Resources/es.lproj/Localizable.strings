@@ -360,6 +360,7 @@
 "settings_fda_description" = "Necesario para limpiar cachés del sistema y datos de aplicaciones.";
 "settings_open_settings" = "Abrir ajustes";
 "settings_check_permissions" = "Verificar permisos";
+"settings_show_permission_guide" = "Conceder acceso total al disco";
 
 // Format strings
 "dashboard_used_percent_format" = "%lld%%";

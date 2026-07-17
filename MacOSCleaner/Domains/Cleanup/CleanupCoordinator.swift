@@ -157,7 +157,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     try await self.trashManager.requestTrashAccess()
                 }
                 
-                let categories = options.categories()
+                let categories = self.itemManager.selectedCleanupCategories(from: options.categories())
                 var records: [OperationRecord] = []
                 
                 let results = try await self.engine.run(categories: categories, dryRun: false, options: options) { [weak self] event in

@@ -10,6 +10,10 @@ public struct SafetyManager: Sendable {
     private let refuseList: [String]
     private let allowedExceptions: [String]
 
+    // OS-owned dirs living inside allowed exception roots (e.g. /Library/Application Support).
+    // Checked before exceptions, so they can never be deleted.
+    private let hardRefuseList: [String]
+
     public init(allowedExceptions: [String] = []) {
         let home = NSHomeDirectory()
         self.refuseList = [
@@ -78,6 +82,12 @@ public struct SafetyManager: Sendable {
         ]
         
         self.allowedExceptions = defaultExceptions + allowedExceptions
+
+        self.hardRefuseList = [
+            "/Library/Application Support/Apple",
+            "/Library/Application Support/Script Editor",
+            "\(home)/Library/Application Support/Apple",
+        ]
     }
 
     public func validate(url: URL) throws {
@@ -97,6 +107,10 @@ public struct SafetyManager: Sendable {
         let pathsToCheck = [path, resolvedPath]
         
         for p in pathsToCheck {
+            for refused in hardRefuseList where p == refused || p.hasPrefix(refused + "/") {
+                throw SafetyError.protectedPath(refused)
+            }
+
             let isException = allowedExceptions.contains { exception in
                 p == exception || p.hasPrefix(exception + "/")
             }

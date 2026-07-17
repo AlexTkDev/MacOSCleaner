@@ -343,6 +343,7 @@
 "settings_fda_description" = "Необхідний для очищення системних кешів та даних додатків.";
 "settings_open_settings" = "Відкрити налаштування";
 "settings_check_permissions" = "Перевірити дозволи";
+"settings_show_permission_guide" = "Надати повний доступ до диска";
 
 /* Format strings */
 "dashboard_used_percent_format" = "%lld%%";
