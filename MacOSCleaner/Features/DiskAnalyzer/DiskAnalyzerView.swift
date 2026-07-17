@@ -325,7 +325,7 @@ struct DiskItemRow: View {
         case .photo: return "photo.fill"
         case .apps: return "app.badge.fill"
         case .docs: return "doc.text.fill"
-        case .archives: return "doc.zip.fill"
+        case .archives: return "doc.zipper"
         default: return "doc.fill"
         }
     }

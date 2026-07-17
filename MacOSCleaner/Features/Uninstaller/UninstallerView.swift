@@ -309,7 +309,8 @@ struct UninstallerView: View {
                     }
                 }
                 
-                Spacer(minLength: 40)
+                Spacer()
+                    .frame(height: 20)
                 
                 // Action Area
                 ViewThatFits(in: .horizontal) {
