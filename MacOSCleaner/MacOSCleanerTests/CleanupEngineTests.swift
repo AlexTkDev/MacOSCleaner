@@ -782,6 +782,25 @@ struct CleanupEngineTests {
         #expect(manager.selectedSizeBytes == 30_000_000_000)
     }
 
+    @Test("Directory size uses allocated bytes not logical APFS clone size")
+    func directorySizeUsesAllocatedBytes() async throws {
+        let dir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerPhysicalSize_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        // Sparse file: logical 100 MB, allocated ~0
+        let sparse = dir.appendingPathComponent("sparse.bin")
+        FileManager.default.createFile(atPath: sparse.path, contents: nil)
+        let handle = try FileHandle(forWritingTo: sparse)
+        try handle.truncate(atOffset: 100 * 1024 * 1024)
+        try handle.close()
+
+        let cache = DirectorySizeCache()
+        let size = await cache.getSize(for: dir.path)
+        #expect(size < 5 * 1024 * 1024, "Must use allocated size, got \(size)")
+    }
+
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {

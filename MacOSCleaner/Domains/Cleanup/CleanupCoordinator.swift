@@ -71,6 +71,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 try self.stateMachine.transition(to: .scanning)
                 self.itemManager.clear()
+                FileManager.clearSizeCache()
                 self.lastError = nil
                 self.scriptLogs = []
                 self.pendingLogs = []

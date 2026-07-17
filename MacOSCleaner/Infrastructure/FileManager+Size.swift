@@ -137,15 +137,23 @@ extension FileManager {
                 continue
             }
 
-            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]),
-                  let fileSize = values.fileSize else { continue }
+            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
+                continue
+            }
 
-            if let allocated = values.totalFileAllocatedSize, allocated > 0,
+            if let fileSize = values.fileSize,
+               let allocated = values.totalFileAllocatedSize, allocated > 0,
                fileSize / allocated >= FileManager.sparseFileRatioThreshold {
                 continue
             }
 
-            size += Int64(fileSize)
+            // Prefer allocated (physical) size — APFS clones inflate logical fileSize.
+            // allocated == 0 is valid for sparse files; only fall back if key is missing.
+            if let allocated = values.totalFileAllocatedSize {
+                size += Int64(allocated)
+            } else if let fileSize = values.fileSize {
+                size += Int64(fileSize)
+            }
         }
 
         FileManager._sizeCacheLock.lock()
