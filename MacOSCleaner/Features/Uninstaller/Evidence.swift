@@ -23,6 +23,7 @@ public enum Evidence: String, Sendable, Hashable, CaseIterable {
     case xpcConnection
 
     case packageReceipt
+    case knownCatalog
     case plistContent
 
     case spotlight
@@ -61,7 +62,7 @@ public extension Evidence {
         case .launchAgent, .launchDaemon, .loginItem,
              .appGroup, .container, .extension, .xpcConnection:
             return .system
-        case .packageReceipt, .plistContent:
+        case .packageReceipt, .knownCatalog, .plistContent:
             return .metadata
         case .spotlight, .spotlightBundleAttr, .spotlightCreator:
             return .content

@@ -4,6 +4,8 @@ public struct CandidateCollection: Sendable {
     public let candidates: Set<URL>
     /// Subset of `candidates` that came from a pkgutil receipt — guaranteed app files.
     public let receiptPaths: Set<URL>
+    /// Subset from KnownResidualCatalog — high-confidence curated residuals.
+    public let catalogPaths: Set<URL>
 }
 
 public actor CandidateCollector {
@@ -37,11 +39,27 @@ public actor CandidateCollector {
             "\(home)/Library/Saved Application State",
             "\(home)/Library/Application Scripts",
             "\(home)/Library/Logs",
+            "\(home)/Library/Logs/DiagnosticReports",
+            "\(home)/Library/Cookies",
+            "\(home)/Library/Internet Plug-Ins",
+            "\(home)/Library/QuickLook",
+            "\(home)/Library/Application Support/CrashReporter",
             "\(home)/Library/LaunchAgents",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
             "/Library/Preferences",
             "/Library/Application Support",
+            "/Library/PrivilegedHelperTools",
+            "/Library/Internet Plug-Ins",
+            "/Library/QuickLook",
+            "/Library/Spotlight",
+            "/Library/PreferencePanes",
+            "/Library/Input Methods",
+            "/Library/Logs/DiagnosticReports",
+            "/Library/Audio/Plug-Ins/HAL",
+            "/Library/Audio/Plug-Ins/Components",
+            "/Library/Audio/Plug-Ins/VST",
+            "/Library/Audio/Plug-Ins/VST3",
             "\(home)/Library/Developer",
         ]
 
@@ -201,7 +219,21 @@ public actor CandidateCollector {
         // 15. Browser vendor folders (Google/Chrome, Mozilla/Firefox, …)
         candidates.formUnion(await collectBrowserVendorPaths(identity: identity, home: home, maxDepth: maxDepth))
 
-        return CandidateCollection(candidates: candidates, receiptPaths: receiptPaths)
+        // 16. Known residual catalog (exact/glob templates for problematic apps)
+        let catalogPaths = collectCatalogPaths(identity: identity, home: home)
+        candidates.formUnion(catalogPaths)
+
+        return CandidateCollection(candidates: candidates, receiptPaths: receiptPaths, catalogPaths: catalogPaths)
+    }
+
+    private func collectCatalogPaths(identity: AppIdentity, home: String) -> Set<URL> {
+        var found = Set<URL>()
+        for template in KnownResidualCatalog.pathTemplates(for: identity) {
+            for path in KnownResidualCatalog.expand(template: template, home: home, fileManager: fileManager) {
+                found.insert(URL(fileURLWithPath: path))
+            }
+        }
+        return found
     }
 
     /// Files recorded in installer receipts for packages whose id matches the bundle ID.
@@ -341,14 +373,35 @@ public actor CandidateCollector {
     /// Google Chrome lives under ~/Library/.../Google/Chrome, not a top-level "Google Chrome" folder.
     private func collectBrowserVendorPaths(identity: AppIdentity, home: String, maxDepth: Int) async -> Set<URL> {
         let bid = identity.bundleID.lowercased()
+        let app = identity.appName.lowercased()
         var vendorRoots: [(vendor: String, product: String?)] = []
 
-        if bid.contains("google") && (bid.contains("chrome") || identity.appName.lowercased().contains("chrome")) {
+        if bid.contains("google") && (bid.contains("chrome") || app.contains("chrome")) {
             vendorRoots.append(("Google", "Chrome"))
-        } else if bid.contains("mozilla") || identity.appName.lowercased().contains("firefox") {
+        } else if bid.contains("mozilla") || app.contains("firefox") {
             vendorRoots.append(("Mozilla", nil))
-        } else if bid.contains("microsoft.edgemac") || identity.appName.lowercased().contains("edge") {
+            vendorRoots.append(("Firefox", nil))
+        } else if bid.contains("microsoft.edgemac") || app.contains("edge") {
             vendorRoots.append(("Microsoft Edge", nil))
+        } else if bid.contains("brave") || app.contains("brave") {
+            vendorRoots.append(("BraveSoftware", nil))
+            vendorRoots.append(("BraveSoftware", "Brave-Browser"))
+        } else if bid.contains("operasoftware") || app.contains("opera") {
+            vendorRoots.append(("com.operasoftware.Opera", nil))
+            vendorRoots.append(("Opera Software", nil))
+            vendorRoots.append(("Opera", nil))
+        } else if bid.contains("vivaldi") || app.contains("vivaldi") {
+            vendorRoots.append(("Vivaldi", nil))
+        } else if bid.contains("thebrowser") || app == "arc" {
+            vendorRoots.append(("Arc", nil))
+        } else if bid.contains("chromium") || app.contains("chromium") {
+            vendorRoots.append(("Chromium", nil))
+        } else if bid.contains("torproject") || app.contains("tor") {
+            vendorRoots.append(("TorBrowser-Data", nil))
+        } else if bid.contains("duckduckgo") {
+            vendorRoots.append(("DuckDuckGo", nil))
+        } else if bid.contains("yandex") {
+            vendorRoots.append(("Yandex", nil))
         }
 
         var found = Set<URL>()

@@ -522,6 +522,8 @@
 "uninstaller.evidence.xpcConnection.description" = "XPC-з'єднання, яке використовує додаток.";
 "uninstaller.evidence.packageReceipt.title" = "Квитанція пакета";
 "uninstaller.evidence.packageReceipt.description" = "Зареєстровано через квитанцію пакета.";
+"uninstaller.evidence.knownCatalog.title" = "Відомий залишок";
+"uninstaller.evidence.knownCatalog.description" = "Вказано в каталозі залишків для цього додатка.";
 "uninstaller.evidence.plistContent.title" = "Вміст Plist";
 "uninstaller.evidence.plistContent.description" = "Plist містить назву або Bundle ID додатка.";
 "uninstaller.evidence.spotlight.title" = "Індекс Spotlight";

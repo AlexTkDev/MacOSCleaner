@@ -536,6 +536,8 @@
 "uninstaller.evidence.xpcConnection.description" = "An XPC connection used by the app.";
 "uninstaller.evidence.packageReceipt.title" = "Package Receipt";
 "uninstaller.evidence.packageReceipt.description" = "Registered via a package receipt.";
+"uninstaller.evidence.knownCatalog.title" = "Known Residual";
+"uninstaller.evidence.knownCatalog.description" = "Listed in the curated residual catalog for this app.";
 "uninstaller.evidence.plistContent.title" = "Plist Content";
 "uninstaller.evidence.plistContent.description" = "Property list contains the app's name or bundle ID.";
 "uninstaller.evidence.spotlight.title" = "Spotlight Index";

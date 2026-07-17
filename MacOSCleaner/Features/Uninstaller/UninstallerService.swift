@@ -243,6 +243,9 @@ public actor UninstallerService {
             if collection.receiptPaths.contains(url) {
                 evidences.insert(.packageReceipt)
             }
+            if collection.catalogPaths.contains(url) {
+                evidences.insert(.knownCatalog)
+            }
             await graph.record(evidences, for: url)
 
             // Attach via ParentLinker

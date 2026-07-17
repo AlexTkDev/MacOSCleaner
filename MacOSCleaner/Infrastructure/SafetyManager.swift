@@ -89,6 +89,11 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Application Support/Chrome/Default/Cookies",
             "\(home)/Library/Application Support/Google/Chrome/Default/Login Data",
             "\(home)/Library/Application Support/Google/Chrome/Default/Cookies",
+            // TCC / system integrity (cleanup.json never_delete)
+            "\(home)/Library/Application Support/com.apple.TCC",
+            "/Library/Application Support/com.apple.TCC",
+            "/var/db/dslocal",
+            "/private/var/db/dslocal",
         ]
 
         // Note: roots whose *contents* cleanup legitimately clears (Saved Application

@@ -2,7 +2,7 @@ import Foundation
 
 public enum ConfidenceEngine {
     public static let criticalEvidence: Set<Evidence> = [
-        .bundleIDExact, .bundleIDPrefix, .packageReceipt,
+        .bundleIDExact, .bundleIDPrefix, .packageReceipt, .knownCatalog,
         .spotlightBundleAttr, .loginItem,
     ]
 
@@ -13,8 +13,8 @@ public enum ConfidenceEngine {
         var tier: ConfidenceTier
         if score >= 100 {
             if evidence.contains(.bundleIDExact) || evidence.contains(.bundleIDPrefix)
-                || evidence.contains(.packageReceipt) || evidence.contains(.spotlightBundleAttr)
-                || evidence.contains(.loginItem)
+                || evidence.contains(.packageReceipt) || evidence.contains(.knownCatalog)
+                || evidence.contains(.spotlightBundleAttr) || evidence.contains(.loginItem)
                 || ruleScore >= 100
                 || (evidence.contains(.teamID) && (evidence.contains(.launchAgent) || evidence.contains(.launchDaemon)
                     || evidence.contains(.extension) || evidence.contains(.appGroup) || evidence.contains(.container))) {

@@ -615,6 +615,42 @@ extension CleanupEngine {
         try await fileActor.cleanContentsParallel(paths, dryRun: dryRun, progress: progress)
     }
 
+    /// Absolute existing paths from EmbeddedCleanupPaths (+ GeneratedCleanupPaths merge).
+    func resolvedEmbeddedPaths(for category: CleanupCategory) -> [String] {
+        let home = fm.homeDirectoryForCurrentUser.path
+        var result: [String] = []
+        var seen = Set<String>()
+        for entry in EmbeddedCleanupPaths.paths(for: category) {
+            for path in CleanupPathExpander.expand(entry.path, home: home, fileManager: fm) {
+                if seen.insert(path).inserted {
+                    result.append(path)
+                }
+            }
+        }
+        return result
+    }
+
+    func cleanFromEmbeddedPaths(
+        _ category: CleanupCategory,
+        label: String,
+        dryRun: Bool,
+        progress: (@Sendable (CleanupEngineEvent) -> Void)?
+    ) async throws -> [CleanupEngineResult] {
+        let paths = resolvedEmbeddedPaths(for: category)
+        progress?(.log("Scanning \(label) (\(paths.count) paths)..."))
+        var totalFreed: Int64 = 0
+        for path in paths {
+            try Task.checkCancellation()
+            let (freed, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
+            totalFreed += freed
+            if dryRun { emitFileItem(item, category: label, parentName: nil, progress: progress) }
+        }
+        let mb = Int(totalFreed / (1024 * 1024))
+        progress?(.log("\(label) total: \(Self.formatBytes(totalFreed))"))
+        progress?(.result(label: label, freedMB: mb))
+        return [CleanupEngineResult(label: label, freedMB: mb)]
+    }
+
     func withUserPath(_ command: String) async -> String {
         await processActor.withUserPath(command)
     }
@@ -1179,149 +1215,7 @@ extension CleanupEngine {
 
     func cleanIDECaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         let home = fm.homeDirectoryForCurrentUser.path
-
-        let ideDirs = [
-            // Cursor
-            "\(home)/Library/Application Support/Cursor/Cache",
-            "\(home)/Library/Application Support/Cursor/CachedData",
-            "\(home)/Library/Application Support/Cursor/Code Cache",
-            "\(home)/Library/Application Support/Cursor/CachedExtensionVSIXs",
-            "\(home)/Library/Application Support/Cursor/User/workspaceStorage",
-            "\(home)/Library/Application Support/Cursor/Crashpad",
-            "\(home)/Library/Application Support/Cursor/Session Storage",
-            "\(home)/Library/Application Support/Cursor/Service Worker",
-            // VS Code
-            "\(home)/Library/Application Support/Code/Cache",
-            "\(home)/Library/Application Support/Code/CachedData",
-            "\(home)/Library/Application Support/Code/CachedExtensionVSIXs",
-            "\(home)/Library/Application Support/Code/User/workspaceStorage",
-            "\(home)/Library/Application Support/Code/Crashpad",
-            "\(home)/Library/Application Support/Code/Session Storage",
-            "\(home)/Library/Application Support/Code/Service Worker",
-            // VS Code Insiders
-            "\(home)/Library/Application Support/Code - Insiders/Cache",
-            "\(home)/Library/Application Support/Code - Insiders/CachedData",
-            "\(home)/Library/Application Support/Code - Insiders/CachedExtensionVSIXs",
-            "\(home)/Library/Application Support/Code - Insiders/User/workspaceStorage",
-            "\(home)/Library/Application Support/Code - Insiders/Crashpad",
-            "\(home)/Library/Application Support/Code - Insiders/Session Storage",
-            "\(home)/Library/Application Support/Code - Insiders/Service Worker",
-            // Windsurf
-            "\(home)/Library/Application Support/Windsurf/Cache",
-            "\(home)/Library/Application Support/Windsurf/CachedData",
-            "\(home)/Library/Application Support/Windsurf/Code Cache",
-            "\(home)/Library/Application Support/Windsurf/CachedExtensionVSIXs",
-            "\(home)/Library/Application Support/Windsurf/User/workspaceStorage",
-            "\(home)/Library/Application Support/Windsurf/Crashpad",
-            "\(home)/Library/Application Support/Windsurf/Session Storage",
-            "\(home)/Library/Application Support/Windsurf/Service Worker",
-            // Zed
-            "\(home)/Library/Application Support/dev.zed.Zed/cache",
-            "\(home)/.config/zed/cache",
-            // opencode Desktop
-            "\(home)/Library/Application Support/ai.opencode.desktop/Cache",
-            "\(home)/Library/Application Support/ai.opencode.desktop/CachedData",
-            "\(home)/Library/Application Support/ai.opencode.desktop/Code Cache",
-            "\(home)/Library/Application Support/ai.opencode.desktop/CachedExtensionVSIXs",
-            "\(home)/Library/Application Support/ai.opencode.desktop/User/workspaceStorage",
-            "\(home)/Library/Application Support/ai.opencode.desktop/Crashpad",
-            "\(home)/Library/Application Support/ai.opencode.desktop/Session Storage",
-            "\(home)/Library/Application Support/ai.opencode.desktop/Service Worker",
-            // Nova (Panic)
-            "\(home)/Library/Application Support/Nova/Caches",
-            "\(home)/Library/Caches/com.panic.Nova",
-            // Sublime Text 4
-            "\(home)/Library/Application Support/Sublime Text/Cache",
-            "\(home)/Library/Application Support/Sublime Text/Index",
-            "\(home)/Library/Application Support/Sublime Text/Package Control.cache",
-            "\(home)/Library/Caches/com.sublimetext.4",
-            // Sublime Merge
-            "\(home)/Library/Caches/com.sublimetext.sublime-merge",
-            // Atom (legacy)
-            "\(home)/Library/Application Support/Atom/Cache",
-            "\(home)/Library/Application Support/Atom/CachedData",
-            "\(home)/Library/Application Support/Atom/Crashpad",
-            "\(home)/Library/Caches/com.github.atom",
-            // Gemini
-            "\(home)/Library/Application Support/Gemini/Cache",
-            "\(home)/Library/Application Support/Gemini/CachedData",
-            "\(home)/Library/Application Support/Gemini/Session Storage",
-            // Perplexity
-            "\(home)/Library/Application Support/Perplexity/Cache",
-            "\(home)/Library/Application Support/Perplexity/CachedData",
-            "\(home)/Library/Application Support/Perplexity/Session Storage",
-            // GitHub Desktop
-            "\(home)/Library/Application Support/GitHub Desktop/Cache",
-            "\(home)/Library/Application Support/GitHub Desktop/CachedData",
-            "\(home)/Library/Application Support/GitHub Desktop/Code Cache",
-            "\(home)/Library/Application Support/GitHub Desktop/Session Storage",
-            // 1Password
-            "\(home)/Library/Caches/com.1password.1password",
-            "\(home)/Library/Caches/com.agilebits.onepassword7",
-            // Tower (Git client)
-            "\(home)/Library/Caches/com.fournova.Tower3",
-            // TablePlus
-            "\(home)/Library/Caches/com.tinyapp.TablePlus",
-            // Insomnia
-            "\(home)/Library/Application Support/Insomnia/Cache",
-            "\(home)/Library/Application Support/Insomnia/CachedData",
-            "\(home)/Library/Application Support/Insomnia/Code Cache",
-            // Claude
-            "\(home)/Library/Application Support/Claude/Cache",
-            "\(home)/Library/Application Support/Claude/CachedData",
-            "\(home)/Library/Application Support/Claude/Code Cache",
-            "\(home)/Library/Application Support/Claude/Session Storage",
-            "\(home)/Library/Application Support/Claude/Service Worker",
-            "\(home)/Library/Application Support/Claude/Crashpad",
-            "\(home)/Library/Application Support/Claude/GPUCache",
-            // ChatGPT
-            "\(home)/Library/Application Support/ChatGPT/Cache",
-            "\(home)/Library/Application Support/ChatGPT/CachedData",
-            "\(home)/Library/Application Support/ChatGPT/Code Cache",
-            "\(home)/Library/Application Support/ChatGPT/Session Storage",
-            "\(home)/Library/Application Support/ChatGPT/Service Worker",
-            "\(home)/Library/Application Support/ChatGPT/Crashpad",
-            "\(home)/Library/Application Support/ChatGPT/GPUCache",
-            // Slack
-            "\(home)/Library/Application Support/Slack/Cache",
-            "\(home)/Library/Application Support/Slack/CachedData",
-            "\(home)/Library/Application Support/Slack/Code Cache",
-            "\(home)/Library/Application Support/Slack/Service Worker",
-            "\(home)/Library/Application Support/Slack/Session Storage",
-            // Discord
-            "\(home)/Library/Application Support/discord/Cache",
-            "\(home)/Library/Application Support/discord/CachedData",
-            "\(home)/Library/Application Support/discord/Code Cache",
-            "\(home)/Library/Application Support/discord/Session Storage",
-            "\(home)/Library/Application Support/discord/Crashpad",
-            // Figma
-            "\(home)/Library/Application Support/Figma/Cache",
-            "\(home)/Library/Application Support/Figma/CachedData",
-            "\(home)/Library/Application Support/Figma/Code Cache",
-            "\(home)/Library/Application Support/Figma/Session Storage",
-            // Notion
-            "\(home)/Library/Application Support/Notion/Cache",
-            "\(home)/Library/Application Support/Notion/CachedData",
-            "\(home)/Library/Application Support/Notion/Code Cache",
-            "\(home)/Library/Application Support/Notion/Session Storage",
-            // JetBrains logs
-            "\(home)/Library/Logs/JetBrains",
-            // Postman
-            "\(home)/Library/Application Support/Postman/Cache",
-            "\(home)/Library/Application Support/Postman/CachedData",
-            "\(home)/Library/Application Support/Postman/Code Cache",
-            "\(home)/Library/Application Support/Postman/Session Storage",
-            // Linear
-            "\(home)/Library/Application Support/Linear/Cache",
-            "\(home)/Library/Application Support/Linear/CachedData",
-            "\(home)/Library/Application Support/Linear/Code Cache",
-            "\(home)/Library/Application Support/Linear/Session Storage",
-            // JetBrains Toolbox
-            "\(home)/Library/Application Support/JetBrains/Toolbox/apps",
-            "\(home)/Library/Caches/JetBrains",
-            // Vivaldi
-            "\(home)/Library/Caches/com.vivaldi.Vivaldi",
-        ]
+        let ideDirs = resolvedEmbeddedPaths(for: .ideCaches)
 
         // Known apps to skip in dynamic discovery
         let knownApps: Set<String> = [
@@ -1553,36 +1447,7 @@ extension CleanupEngine {
     // MARK: 10. Browser Caches
 
     func cleanBrowserCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        let home = fm.homeDirectoryForCurrentUser.path
-        progress?(.log("Scanning browser caches..."))
-        let browserDirs = [
-            "\(home)/Library/Caches/com.apple.Safari",
-            "\(home)/Library/Safari/Favicon Cache",
-            "\(home)/Library/Caches/com.brave.Browser",
-            "\(home)/Library/Caches/com.operasoftware.Opera",
-            "\(home)/Library/Caches/com.microsoft.Edge",
-            "\(home)/Library/Caches/org.mozilla.firefox",
-            "\(home)/Library/Caches/Firefox",
-            "\(home)/Library/Caches/com.google.Chrome",
-            "\(home)/Library/Caches/com.google.Chrome.beta",
-            "\(home)/Library/Caches/com.apple.WebKit.Networking",
-            "\(home)/Library/Caches/BraveSoftware",
-            "\(home)/Library/Caches/com.vivaldi.Vivaldi",
-            "\(home)/Library/Caches/company.thebrowser.Browser",
-        ]
-
-        var totalFreed: Int64 = 0
-        for dir in browserDirs {
-            try Task.checkCancellation()
-            let (freed, item) = try await cleanContents(of: dir, dryRun: dryRun, progress: progress)
-            totalFreed += freed
-            if dryRun { emitFileItem(item, category: "Browser caches", parentName: nil, progress: progress) }
-        }
-
-        let mb = Int(totalFreed / (1024 * 1024))
-        progress?(.log("Browser caches total: \(Self.formatBytes(totalFreed))"))
-        progress?(.result(label: "Browser caches", freedMB: mb))
-        return [CleanupEngineResult(label: "Browser caches", freedMB: mb)]
+        try await cleanFromEmbeddedPaths(.browserCaches, label: "Browser caches", dryRun: dryRun, progress: progress)
     }
 
     // MARK: 11. Messaging / Media
@@ -1974,49 +1839,7 @@ extension CleanupEngine {
     // MARK: 17. Dotfile Caches
 
     func cleanDotfileCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        let home = fm.homeDirectoryForCurrentUser.path
-        progress?(.log("Scanning dotfile caches..."))
-        var freed: Int64 = 0
-
-        // AI CLI tools
-        let aiPaths = [
-            "\(home)/.config/opencode/cache",
-            "\(home)/.config/claude-cli/cache",
-            "\(home)/.config/gemini/cache",
-            "\(home)/.config/codex/cache",
-            "\(home)/.config/aider/cache",
-            "\(home)/.config/continue/cache",
-            "\(home)/.config/cody/cache",
-            "\(home)/.local/share/ollama/models",
-        ]
-
-        // Dev tool caches
-        let devPaths = [
-            "\(home)/.npm/_logs",
-            "\(home)/.terraform.d/cache",
-            "\(home)/.cache/helm/repository",
-            "\(home)/.cache/bazel",
-            "\(home)/.ccache",
-            "\(home)/.vcpkg/cache",
-        ]
-
-        // Local Trash
-        let trashPaths = [
-            "\(home)/.local/share/Trash",
-        ]
-
-        let allPaths = aiPaths + devPaths + trashPaths
-        for path in allPaths {
-            guard fm.fileExists(atPath: path) else { continue }
-            let (f, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
-            freed += f
-            if dryRun { emitFileItem(item, category: "Dotfile caches", parentName: nil, progress: progress) }
-        }
-
-        let mb = Int(freed / (1024 * 1024))
-        progress?(.log("Dotfile caches total: \(Self.formatBytes(freed))"))
-        progress?(.result(label: "Dotfile caches", freedMB: mb))
-        return [CleanupEngineResult(label: "Dotfile caches", freedMB: mb)]
+        try await cleanFromEmbeddedPaths(.dotfileCaches, label: "Dotfile caches", dryRun: dryRun, progress: progress)
     }
 
     // MARK: 18. Scattered Junk

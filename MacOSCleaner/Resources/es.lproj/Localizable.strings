@@ -539,6 +539,8 @@
 "uninstaller.evidence.xpcConnection.description" = "Una conexión XPC utilizada por la aplicación.";
 "uninstaller.evidence.packageReceipt.title" = "Recibo de paquete";
 "uninstaller.evidence.packageReceipt.description" = "Registrado mediante un recibo de paquete.";
+"uninstaller.evidence.knownCatalog.title" = "Residuo conocido";
+"uninstaller.evidence.knownCatalog.description" = "Incluido en el catálogo de residuos de esta aplicación.";
 "uninstaller.evidence.plistContent.title" = "Contenido de Plist";
 "uninstaller.evidence.plistContent.description" = "La lista de propiedades contiene el nombre o Bundle ID de la aplicación.";
 "uninstaller.evidence.spotlight.title" = "Índice de Spotlight";

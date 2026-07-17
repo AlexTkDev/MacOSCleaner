@@ -5,22 +5,41 @@ public struct BrowserRule: ApplicationRule {
     public let supportedBundleIDs: Set<String> = [
         "com.google.Chrome",
         "com.google.Chrome.canary",
-        "com.chromium.Chromium",
+        "org.chromium.Chromium",
         "com.brave.Browser",
+        "com.brave.Browser.beta",
+        "com.brave.Browser.nightly",
         "com.microsoft.edgemac",
-        "com.microsoft.edgemac.canary",
+        "com.microsoft.edgemac.Dev",
+        "com.microsoft.edgemac.Beta",
+        "com.microsoft.edgemac.Canary",
         "org.mozilla.firefox",
         "org.mozilla.firefoxdeveloperedition",
+        "org.mozilla.nightly",
         "company.thebrowser.Browser",
+        "com.operasoftware.Opera",
+        "com.operasoftware.OperaGX",
+        "com.operasoftware.OperaDeveloperEdition",
+        "com.vivaldi.Vivaldi",
+        "com.kagi.kagimacOS",
+        "org.torproject.torbrowser",
+        "com.duckduckgo.macos.browser",
+        "net.waterfox.waterfox",
+        "io.gitlab.librewolf-community",
+        "net.mullvad.MullvadBrowser",
+        "ru.yandex.desktop.yandex-browser",
     ]
     public let supportedTeamIDs: Set<String> = [
         "EQHXZ8M8AV",  // Google
         "BFYZ25A2P4",  // Brave
+        "G7HH3F8CAK",  // Opera?
     ]
     public let supportedAppNames: Set<String> = [
         "Google Chrome", "Chrome", "Chromium", "Brave Browser", "Brave",
-        "Microsoft Edge", "Edge", "Firefox", "Firefox Developer Edition",
-        "Arc",
+        "Microsoft Edge", "Edge", "Firefox", "Firefox Developer Edition", "Firefox Nightly",
+        "Arc", "Opera", "Opera GX", "Opera Developer", "Vivaldi",
+        "Orion", "Tor Browser", "DuckDuckGo", "Waterfox", "LibreWolf",
+        "Mullvad Browser", "Yandex",
     ]
 
     private let browserArtifactDirs: Set<String> = [
@@ -50,7 +69,6 @@ public struct BrowserRule: ApplicationRule {
             evidence.append(ArtifactEvidence(source: .appName, weight: 50))
         }
 
-        // Google Chrome: ~/Library/{Application Support,Caches,Logs}/Google/Chrome
         let bid = identity.bundleID.lowercased()
         if bid.contains("google") && bid.contains("chrome") {
             if path.contains("/application support/google/") || path.contains("/caches/google/") || path.contains("/logs/google/") {
@@ -60,6 +78,18 @@ public struct BrowserRule: ApplicationRule {
             }
             if path.contains("/caches/com.google.chrome") {
                 evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
+            }
+        }
+
+        if bid.contains("brave") {
+            if path.contains("/bravesoftware/") || path.contains("/caches/com.brave.") {
+                evidence.append(ArtifactEvidence(source: .rule, weight: 70))
+            }
+        }
+
+        if bid.contains("operasoftware") || bid.contains("vivaldi") || bid.contains("edgemac") {
+            if path.contains(bid) || path.contains("/\(identity.appName.lowercased())") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
             }
         }
 

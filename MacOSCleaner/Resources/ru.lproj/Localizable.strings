@@ -526,6 +526,8 @@
 "uninstaller.evidence.xpcConnection.description" = "XPC-соединение, используемое приложением.";
 "uninstaller.evidence.packageReceipt.title" = "Квитанция пакета";
 "uninstaller.evidence.packageReceipt.description" = "Зарегистрировано через квитанцию пакета.";
+"uninstaller.evidence.knownCatalog.title" = "Известный остаток";
+"uninstaller.evidence.knownCatalog.description" = "Указан в каталоге остатков для этого приложения.";
 "uninstaller.evidence.plistContent.title" = "Содержимое Plist";
 "uninstaller.evidence.plistContent.description" = "Plist содержит имя или Bundle ID приложения.";
 "uninstaller.evidence.spotlight.title" = "Индекс Spotlight";

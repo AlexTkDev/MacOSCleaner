@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 public struct CleanupPath: Sendable, Equatable, Hashable {
@@ -71,4 +72,43 @@ public enum CleanupPathType: String, Sendable {
     case cloudDocs = "cloud_docs"
     case sharedFileLists = "shared_file_lists"
     case developerArtifacts = "developer_artifacts"
+}
+
+public enum CleanupPathExpander {
+    /// Expands `~` and simple `*`/`?` path components; returns only existing paths.
+    public static func expand(_ template: String, home: String, fileManager: FileManager = .default) -> [String] {
+        let absolute = template.hasPrefix("~") ? home + template.dropFirst() : template
+        guard absolute.contains("*") || absolute.contains("?") else {
+            return fileManager.fileExists(atPath: absolute) ? [absolute] : []
+        }
+        var matches = [""]
+        for component in absolute.split(separator: "/", omittingEmptySubsequences: true).map(String.init) {
+            var next: [String] = []
+            if component.contains("*") || component.contains("?") {
+                for base in matches {
+                    let dir = base.isEmpty ? "/" : base
+                    guard let children = try? fileManager.contentsOfDirectory(atPath: dir) else { continue }
+                    for child in children where Self.fnmatch(pattern: component, string: child) {
+                        next.append(base + "/" + child)
+                    }
+                }
+            } else {
+                for base in matches {
+                    let candidate = base + "/" + component
+                    if fileManager.fileExists(atPath: candidate) { next.append(candidate) }
+                }
+            }
+            matches = next
+            if matches.isEmpty { return [] }
+        }
+        return matches
+    }
+
+    private static func fnmatch(pattern: String, string: String) -> Bool {
+        #if canImport(Darwin)
+        return Darwin.fnmatch(pattern, string, 0) == 0
+        #else
+        return string == pattern
+        #endif
+    }
 }

@@ -46,6 +46,8 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/WebKit/com.apple.Safari", category: .browserCaches),
         CleanupPath(path: "~/Library/WebKit/WebsiteData", category: .browserCaches),
         CleanupPath(path: "~/Library/Safari/Favicon Cache", category: .browserCaches),
+        CleanupPath(path: "~/Library/Safari/Touch Icons Cache", category: .browserCaches),
+        CleanupPath(path: "~/Library/Safari/Template Icons", category: .browserCaches),
         CleanupPath(path: "~/Library/Caches/com.brave.Browser", category: .browserCaches),
         CleanupPath(path: "~/Library/Caches/com.operasoftware.Opera", category: .browserCaches),
         CleanupPath(path: "~/Library/Caches/com.microsoft.Edge", category: .browserCaches),
@@ -453,33 +455,43 @@ public enum EmbeddedCleanupPaths {
     // MARK: - Accessor
 
     public static func paths(for category: CleanupCategory) -> [CleanupPath] {
+        let base: [CleanupPath]
         switch category {
-        case .appCaches: return appCaches
-        case .browserCaches: return browserCaches
-        case .messagingMedia: return messagingMedia
-        case .ideCaches: return ideCaches
-        case .languageCaches: return languageCaches
-        case .systemCaches: return systemCaches
-        case .dotfileCaches: return dotfileCaches
-        case .userLogs: return userLogs
-        case .savedAppState: return savedAppState
-        case .crashReporter: return crashReporter
-        case .mailDownloads: return mailDownloads
-        case .launchAgents: return launchAgents
-        case .launchDaemons: return launchDaemons
-        case .privilegedHelpers: return privilegedHelpers
-        case .pkgReceipts: return pkgReceipts
-        case .internetPlugins: return internetPlugins
-        case .sharedFileLists: return sharedFileLists
-        case .cloudDocs: return cloudDocs
-        case .photosCache: return photosCache
-        case .voiceMemos: return voiceMemos
-        case .garageBandLogic: return garageBandLogic
-        case .iMovieFinalCut: return iMovieFinalCut
-        case .garminFitbit: return garminFitbit
-        case .oldBackups: return oldBackups
-        default: return []
+        case .appCaches: base = appCaches
+        case .browserCaches: base = browserCaches
+        case .messagingMedia: base = messagingMedia
+        case .ideCaches: base = ideCaches
+        case .languageCaches: base = languageCaches
+        case .systemCaches: base = systemCaches
+        case .dotfileCaches: base = dotfileCaches
+        case .userLogs: base = userLogs
+        case .savedAppState: base = savedAppState
+        case .crashReporter: base = crashReporter
+        case .mailDownloads: base = mailDownloads
+        case .launchAgents: base = launchAgents
+        case .launchDaemons: base = launchDaemons
+        case .privilegedHelpers: base = privilegedHelpers
+        case .pkgReceipts: base = pkgReceipts
+        case .internetPlugins: base = internetPlugins
+        case .sharedFileLists: base = sharedFileLists
+        case .cloudDocs: base = cloudDocs
+        case .photosCache: base = photosCache
+        case .voiceMemos: base = voiceMemos
+        case .garageBandLogic: base = garageBandLogic
+        case .iMovieFinalCut: base = iMovieFinalCut
+        case .garminFitbit: base = garminFitbit
+        case .oldBackups: base = oldBackups
+        default: base = []
         }
+        let generated = GeneratedCleanupPaths.paths(for: category)
+        guard !generated.isEmpty else { return base }
+        var seen = Set(base.map(\.path))
+        var merged = base
+        for path in generated where !seen.contains(path.path) {
+            seen.insert(path.path)
+            merged.append(path)
+        }
+        return merged
     }
 
     public static func commands(for category: CleanupCategory) -> [CleanupCommand] {
