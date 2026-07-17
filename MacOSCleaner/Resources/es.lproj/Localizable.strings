@@ -484,6 +484,7 @@
 
 // Developer Components
 "developer.android_sdk" = "Android SDK";
+"developer.android_data" = "Datos de Android y dispositivos virtuales";
 "developer.gradle_cache" = "Caché de Gradle";
 "developer.xcode_derived_data" = "Xcode Derived Data";
 "developer.ios_simulators" = "Simuladores de iOS";

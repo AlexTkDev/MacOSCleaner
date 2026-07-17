@@ -175,7 +175,7 @@ public actor UninstallerService {
     }
 
     private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
-        try safetyManager.validate(url: url)
+        try safetyManager.validate(url: url, policy: .uninstall)
 
         let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
         await identityCache.set(bundleID: identity.bundleID, identity: identity)
@@ -270,7 +270,7 @@ public actor UninstallerService {
             let ruleScore = rule.evidence(for: node.url, identity: identity).reduce(0) { $0 + $1.weight }
             let assessment = ConfidenceEngine.assess(node.evidence, ruleScore: ruleScore, identity: identity)
             guard assessment.tier >= minimumTier else { continue }
-            guard (try? safetyManager.validate(url: node.url)) != nil else { continue }
+            guard (try? safetyManager.validate(url: node.url, policy: .uninstall)) != nil else { continue }
             guard !Self.isProtectedMailPath(node.url.path) else { continue }
             guard node.url.path != identity.bundleURL.path else { continue }
             guard !identity.bundleURL.path.hasPrefix(node.url.path + "/") else { continue }
@@ -280,7 +280,9 @@ public actor UninstallerService {
             guard fileManager.fileExists(atPath: node.url.path, isDirectory: &isDir) else { continue }
 
             let fileSize = await getDirectorySize(url: node.url)
-            let risk: DeletionRisk = node.url.path.contains("Preferences") ? .normal : .safe
+            // Browser user data carries logins/sessions — never label it "safe".
+            let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
+                ? .normal : .safe
 
             let file = RelatedFile(
                 url: node.url,
@@ -365,7 +367,7 @@ public actor UninstallerService {
         }
 
         if bypassTrash {
-            try safetyManager.validate(url: app.url)
+            try safetyManager.validate(url: app.url, policy: .uninstall)
             do {
                 try fileManager.removeItem(at: app.url)
                 Logger.uninstaller.info("Permanently removed: \(app.url.path, privacy: .public)")
@@ -375,7 +377,7 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    try safetyManager.validate(url: target)
+                    try safetyManager.validate(url: target, policy: .uninstall)
                     try fileManager.removeItem(at: target)
                     Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
@@ -384,7 +386,7 @@ public actor UninstallerService {
             }
         } else {
             do {
-                _ = try await trashManager.trashItem(at: app.url)
+                _ = try await trashManager.trashItem(at: app.url, policy: .uninstall)
                 Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
             } catch {
                 Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -392,7 +394,7 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    _ = try await trashManager.trashItem(at: target)
+                    _ = try await trashManager.trashItem(at: target, policy: .uninstall)
                     Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
                 } catch {
                     Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -471,16 +473,26 @@ public actor UninstallerService {
         for app in apps {
             let key = "\(app.bundleID ?? "")-\(app.name)"
             if let existing = merged[key] {
-                var mainApp = existing
-                if app.url.path.hasPrefix("/Applications") && !existing.url.path.hasPrefix("/Applications") {
-                    mainApp = app
-                }
-                merged[key] = mainApp
+                merged[key] = preferredApp(existing, app)
             } else {
                 merged[key] = app
             }
         }
         return Array(merged.values)
+    }
+
+    private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {
+        let lhsIsStandard = lhs.url.path.hasPrefix("/Applications/")
+        let rhsIsStandard = rhs.url.path.hasPrefix("/Applications/")
+        if lhsIsStandard != rhsIsStandard {
+            return rhsIsStandard ? rhs : lhs
+        }
+
+        let versionOrder = lhs.version.compare(rhs.version, options: .numeric)
+        if versionOrder != .orderedSame {
+            return versionOrder == .orderedAscending ? rhs : lhs
+        }
+        return lhs.url.path <= rhs.url.path ? lhs : rhs
     }
 
     private func dedupAndSort(_ items: [(file: RelatedFile, tier: ConfidenceTier)]) -> [RelatedFile] {

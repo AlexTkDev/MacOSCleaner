@@ -163,6 +163,68 @@ final class SafetyManagerTests: XCTestCase {
         }
     }
 
+    func testCleanupBlocksBrowserUserDataPaths() {
+        let blocked = [
+            "\(home!)/Library/Application Support/Google/Chrome",
+            "\(home!)/Library/Application Support/Google/Chrome/Default",
+            "\(home!)/Library/Application Support/Google/Chrome/Default/Login Data",
+            "\(home!)/Library/Application Support/Google/Chrome/Default/Network/Cookies",
+            "\(home!)/Library/Application Support/Google/Chrome/Profile 1/Cookies",
+            // Ancestor whose removal would take the profile root with it
+            "\(home!)/Library/Application Support/Google",
+            "\(home!)/Library/Application Support/BraveSoftware/Brave-Browser/Default/Web Data",
+            "\(home!)/Library/Application Support/Firefox/Profiles/abcd.default-release/logins.json",
+        ]
+        for path in blocked {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Cleanup must not delete \(path)")
+        }
+    }
+
+    func testCleanupAllowsBrowserCacheSubdirectories() {
+        let allowed = [
+            "\(home!)/Library/Application Support/Google/Chrome/Default/Cache",
+            "\(home!)/Library/Application Support/Google/Chrome/Default/Code Cache/js",
+            "\(home!)/Library/Application Support/Google/Chrome/GrShaderCache",
+            "\(home!)/Library/Application Support/Google/Chrome/Crashpad",
+            "\(home!)/Library/Application Support/Firefox/Profiles/abcd.default-release/cache2",
+        ]
+        for path in allowed {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertNoThrow(try safetyManager.validate(url: url), "Cleanup must allow cache path \(path)")
+        }
+    }
+
+    func testUninstallPolicyAllowsBrowserUserDataRemoval() {
+        let allowed = [
+            "\(home!)/Library/Application Support/Google/Chrome",
+            "\(home!)/Library/Application Support/Google/Chrome/Default",
+            "\(home!)/Library/Application Support/Google",
+        ]
+        for path in allowed {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertNoThrow(try safetyManager.validate(url: url, policy: .uninstall), "Uninstall must allow \(path)")
+        }
+        // Credential files stay hard-protected even during uninstall
+        let loginData = URL(fileURLWithPath: "\(home!)/Library/Application Support/Google/Chrome/Default/Login Data")
+        XCTAssertThrowsError(try safetyManager.validate(url: loginData, policy: .uninstall))
+    }
+
+    func testCleanupBlocksCredentialFilesInApplicationSupport() {
+        let blocked = [
+            "\(home!)/Library/Application Support/Slack/Cookies",
+            "\(home!)/Library/Application Support/Slack/Cookies-journal",
+            "\(home!)/Library/Application Support/SomeApp/Login Data",
+            "\(home!)/Library/Application Support/SomeApp/Local State",
+        ]
+        for path in blocked {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Cleanup must not delete \(path)")
+        }
+        let cache = URL(fileURLWithPath: "\(home!)/Library/Application Support/Slack/Cache")
+        XCTAssertNoThrow(try safetyManager.validate(url: cache))
+    }
+
     func testVirtualizationUserDataUnderDocumentsAllowed() {
         let vmPath = "\(home!)/Documents/my_project/Orbstack_files"
         let url = URL(fileURLWithPath: vmPath)

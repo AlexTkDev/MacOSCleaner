@@ -21,8 +21,8 @@ public actor TrashManager {
     }
     
     @discardableResult
-    public func trashItem(at url: URL) throws -> URL {
-        try safetyManager.validate(url: url)
+    public func trashItem(at url: URL, policy: DeletionPolicy = .cleanup) throws -> URL {
+        try safetyManager.validate(url: url, policy: policy)
         
         var resultingURL: NSURL?
         do {

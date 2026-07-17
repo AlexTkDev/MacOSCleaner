@@ -49,6 +49,20 @@ final class KnownResidualCatalogTests: XCTestCase {
         XCTAssertTrue(templates.contains { $0.contains("JetBrains") })
     }
 
+    func test_antigravityIncludesVerifiedDotDirectories() {
+        let templates = KnownResidualCatalog.pathTemplates(bundleID: "com.google.antigravity-ide")
+        XCTAssertTrue(templates.contains("~/.antigravity"))
+        XCTAssertTrue(templates.contains("~/.antigravity-ide"))
+        XCTAssertTrue(templates.contains("~/Library/Application Support/Antigravity IDE"))
+    }
+
+    func test_openCodeIncludesAppSpecificDataButNotSharedCLIConfig() {
+        let templates = KnownResidualCatalog.pathTemplates(bundleID: "ai.opencode.desktop")
+        XCTAssertTrue(templates.contains("~/Library/Application Support/ai.opencode.desktop"))
+        XCTAssertTrue(templates.contains("~/Library/Caches/ai.opencode.desktop.ShipIt"))
+        XCTAssertFalse(templates.contains { $0.hasPrefix("~/.config/opencode") })
+    }
+
     func test_safariExcludedFromCatalog() {
         XCTAssertTrue(KnownResidualCatalog.pathTemplates(bundleID: "com.apple.Safari").isEmpty)
     }

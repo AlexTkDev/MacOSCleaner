@@ -2097,6 +2097,10 @@ extension CleanupEngine {
 
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(scanDir)/\(entry)"
+                    guard (try? safetyManager.validate(url: URL(fileURLWithPath: entryPath))) != nil else {
+                        progress?(.log("  \(entry) — protected, skipped"))
+                        continue
+                    }
                     let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 { // > 1 MB
                         orphanCount += 1
@@ -2212,6 +2216,10 @@ extension CleanupEngine {
                 }
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(httpStorages)/\(entry)"
+                    guard (try? safetyManager.validate(url: URL(fileURLWithPath: entryPath))) != nil else {
+                        progress?(.log("  \(entry) — protected, skipped"))
+                        continue
+                    }
                     let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 {
                         if dryRun {
@@ -2234,6 +2242,10 @@ extension CleanupEngine {
                 if entry.hasPrefix("com.apple.") { continue }
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(cookiesDir)/\(entry)"
+                    guard (try? safetyManager.validate(url: URL(fileURLWithPath: entryPath))) != nil else {
+                        progress?(.log("  \(entry) — protected, skipped"))
+                        continue
+                    }
                     let entrySize = (try? fm.attributesOfItem(atPath: entryPath)[.size] as? Int64) ?? 0
                     if entrySize > 1024 * 1024 {
                         if dryRun {
@@ -2260,6 +2272,10 @@ extension CleanupEngine {
                 }
                 if !isEntryInstalled(entry, installedApps: installedApps) {
                     let entryPath = "\(webkitDir)/\(entry)"
+                    guard (try? safetyManager.validate(url: URL(fileURLWithPath: entryPath))) != nil else {
+                        progress?(.log("  \(entry) — protected, skipped"))
+                        continue
+                    }
                     let entrySize = await getDirectorySizeWithTimeout(entryPath, timeout: .seconds(5))
                     if entrySize > 1024 * 1024 {
                         if dryRun {
@@ -2841,7 +2857,8 @@ extension CleanupEngine {
 
         let chromeBase = "\(home)/Library/Application Support/Google/Chrome/Default"
         let chromeBaseRoot = "\(home)/Library/Application Support/Google/Chrome"
-        let subdirs = ["Cache", "Code Cache", "GPUCache", "Service Worker", "Session Storage"]
+        // Session Storage intentionally excluded: it holds per-site session state.
+        let subdirs = ["Cache", "Code Cache", "GPUCache", "Service Worker"]
         let rootSubdirs = ["GrShaderCache", "ShaderCache"]
 
         // Check if Chrome is running and warn

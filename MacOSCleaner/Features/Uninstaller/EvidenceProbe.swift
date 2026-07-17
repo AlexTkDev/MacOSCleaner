@@ -35,6 +35,10 @@ public actor EvidenceProbe {
         } else if lowerFileName.hasPrefix(lowerBundleID + ".") {
             evidence.insert(.bundleIDPrefix)
         }
+        if url.pathExtension.lowercased() == "app",
+           Bundle(url: url)?.bundleIdentifier?.lowercased() == lowerBundleID {
+            evidence.insert(.bundleIDExact)
+        }
 
         if lowerFileName == lowerAppName {
             evidence.insert(.appNameExact)

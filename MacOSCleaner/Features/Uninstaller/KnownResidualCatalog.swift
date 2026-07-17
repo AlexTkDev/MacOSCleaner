@@ -99,6 +99,24 @@ public enum KnownResidualCatalog {
                 "~/Library/Saved Application State/com.google.android.studio.savedState",
             ]
         ),
+        // MARK: Antigravity IDE
+        Entry(
+            name: "Antigravity IDE",
+            bundleIDs: ["com.google.antigravity-ide"],
+            bundleIDPrefixes: [],
+            pathTemplates: [
+                "~/.antigravity",
+                "~/.antigravity-ide",
+                "~/Library/Application Support/Antigravity IDE",
+                "~/Library/Application Support/com.google.antigravity-ide",
+                "~/Library/Caches/com.google.antigravity-ide",
+                "~/Library/Caches/com.google.antigravity-ide.ShipIt",
+                "~/Library/HTTPStorages/com.google.antigravity-ide",
+                "~/Library/Logs/Antigravity IDE",
+                "~/Library/Preferences/com.google.antigravity-ide*.plist",
+                "~/Library/Saved Application State/com.google.antigravity-ide.savedState",
+            ]
+        ),
         // MARK: Araxis Merge
         Entry(
             name: "Araxis Merge",
@@ -868,6 +886,20 @@ public enum KnownResidualCatalog {
                 "~/Library/Application Support/OmniWeb",
                 "~/Library/Caches/com.omnigroup.OmniWeb5",
                 "~/Library/Preferences/com.omnigroup.OmniWeb5.plist",
+            ]
+        ),
+        // MARK: OpenCode
+        Entry(
+            name: "OpenCode",
+            bundleIDs: ["ai.opencode.desktop"],
+            bundleIDPrefixes: [],
+            pathTemplates: [
+                "~/Library/Application Support/ai.opencode.desktop",
+                "~/Library/Caches/ai.opencode.desktop",
+                "~/Library/Caches/ai.opencode.desktop.ShipIt",
+                "~/Library/HTTPStorages/ai.opencode.desktop",
+                "~/Library/Preferences/ai.opencode.desktop*.plist",
+                "~/Library/Saved Application State/ai.opencode.desktop.savedState",
             ]
         ),
         // MARK: Opera

@@ -78,6 +78,25 @@ struct CleanupEngineTests {
         #expect(!FileManager.default.fileExists(atPath: file2.path))
     }
 
+    @Test("Clean contents preserves credential files")
+    func cleanContentsPreservesCredentialFiles() async throws {
+        let engine = CleanupEngine()
+        let dir = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/MacOSCleanerTests_Cred_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let cookies = dir.appendingPathComponent("Cookies")
+        let junk = dir.appendingPathComponent("junk.txt")
+        try "session".write(to: cookies, atomically: true, encoding: .utf8)
+        try "junk".write(to: junk, atomically: true, encoding: .utf8)
+
+        _ = try await engine.cleanContents(of: dir.path, dryRun: false)
+
+        #expect(FileManager.default.fileExists(atPath: cookies.path))
+        #expect(!FileManager.default.fileExists(atPath: junk.path))
+    }
+
     @Test("Clean contents dry run preserves files")
     func cleanContentsDryRunPreservesFiles() async throws {
         let engine = CleanupEngine()

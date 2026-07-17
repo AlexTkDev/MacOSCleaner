@@ -52,6 +52,10 @@ public actor FileCleanupActor {
         var removedCount = 0
         for item in contents {
             let itemURL = url.appendingPathComponent(item)
+            guard (try? safetyManager.validate(url: itemURL)) != nil else {
+                progress?(.log("  \(Self.shortPath(itemURL.path)) — protected, skipped"))
+                continue
+            }
             try? fm.removeItem(at: itemURL)
             removedCount += 1
         }

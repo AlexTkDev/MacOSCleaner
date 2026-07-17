@@ -311,6 +311,46 @@ final class EvidenceProbeTests: XCTestCase {
         XCTAssertFalse(EvidenceProbe.wordBoundaryMatch("searchmarquis", "arc"))
     }
 
+    func test_probe_appBundle_readsExactBundleIdentifier() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("EvidenceProbeTests-\(UUID().uuidString)", isDirectory: true)
+        let app = root.appendingPathComponent("Another Copy.app", isDirectory: true)
+        let contents = app.appendingPathComponent("Contents", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        let plist: [String: Any] = [
+            "CFBundleIdentifier": "org.python.IDLE",
+            "CFBundleName": "IDLE",
+            "CFBundleExecutable": "IDLE",
+        ]
+        let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        try data.write(to: contents.appendingPathComponent("Info.plist"))
+
+        let identity = AppIdentity(
+            bundleID: "org.python.IDLE",
+            appName: "IDLE 3",
+            bundleName: "IDLE",
+            bundleVersion: "3.14.6",
+            executableName: "IDLE",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/opt/homebrew/Cellar/python@3.14/3.14.6/IDLE 3.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: true,
+            vendorNames: ["python"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        let evidence = await EvidenceProbe(
+            commandRunner: runner,
+            codesignCache: CodesignCache(),
+            plistCache: PlistContentCache()
+        ).probe(url: app, identity: identity)
+        XCTAssertTrue(evidence.contains(.bundleIDExact))
+    }
+
     func test_probe_noEvidence() async {
         let codesignCache = CodesignCache()
         let plistCache = PlistContentCache()

@@ -4,10 +4,11 @@ public enum DeveloperComponentsDetector {
     public static func detect(
         appName: String,
         bundleID: String?,
-        fileManager: FileManager = .default
+        fileManager: FileManager = .default,
+        homeDirectory: URL? = nil
     ) async -> [UninstallerService.RelatedCleanupComponent] {
         let fm = fileManager
-        let home = NSHomeDirectory()
+        let home = (homeDirectory ?? fm.homeDirectoryForCurrentUser).path
         var components: [UninstallerService.RelatedCleanupComponent] = []
         let lowerName = appName.lowercased()
         let lowerID = bundleID?.lowercased() ?? ""
@@ -32,6 +33,19 @@ public enum DeveloperComponentsDetector {
                         title: "developer.gradle_cache".localized,
                         category: .gradleMaven, sizeBytes: gradleSize,
                         url: gradleURL
+                    ))
+                }
+            }
+            let androidDataURL = URL(fileURLWithPath: "\(home)/.android")
+            if fm.fileExists(atPath: androidDataURL.path) {
+                let androidDataSize = getDirectorySize(url: androidDataURL)
+                if androidDataSize > 0 {
+                    components.append(UninstallerService.RelatedCleanupComponent(
+                        title: "developer.android_data".localized,
+                        category: .androidCaches,
+                        sizeBytes: androidDataSize,
+                        url: androidDataURL,
+                        isSelected: false
                     ))
                 }
             }

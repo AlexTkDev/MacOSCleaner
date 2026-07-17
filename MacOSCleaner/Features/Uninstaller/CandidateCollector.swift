@@ -2,7 +2,7 @@ import Foundation
 
 public struct CandidateCollection: Sendable {
     public let candidates: Set<URL>
-    /// Subset of `candidates` that came from a pkgutil receipt — guaranteed app files.
+    /// Subset of `candidates` owned by a package-manager receipt — guaranteed app files.
     public let receiptPaths: Set<URL>
     /// Subset from KnownResidualCatalog — high-confidence curated residuals.
     public let catalogPaths: Set<URL>
@@ -11,10 +11,23 @@ public struct CandidateCollection: Sendable {
 public actor CandidateCollector {
     private let fileManager: FileManager
     private let commandRunner: any CommandRunning
+    private let homebrewCellarDirectories: [URL]
+    private let darwinCacheDirectory: URL
 
-    public init(fileManager: FileManager = .default, commandRunner: any CommandRunning = CommandRunner()) {
+    public init(
+        fileManager: FileManager = .default,
+        commandRunner: any CommandRunning = CommandRunner(),
+        homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories,
+        darwinCacheDirectory: URL? = nil
+    ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
+        self.homebrewCellarDirectories = homebrewCellarDirectories
+        let cacheDirectory = darwinCacheDirectory
+            ?? fileManager.temporaryDirectory
+                .deletingLastPathComponent()
+                .appendingPathComponent("C", isDirectory: true)
+        self.darwinCacheDirectory = cacheDirectory.resolvingSymlinksInPath()
     }
 
     public func collect(identity: AppIdentity, mode: ScanMode = .balanced) async -> Set<URL> {
@@ -68,6 +81,11 @@ public actor CandidateCollector {
             candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
         }
 
+        // Current user's Darwin cache root (/private/var/folders/.../C).
+        // Exact bundle-ID prefixes find helper caches without scanning other users,
+        // temp files, or generic vendor names.
+        candidates.formUnion(collectDarwinCachePaths(identity: identity))
+
         // 2. Deep scan critical folders
         let deepFolders = [
             "\(home)/Library/Application Support",
@@ -84,8 +102,17 @@ public actor CandidateCollector {
             candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth))
         }
 
-        // 3. pkgutil receipts
-        let receiptPaths = await collectReceiptPaths(identity: identity)
+        // 3. Package-manager receipts. Homebrew can keep the same app bundle in
+        // several versioned formulae (python@3.12 and python@3.14).
+        var receiptPaths = await collectPkgutilReceiptPaths(identity: identity)
+        let homebrewApplications = AppDiscovery.homebrewFormulaApplications(
+            containing: identity.bundleURL,
+            cellarDirectories: homebrewCellarDirectories,
+            fileManager: fileManager
+        )
+        receiptPaths.formUnion(homebrewApplications.filter {
+            Bundle(url: $0)?.bundleIdentifier?.caseInsensitiveCompare(identity.bundleID) == .orderedSame
+        })
         candidates.formUnion(receiptPaths)
 
         // 4. mdfind (balanced only)
@@ -226,6 +253,24 @@ public actor CandidateCollector {
         return CandidateCollection(candidates: candidates, receiptPaths: receiptPaths, catalogPaths: catalogPaths)
     }
 
+    private func collectDarwinCachePaths(identity: AppIdentity) -> Set<URL> {
+        let bundleID = identity.bundleID.lowercased()
+        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown."),
+              let contents = try? fileManager.contentsOfDirectory(
+                at: darwinCacheDirectory,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+              )
+        else {
+            return []
+        }
+
+        return Set(contents.filter {
+            let name = $0.lastPathComponent.lowercased()
+            return name == bundleID || name.hasPrefix(bundleID + ".")
+        })
+    }
+
     private func collectCatalogPaths(identity: AppIdentity, home: String) -> Set<URL> {
         var found = Set<URL>()
         for template in KnownResidualCatalog.pathTemplates(for: identity) {
@@ -238,7 +283,7 @@ public actor CandidateCollector {
 
     /// Files recorded in installer receipts for packages whose id matches the bundle ID.
     /// Paths inside the app bundle are skipped — the bundle is removed as a whole anyway.
-    private func collectReceiptPaths(identity: AppIdentity) async -> Set<URL> {
+    private func collectPkgutilReceiptPaths(identity: AppIdentity) async -> Set<URL> {
         guard !identity.bundleID.isEmpty, !identity.bundleID.hasPrefix("unknown.") else { return [] }
 
         var packageIDs: Set<String> = [identity.bundleID]
