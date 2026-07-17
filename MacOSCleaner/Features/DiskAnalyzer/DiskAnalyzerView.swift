@@ -11,8 +11,6 @@ public struct DiskAnalyzerView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 16) {
-                headerView
-                
                 categoryFilterView
                 
                 if viewModel.isScanning {
@@ -25,6 +23,15 @@ public struct DiskAnalyzerView: View {
             }
             .padding()
         }
+        .navigationSubtitle(viewModel.currentURL?.path ?? "")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("disk_analyzer_scan".localized) {
+                    viewModel.selectFolderAndScan()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
         .onAppear {
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
@@ -32,70 +39,53 @@ public struct DiskAnalyzerView: View {
         }
     }
     
-    private var headerView: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("disk_analyzer_title".localized)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                if let currentURL = viewModel.currentURL {
-                    Text(currentURL.path)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.head)
-                }
-            }
-            
-            Spacer()
-            
-            Button("disk_analyzer_scan".localized) {
-                viewModel.selectFolderAndScan()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding(.horizontal, 4)
-    }
-    
     private var categoryFilterView: some View {
         HStack {
             Spacer()
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(FileCategory.allCases, id: \.self) { category in
-                        Button(action: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                viewModel.selectedCategory = category
-                            }
-                        }) {
-                            Text(category.localizedName)
-                                .font(.callout)
-                                .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
+            GlassEffectContainer(spacing: 8) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(FileCategory.allCases, id: \.self) { category in
+                            categoryFilterButton(for: category)
                         }
-                        .buttonStyle(.plain)
-                        .background(
-                            Group {
-                                if viewModel.selectedCategory == category {
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                } else {
-                                    Capsule()
-                                        .fill(Color.primary.opacity(0.04))
-                                        .glassCapsule()
-                                }
-                            }
-                        )
-                        .clipShape(Capsule())
                     }
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 4)
                 }
-                .padding(.vertical, 4)
-                .padding(.horizontal, 4)
             }
             Spacer()
         }
+    }
+
+    private static let categoryFilterActiveBlue = Color(red: 0, green: 0.533, blue: 1)
+
+    private func categoryFilterButton(for category: FileCategory) -> some View {
+        let isSelected = viewModel.selectedCategory == category
+
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.selectedCategory = category
+            }
+        } label: {
+            Text(category.localizedName)
+                .font(.callout)
+                .fontWeight(.medium)
+                .foregroundStyle(isSelected ? .white : .primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
+        .background {
+            Capsule().fill(
+                isSelected ? Self.categoryFilterActiveBlue : Color.black.opacity(0.16)
+            )
+        }
+        .glassEffect(
+            isSelected
+                ? Glass.regular.tint(Self.categoryFilterActiveBlue).interactive()
+                : Glass.regular,
+            in: Capsule()
+        )
     }
     
     private var scanningView: some View {

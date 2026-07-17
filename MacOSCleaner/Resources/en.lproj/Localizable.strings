@@ -2,6 +2,8 @@
 "welcome_msg" = "Welcome back!";
 "app_title" = "Cleaner";
 "sidebar_select_item" = "Select an item from the sidebar";
+"sidebar_section_tools" = "Cleaning";
+"sidebar_section_system" = "System";
 "close" = "Close";
 "cancel_description" = "The operation was cancelled by user.";
 "reset" = "Reset";

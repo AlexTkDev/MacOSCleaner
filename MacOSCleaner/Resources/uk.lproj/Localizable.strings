@@ -2,6 +2,8 @@
 "welcome_msg" = "З поверненням!";
 "app_title" = "Очищення";
 "sidebar_select_item" = "Виберіть елемент у бічному меню";
+"sidebar_section_tools" = "Очищення";
+"sidebar_section_system" = "Система";
 "close" = "Закрити";
 "cancel_description" = "Операцію скасовано користувачем.";
 "reset" = "Скинути";

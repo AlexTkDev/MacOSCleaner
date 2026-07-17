@@ -11,36 +11,34 @@ struct RootView: View {
     var body: some View {
         ZStack {
             NavigationSplitView {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(NavigationItem.allCases) { item in
-                            SidebarItemRow(
-                                item: item,
-                               isSelected: selectedItem == item,
-                               action: {
-                                   withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                       selectedItem = item
-                                   }
-                               }
-                            )
+                List(selection: $selectedItem) {
+                    ForEach(SidebarSection.all) { section in
+                        Section {
+                            ForEach(section.items) { item in
+                                Label(item.localizedTitle, systemImage: item.systemImage)
+                                    .tag(item)
+                            }
+                        } header: {
+                            if let titleKey = section.titleKey {
+                                Text(titleKey.localized)
+                            }
                         }
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.top, 12)
                 }
-                .navigationTitle("app_title".localized)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+                .listStyle(.sidebar)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
             } detail: {
                 Group {
                     if let selectedItem {
                         contentView(for: selectedItem)
+                            .modifier(ScreenNavigationTitleModifier(item: selectedItem))
                     } else {
                         Text("sidebar_select_item".localized)
                             .foregroundColor(.secondary)
                     }
                 }
+                .scrollEdgeEffectStyle(.hard, for: .top)
                 .frame(minWidth: 800, minHeight: 600)
-                .macOS27ScreenBackground()
             }
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
@@ -87,6 +85,23 @@ struct RootView: View {
     }
 }
 
+private struct ScreenNavigationTitleModifier: ViewModifier {
+    let item: NavigationItem
+
+    func body(content: Content) -> some View {
+        if item == .dashboard {
+            content
+                .navigationTitle("")
+                .toolbar(removing: .title)
+                .toolbarVisibility(.hidden, for: .windowToolbar)
+        } else {
+            content
+                .navigationTitle(item.localizedTitle)
+                .toolbarVisibility(.visible, for: .windowToolbar)
+        }
+    }
+}
+
 #Preview {
     let journal = TransactionJournal()
     let settings = AppSettings()
@@ -102,55 +117,5 @@ struct RootView: View {
         permissionsManager: PermissionsManager(),
         availableUpdate: .constant(nil)
     )
-}
-
-struct SidebarItemRow: View {
-    let item: NavigationItem
-    let isSelected: Bool
-    let action: () -> Void
-    
-    @State private var isHovered = false
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: item.systemImage)
-                    .font(.title3)
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
-                    .frame(width: 24, height: 24)
-                
-                Text(item.localizedTitle)
-                    .font(.body)
-                    .fontWeight(isSelected ? .semibold : .medium)
-                    .foregroundColor(isSelected ? .primary : .secondary)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .contentShape(Rectangle())
-            .background(
-                Group {
-                    if isSelected {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.accentColor.opacity(0.12))
-                            .glassEffect()
-                    } else if isHovered {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.primary.opacity(0.05))
-                    } else {
-                        Color.clear
-                    }
-                }
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .animation(.easeInOut(duration: 0.15), value: isSelected)
-            .animation(.easeInOut(duration: 0.1), value: isHovered)
-        }
-        .buttonStyle(.plain)
-        .onHover { hover in
-            isHovered = hover
-        }
-    }
 }
 

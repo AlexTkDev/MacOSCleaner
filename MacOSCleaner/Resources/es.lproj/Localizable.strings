@@ -2,6 +2,8 @@
 "welcome_msg" = "¡Bienvenido de nuevo!";
 "app_title" = "Limpiador";
 "sidebar_select_item" = "Seleccione un elemento de la barra lateral";
+"sidebar_section_tools" = "Limpieza";
+"sidebar_section_system" = "Sistema";
 "close" = "Cerrar";
 "cancel_description" = "La operación fue cancelada por el usuario.";
 "reset" = "Restablecer";

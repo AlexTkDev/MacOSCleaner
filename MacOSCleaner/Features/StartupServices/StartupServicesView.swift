@@ -7,7 +7,8 @@ public struct StartupServicesView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                header
+                filterPicker
+                    .padding()
 
                 if viewModel.isLoading {
                     AnimatedScanView(
@@ -26,32 +27,16 @@ public struct StartupServicesView: View {
                 }
             }
         }
-        .onAppear { Task { await viewModel.scan() } }
-    }
-
-    private var header: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("startup_title".localized)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("startup_subtitle".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
+        .navigationSubtitle("startup_subtitle".localized)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
                 Button(action: { Task { await viewModel.scan() } }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 14, weight: .semibold))
                 }
-                .glassButtonStyle()
                 .help("startup_refresh".localized)
             }
-
-            filterPicker
         }
-        .padding()
+        .onAppear { Task { await viewModel.scan() } }
     }
 
     private var filterPicker: some View {

@@ -35,3 +35,18 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         }
     }
 }
+
+/// Sidebar grouping matching the macOS 27 sidebar layout (flat items + titled sections).
+struct SidebarSection: Identifiable {
+    let titleKey: String?
+    let items: [NavigationItem]
+
+    var id: String { titleKey ?? items.first?.rawValue ?? "" }
+
+    static let all: [SidebarSection] = [
+        SidebarSection(titleKey: nil, items: [.dashboard]),
+        SidebarSection(titleKey: "sidebar_section_tools", items: [.cleanup, .diskSpace, .uninstaller]),
+        SidebarSection(titleKey: "sidebar_section_system", items: [.processes, .startupServices]),
+        SidebarSection(titleKey: nil, items: [.settings]),
+    ]
+}

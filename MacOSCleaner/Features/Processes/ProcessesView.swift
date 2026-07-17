@@ -12,18 +12,6 @@ public struct ProcessesView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                header
-
-                HStack(spacing: 12) {
-                    searchField
-                    Spacer()
-                    Text("\(viewModel.filteredProcesses.count)/\(viewModel.processes.count)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
                 if isEditMode {
                     selectionToolbar
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -52,6 +40,87 @@ public struct ProcessesView: View {
                 }
             }
         }
+        .navigationSubtitle("processes_subtitle".localized)
+        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "processes_search".localized)
+        .toolbar {
+            if !viewModel.memoryHogs.isEmpty {
+                ToolbarItem(placement: .status) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "memorychip")
+                            .font(.system(size: 12))
+                        Text(viewModel.totalMemoryFormatted)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.red.opacity(0.1)))
+                    .foregroundColor(.red)
+                }
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Menu {
+                    Picker("view_mode".localized, selection: $viewModel.viewMode) {
+                        ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
+                            Text(mode.localizedName).tag(mode)
+                        }
+                    }
+                    Divider()
+                    Picker("sort_by".localized, selection: $viewModel.sortOption) {
+                        ForEach(ProcessSortOption.allCases) { option in
+                            Text(option.localizedName).tag(option)
+                        }
+                    }
+                    Divider()
+                    Button(action: {
+                        isEditMode.toggle()
+                        if !isEditMode {
+                            viewModel.deselectAll()
+                        }
+                    }) {
+                        Label(
+                            isEditMode ? "cancel_selection".localized : "select_multiple".localized,
+                            systemImage: isEditMode ? "xmark.circle" : "checkmark.circle"
+                        )
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button(action: { viewModel.showBlacklistAlert = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle")
+                        if !viewModel.blacklist.isEmpty {
+                            Text("\(viewModel.blacklist.count)")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                    }
+                }
+                .help("processes_tooltip_blacklist".localized)
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button(action: { viewModel.showWhitelistAlert = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "lock.circle")
+                        if !viewModel.whitelist.isEmpty {
+                            Text("\(viewModel.whitelist.count)")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                    }
+                }
+                .help("processes_tooltip_whitelist".localized)
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button(action: { Task { await viewModel.scan() } }) {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("processes_tooltip_refresh".localized)
+            }
+        }
         .sheet(isPresented: $viewModel.showBlacklistAlert) {
             blacklistSheet
         }
@@ -61,97 +130,6 @@ public struct ProcessesView: View {
         .onAppear {
             Task { await viewModel.scan() }
         }
-    }
-
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("processes_title".localized)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Text("processes_subtitle".localized)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-
-            if !viewModel.memoryHogs.isEmpty {
-                HStack(spacing: 4) {
-                    Image(systemName: "memorychip")
-                        .font(.system(size: 12))
-                    Text(viewModel.totalMemoryFormatted)
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Capsule().fill(Color.red.opacity(0.1)))
-                .foregroundColor(.red)
-            }
-
-            Menu {
-                Picker("view_mode".localized, selection: $viewModel.viewMode) {
-                    ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
-                        Text(mode.localizedName).tag(mode)
-                    }
-                }
-                Divider()
-                Picker("sort_by".localized, selection: $viewModel.sortOption) {
-                    ForEach(ProcessSortOption.allCases) { option in
-                        Text(option.localizedName).tag(option)
-                    }
-                }
-                Divider()
-                Button(action: {
-                    isEditMode.toggle()
-                    if !isEditMode {
-                        viewModel.deselectAll()
-                    }
-                }) {
-                    Label(
-                        isEditMode ? "cancel_selection".localized : "select_multiple".localized,
-                        systemImage: isEditMode ? "xmark.circle" : "checkmark.circle"
-                    )
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 14, weight: .semibold))
-            }
-            .glassButtonStyle()
-
-            Button(action: { viewModel.showBlacklistAlert = true }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle")
-                        .font(.system(size: 14, weight: .semibold))
-                    if !viewModel.blacklist.isEmpty {
-                        Text("\(viewModel.blacklist.count)")
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                }
-            }
-            .glassButtonStyle()
-            .help("processes_tooltip_blacklist".localized)
-
-            Button(action: { viewModel.showWhitelistAlert = true }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "lock.circle")
-                        .font(.system(size: 14, weight: .semibold))
-                    if !viewModel.whitelist.isEmpty {
-                        Text("\(viewModel.whitelist.count)")
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                }
-            }
-            .glassButtonStyle()
-            .help("processes_tooltip_whitelist".localized)
-
-            Button(action: { Task { await viewModel.scan() } }) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14, weight: .semibold))
-            }
-            .glassButtonStyle()
-            .help("processes_tooltip_refresh".localized)
-        }
-        .padding()
     }
 
     private var selectionToolbar: some View {
@@ -186,20 +164,6 @@ public struct ProcessesView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-    }
-
-    private var searchField: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-                .font(.system(size: 12))
-            TextField("processes_search".localized, text: $viewModel.searchText)
-                .textFieldStyle(.plain)
-                .font(.system(size: 13))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .glassCapsule()
     }
 
     private var groupedProcessList: some View {
