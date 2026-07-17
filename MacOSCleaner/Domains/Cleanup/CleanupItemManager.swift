@@ -28,19 +28,12 @@ public final class CleanupItemManager {
     }
 
     public var selectedSizeMB: Int {
-        var total = 0
-        for item in items {
-            if item.isSelected {
-                if item.children.isEmpty {
-                    total += item.sizeMB
-                } else {
-                    // parent.sizeMB is the authoritative "what will be freed"
-                    // (set by the .result event in appendPreviewItem).
-                    total += item.sizeMB
-                }
-            }
-        }
-        return total
+        Int(selectedSizeBytes / (1024 * 1024))
+    }
+
+    public var selectedSizeBytes: Int64 {
+        var seenPaths = Set<String>()
+        return items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
     }
 
     // MARK: - File Item Append (new hierarchical flow)
@@ -52,6 +45,7 @@ public final class CleanupItemManager {
         let newItem = CleanupPreviewItem(
             label: Self.shortLabel(from: path),
             sizeMB: sizeMB,
+            sizeBytes: sizeBytes,
             risk: risk,
             isSelected: true,
             isDeletable: true,
@@ -66,11 +60,13 @@ public final class CleanupItemManager {
             if !items[idx].children.contains(where: { $0.path == path }) {
                 items[idx].children.append(newItem)
                 items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
+                items[idx].sizeBytes = items[idx].children.reduce(0) { $0 + $1.sizeBytes }
             }
         } else {
             let parent = CleanupPreviewItem(
                 label: targetParent,
                 sizeMB: sizeMB,
+                sizeBytes: sizeBytes,
                 risk: Self.determineRisk(for: targetParent),
                 isSelected: true,
                 isDeletable: true,
@@ -84,9 +80,11 @@ public final class CleanupItemManager {
 
     public func appendPreviewItem(_ label: String, size: Int, deletable: Bool, parentName: String?, description: String?) {
         let risk = deletable ? Self.determineRisk(for: label) : .protected
+        let sizeBytes = Int64(size) * 1024 * 1024
         let newItem = CleanupPreviewItem(
             label: label,
             sizeMB: size,
+            sizeBytes: sizeBytes,
             risk: risk,
             isSelected: deletable,
             isDeletable: deletable,
@@ -96,28 +94,20 @@ public final class CleanupItemManager {
         if let parentName = parentName, !parentName.isEmpty {
             if let idx = items.firstIndex(where: { $0.label == parentName }) {
                 if !items[idx].children.contains(where: { $0.label == label }) {
-                    // When a parent already has children (file items from
-                    // emitFileItem), appending the .result as another child
-                    // double-counts: the UI sums all children for the parent
-                    // sizeMB. Fix: don't add the result as a child — instead,
-                    // use its freedMB as the authoritative "what will be freed"
-                    // value for the parent. This covers edge cases where the
-                    // result includes extra data not in individual file items
-                    // (e.g. orphaned remnants).
                     if !items[idx].children.isEmpty {
-                        // Use the larger of existing size or new result size
-                        // to avoid undercounting when result includes items
-                        // not yet in fileItems (like orphaned remnants)
                         items[idx].sizeMB = max(items[idx].sizeMB, size)
+                        items[idx].sizeBytes = max(items[idx].sizeBytes, sizeBytes)
                     } else {
                         items[idx].children.append(newItem)
                         items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
+                        items[idx].sizeBytes = items[idx].children.reduce(0) { $0 + $1.sizeBytes }
                     }
                 }
             } else {
                 let parent = CleanupPreviewItem(
                     label: parentName,
                     sizeMB: size,
+                    sizeBytes: sizeBytes,
                     risk: .safe,
                     isSelected: true,
                     isDeletable: true,
@@ -129,6 +119,7 @@ public final class CleanupItemManager {
             if let idx = items.firstIndex(where: { $0.label == label }) {
                 if items[idx].children.isEmpty {
                     items[idx].sizeMB = max(items[idx].sizeMB, size)
+                    items[idx].sizeBytes = max(items[idx].sizeBytes, sizeBytes)
                 }
             } else {
                 items.append(newItem)
@@ -162,6 +153,14 @@ public final class CleanupItemManager {
     public func updateAllSelection(isSelected: Bool) {
         for i in items.indices {
             updateItemSelection(&items[i], isSelected: isSelected)
+        }
+    }
+
+    public func selectedCleanupCategories(from categories: [CleanupCategory]) -> [CleanupCategory] {
+        let selectedLabels = Set(items.filter { Self.selectedSizeBytes(for: $0) > 0 }.map(\.label))
+
+        return categories.filter { category in
+            !category.previewLabels.isDisjoint(with: selectedLabels) || !hasPreviewItem(for: category)
         }
     }
 
@@ -213,6 +212,35 @@ public final class CleanupItemManager {
         item.isSelected = isSelected
         for i in item.children.indices {
             updateItemSelection(&item.children[i], isSelected: isSelected)
+        }
+    }
+
+    private static func selectedSizeBytes(for item: CleanupPreviewItem, seenPaths: inout Set<String>) -> Int64 {
+        if item.children.isEmpty {
+            guard item.isSelected else { return 0 }
+            if let path = item.path {
+                let normalized = normalizePath(path)
+                guard seenPaths.insert(normalized).inserted else { return 0 }
+            }
+            return item.sizeBytes
+        }
+
+        return item.children.reduce(0) { $0 + selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
+    }
+
+    private static func normalizePath(_ path: String) -> String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return (path as NSString).standardizingPath.replacingOccurrences(of: home, with: "~")
+    }
+
+    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
+        var seenPaths = Set<String>()
+        return selectedSizeBytes(for: item, seenPaths: &seenPaths)
+    }
+
+    private func hasPreviewItem(for category: CleanupCategory) -> Bool {
+        items.contains { item in
+            category.previewLabels.contains(item.label)
         }
     }
 

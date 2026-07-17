@@ -8,7 +8,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately"
+            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
+            "settings_enableAI"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -18,7 +19,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately"
+            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
+            "settings_enableAI"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -36,6 +38,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
+        XCTAssertTrue(settings.enableAI)
     }
 
     // MARK: - Persistence
@@ -61,12 +64,14 @@ final class AppSettingsTests: XCTestCase {
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
-
+        settings.enableAI = false
+ 
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_autoScanOnStartup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashDuringCleanup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_bypassTrashOnUninstall"))
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_showRelatedFiles"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashImmediately"))
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_enableAI"))
     }
 
     // MARK: - Reset
@@ -82,9 +87,10 @@ final class AppSettingsTests: XCTestCase {
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
-
+        settings.enableAI = false
+ 
         settings.resetAll()
-
+ 
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(settings.theme, .system)
         XCTAssertFalse(settings.showNotifications)
@@ -94,5 +100,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
+        XCTAssertTrue(settings.enableAI)
     }
 }

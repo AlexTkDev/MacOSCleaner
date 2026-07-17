@@ -175,7 +175,7 @@ public actor UninstallerService {
     }
 
     private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
-        try safetyManager.validate(url: url)
+        try safetyManager.validate(url: url, policy: .uninstall)
 
         let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
         await identityCache.set(bundleID: identity.bundleID, identity: identity)
@@ -234,12 +234,18 @@ public actor UninstallerService {
 
     private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph, mode: ScanMode = .balanced) async -> [RelatedFile] {
         let collector = CandidateCollector(commandRunner: commandRunner)
-        let candidates = await collector.collect(identity: identity, mode: mode)
+        let collection = await collector.collectDetailed(identity: identity, mode: mode)
         let probe = EvidenceProbe(commandRunner: commandRunner, codesignCache: codesignCache, plistCache: plistCache)
 
         // Record evidence
-        for url in candidates {
-            let evidences = await probe.probe(url: url, identity: identity)
+        for url in collection.candidates {
+            var evidences = await probe.probe(url: url, identity: identity)
+            if collection.receiptPaths.contains(url) {
+                evidences.insert(.packageReceipt)
+            }
+            if collection.catalogPaths.contains(url) {
+                evidences.insert(.knownCatalog)
+            }
             await graph.record(evidences, for: url)
 
             // Attach via ParentLinker
@@ -252,29 +258,36 @@ public actor UninstallerService {
         // Propogate from seeds
         await graph.propagateFromSeeds(maxDepth: 5)
 
-        // Assess confidence
+        // Assess confidence, boosted by app-specific rule knowledge (Docker, Office, ...)
+        let rule = await ruleRegistry.bestRule(for: identity)
         let nodes = await graph.allNodes()
-        let assessments = ConfidenceEngine.assessAll(nodes, identity: identity)
         var related: [(RelatedFile, ConfidenceTier)] = []
 
         // Safe mode: only veryLikely and guaranteed; balanced: possible and above
         let minimumTier: ConfidenceTier = mode == .safe ? .veryLikely : .possible
 
-        for (node, assessment) in zip(nodes, assessments) {
+        for node in nodes {
+            let ruleScore = rule.evidence(for: node.url, identity: identity).reduce(0) { $0 + $1.weight }
+            let assessment = ConfidenceEngine.assess(node.evidence, ruleScore: ruleScore, identity: identity)
             guard assessment.tier >= minimumTier else { continue }
-            guard (try? safetyManager.validate(url: node.url)) != nil else { continue }
+            guard (try? safetyManager.validate(url: node.url, policy: .uninstall)) != nil else { continue }
+            guard !Self.isProtectedMailPath(node.url.path) else { continue }
             guard node.url.path != identity.bundleURL.path else { continue }
             guard !identity.bundleURL.path.hasPrefix(node.url.path + "/") else { continue }
+            guard !node.url.path.hasPrefix(identity.bundleURL.path + "/") else { continue }
 
             var isDir: ObjCBool = false
             guard fileManager.fileExists(atPath: node.url.path, isDirectory: &isDir) else { continue }
 
             let fileSize = await getDirectorySize(url: node.url)
-            let risk: DeletionRisk = node.url.path.contains("Preferences") ? .normal : .safe
+            // Browser user data carries logins/sessions — never label it "safe".
+            let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
+                ? .normal : .safe
 
             let file = RelatedFile(
                 url: node.url,
-                isSelected: true,
+                // Weak matches are shown but never pre-selected for deletion
+                isSelected: assessment.tier >= .veryLikely,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,
@@ -337,17 +350,24 @@ public actor UninstallerService {
         for file in app.relatedFiles where file.isSelected {
             let path = file.url.path
             if (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") {
-                do {
-                    _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
-                    Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
-                } catch {
-                    Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                // bootout is the modern reliable unload; fall back to legacy unload
+                let domain = path.contains("LaunchDaemons") ? "system" : "gui/\(getuid())"
+                let bootout = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", domain, path])
+                if bootout?.exitCode == 0 {
+                    Logger.uninstaller.debug("launchctl bootout: \(path, privacy: .public)")
+                } else {
+                    do {
+                        _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
+                        Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
+                    } catch {
+                        Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                    }
                 }
             }
         }
 
         if bypassTrash {
-            try safetyManager.validate(url: app.url)
+            try safetyManager.validate(url: app.url, policy: .uninstall)
             do {
                 try fileManager.removeItem(at: app.url)
                 Logger.uninstaller.info("Permanently removed: \(app.url.path, privacy: .public)")
@@ -357,7 +377,7 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    try safetyManager.validate(url: target)
+                    try safetyManager.validate(url: target, policy: .uninstall)
                     try fileManager.removeItem(at: target)
                     Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
@@ -366,7 +386,7 @@ public actor UninstallerService {
             }
         } else {
             do {
-                _ = try await trashManager.trashItem(at: app.url)
+                _ = try await trashManager.trashItem(at: app.url, policy: .uninstall)
                 Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
             } catch {
                 Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -374,7 +394,7 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    _ = try await trashManager.trashItem(at: target)
+                    _ = try await trashManager.trashItem(at: target, policy: .uninstall)
                     Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
                 } catch {
                     Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -420,14 +440,32 @@ public actor UninstallerService {
 
     // MARK: - Private helpers
 
+    /// Mail message storage must never be offered as an app residual.
+    /// ~/Library/Mail/Bundles stays allowed — Mail plugins are legitimate residuals.
+    static func isProtectedMailPath(_ path: String) -> Bool {
+        let home = NSHomeDirectory()
+        let mailRoot = "\(home)/Library/Mail"
+        let bundles = "\(home)/Library/Mail/Bundles"
+        let mailContainer = "\(home)/Library/Containers/com.apple.mail"
+
+        if path == mailContainer || path.hasPrefix(mailContainer + "/") { return true }
+        if path == mailRoot { return true }
+        if path.hasPrefix(mailRoot + "/") {
+            return !(path == bundles || path.hasPrefix(bundles + "/"))
+        }
+        return false
+    }
+
     private func version(from url: URL) -> String {
         Bundle(url: url)?.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? Bundle(url: url)?.infoDictionary?["CFBundleVersion"] as? String
             ?? "version_unknown".localized
     }
 
+    /// Physical size: what deleting the item actually frees. Sparse VM images
+    /// (OrbStack data.img.raw) report tens of GB here, not their logical 500 GB.
     private func getDirectorySize(url: URL) async -> Int64 {
-        fileManager.getDirectorySize(url: url, excludedPaths: [])
+        fileManager.getPhysicalDirectorySize(url: url, excludedPaths: [])
     }
 
     private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
@@ -435,11 +473,7 @@ public actor UninstallerService {
         for app in apps {
             let key = "\(app.bundleID ?? "")-\(app.name)"
             if let existing = merged[key] {
-                var mainApp = existing
-                if app.url.path.hasPrefix("/Applications") && !existing.url.path.hasPrefix("/Applications") {
-                    mainApp = app
-                }
-                merged[key] = mainApp
+                merged[key] = preferredApp(existing, app)
             } else {
                 merged[key] = app
             }
@@ -447,12 +481,30 @@ public actor UninstallerService {
         return Array(merged.values)
     }
 
+    private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {
+        let lhsIsStandard = lhs.url.path.hasPrefix("/Applications/")
+        let rhsIsStandard = rhs.url.path.hasPrefix("/Applications/")
+        if lhsIsStandard != rhsIsStandard {
+            return rhsIsStandard ? rhs : lhs
+        }
+
+        let versionOrder = lhs.version.compare(rhs.version, options: .numeric)
+        if versionOrder != .orderedSame {
+            return versionOrder == .orderedAscending ? rhs : lhs
+        }
+        return lhs.url.path <= rhs.url.path ? lhs : rhs
+    }
+
     private func dedupAndSort(_ items: [(file: RelatedFile, tier: ConfidenceTier)]) -> [RelatedFile] {
         let sortedByPath = items.map(\.file).sorted { $0.url.path.count < $1.url.path.count }
         var deduplicated: [URL: RelatedFile] = [:]
         for file in sortedByPath {
-            let isChild = deduplicated.keys.contains { file.url.path.hasPrefix($0.path + "/") }
-            if !isChild {
+            // Collapse into parent only when the parent is at least as confident;
+            // a guaranteed child must not disappear inside an unselected possible parent.
+            let coveredByParent = deduplicated.values.contains {
+                file.url.path.hasPrefix($0.url.path + "/") && $0.confidence >= file.confidence
+            }
+            if !coveredByParent {
                 deduplicated[file.url] = file
             }
         }

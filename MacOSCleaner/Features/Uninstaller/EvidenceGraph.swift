@@ -71,7 +71,11 @@ public actor EvidenceGraph {
     }
 
     public func propagateFromSeeds(maxDepth: Int = 5) {
-        let seeds = nodes.filter { $0.value.evidence.contains(.bundleIDExact) }
+        let strongEvidence: Set<Evidence> = [
+            .bundleIDExact, .bundleIDPrefix, .appNameExact, .appNamePrefix,
+            .packageReceipt, .container, .appGroup, .spotlightBundleAttr,
+        ]
+        let seeds = nodes.filter { !strongEvidence.isDisjoint(with: $0.value.evidence) }
         for seed in seeds.values {
             propagate(from: seed.url, depth: 0, maxDepth: maxDepth)
         }

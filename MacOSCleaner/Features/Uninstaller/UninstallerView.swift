@@ -10,6 +10,7 @@ private extension Logger {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
     @State private var allApps: [UninstallerService.AppInfo] = []
     @State private var selectedApp: UninstallerService.AppInfo?
@@ -37,71 +38,74 @@ struct UninstallerView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                // Apps List
-                VStack(spacing: 0) {
-                    if isLoading {
-                        AnimatedScanView(
-                            title: "uninstaller_scanning_apps".localized,
-                            subtitle: service.progress.message,
-                            currentStep: service.progress.currentStep,
-                            totalSteps: service.progress.totalSteps
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        VStack(spacing: 0) {
-                            if isDeepScanning {
-                                VStack(spacing: 4) {
-                                    ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
-                                        .progressViewStyle(.linear)
-                                        .padding(.horizontal, 8)
-                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
+        GlassEffectContainer {
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    // Apps List
+                    VStack(spacing: 0) {
+                        if isLoading {
+                            AnimatedScanView(
+                                title: "uninstaller_scanning_apps".localized,
+                                subtitle: service.progress.message,
+                                currentStep: service.progress.currentStep,
+                                totalSteps: service.progress.totalSteps
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            VStack(spacing: 0) {
+                                if isDeepScanning {
+                                    VStack(spacing: 4) {
+                                        ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
+                                            .progressViewStyle(.linear)
+                                            .padding(.horizontal, 8)
+                                        Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.vertical, 6)
+                                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
                                 }
-                                .padding(.vertical, 6)
-                                .background(Color(NSColor.controlBackgroundColor))
-                            }
-                            List(filteredApps) { app in
-                                let unscan = app.scanState != .deepScanned
-                                AppRowView(
-                                    app: app,
-                                    formatter: formatter,
-                                    showRelatedFiles: settings.showRelatedFiles,
-                                    isUnscannable: unscan
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    guard app.scanState == .deepScanned else { return }
-                                    selectedApp = app
+                                List(filteredApps) { app in
+                                    let unscan = app.scanState != .deepScanned
+                                    AppRowView(
+                                        app: app,
+                                        formatter: formatter,
+                                        showRelatedFiles: settings.showRelatedFiles,
+                                        isUnscannable: unscan
+                                    )
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        guard app.scanState == .deepScanned else { return }
+                                        selectedApp = app
+                                    }
+                                    .listRowBackground(
+                                        selectedApp?.url == app.url
+                                            ? Color.accentColor.opacity(0.1)
+                                            : Color.clear
+                                    )
                                 }
-                                .listRowBackground(
-                                    selectedApp?.url == app.url
-                                        ? Color.accentColor.opacity(0.1)
-                                        : Color.clear
-                                )
+                                .listStyle(.inset)
+                                .scrollContentBackground(.hidden)
                             }
-                            .listStyle(.inset)
                         }
                     }
-                }
-                .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
-                .background(Color(NSColor.controlBackgroundColor))
-                
-                Divider()
-                
-                // Detail Area
-                ZStack {
-                    if let app = selectedApp {
-                        appDetailView(app)
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        dropZoneView
-                            .frame(maxWidth: .infinity)
+                    .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
+                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                    
+                    Divider()
+                    
+                    // Detail Area
+                    ZStack {
+                        if let app = selectedApp {
+                            appDetailView(app)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            dropZoneView
+                                .frame(maxWidth: .infinity)
+                        }
                     }
+                    .layoutPriority(1) // Occupy remaining space
                 }
-                .layoutPriority(1) // Occupy remaining space
             }
         }
         .navigationTitle("uninstaller_title".localized)
@@ -132,6 +136,7 @@ struct UninstallerView: View {
                 Button(action: loadApps) {
                     Image(systemName: "arrow.clockwise")
                 }
+                .glassButtonStyle()
                 .help("uninstaller_reload".localized)
             }
         }
@@ -282,42 +287,17 @@ struct UninstallerView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Header
-                HStack(alignment: .top, spacing: 20) {
-                    if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 80, height: 80)
-                    } else {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(width: 80, height: 80)
-                            .overlay(Image(systemName: "app").foregroundColor(.secondary))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(app.name)
-                            .font(.system(size: 28, weight: .bold))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.8)
-                        
-                        Text(app.bundleID ?? "uninstaller_unknown_bundle".localized)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                        
-                        // Adaptive Badges
+                AppDetailHeaderView(
+                    app: app,
+                    settings: settings,
+                    badges: {
                         ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 8) {
-                                badges(for: app)
-                            }
-                            VStack(alignment: .leading, spacing: 8) {
-                                badges(for: app)
-                            }
+                            HStack(spacing: 8) { badges(for: app) }
+                            VStack(alignment: .leading, spacing: 8) { badges(for: app) }
                         }
-                        .padding(.top, 4)
                     }
-                }
+                )
+                .id(app.id)
                 
                 Divider()
 
@@ -329,7 +309,8 @@ struct UninstallerView: View {
                     }
                 }
                 
-                Spacer(minLength: 40)
+                Spacer()
+                    .frame(height: 20)
                 
                 // Action Area
                 ViewThatFits(in: .horizontal) {
@@ -393,8 +374,7 @@ struct UninstallerView: View {
                     .frame(maxWidth: 300)
                     .frame(height: 32)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
+            .destructiveGlassButtonStyle()
             .controlSize(.large)
         }
     }
@@ -417,17 +397,14 @@ struct UninstallerView: View {
                             ForEach(files) { file in
                                     RelatedFileRow(
                                         file: file,
+                                        appName: app.name,
+                                        settings: settings,
                                         formatter: formatter,
                                         onToggle: { toggleSelection(file, in: app) }
                                     )
                             }
                         }
-                        .background(Color(NSColor.alternatingContentBackgroundColors[0]))
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                        )
+                        .glassCard(cornerRadius: 12)
                     }
                 }
             }
@@ -499,12 +476,7 @@ struct UninstallerView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(Color.purple.opacity(0.04))
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.purple.opacity(0.2), lineWidth: 1)
-                )
+                .glassEffect(.regular.tint(.purple))
             }
 
             HStack {
@@ -515,7 +487,7 @@ struct UninstallerView: View {
                 Button("uninstaller_open_cleanup".localized) {
                     navigateToCleanup()
                 }
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle()
                 .controlSize(.small)
             }
         }
@@ -601,8 +573,15 @@ struct DetailBadge: View {
 
 struct RelatedFileRow: View {
     let file: UninstallerService.RelatedFile
+    let appName: String
+    let settings: AppSettings
     let formatter: ByteCountFormatter
     let onToggle: () -> Void
+
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
 
     var riskColor: Color {
         let path = file.url.path
@@ -613,43 +592,250 @@ struct RelatedFileRow: View {
     }
 
     var body: some View {
-        HStack {
-            Toggle("", isOn: Binding(get: { file.isSelected }, set: { _ in onToggle() }))
-                .toggleStyle(.checkbox)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Toggle("", isOn: Binding(get: { file.isSelected }, set: { _ in onToggle() }))
+                    .toggleStyle(.checkbox)
 
-            Image(systemName: "folder.fill")
-                .foregroundColor(riskColor.opacity(0.8))
+                Image(systemName: "folder.fill")
+                    .foregroundColor(riskColor.opacity(0.8))
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(file.url.lastPathComponent)
-                        .font(.subheadline)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(file.url.lastPathComponent)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                    }
+                    Text(file.url.path)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.secondary)
                         .lineLimit(1)
+                        .truncationMode(.middle)
                 }
-                Text(file.url.path)
-                    .font(.system(size: 10, design: .monospaced))
+
+                Spacer()
+
+                if settings.enableAI && AIExplanationService.shared.isAvailable {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation()
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_explain_with_ai".localized)
+                }
+
+                Button {
+                    NSWorkspace.shared.activateFileViewerSelecting([file.url])
+                } label: {
+                    Image(systemName: "arrow.up.forward.app")
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .help("uninstaller_show_in_finder".localized)
+
+                Text(ByteCountFormatter.localizedString(fromByteCount: file.size, countStyle: .file))
+                    .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
             }
-
-            Spacer()
-
-            Button {
-                NSWorkspace.shared.activateFileViewerSelecting([file.url])
-            } label: {
-                Image(systemName: "arrow.up.forward.app")
-                    .foregroundColor(.accentColor)
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 32)
+                .padding(.bottom, 4)
             }
-            .buttonStyle(.plain)
-            .help("uninstaller_show_in_finder".localized)
-
-            Text(ByteCountFormatter.localizedString(fromByteCount: file.size, countStyle: .file))
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+    }
+
+    private func generateAIExplanation() {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let evidenceStrings = file.evidence.map { evidence -> String in
+                    let explanation = EvidenceExplanations.explanation(for: evidence, args: appName)
+                    return "\(explanation.title): \(explanation.description)"
+                }
+                
+                let result = try await AIExplanationService.shared.explainRelation(
+                    appName: appName,
+                    filePath: file.url.path,
+                    evidence: evidenceStrings,
+                    deletionRisk: file.deletionRisk.rawValue,
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
+        }
+    }
+}
+
+struct AppDetailHeaderView<BadgeContent: View>: View {
+    let app: UninstallerService.AppInfo
+    let settings: AppSettings
+    @ViewBuilder let badges: BadgeContent
+    
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 20) {
+                if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, height: 80)
+                } else {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.secondary.opacity(0.2))
+                        .frame(width: 80, height: 80)
+                        .overlay(Image(systemName: "app").foregroundColor(.secondary))
+                }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(app.name)
+                            .font(.system(size: 28, weight: .bold))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.8)
+                        
+                        if settings.enableAI && AIExplanationService.shared.isAvailable {
+                            Button {
+                                withAnimation(.spring()) {
+                                    isExpanded.toggle()
+                                }
+                                if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                                    generateAIExplanation()
+                                }
+                            } label: {
+                                Image(systemName: "sparkles")
+                                    .foregroundColor(isExpanded ? .purple : .secondary)
+                                    .font(.title2)
+                            }
+                            .buttonStyle(.plain)
+                            .help("uninstaller_explain_with_ai".localized)
+                        }
+                    }
+                    
+                    Text(app.bundleID ?? "uninstaller_unknown_bundle".localized)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                    
+                    badges
+                        .padding(.top, 4)
+                }
+            }
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.subheadline)
+                            .padding(.top, 2)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.all, 12)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                .cornerRadius(12)
+                .padding(.top, 8)
+            }
+        }
+    }
+    
+    private func generateAIExplanation() {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        let sizeString = ByteCountFormatter.localizedString(fromByteCount: app.size, countStyle: .file)
+        
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainApp(
+                    appName: app.name,
+                    bundleID: app.bundleID ?? "Unknown",
+                    sizeFormatted: sizeString,
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
+        }
     }
 }

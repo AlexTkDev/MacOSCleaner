@@ -11,19 +11,22 @@ public actor VerificationEngine {
     private let plistCache: PlistContentCache
     private let thresholds: ScoreThresholds
     private let weights: ScoringWeights
+    private let ruleRegistry: ApplicationRuleRegistry
 
     public init(
         commandRunner: any CommandRunning = CommandRunner(),
         codesignCache: CodesignCache = CodesignCache(),
         plistCache: PlistContentCache = PlistContentCache(),
         thresholds: ScoreThresholds = .default,
-        weights: ScoringWeights = .default
+        weights: ScoringWeights = .default,
+        ruleRegistry: ApplicationRuleRegistry = ApplicationRuleRegistry.createDefault()
     ) {
         self.commandRunner = commandRunner
         self.codesignCache = codesignCache
         self.plistCache = plistCache
         self.thresholds = thresholds
         self.weights = weights
+        self.ruleRegistry = ruleRegistry
     }
 
     public func verify(identity: AppIdentity) async -> VerificationReport {
@@ -44,12 +47,14 @@ public actor VerificationEngine {
         )
 
         var artifacts: [ScoredArtifact] = []
+        let rule = await ruleRegistry.bestRule(for: identity)
 
         for url in candidates {
             let evidence = await probe.probe(url: url, identity: identity)
-            guard !evidence.isEmpty else { continue }
+            let ruleEvidence = rule.evidence(for: url, identity: identity)
+            guard !evidence.isEmpty || !ruleEvidence.isEmpty else { continue }
 
-            let artifactEvidence = evidence.artifactEvidence(weights: weights)
+            let artifactEvidence = evidence.artifactEvidence(weights: weights) + ruleEvidence
             let score = artifactEvidence.reduce(0) { $0 + $1.weight }
 
             artifacts.append(

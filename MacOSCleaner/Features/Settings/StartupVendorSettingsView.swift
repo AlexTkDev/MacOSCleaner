@@ -101,7 +101,7 @@ struct StartupVendorSettingsView: View {
                 }
             }
         }
-        .background(Color(NSColor.textBackgroundColor))
+        .background(Color(NSColor.textBackgroundColor).opacity(0.6))
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)

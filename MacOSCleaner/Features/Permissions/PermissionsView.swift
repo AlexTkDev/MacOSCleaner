@@ -9,12 +9,14 @@ struct PermissionsView: View {
             headerSection
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    statusCard
-                    instructionsCard
-                    actionButtons
+                GlassEffectContainer {
+                    VStack(alignment: .leading, spacing: 20) {
+                        statusCard
+                        instructionsCard
+                        actionButtons
+                    }
+                    .padding(24)
                 }
-                .padding(24)
             }
 
             dismissBar
@@ -76,9 +78,7 @@ struct PermissionsView: View {
             }
         }
         .padding(16)
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+        .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Instructions Card
@@ -97,9 +97,7 @@ struct PermissionsView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, y: 1)
+        .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Buttons
@@ -126,8 +124,6 @@ struct PermissionsView: View {
         }
     }
 
-    // MARK: - Dismiss
-
     private var dismissBar: some View {
         HStack {
             Button("permissions_dismiss_temp".localized) {
@@ -139,7 +135,15 @@ struct PermissionsView: View {
             Spacer()
 
             Button("permissions_dismiss_permanent".localized) {
-                permissionsManager.dismissGuidancePermanently()
+                GlassOverlayManager.shared.showAlert(
+                    title: "permissions_warning_title".localized,
+                    message: "permissions_warning_message".localized,
+                    type: .warning,
+                    primaryButtonTitle: "permissions_warning_confirm".localized,
+                    primaryAction: {
+                        permissionsManager.dismissGuidancePermanently()
+                    }
+                )
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)

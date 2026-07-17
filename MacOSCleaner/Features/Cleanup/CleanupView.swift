@@ -1,28 +1,38 @@
 import SwiftUI
 
 public struct CleanupView: View {
-    @State private var viewModel: CleanupViewModel
+    let viewModel: CleanupViewModel
     @State private var showLogs = false
     @State private var showCopiedHint = false
-    @State private var logHeight: CGFloat = 160
-    @Environment(\.colorScheme) private var colorScheme
+    @State private var scrollTaskBox = ScrollTaskBox()
     
     public init(viewModel: CleanupViewModel) {
-        _viewModel = State(initialValue: viewModel)
+        self.viewModel = viewModel
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Divider()
-            
-            footer
-        }
-        .background(
-            ZStack {
-                Color(NSColor.windowBackgroundColor)
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                if showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
+                    VSplitView {
+                        content
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .frame(minHeight: 200)
+                        
+                        logPanel
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 400)
+                    }
+                } else {
+                    content
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                
+                Divider()
+                
+                footer
+            }
+            .background {
                 if viewModel.state == .scanning || viewModel.state == .executing {
                     LinearGradient(
                         colors: [.accentColor.opacity(0.08), .accentColor.opacity(0.02), .clear],
@@ -31,7 +41,7 @@ public struct CleanupView: View {
                     )
                 }
             }
-        )
+        }
     }
     
     @ViewBuilder
@@ -142,9 +152,8 @@ public struct CleanupView: View {
                     }
                 }
                 .padding()
-                .background(Color(NSColor.controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+                .glassCard(cornerRadius: 12)
+                .padding(.horizontal, 32)
                 
                 // Start button
                 Button(action: { viewModel.startScan() }) {
@@ -264,7 +273,7 @@ public struct CleanupView: View {
                     Text("cleanup_complete".localized)
                         .font(.system(.title2, design: .rounded, weight: .bold))
                     
-                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedMB))
+                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedBytes.formattedByteCount()))
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
@@ -290,7 +299,7 @@ public struct CleanupView: View {
                             
                             Spacer()
                             
-                            Text(String(format: "cleanup_mb_format".localized, item.freedMB))
+                            Text(item.freedBytes.formattedByteCount())
                                 .font(.system(.subheadline, design: .monospaced))
                                 .foregroundColor(.green)
                         }
@@ -391,12 +400,6 @@ public struct CleanupView: View {
                 totalSteps: viewModel.totalSteps,
                 onCancel: { viewModel.cancel() }
             )
-            
-            if showLogs && !viewModel.scriptLogs.isEmpty {
-                Divider()
-                    .padding(.horizontal)
-                logPanel
-            }
         }
         .padding(.top, 20)
     }
@@ -428,7 +431,7 @@ public struct CleanupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(viewModel.selectedSizeMB == 0)
+                .disabled(viewModel.selectedSizeBytes == 0)
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
@@ -487,12 +490,6 @@ public struct CleanupView: View {
                     alignment: .top
                 )
             }
-
-            if showLogs && !viewModel.scriptLogs.isEmpty {
-                Divider()
-                logPanel
-                    .frame(maxWidth: .infinity)
-            }
         }
     }
 
@@ -530,7 +527,7 @@ public struct CleanupView: View {
 
             Spacer()
 
-            Text(String(format: "cleanup_mb_format".localized, category.sizeMB))
+            Text(category.sizeBytes.formattedByteCount())
                 .font(.system(.body, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -546,8 +543,10 @@ public struct CleanupView: View {
             set: { _ in viewModel.toggleCategoryExpansion(category.id) }
         )) {
             ForEach(viewModel.visibleItems(for: category.id)) { item in
-                fileRow(item)
-                    .padding(.leading, 8)
+                CleanupFileRow(item: item, settings: viewModel.settings) {
+                    viewModel.toggleSelection(for: item.id)
+                }
+                .padding(.leading, 8)
             }
             if viewModel.hasMoreItems(category.id) {
                 Button {
@@ -570,49 +569,7 @@ public struct CleanupView: View {
         )
     }
 
-    // MARK: - File Row
-
-    private func fileRow(_ item: CleanupPreviewItem) -> some View {
-        HStack(spacing: 8) {
-            if item.isDeletable {
-                Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 12))
-                    .foregroundColor(item.isSelected ? .accentColor : .secondary)
-                    .frame(width: 18, height: 18)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        viewModel.toggleSelection(for: item.id)
-                    }
-            } else {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .frame(width: 18, height: 18)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.path ?? item.label)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-
-                if let date = item.modificationDate {
-                    Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            Spacer()
-
-            Text(String(format: "cleanup_mb_format".localized, item.sizeMB))
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical, 2)
-    }
-    
+    // MARK: - Risk Badge
     private func riskBadge(for risk: OperationRisk) -> some View {
         Text(risk.localizedTitle.uppercased())
             .font(.system(size: 9, weight: .bold))
@@ -663,7 +620,11 @@ public struct CleanupView: View {
                 
                 Spacer()
                 
-                Button(action: { showLogs = false }) {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showLogs = false
+                    }
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.secondary)
                 }
@@ -677,28 +638,6 @@ public struct CleanupView: View {
                     .frame(height: 1)
                     .foregroundColor(Color(NSColor.separatorColor)),
                 alignment: .bottom
-            )
-            .overlay(
-                // Resize Handle Area
-                Rectangle()
-                    .fill(Color.clear)
-                    .frame(height: 4)
-                    .contentShape(Rectangle())
-                    .onHover { inside in
-                        if inside {
-                            NSCursor.resizeUpDown.set()
-                        } else {
-                            NSCursor.arrow.set()
-                        }
-                    }
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                let delta = value.location.y - value.startLocation.y
-                                logHeight = max(100, min(600, logHeight - delta))
-                            }
-                    ),
-                alignment: .top
             )
             
             ScrollViewReader { proxy in
@@ -715,28 +654,39 @@ public struct CleanupView: View {
                     }
                     .padding(8)
                 }
-                .frame(height: logHeight)
                 .background(Color.black.opacity(0.12))
                 .onChange(of: viewModel.scriptLogs.count) { _, _ in
-                    if let last = viewModel.scriptLogs.indices.last {
-                        proxy.scrollTo(last, anchor: .bottom)
+                    scrollTaskBox.task?.cancel()
+                    scrollTaskBox.task = Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(50))
+                        guard !Task.isCancelled else { return }
+                        if let last = viewModel.scriptLogs.indices.last {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                proxy.scrollTo(last, anchor: .bottom)
+                            }
+                        }
                     }
                 }
             }
         }
+        .background(Color(NSColor.windowBackgroundColor))
     }
     
     private var footer: some View {
         HStack(spacing: 12) {
             if viewModel.state == .preview {
-                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeMB))
+                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
                     .fontWeight(.semibold)
                     .foregroundColor(.accentColor)
             }
             
             if !viewModel.scriptLogs.isEmpty {
                 HStack(spacing: 16) {
-                    Button(action: { showLogs.toggle() }) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showLogs.toggle()
+                        }
+                    }) {
                         HStack(spacing: 4) {
                             Image(systemName: showLogs ? "chevron.down.square" : "chevron.up.square")
                             Text(showLogs ? "cleanup_hide_logs".localized : "cleanup_show_logs".localized)
@@ -777,36 +727,164 @@ public struct CleanupView: View {
                 Button("reset".localized) {
                     viewModel.reset()
                 }
+                .glassButtonStyle()
                 .keyboardShortcut(.cancelAction)
                 
                 Button("cleanup_now".localized) {
                     viewModel.executeCleanup()
                 }
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle()
                 .keyboardShortcut(.defaultAction)
-                .disabled(viewModel.selectedSizeMB == 0)
+                .disabled(viewModel.selectedSizeBytes == 0)
             }
         }
         .padding()
-        .background(VisualEffectView(material: .titlebar, blendingMode: .withinWindow))
+        .glassEffect()
     }
 }
 
-// Glassmorphism blur effect helper
-struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
-    
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blendingMode
-        view.state = .active
-        return view
+struct CleanupFileRow: View {
+    let item: CleanupPreviewItem
+    let settings: AppSettings
+    let onToggleSelection: () -> Void
+
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                if item.isDeletable {
+                    Image(systemName: item.isSelected ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 12))
+                        .foregroundColor(item.isSelected ? .accentColor : .secondary)
+                        .frame(width: 18, height: 18)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onToggleSelection()
+                        }
+                } else {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .frame(width: 18, height: 18)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.path ?? item.label)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    if let date = item.modificationDate {
+                        Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                if let path = item.path {
+                    Button {
+                        let resolvedPath = (path as NSString).expandingTildeInPath
+                        let url = URL(fileURLWithPath: resolvedPath)
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    } label: {
+                        Image(systemName: "arrow.up.forward.app")
+                            .foregroundColor(.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_show_in_finder".localized)
+                }
+
+                if settings.enableAI && AIExplanationService.shared.isAvailable, let path = item.path {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation(path: path)
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_explain_with_ai".localized)
+                }
+
+                Text(item.sizeBytes.formattedByteCount())
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 2)
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small).frame(width: 16, height: 16)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 26)
+                .padding(.bottom, 4)
+            }
+        }
     }
-    
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
-        nsView.blendingMode = blendingMode
+
+    private func generateAIExplanation(path: String) {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainCleanupFile(
+                    fileName: item.label,
+                    filePath: path,
+                    category: item.category ?? "Cache/Temporary Data",
+                    sizeFormatted: item.sizeBytes.formattedByteCount(),
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
+        }
     }
+}
+
+private final class ScrollTaskBox {
+    var task: Task<Void, Never>?
 }

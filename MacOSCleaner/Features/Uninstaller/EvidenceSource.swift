@@ -86,7 +86,7 @@ extension Evidence {
              .electronCache, .jetBrainsConfig, .flutterBuild,
              .launchAgent, .launchDaemon, .loginItem,
              .appGroup, .container, .extension, .xpcConnection,
-             .packageReceipt, .launchServicesRegistered:
+             .packageReceipt, .knownCatalog, .launchServicesRegistered:
             return .rule
         }
     }

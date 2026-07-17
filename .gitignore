@@ -39,7 +39,7 @@ Package.resolved
 # ============================================================
 # IDE
 # ============================================================
-
+.cursor/
 .idea/
 .vscode/
 .agent/
@@ -119,3 +119,4 @@ xcuserdata/
 *.xcuserstate
 opencode.json
 .agents
+problematic_apps/

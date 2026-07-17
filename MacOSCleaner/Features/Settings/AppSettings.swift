@@ -1,7 +1,7 @@
 import SwiftUI
 import Observation
 
-public enum AppLanguage: String, CaseIterable, Identifiable {
+public enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
     case english = "en"
     case russian = "ru"
     case ukrainian = "uk"
@@ -127,6 +127,7 @@ public final class AppSettings {
         static let processRefreshInterval = "settings_processRefreshInterval"
         static let processSortOption = "settings_processSortOption"
         static let uninstallerScanMode = "settings_uninstallerScanMode"
+        static let enableAI = "settings_enableAI"
     }
 
     // MARK: - General
@@ -160,6 +161,10 @@ public final class AppSettings {
 
     public var autoScanOnStartup: Bool {
         didSet { UserDefaults.standard.set(autoScanOnStartup, forKey: Keys.autoScanOnStartup) }
+    }
+
+    public var enableAI: Bool {
+        didSet { UserDefaults.standard.set(enableAI, forKey: Keys.enableAI) }
     }
 
     // MARK: - Cleanup
@@ -220,6 +225,7 @@ public final class AppSettings {
         self.processRefreshInterval = RefreshInterval(rawValue: defaults.string(forKey: Keys.processRefreshInterval) ?? "") ?? .manual
         self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
         self.uninstallerScanMode = ScanMode(rawValue: defaults.string(forKey: Keys.uninstallerScanMode) ?? "") ?? .balanced
+        self.enableAI = defaults.object(forKey: Keys.enableAI) as? Bool ?? true
 
         LanguageManager.shared.setLanguage(lang)
 
@@ -236,7 +242,8 @@ public final class AppSettings {
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
             Keys.showRelatedFiles, Keys.emptyTrashImmediately,
-            Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode
+            Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
+            Keys.enableAI
         ]
         for key in allKeys {
             defaults.removeObject(forKey: key)
@@ -254,6 +261,7 @@ public final class AppSettings {
         processRefreshInterval = .manual
         processSortOption = .cpu
         uninstallerScanMode = .balanced
+        enableAI = true
 
         LanguageManager.shared.setLanguage(.english)
     }

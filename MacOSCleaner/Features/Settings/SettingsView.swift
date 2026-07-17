@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import FoundationModels
 
 // MARK: - SettingsView
 
@@ -20,12 +21,14 @@ struct SettingsView: View {
             generalSection
             processesSection
             uninstallerSection
+            aiSection
             startupSection
             trashDeletionSection
             advancedSection
             resetSection
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .confirmationDialog(
             "settings_reset_confirm_title".localized,
             isPresented: $showResetConfirmation,
@@ -80,6 +83,15 @@ struct SettingsView: View {
                 Label("settings_check_permissions".localized, systemImage: "arrow.clockwise")
             }
             .buttonStyle(.plain)
+
+            if !permissionsManager.hasFullDiskAccess {
+                Button {
+                    permissionsManager.requestGuidanceAgain()
+                } label: {
+                    Label("settings_show_permission_guide".localized, systemImage: "hand.raised")
+                }
+                .buttonStyle(.plain)
+            }
         } header: {
             Label("settings_permissions".localized, systemImage: "lock.shield")
         }
@@ -264,6 +276,60 @@ struct SettingsView: View {
                 .tooltip("settings_tooltip_empty_trash_immediately".localized, enabled: settings.showTooltips)
         } header: {
             Label("settings_trash_deletion".localized, systemImage: "trash")
+        }
+    }
+
+    // MARK: - Apple Intelligence
+
+    private var aiSection: some View {
+        Section {
+            Toggle("settings_enable_ai".localized, isOn: $settings.enableAI)
+                .tooltip("settings_tooltip_enable_ai".localized, enabled: settings.showTooltips)
+
+            HStack {
+                Text("settings_ai_status".localized)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                aiStatusLabel
+            }
+        } header: {
+            Label("settings_ai_title".localized, systemImage: "sparkles")
+        }
+    }
+
+    @ViewBuilder
+    private var aiStatusLabel: some View {
+        if !settings.enableAI {
+            Label("settings_ai_status_disabled".localized, systemImage: "slash.circle")
+                .foregroundStyle(.secondary)
+                .font(.caption)
+        } else {
+            let status = SystemLanguageModel.default.availability
+            switch status {
+            case .available:
+                Label("settings_ai_status_ready".localized, systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .font(.caption)
+            case .unavailable(let reason):
+                switch reason {
+                case .deviceNotEligible:
+                    Label("settings_ai_status_unsupported_device".localized, systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .font(.caption)
+                case .appleIntelligenceNotEnabled:
+                    Label("settings_ai_status_not_enabled".localized, systemImage: "exclamationmark.circle.fill")
+                        .foregroundStyle(.orange)
+                        .font(.caption)
+                case .modelNotReady:
+                    Label("settings_ai_status_downloading".localized, systemImage: "arrow.down.circle.fill")
+                        .foregroundStyle(.blue)
+                        .font(.caption)
+                @unknown default:
+                    Label("settings_ai_status_unavailable".localized, systemImage: "xmark.circle.fill")
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                }
+            }
         }
     }
 

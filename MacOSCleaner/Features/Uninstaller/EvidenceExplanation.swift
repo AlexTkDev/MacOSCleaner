@@ -50,14 +50,13 @@ public enum EvidenceExplanations {
                 }
             }
         }
-        var grouped: [EvidenceCategory: [EvidenceExplanation]] = [:]
-        for evidence in set {
-            let arg = args[evidence] ?? "" as CVarArg
-            let exp = explanation(for: evidence, args: arg)
-            grouped[exp.category, default: []].append(exp)
-        }
-        for key in grouped.keys {
-            grouped[key]?.sort { $0.evidence.rawValue < $1.evidence.rawValue }
+        let initialGrouped = Dictionary(grouping: set) { $0.category }
+        let grouped = initialGrouped.mapValues { (evidences: [Evidence]) -> [EvidenceExplanation] in
+            let explanations = evidences.map { (evidence: Evidence) -> EvidenceExplanation in
+                let arg = args[evidence] ?? "" as CVarArg
+                return explanation(for: evidence, args: arg)
+            }
+            return explanations.sorted { $0.evidence.rawValue < $1.evidence.rawValue }
         }
         return grouped
     }

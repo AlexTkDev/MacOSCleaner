@@ -24,7 +24,7 @@ public struct ElectronRule: ApplicationRule {
     ]
 
     private let electronArtifactDirs: Set<String> = [
-        "Cache", "Code Cache", "GPUCache",
+        "Cache", "Code Cache", "GPUCache", "CachedData", "Backups",
         "Local Storage", "Session Storage",
         "IndexedDB", "blob_storage", "Service Worker",
         "PartitionedStorage", "Network", "Extensions",
@@ -37,15 +37,16 @@ public struct ElectronRule: ApplicationRule {
         let name = candidate.lastPathComponent
         var evidence: [ArtifactEvidence] = []
 
-        let appSupportPath = "/application support/\(identity.appName.lowercased())"
+        let supportNames = [identity.appName, identity.executableName] + [identity.bundleName].compactMap { $0 }
+        // `path` is lowercased — names must be too, or "Cursor" never matches
+        let lowerSupportNames = supportNames.map { $0.lowercased() }.filter { !$0.isEmpty }
 
-        if electronArtifactDirs.contains(name) {
-            if path.contains(appSupportPath) {
-                evidence.append(ArtifactEvidence(source: .rule, weight: 40))
-            }
+        if electronArtifactDirs.contains(name),
+           lowerSupportNames.contains(where: { path.contains("/application support/\($0)") }) {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 50))
         }
 
-        if path.contains(appSupportPath) {
+        if lowerSupportNames.contains(where: { path.contains("/application support/\($0)") }) {
             evidence.append(ArtifactEvidence(source: .appName, weight: 60))
         }
 

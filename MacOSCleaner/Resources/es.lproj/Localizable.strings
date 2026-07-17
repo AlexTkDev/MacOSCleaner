@@ -2,6 +2,8 @@
 "welcome_msg" = "¡Bienvenido de nuevo!";
 "app_title" = "Limpiador";
 "sidebar_select_item" = "Seleccione un elemento de la barra lateral";
+"sidebar_section_tools" = "Limpieza";
+"sidebar_section_system" = "Sistema";
 "close" = "Cerrar";
 "cancel_description" = "La operación fue cancelada por el usuario.";
 "reset" = "Restablecer";
@@ -20,6 +22,30 @@
 "menu_startup_vendors" = "Proveedores de inicio";
 "menu_uninstaller" = "Desinstalador";
 "menu_settings" = "Ajustes";
+"menu_disk_space" = "Analizador de disco";
+
+// Disk Analyzer Screen
+"disk_analyzer_title" = "Analizador de espacio de disco";
+"disk_analyzer_scan" = "Escanear carpeta";
+"disk_analyzer_scanning" = "Escaneando...";
+"disk_analyzer_back" = "Volver";
+"disk_analyzer_delete_confirm" = "¿Mover elementos seleccionados a la Papelera?";
+"delete_action" = "Eliminar";
+"disk_analyzer_show_in_finder" = "Mostrar en Finder";
+"disk_analyzer_move_to_trash" = "Mover a la Papelera";
+"disk_analyzer_select_folder" = "Seleccionar carpeta para escanear";
+"disk_analyzer_empty" = "La carpeta está vacía o no ha sido escaneada";
+"disk_analyzer_no_permissions" = "Sin permisos de acceso para esta carpeta";
+"folder" = "Carpeta";
+"disk_analyzer_category_empty" = "No se encontraron archivos en la categoría '%@'";
+"disk_analyzer_category_all" = "Todo";
+"disk_analyzer_category_video" = "Vídeo";
+"disk_analyzer_category_audio" = "Audio";
+"disk_analyzer_category_photo" = "Fotos";
+"disk_analyzer_category_apps" = "Aplicaciones";
+"disk_analyzer_category_docs" = "Documentos";
+"disk_analyzer_category_archives" = "Archivos";
+
 
 // About View
 "about_title" = "Acerca de MacOS Cleaner";
@@ -27,6 +53,7 @@
 "about_developer" = "Desarrollado por AlexTkDev";
 "about_problem_link" = "Si tiene un problema con la aplicación, avíseme aquí";
 "about_linkedin" = "Perfil de LinkedIn";
+"about_website" = "Sitio web";
 "about_copyright" = "© 2026 AlexTkDev. Todos los derechos reservados.";
 
 // Dashboard View
@@ -47,6 +74,13 @@
 "dashboard_healthy" = "Saludable";
 "dashboard_recent_operations" = "Operaciones recientes";
 "dashboard_no_recent_operations" = "Sin operaciones recientes";
+"dashboard_radar_caches" = "Cachés";
+"dashboard_radar_logs" = "Registros";
+"dashboard_radar_dev" = "Desarrollo";
+"dashboard_radar_apps" = "Aplicaciones";
+"dashboard_radar_media" = "Medios";
+"dashboard_radar_other" = "Otros";
+"dashboard_radar_tooltip_format" = "%@: %@";
 
 // Language Names
 "language.english" = "Inglés";
@@ -96,6 +130,9 @@
 "update.available" = "Versión %@ disponible";
 "update.download" = "Descargar en GitHub";
 "update.up_to_date" = "Versión actual";
+"update.up_to_date_message" = "Está utilizando la última versión de la aplicación.";
+"update.releases_label" = "Lanzamientos:";
+"update.website_label" = "Sitio web:";
 "update.checking" = "Comprobando...";
 
 // Settings Tooltips
@@ -200,10 +237,10 @@
 "cleanup_failed_default" = "Ocurrió un error durante el proceso de limpieza.";
 "cleanup_script_logs" = "Registros de script:";
 "cleanup_complete" = "Limpieza completa";
-"cleanup_complete_sub" = "Se liberaron %lld MB de espacio en disco.";
+"cleanup_complete_sub" = "Se liberaron %@ de espacio en disco.";
 "cleanup_summary" = "Resumen de elementos eliminados";
 "cleanup_skipped" = "No se pudo limpiar";
-"cleanup_selected" = "Seleccionado: %lld MB";
+"cleanup_selected" = "Seleccionado: %@";
 "cleanup_hide_logs" = "Ocultar registros";
 "cleanup_show_logs" = "Mostrar registros";
 "cleanup_copy" = "Copiar";
@@ -217,13 +254,13 @@
 "cleanup_select_all" = "Seleccionar todo";
 "cleanup_show_all_count" = "Mostrar todo (%lld más)";
 "cleanup_debug_log" = "Registro de depuración (%lld líneas)";
-
+ 
 // Cleanup Notifications
 "cleanup_scan_complete_title" = "Escaneo completo";
-"cleanup_scan_complete_body" = "Se encontraron %lld MB de archivos para limpiar.";
+"cleanup_scan_complete_body" = "Se encontraron %@ de archivos para limpiar.";
 "cleanup_emptying_trash" = "Vaciando papelera...";
 "cleanup_complete_title" = "Limpieza completa";
-"cleanup_complete_body" = "Se liberaron %lld MB.";
+"cleanup_complete_body" = "Se liberaron %@.";
 
 // Trash
 "trash_user_label" = "Papelera del usuario";
@@ -311,8 +348,11 @@
 "permissions_step4" = "Vuelva a MacOSCleaner y haga clic en 'Verificar estado'.";
 "permissions_open_settings" = "Abrir Ajustes del sistema";
 "permissions_check_status" = "Verificar estado";
-"permissions_dismiss_temp" = "Saltar por ahora";
+"permissions_dismiss_temp" = "Omitir por ahora";
 "permissions_dismiss_permanent" = "No mostrar de nuevo";
+"permissions_warning_title" = "¿Estás seguro?";
+"permissions_warning_message" = "Sin el Acceso Total al Disco, la aplicación no podrá encontrar ni limpiar muchos archivos innecesarios. La calidad de la limpieza se verá afectada considerablemente.";
+"permissions_warning_confirm" = "Nunca permitir";
 "permissions_status_granted" = "Concedido";
 "permissions_status_required" = "Requerido";
 "permissions_window_title" = "Permisos";
@@ -322,6 +362,7 @@
 "settings_fda_description" = "Necesario para limpiar cachés del sistema y datos de aplicaciones.";
 "settings_open_settings" = "Abrir ajustes";
 "settings_check_permissions" = "Verificar permisos";
+"settings_show_permission_guide" = "Conceder acceso total al disco";
 
 // Format strings
 "dashboard_used_percent_format" = "%lld%%";
@@ -443,6 +484,7 @@
 
 // Developer Components
 "developer.android_sdk" = "Android SDK";
+"developer.android_data" = "Datos de Android y dispositivos virtuales";
 "developer.gradle_cache" = "Caché de Gradle";
 "developer.xcode_derived_data" = "Xcode Derived Data";
 "developer.ios_simulators" = "Simuladores de iOS";
@@ -498,6 +540,8 @@
 "uninstaller.evidence.xpcConnection.description" = "Una conexión XPC utilizada por la aplicación.";
 "uninstaller.evidence.packageReceipt.title" = "Recibo de paquete";
 "uninstaller.evidence.packageReceipt.description" = "Registrado mediante un recibo de paquete.";
+"uninstaller.evidence.knownCatalog.title" = "Residuo conocido";
+"uninstaller.evidence.knownCatalog.description" = "Incluido en el catálogo de residuos de esta aplicación.";
 "uninstaller.evidence.plistContent.title" = "Contenido de Plist";
 "uninstaller.evidence.plistContent.description" = "La lista de propiedades contiene el nombre o Bundle ID de la aplicación.";
 "uninstaller.evidence.spotlight.title" = "Índice de Spotlight";
@@ -566,3 +610,20 @@
 
 // OS Version
 "os_version_format" = "macOS %lld.%lld.%lld";
+
+/* Apple Intelligence settings */
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "Explicaciones locales de IA";
+"settings_tooltip_enable_ai" = "Utiliza modelos de lenguaje locales en el dispositivo para explicar archivos asociados y servicios de arranque.";
+"settings_ai_status" = "Estado de IA";
+"settings_ai_status_disabled" = "Desactivado";
+"settings_ai_status_ready" = "Listo";
+"settings_ai_status_unsupported_device" = "Dispositivo no compatible";
+"settings_ai_status_not_enabled" = "No activado en Ajustes del Sistema";
+"settings_ai_status_downloading" = "Descargando modelo...";
+"settings_ai_status_unavailable" = "No disponible";
+
+/* AI Explanations */
+"uninstaller_explain_with_ai" = "Explicar con IA";
+"uninstaller_ai_explaining" = "Generando explicación...";
+"uninstaller_ai_failed" = "La IA no está disponible o no pudo generar la explicación.";

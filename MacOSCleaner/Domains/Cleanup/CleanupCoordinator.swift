@@ -23,10 +23,14 @@ public final class CleanupCoordinator: @unchecked Sendable {
     public var totalSteps: Int = 1
     public var stepTitle: String = ""
     public var totalFreedMB: Int = 0
+    public var totalFreedBytes: Int64 = 0
     public var cleanedItems: [CleanupResultItem] = []
     public var skippedItems: [SkippedCleanupItem] = []
     public var lastError: String? = nil
     public var scriptLogs: [String] = []
+    
+    private var pendingLogs: [String] = []
+    private var isLogFlushScheduled = false
     
     public init(
         engine: CleanupEngine,
@@ -67,8 +71,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 
                 try self.stateMachine.transition(to: .scanning)
                 self.itemManager.clear()
+                FileManager.clearSizeCache()
                 self.lastError = nil
                 self.scriptLogs = []
+                self.pendingLogs = []
+                self.isLogFlushScheduled = false
                 self.skippedItems = []
                 
                 // Close running apps before scan for better cache cleanup
@@ -83,6 +90,10 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     }
                 }
                 
+                // Allow final main-actor logs to process, then flush
+                try? await Task.sleep(for: .milliseconds(100))
+                self.flushLogs()
+                
                 if self.settings.emptyTrashDuringCleanup {
                     let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
                     let trashSizeBytes = FileManager.default.getDirectorySize(url: trashURL)
@@ -94,6 +105,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     let trashItem = CleanupPreviewItem(
                         label: localizedLabel,
                         sizeMB: trashSizeMB,
+                        sizeBytes: trashSizeBytes,
                         risk: .safe,
                         isSelected: true,
                         isDeletable: true,
@@ -105,10 +117,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 try self.stateMachine.transition(to: .preview)
                 
                 self.notifier.sendScanComplete(
-                    selectedSizeMB: self.itemManager.selectedSizeMB,
+                    selectedSizeBytes: self.itemManager.selectedSizeBytes,
                     showNotifications: self.settings.showNotifications
                 )
             } catch let error {
+                self.flushLogs()
                 Logger.coordinator.error("startScan failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 do {
@@ -130,9 +143,12 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedMB = 0
+                self.totalFreedBytes = 0
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
+                self.pendingLogs = []
+                self.isLogFlushScheduled = false
                 
                 let isTrashSelected = self.itemManager.items.contains { item in
                     item.isSelected && item.label == "trash_user_label".localized
@@ -142,7 +158,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     try await self.trashManager.requestTrashAccess()
                 }
                 
-                let categories = options.categories()
+                let categories = self.itemManager.selectedCleanupCategories(from: options.categories())
                 var records: [OperationRecord] = []
                 
                 let results = try await self.engine.run(categories: categories, dryRun: false, options: options) { [weak self] event in
@@ -152,10 +168,17 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     }
                 }
                 
+                // Allow final main-actor logs to process, then flush
+                try? await Task.sleep(for: .milliseconds(100))
+                self.flushLogs()
+                
                 for result in results {
                     self.totalFreedMB += result.freedMB
-                    self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB))
-                    records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: Int64(result.freedMB * 1024 * 1024)))
+                    self.totalFreedBytes += result.freedBytes
+                    if result.freedBytes > 0 {
+                        self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB, freedBytes: result.freedBytes))
+                    }
+                    records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))
                 }
                 
                 // Check for skipped categories from logs
@@ -176,7 +199,10 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     
                     let trashLabel = "trash_user_label".localized
                     self.totalFreedMB += deletedMB
-                    self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB))
+                    self.totalFreedBytes += deletedBytes
+                    if deletedBytes > 0 {
+                        self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                    }
                     records.append(OperationRecord(id: UUID(), itemPath: "~/.Trash", status: "success", bytesFreed: deletedBytes))
                 }
                 
@@ -189,12 +215,13 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 }
                 
                 self.notifier.sendCleanupComplete(
-                    totalFreedMB: self.totalFreedMB,
+                    totalFreedBytes: self.totalFreedBytes,
                     showNotifications: self.settings.showNotifications
                 )
                 
                 try self.stateMachine.transition(to: .completed)
             } catch let error {
+                self.flushLogs()
                 Logger.coordinator.error("executeCleanup failed: \(error.localizedDescription, privacy: .public)")
                 self.lastError = error.localizedDescription
                 do {
@@ -347,14 +374,46 @@ public final class CleanupCoordinator: @unchecked Sendable {
             }
         case .categoryResult(let category, let label, let freedMB):
             Logger.coordinator.debug("CategoryResult event: cat=\(category), label=\(label, privacy: .public), freed=\(freedMB)")
-            if freedMB > 0 {
+            if freedMB > 0, !hasPathBackedPreviewItems(for: category, label: label) {
                 self.itemManager.appendPreviewItem(label, size: freedMB, deletable: true, parentName: category, description: nil)
             }
         case .log(let message):
-            self.scriptLogs.append(message)
+            self.pendingLogs.append(message)
+            self.scheduleLogFlushIfNeeded()
         case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
-            let effectiveParent = parentName ?? category
-            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: category, parentName: effectiveParent)
+            let localizedCategory = CleanupCategory.localizedGroupTitle(for: category)
+            let effectiveParent = parentName.map { CleanupCategory.localizedGroupTitle(for: $0) } ?? localizedCategory
+            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: localizedCategory, parentName: effectiveParent)
         }
+    }
+    
+    @MainActor
+    private func scheduleLogFlushIfNeeded() {
+        guard !isLogFlushScheduled else { return }
+        isLogFlushScheduled = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+            self.flushLogs()
+        }
+    }
+    
+    @MainActor
+    private func hasPathBackedPreviewItems(for category: String, label: String) -> Bool {
+        itemManager.items.contains { item in
+            let matchesCategory = item.label == category
+                || CleanupCategory.localizedGroupTitle(for: item.label) == category
+                || item.label == label
+            guard matchesCategory else { return false }
+            return item.children.contains { $0.path != nil }
+        }
+    }
+
+    @MainActor
+    private func flushLogs() {
+        if !pendingLogs.isEmpty {
+            self.scriptLogs.append(contentsOf: self.pendingLogs)
+            self.pendingLogs.removeAll()
+        }
+        isLogFlushScheduled = false
     }
 }

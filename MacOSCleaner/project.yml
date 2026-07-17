@@ -7,7 +7,7 @@ targets:
   MacOSCleaner:
     type: application
     platform: macOS
-    deploymentTarget: "15.5"
+    deploymentTarget: "26.0"
     sources:
       - App
       - Domains
@@ -20,8 +20,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 1.1.1
-        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 2.0.0
+        CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
@@ -33,7 +33,7 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 MacOSCleaner. All rights reserved."
         SWIFT_COMPILATION_MODE: wholemodule
         DEAD_CODE_STRIPPING: YES
-        SWIFT_STRICT_CONCURRENCY: minimal
+        SWIFT_STRICT_CONCURRENCY: complete
         CLANG_ANALYZER_NONNULL: YES
         GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
         COPY_PHASE_STRIP: NO
@@ -47,7 +47,7 @@ targets:
   MacOSCleanerTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "15.5"
+    deploymentTarget: "26.0"
     sources:
       - MacOSCleanerTests
     dependencies:

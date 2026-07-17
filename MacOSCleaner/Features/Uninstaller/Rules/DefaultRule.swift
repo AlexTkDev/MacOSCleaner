@@ -34,6 +34,20 @@ public struct DefaultRule: ApplicationRule {
         if parent == "Group Containers" && (name == "group.\(identity.bundleID)" || name.hasPrefix("group.\(identity.bundleID).")) {
             evidence.append(ArtifactEvidence(source: .rule, weight: 70))
         }
+        if parent == "Group Containers", identity.appGroups.contains(name) {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 90))
+        } else if parent == "Group Containers", let teamID = identity.teamID, name.hasPrefix(teamID + ".") {
+            let suffix = String(name.dropFirst(teamID.count + 1)).lowercased()
+            if suffix == identity.bundleID.lowercased() || EvidenceProbe.bundleIDSuffixMatch(suffix, bundleID: identity.bundleID.lowercased()) {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 90))
+            }
+        }
+
+        if path.contains("/library/caches/") || path.contains("/library/logs/") {
+            if name.lowercased() == identity.bundleID.lowercased() || name.lowercased().hasPrefix(identity.bundleID.lowercased() + ".") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
+            }
+        }
 
         if path.contains("/launchagents/") || path.contains("/launchdaemons/") {
             if path.contains(identity.bundleID.lowercased()) || name.lowercased().contains(identity.appName.lowercased()) {

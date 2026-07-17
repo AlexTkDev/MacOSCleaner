@@ -33,6 +33,17 @@ public enum ParentLinker {
                 let parentURL = URL(fileURLWithPath: parentPath)
                 links.append((parentURL, .bundleIDPrefix))
             }
+
+            if identity.appGroups.contains(component) {
+                let parentPath = Array(pathComponents[0...i]).joined(separator: "/")
+                links.append((URL(fileURLWithPath: parentPath), .appGroup))
+            } else if let teamID = identity.teamID, component.hasPrefix(teamID + ".") {
+                let suffix = String(component.dropFirst(teamID.count + 1)).lowercased()
+                if suffix == identity.bundleID.lowercased() || EvidenceProbe.bundleIDSuffixMatch(suffix, bundleID: identity.bundleID.lowercased()) {
+                    let parentPath = Array(pathComponents[0...i]).joined(separator: "/")
+                    links.append((URL(fileURLWithPath: parentPath), .appGroup))
+                }
+            }
         }
 
         if path.hasPrefix(bundlePath + "/") || path == bundlePath {

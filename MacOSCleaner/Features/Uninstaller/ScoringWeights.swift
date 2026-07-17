@@ -23,6 +23,7 @@ public struct ScoringWeights: Sendable, Equatable {
     public var xpcConnection: Int = 60
 
     public var packageReceipt: Int = 100
+    public var knownCatalog: Int = 100
     public var plistContent: Int = 80
 
     public var spotlight: Int = 5
@@ -64,6 +65,7 @@ public struct ScoringWeights: Sendable, Equatable {
         case .extension: return self.extension
         case .xpcConnection: return xpcConnection
         case .packageReceipt: return packageReceipt
+        case .knownCatalog: return knownCatalog
         case .plistContent: return plistContent
         case .spotlight: return spotlight
         case .spotlightBundleAttr: return spotlightBundleAttr

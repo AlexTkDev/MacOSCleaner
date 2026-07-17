@@ -9,46 +9,47 @@ struct DashboardView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("dashboard_title".localized)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                HStack(alignment: .top, spacing: 20) {
-                    diskUsageCard
-                    statsCard
+        GlassEffectContainer {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    HStack(alignment: .top, spacing: 20) {
+                        diskUsageCard
+                        rightColumn
+                    }
+                    
+                    recentOperationsSection
                 }
-                
-                systemInfoSection
-                
-                recentOperationsSection
+                .padding(24)
             }
-            .padding(24)
         }
-        .background(Color(NSColor.controlBackgroundColor))
         .task {
             await viewModel.refresh()
         }
     }
     
-    private var systemInfoSection: some View {
+    // Right column: Stats + System Info stacked
+    private var rightColumn: some View {
         VStack(alignment: .leading, spacing: 16) {
+            statsCard
+            systemInfoCard
+        }
+    }
+    
+    private var systemInfoCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
             Label("dashboard_system_info".localized, systemImage: "info.circle")
                 .font(.headline)
             
-            HStack(spacing: 40) {
+            VStack(alignment: .leading, spacing: 10) {
                 SystemInfoItem(title: "dashboard_model".localized, value: viewModel.systemInfo.model, icon: "laptopcomputer")
                 SystemInfoItem(title: "dashboard_os_version".localized, value: viewModel.systemInfo.osVersion, icon: "info.circle")
                 SystemInfoItem(title: "dashboard_processor".localized, value: viewModel.systemInfo.processor, icon: "cpu")
                 SystemInfoItem(title: "dashboard_memory".localized, value: viewModel.systemInfo.memory, icon: "memorychip")
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(NSColor.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
         }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
     }
     
     private var diskUsageCard: some View {
@@ -56,32 +57,21 @@ struct DashboardView: View {
             Label("dashboard_disk_usage".localized, systemImage: "internaldrive")
                 .font(.headline)
             
-            ZStack {
-                Chart {
-                    SectorMark(
-                        angle: .value("dashboard_used".localized, viewModel.usedDiskSpace),
-                        innerRadius: .ratio(0.55),
-                        angularInset: 2
-                    )
-                    .foregroundStyle(Color.accentColor)
-                    
-                    SectorMark(
-                        angle: .value("dashboard_free".localized, viewModel.freeDiskSpace),
-                        innerRadius: .ratio(0.55),
-                        angularInset: 2
-                    )
-                    .foregroundStyle(Color.secondary.opacity(0.15))
-                }
-                .frame(height: 200)
-                
-                VStack {
-                    Text(String(format: "dashboard_used_percent_format".localized, Int(viewModel.usedDiskPercentage * 100)))
-                        .font(.system(size: 28, weight: .bold))
-                        .minimumScaleFactor(0.5)
-                    Text("dashboard_used".localized)
-                        .font(.caption)
+            if viewModel.isCategoriesLoading {
+                VStack(spacing: 12) {
+                    LiquidGlassLoaderView(size: 48)
+                    Text("disk_analyzer_scanning".localized)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
+                .frame(height: 300)
+                .frame(maxWidth: .infinity)
+            } else {
+                DiskDonutChartView(
+                    items: viewModel.diskCategories,
+                    totalUsed: viewModel.usedDiskSpace,
+                    totalDisk: viewModel.totalDiskSpace
+                )
             }
             
             HStack(spacing: 0) {
@@ -93,27 +83,23 @@ struct DashboardView: View {
             }
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+        .glassCard()
     }
     
     private var statsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Label("dashboard_statistics".localized, systemImage: "chart.bar")
                 .font(.headline)
             
-            VStack(spacing: 20) {
-                StatRow(title: "dashboard_total_freed".localized, value: ByteCountFormatter.localizedString(fromByteCount: viewModel.totalFreedBytes, countStyle: .file), icon: "trash")
+            VStack(spacing: 12) {
+                StatRow(title: "dashboard_total_freed".localized, value: viewModel.totalFreedBytes.formattedByteCount(), icon: "trash")
                 StatRow(title: "dashboard_cleanups".localized, value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
                 StatRow(title: "dashboard_status".localized, value: "dashboard_healthy".localized, icon: "checkmark.circle", color: .green)
             }
-            Spacer()
         }
         .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
     }
     
     private var recentOperationsSection: some View {
@@ -126,9 +112,7 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+                    .glassCard()
             } else {
                 VStack(spacing: 0) {
                     ForEach(viewModel.recentTransactions) { transaction in
@@ -138,9 +122,7 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .background(Color(NSColor.controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+                .glassCard()
             }
         }
     }
@@ -190,7 +172,7 @@ struct TransactionRow: View {
             
             Spacer()
             
-            Text(String(format: "dashboard_freed_prefix".localized, ByteCountFormatter.localizedString(fromByteCount: totalFreed, countStyle: .file)))
+            Text(String(format: "dashboard_freed_prefix".localized, totalFreed.formattedByteCount()))
                 .foregroundColor(.green)
                 .fontWeight(.bold)
         }
@@ -216,7 +198,7 @@ struct DiskStatItem: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            Text(ByteCountFormatter.localizedString(fromByteCount: value, countStyle: .file))
+            Text(value.formattedByteCount())
                 .fontWeight(.medium)
         }
     }

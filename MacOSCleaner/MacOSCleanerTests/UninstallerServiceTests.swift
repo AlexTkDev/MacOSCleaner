@@ -61,6 +61,40 @@ final class UninstallerServiceTests: XCTestCase {
         XCTAssertEqual(file.confidence, .guaranteed)
     }
 
+    func testProtectedMailPaths() {
+        let home = NSHomeDirectory()
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail"))
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/V10/INBOX.mbox"))
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Containers/com.apple.mail/Data"))
+        // Mail plugins are legitimate residuals
+        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/Bundles/SomePlugin.mailbundle"))
+        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Application Support/SomeApp"))
+    }
+
+    func testPhysicalSize_sparseFile_reportsAllocatedNotLogical() throws {
+        let dir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SparseSizeTest_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        // 1 GB logical, ~0 allocated (APFS sparse file, like OrbStack data.img.raw)
+        let sparse = dir.appendingPathComponent("data.img.raw")
+        FileManager.default.createFile(atPath: sparse.path, contents: nil)
+        let handle = try FileHandle(forWritingTo: sparse)
+        try handle.truncate(atOffset: 1_073_741_824)
+        try handle.close()
+
+        let logical = (try? sparse.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+        XCTAssertEqual(logical, 1_073_741_824)
+
+        let physical = FileManager.default.getPhysicalDirectorySize(url: dir, excludedPaths: [])
+        XCTAssertLessThan(physical, 50 * 1024 * 1024,
+                          "Sparse file must be counted by allocated size, got \(physical)")
+
+        let filePhysical = FileManager.default.getPhysicalDirectorySize(url: sparse, excludedPaths: [])
+        XCTAssertLessThan(filePhysical, 50 * 1024 * 1024)
+    }
+
     func testEvidence_category_mapping() {
         XCTAssertEqual(Evidence.bundleIDExact.category, .identity)
         XCTAssertEqual(Evidence.teamID.category, .signature)

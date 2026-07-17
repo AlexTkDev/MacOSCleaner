@@ -1,60 +1,42 @@
 import SwiftUI
 
 public struct StartupServicesView: View {
-    @State private var viewModel: StartupServicesViewModel
-
-    public init(viewModel: StartupServicesViewModel = StartupServicesViewModel()) {
-        _viewModel = State(initialValue: viewModel)
-    }
+    let settings: AppSettings
+    @State private var viewModel = StartupServicesViewModel()
 
     public var body: some View {
-        VStack(spacing: 0) {
-            header
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                filterPicker
+                    .padding()
 
-            if viewModel.isLoading {
-                AnimatedScanView(
-                    title: "startup_scanning".localized,
-                    subtitle: "",
-                    currentStep: 0,
-                    totalSteps: 1
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let error = viewModel.lastError {
-                errorView(error)
-            } else if viewModel.services.isEmpty {
-                emptyView
-            } else {
-                serviceList
+                if viewModel.isLoading {
+                    AnimatedScanView(
+                        title: "startup_scanning".localized,
+                        subtitle: "",
+                        currentStep: 0,
+                        totalSteps: 1
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = viewModel.lastError {
+                    errorView(error)
+                } else if viewModel.services.isEmpty {
+                    emptyView
+                } else {
+                    serviceList
+                }
             }
         }
-        .background(Color(NSColor.controlBackgroundColor))
-        .onAppear { Task { await viewModel.scan() } }
-    }
-
-    private var header: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("startup_title".localized)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("startup_subtitle".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
+        .navigationSubtitle("startup_subtitle".localized)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
                 Button(action: { Task { await viewModel.scan() } }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 14, weight: .semibold))
                 }
-                .buttonStyle(.bordered)
                 .help("startup_refresh".localized)
             }
-
-            filterPicker
         }
-        .padding()
-        .background(Color(NSColor.windowBackgroundColor))
+        .onAppear { Task { await viewModel.scan() } }
     }
 
     private var filterPicker: some View {
@@ -121,16 +103,16 @@ public struct StartupServicesView: View {
                                   : Color.secondary.opacity(0.1))
                     )
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                Capsule()
                     .fill(viewModel.filter == tag
                           ? (color ?? Color.accentColor).opacity(0.1)
                           : Color.clear)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 6)
+                Capsule()
                     .stroke(viewModel.filter == tag
                             ? (color ?? Color.accentColor).opacity(0.3)
                             : Color.clear, lineWidth: 1)
@@ -143,7 +125,7 @@ public struct StartupServicesView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.filteredServices) { service in
-                    ServiceRow(service: service) {
+                    ServiceRow(service: service, settings: settings) {
                         Task { await viewModel.toggle(service: service) }
                     }
                     if service.id != viewModel.filteredServices.last?.id {
@@ -153,9 +135,7 @@ public struct StartupServicesView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.1), lineWidth: 0.5))
+            .glassCard()
             .padding()
         }
     }
@@ -201,35 +181,118 @@ public struct StartupServicesView: View {
 
 struct ServiceRow: View {
     let service: StartupService
+    let settings: AppSettings
     let onToggle: () -> Void
 
+    @State private var isExpanded = false
+    @State private var aiExplanation = ""
+    @State private var isGenerating = false
+    @State private var errorMessage: String? = nil
+
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            CategoryBadge(category: service.category)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 12) {
+                CategoryBadge(category: service.category)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(service.name)
-                    .font(.system(.body, design: .monospaced))
-                    .fontWeight(.medium)
-                Text(service.path)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(service.name)
+                        .font(.system(.body, design: .monospaced))
+                        .fontWeight(.medium)
+                    Text(service.path)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer()
+
+                if settings.enableAI && AIExplanationService.shared.isAvailable {
+                    Button {
+                        withAnimation(.spring()) {
+                            isExpanded.toggle()
+                        }
+                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                            generateAIExplanation()
+                        }
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(isExpanded ? .purple : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("uninstaller_explain_with_ai".localized)
+                }
+
+                StatusBadge(isEnabled: service.isEnabled)
+
+                Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
+                    onToggle()
+                }
+                .buttonStyle(.bordered)
+                .tint(service.isEnabled ? .red : .accentColor)
+                .controlSize(.small)
             }
-
-            Spacer()
-
-            StatusBadge(isEnabled: service.isEnabled)
-
-            Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
-                onToggle()
+            
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    Divider().padding(.vertical, 4)
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+                        
+                        if isGenerating {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("uninstaller_ai_explaining".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        } else {
+                            Text(aiExplanation)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 102)
+                .padding(.bottom, 4)
             }
-            .buttonStyle(.bordered)
-            .tint(service.isEnabled ? .red : .accentColor)
-            .controlSize(.small)
         }
         .padding(.vertical, 12)
+    }
+
+    private func generateAIExplanation() {
+        isGenerating = true
+        errorMessage = nil
+        
+        let lang = settings.language
+        Task {
+            do {
+                let result = try await AIExplanationService.shared.explainStartupService(
+                    serviceName: service.name,
+                    filePath: service.path,
+                    category: service.category.displayName,
+                    isEnabled: service.isEnabled,
+                    language: lang
+                )
+                
+                await MainActor.run {
+                    self.aiExplanation = result
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isGenerating = false
+                }
+            }
+        }
     }
 }
 
@@ -277,5 +340,5 @@ struct StatusBadge: View {
 }
 
 #Preview {
-    StartupServicesView()
+    StartupServicesView(settings: AppSettings())
 }

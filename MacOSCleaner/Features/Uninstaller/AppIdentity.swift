@@ -18,6 +18,9 @@ public struct AppIdentity: Sendable, Hashable {
     public let frameworkNames: Set<String>
     public let xpcServiceNames: Set<String>
     public let plugInNames: Set<String>
+    /// App groups from the code signature entitlements
+    /// (com.apple.security.application-groups) — ground truth for Group Containers.
+    public var appGroups: Set<String> = []
 
     public let isElectron: Bool
     public let isJetBrains: Bool
@@ -40,7 +43,9 @@ public extension AppIdentity {
         let authority = await extractSigningAuthority(url: url, commandRunner: commandRunner)
         let isAdHoc = authority?.contains("Ad Hoc") == true || authority?.contains("not signed") == true
         let isAppStore = fileExists(at: url.appendingPathComponent("Contents/_MASReceipt"))
-        let isSandboxed = await checkSandbox(url: url, commandRunner: commandRunner)
+        let entitlements = await extractEntitlements(url: url, commandRunner: commandRunner)
+        let isSandboxed = entitlements?["com.apple.security.app-sandbox"] as? Bool ?? false
+        let appGroups = Set(entitlements?["com.apple.security.application-groups"] as? [String] ?? [])
 
         let frameworkNames = await scanFrameworks(url: url)
         let xpcServiceNames = await scanXPCServices(url: url)
@@ -77,6 +82,7 @@ public extension AppIdentity {
             frameworkNames: frameworkNames,
             xpcServiceNames: xpcServiceNames,
             plugInNames: plugInNames,
+            appGroups: appGroups,
             isElectron: isElectron,
             isJetBrains: isJetBrains,
             isFlutter: isFlutter,
@@ -111,10 +117,13 @@ private func extractSigningAuthority(url: URL, commandRunner: CommandRunner) asy
     return nil
 }
 
-private func checkSandbox(url: URL, commandRunner: CommandRunner) async -> Bool {
-    let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-d", "--entitlements", ":-", url.path])
-    guard let output = result?.stdout else { return false }
-    return output.contains("com.apple.security.app-sandbox")
+private func extractEntitlements(url: URL, commandRunner: CommandRunner) async -> [String: Any]? {
+    let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-d", "--entitlements", ":-", "--xml", url.path])
+    guard let output = result?.stdout, !output.isEmpty,
+          let data = output.data(using: .utf8),
+          let plist = try? PropertyListSerialization.propertyList(from: data, format: nil)
+    else { return nil }
+    return plist as? [String: Any]
 }
 
 private func fileExists(at path: URL) -> Bool {
@@ -150,18 +159,24 @@ private func scanHelpers(url: URL) async -> Set<String> {
     return Set(helperNames.map { $0.deletingPathExtension().lastPathComponent })
 }
 
-private let vendorStopwords: Set<String> = ["com", "org", "net", "io", "app", "co", "inc", "ltd", "llc", "uk", "us", "eu"]
+// "apple" is a stopword: deriving vendor "Apple" from com.apple.* bundle IDs makes
+// OS-owned dirs like /Library/Application Support/Apple match as residuals.
+private let vendorStopwords: Set<String> = ["com", "org", "net", "io", "app", "co", "inc", "ltd", "llc", "uk", "us", "eu", "apple"]
 
 private func deriveVendorNames(bundleID: String, appName: String, authority: String?) -> Set<String> {
     var names = Set<String>()
     let parts = bundleID.components(separatedBy: ".")
+    // The last component of a 3+-part reverse-DNS ID is the product, not the vendor.
+    // Deriving "desktop" from ai.opencode.desktop (or "chrome" from com.google.Chrome)
+    // turns generic folder names anywhere on disk into vendor matches.
+    let vendorParts = parts.count >= 3 ? Array(parts.dropLast()) : parts
 
-    for p in parts where p.count >= 4 && !vendorStopwords.contains(p.lowercased()) {
+    for p in vendorParts where p.count >= 4 && !vendorStopwords.contains(p.lowercased()) {
         names.insert(p)
         names.insert(p.capitalized)
         names.insert(p.prefix(1).uppercased() + p.dropFirst())
     }
-    if let first = parts.first(where: { !vendorStopwords.contains($0.lowercased()) }) {
+    if let first = vendorParts.first(where: { $0.count >= 4 && !vendorStopwords.contains($0.lowercased()) }) {
         names.insert(first.capitalized)
     }
 
@@ -180,7 +195,7 @@ private func deriveVendorNames(bundleID: String, appName: String, authority: Str
     let staticAliases: [String: Set<String>] = [
         "jetbrains": ["JetBrains", "IntelliJ", "PyCharm", "DataGrip", "GoLand", "WebStorm", "RubyMine", "CLion", "Rider", "AppCode"],
         "adobe": ["Adobe"],
-        "microsoft": ["Microsoft", "Office", "Teams", "VS", "Code"],
+        "microsoft": ["Microsoft", "Office", "Teams", "VSCode"],
         "google": ["Google"],
         "docker": ["Docker"],
         "oracle": ["Oracle"],

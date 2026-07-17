@@ -13,6 +13,9 @@ public struct MicrosoftOfficeRule: ApplicationRule {
         "com.microsoft.Excel",
         "com.microsoft.Word",
         "com.microsoft.Powerpoint",
+        "com.microsoft.autoupdate2",
+        "com.microsoft.autoupdate",
+        "com.microsoft.autoupdate.fba",
     ]
     public let supportedTeamIDs: Set<String> = [
         "UBF8T346G9",
@@ -56,7 +59,10 @@ public struct MicrosoftOfficeRule: ApplicationRule {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
         }
         if path.contains("/caches/com.microsoft.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 50))
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
+        }
+        if path.contains("/caches/com.microsoft.autoupdate") {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
         }
         if path.contains("/containers/com.microsoft.") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))

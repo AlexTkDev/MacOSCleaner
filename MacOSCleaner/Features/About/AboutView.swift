@@ -22,7 +22,7 @@ struct AboutView: View {
                 .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
 
             VStack(spacing: 2) {
-                Text("app_title".localized)
+                Text("MacOS Cleaner")
                     .font(.title)
                     .fontWeight(.bold)
                 Text(String(format: "about_version".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "version_unknown".localized))
@@ -46,6 +46,12 @@ struct AboutView: View {
     }
 
     private var content: some View {
+        GlassEffectContainer {
+            contentStack
+        }
+    }
+
+    private var contentStack: some View {
         VStack(spacing: 16) {
             if let update = availableUpdate {
                 updateBanner(version: update)
@@ -79,9 +85,15 @@ struct AboutView: View {
                     Text(String(format: "update.available".localized, version))
                         .font(.headline)
                         .foregroundStyle(.white)
+                        .lineLimit(nil)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("update.download".localized + " →")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.8))
+                        .lineLimit(nil)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
@@ -105,14 +117,26 @@ struct AboutView: View {
             Spacer()
         }
         .padding(14)
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .glassCard(cornerRadius: 10)
     }
 
     private var linksCard: some View {
         VStack(spacing: 0) {
+            Link(destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!) {
+                Label("about_website".localized, systemImage: "globe")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .contentShape(Rectangle())
+            }
+            Divider().padding(.leading, 44)
             Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                 Label("about_problem_link".localized, systemImage: "exclamationmark.bubble.fill")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .contentShape(Rectangle())
@@ -120,17 +144,19 @@ struct AboutView: View {
             Divider().padding(.leading, 44)
             Link(destination: URL(string: "https://www.linkedin.com/in/aleksandrtk/")!) {
                 Label("about_linkedin".localized, systemImage: "person.crop.circle.badge.plus")
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .contentShape(Rectangle())
             }
         }
-        .background(Color(NSColor.controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .glassCard(cornerRadius: 10)
         .buttonStyle(.plain)
     }
 }
 
 #Preview {
-    AboutView(availableUpdate: "1.2.0")
+    AboutView(availableUpdate: "2.0.0")
 }

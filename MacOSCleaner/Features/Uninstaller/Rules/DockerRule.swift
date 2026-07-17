@@ -28,8 +28,19 @@ public struct DockerRule: ApplicationRule {
         if path.contains("/containers/com.docker.orbstack") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 100))
         }
-        if path.contains("/caches/com.docker") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 50))
+        if path.contains("/group containers/") && path.contains("orbstack") {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 90))
+        }
+        if path.contains("/caches/com.docker") || path.contains("/caches/dev.orbstack") {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
+        }
+        if path.contains("/logs/") && path.contains("orbstack") {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 50))
+        }
+
+        // User VM data outside ~/Library (~/Documents/.../Orbstack_files, …)
+        if path.contains("orbstack") && (path.contains("/documents/") || path.contains("/desktop/") || path.contains("/users/shared/")) {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 85))
         }
 
         if path.hasSuffix(".raw") || path.hasSuffix(".qcow2") {

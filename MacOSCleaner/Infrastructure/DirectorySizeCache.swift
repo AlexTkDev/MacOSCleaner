@@ -46,15 +46,18 @@ public actor DirectorySizeCache {
 
     public func invalidate(_ path: String) {
         cache.removeValue(forKey: path)
+        FileManager.clearSizeCache()
     }
 
     public func invalidateParent(of path: String) {
         let parent = (path as NSString).deletingLastPathComponent
         cache.removeValue(forKey: parent)
+        FileManager.clearSizeCache()
     }
 
     public func invalidateAll() {
         cache.removeAll()
+        FileManager.clearSizeCache()
     }
 
     public func getCachedSize(_ path: String) -> Int64? {
@@ -70,22 +73,21 @@ public actor DirectorySizeCache {
         }
     }
 
+    /// Reclaimable disk footprint (allocated blocks), not logical/apparent size.
+    /// APFS clones in DerivedData can report tens of GB logical while only
+    /// hundreds of MB are actually freed on delete.
     private func computeSize(_ path: String) -> CachedDirectoryInfo {
         let url = URL(fileURLWithPath: path)
         var size: Int64 = 0
         var fileCount: Int = 0
         guard let enumerator = fm.enumerator(
             at: url,
-            includingPropertiesForKeys: [.fileSizeKey],
+            includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey],
             options: []
         ) else { return CachedDirectoryInfo(size: 0, fileCount: 0, timestamp: Date()) }
 
         while let fileURL = enumerator.nextObject() as? URL {
             if Task.isCancelled {
-                break
-            }
-            if fileCount >= 100000 {
-                // Prevent infinite or extremely long size calculations
                 break
             }
             let shouldExclude = FileManager.shouldExclude(url: fileURL)
@@ -96,8 +98,15 @@ public actor DirectorySizeCache {
                 continue
             }
             fileCount += 1
-            if let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey]) {
-                size += Int64(values.fileSize ?? 0)
+            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
+                continue
+            }
+            // Prefer allocated (physical) size — what deleting actually reclaims.
+            // Use allocated even when 0 (true sparse files); only fall back if key missing.
+            if let allocated = values.totalFileAllocatedSize {
+                size += Int64(allocated)
+            } else if let fileSize = values.fileSize {
+                size += Int64(fileSize)
             }
         }
         return CachedDirectoryInfo(size: size, fileCount: fileCount, timestamp: Date())

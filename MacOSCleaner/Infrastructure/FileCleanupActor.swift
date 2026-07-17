@@ -10,6 +10,9 @@ public actor FileCleanupActor {
     private let sizeCache: DirectorySizeCache
     private let fm = FileManager.default
 
+    /// Skip scan preview for items that reclaim nothing meaningful on disk.
+    private static let minPreviewBytes: Int64 = 1024
+
     public init(safetyManager: SafetyManager = SafetyManager(), sizeCache: DirectorySizeCache = DirectorySizeCache()) {
         self.safetyManager = safetyManager
         self.sizeCache = sizeCache
@@ -32,12 +35,23 @@ public actor FileCleanupActor {
         fm.fileExists(atPath: path, isDirectory: &isDir)
 
         if !isDir.boolValue {
-            let size = (try? fm.attributesOfItem(atPath: path)[.size] as? Int64) ?? 0
+            let size = Self.physicalSize(of: path, fm: fm)
             if dryRun {
                 progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(size))"))
-                return (size, Self.fileItemForPath(path))
+                guard size >= Self.minPreviewBytes else { return (0, nil) }
+                return (size, Self.fileItemForPath(path, size: size, isDirectory: false))
             }
-            try? fm.removeItem(at: url)
+            do {
+                try fm.removeItem(at: url)
+            } catch {
+                progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
+                Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                return (0, nil)
+            }
+            guard !fm.fileExists(atPath: path) else {
+                progress?(.log("  \(Self.shortPath(path)) — still present after delete, not counting"))
+                return (0, nil)
+            }
             progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(size))"))
             return (size, nil)
         }
@@ -45,21 +59,35 @@ public actor FileCleanupActor {
         let before = await getDirectorySize(path)
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            return (before, Self.fileItemForPath(path))
+            guard before >= Self.minPreviewBytes else { return (0, nil) }
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
         }
 
         let contents = try fm.contentsOfDirectory(atPath: path)
         var removedCount = 0
+        var failedCount = 0
         for item in contents {
             let itemURL = url.appendingPathComponent(item)
-            try? fm.removeItem(at: itemURL)
-            removedCount += 1
+            guard (try? safetyManager.validate(url: itemURL)) != nil else {
+                progress?(.log("  \(Self.shortPath(itemURL.path)) — protected, skipped"))
+                continue
+            }
+            do {
+                try fm.removeItem(at: itemURL)
+                removedCount += 1
+            } catch {
+                failedCount += 1
+                progress?(.log("  \(Self.shortPath(itemURL.path)) — delete failed: \(error.localizedDescription)"))
+                Logger.fileActor.error("Delete failed \(itemURL.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
         }
 
         await sizeCache.invalidate(path)
         let after = await getDirectorySize(path)
         let freed = max(0, before - after)
-        if freed > 0 {
+        if failedCount > 0 {
+            progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount), failed \(failedCount), freed \(Self.formatBytes(freed))"))
+        } else if freed > 0 {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) items, freed \(Self.formatBytes(freed))"))
         }
         return (freed, nil)
@@ -77,11 +105,22 @@ public actor FileCleanupActor {
 
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            return (before, Self.fileItemForPath(path))
+            guard before >= Self.minPreviewBytes else { return (0, nil) }
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
         }
 
-        try? fm.removeItem(atPath: path)
+        do {
+            try fm.removeItem(atPath: path)
+        } catch {
+            progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
+            Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return (0, nil)
+        }
         await sizeCache.invalidate(path)
+        guard !fm.fileExists(atPath: path) else {
+            progress?(.log("  \(Self.shortPath(path)) — still present after delete, not counting"))
+            return (0, nil)
+        }
         progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(before))"))
         return (before, nil)
     }
@@ -94,17 +133,28 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
-        let attrs = try fm.attributesOfItem(atPath: path)
-        let size = (attrs[.size] as? Int64) ?? 0
+        let size = Self.physicalSize(of: path, fm: fm)
+        let attrs = try? fm.attributesOfItem(atPath: path)
 
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(size))"))
-            let modDate = attrs[.modificationDate] as? Date
+            guard size >= Self.minPreviewBytes else { return (0, nil) }
+            let modDate = attrs?[.modificationDate] as? Date
             let item = CleanupFileItem(path: path, sizeBytes: size, modificationDate: modDate, isDirectory: false)
             return (size, item)
         }
 
-        try? fm.removeItem(atPath: path)
+        do {
+            try fm.removeItem(atPath: path)
+        } catch {
+            progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
+            Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return (0, nil)
+        }
+        guard !fm.fileExists(atPath: path) else {
+            progress?(.log("  \(Self.shortPath(path)) — still present after delete, not counting"))
+            return (0, nil)
+        }
         progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(size))"))
         return (size, nil)
     }
@@ -129,16 +179,27 @@ public actor FileCleanupActor {
                 if isDir.boolValue {
                     size = await getDirectorySize(itemURL.path)
                 } else {
-                    size = (attrs?[.size] as? Int64) ?? 0
+                    size = Self.physicalSize(of: itemURL.path, fm: fm)
                 }
-                if !dryRun { try? fm.removeItem(at: itemURL) }
-                freed += size
-                removedCount += 1
+                if dryRun {
+                    freed += size
+                    removedCount += 1
+                } else {
+                    do {
+                        try fm.removeItem(at: itemURL)
+                        guard !fm.fileExists(atPath: itemURL.path) else { continue }
+                        freed += size
+                        removedCount += 1
+                    } catch {
+                        progress?(.log("  \(Self.shortPath(itemURL.path)) — delete failed: \(error.localizedDescription)"))
+                    }
+                }
             }
         }
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(removedCount) items older than \(days) days (\(Self.formatBytes(freed)))"))
-            return (freed, Self.fileItemForPath(path))
+            guard freed >= Self.minPreviewBytes else { return (0, nil) }
+            return (freed, Self.fileItemForPath(path, size: freed, isDirectory: true))
         } else {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) old items, freed \(Self.formatBytes(freed))"))
         }
@@ -168,16 +229,27 @@ public actor FileCleanupActor {
             }
             let attrs = try? fm.attributesOfItem(atPath: itemPath)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
-                let size = (attrs?[.size] as? Int64) ?? 0
-                if !dryRun { try? fm.removeItem(atPath: itemPath) }
-                freed += size
-                removedCount += 1
+                let size = Self.physicalSize(of: itemPath, fm: fm)
+                if dryRun {
+                    freed += size
+                    removedCount += 1
+                } else {
+                    do {
+                        try fm.removeItem(atPath: itemPath)
+                        guard !fm.fileExists(atPath: itemPath) else { continue }
+                        freed += size
+                        removedCount += 1
+                    } catch {
+                        progress?(.log("  \(Self.shortPath(itemPath)) — delete failed: \(error.localizedDescription)"))
+                    }
+                }
             }
         }
 
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(removedCount) items older than \(days) days (\(Self.formatBytes(freed)))"))
-            return (freed, Self.fileItemForPath(path))
+            guard freed >= Self.minPreviewBytes else { return (0, nil) }
+            return (freed, Self.fileItemForPath(path, size: freed, isDirectory: true))
         } else {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) old items, freed \(Self.formatBytes(freed))"))
         }
@@ -196,7 +268,7 @@ public actor FileCleanupActor {
     }
 
     func emitFileItem(_ item: CleanupFileItem?, category: String?, parentName: String?, progress: (@Sendable (CleanupEngineEvent) -> Void)?) {
-        guard let item else { return }
+        guard let item, item.sizeBytes >= Self.minPreviewBytes else { return }
         progress?(.fileItem(
             path: item.path,
             sizeBytes: item.sizeBytes,
@@ -207,18 +279,25 @@ public actor FileCleanupActor {
         ))
     }
 
-    static func fileItemForPath(_ path: String) -> CleanupFileItem? {
+    static func fileItemForPath(_ path: String, size: Int64, isDirectory: Bool) -> CleanupFileItem? {
         let fm = FileManager.default
         let attrs = try? fm.attributesOfItem(atPath: path)
         let modDate = attrs?[.modificationDate] as? Date
-        let isDir = (attrs?[.type] as? FileAttributeType) == .typeDirectory
-        let size: Int64
-        if isDir {
-            size = fm.getDirectorySize(url: URL(fileURLWithPath: path))
-        } else {
-            size = (attrs?[.size] as? Int64) ?? 0
+        return CleanupFileItem(path: path, sizeBytes: size, modificationDate: modDate, isDirectory: isDirectory)
+    }
+
+    /// Physical allocated size for a single file (or directory via getDirectorySize).
+    static func physicalSize(of path: String, fm: FileManager) -> Int64 {
+        let url = URL(fileURLWithPath: path)
+        if let values = try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileSizeKey]) {
+            if let allocated = values.totalFileAllocatedSize {
+                return Int64(allocated)
+            }
+            if let fileSize = values.fileSize {
+                return Int64(fileSize)
+            }
         }
-        return CleanupFileItem(path: path, sizeBytes: size, modificationDate: modDate, isDirectory: isDir)
+        return (try? fm.attributesOfItem(atPath: path)[.size] as? Int64) ?? 0
     }
 
     static func formatBytes(_ bytes: Int64) -> String {
