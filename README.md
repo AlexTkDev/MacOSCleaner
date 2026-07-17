@@ -18,12 +18,12 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard.png" width="45%">
-  <img src="assets/screenshots/Uninstaller.png" width="45%">
+  <img src="assets/screenshots/Dashboard.png?v=2.0.0" width="45%">
+  <img src="assets/screenshots/Uninstaller.png?v=2.0.0" width="45%">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan.png" width="45%">
-  <img src="assets/screenshots/Processes.png" width="45%">
+  <img src="assets/screenshots/Cleanup_Scan.png?v=2.0.0" width="45%">
+  <img src="assets/screenshots/Processes.png?v=2.0.0" width="45%">
 </p>
 
 <p align="center">
