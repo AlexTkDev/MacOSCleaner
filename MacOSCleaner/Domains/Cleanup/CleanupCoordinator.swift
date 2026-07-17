@@ -174,7 +174,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 for result in results {
                     self.totalFreedMB += result.freedMB
                     self.totalFreedBytes += result.freedBytes
-                    self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB, freedBytes: result.freedBytes))
+                    if result.freedBytes > 0 {
+                        self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB, freedBytes: result.freedBytes))
+                    }
                     records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))
                 }
                 
@@ -197,7 +199,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     let trashLabel = "trash_user_label".localized
                     self.totalFreedMB += deletedMB
                     self.totalFreedBytes += deletedBytes
-                    self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                    if deletedBytes > 0 {
+                        self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                    }
                     records.append(OperationRecord(id: UUID(), itemPath: "~/.Trash", status: "success", bytesFreed: deletedBytes))
                 }
                 
