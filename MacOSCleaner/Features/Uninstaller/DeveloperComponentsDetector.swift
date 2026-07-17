@@ -108,6 +108,6 @@ public enum DeveloperComponentsDetector {
     }
 
     private static func getDirectorySize(url: URL) -> Int64 {
-        FileManager.default.getDirectorySize(url: url, excludedPaths: [])
+        FileManager.default.getPhysicalDirectorySize(url: url, excludedPaths: [])
     }
 }

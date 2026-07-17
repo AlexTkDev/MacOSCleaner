@@ -155,47 +155,59 @@ extension FileManager {
         return size
     }
 
+    /// Physical (allocated) size — the disk space actually freed when the item is
+    /// deleted. Sparse VM images (OrbStack data.img.raw: 494 GB logical / 44 GB
+    /// allocated) are counted by their real footprint, never the logical size.
+    /// Works for single files as well as directories.
     public func getPhysicalDirectorySize(
         url: URL,
         excludedPaths: [String] = FileManager.defaultExcludedPaths
     ) -> Int64 {
+        let cacheKey = "physical:\(url.path)" as NSString
+        FileManager._sizeCacheLock.lock()
+        if let cached = FileManager._sizeCache.object(forKey: cacheKey) {
+            FileManager._sizeCacheLock.unlock()
+            return cached.int64Value
+        }
+        FileManager._sizeCacheLock.unlock()
+
         var size: Int64 = 0
-        let enumerator = self.enumerator(
-            at: url,
-            includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey],
-            options: []
-        )
-        while let fileURL = enumerator?.nextObject() as? URL {
-            let shouldExclude: Bool
-            if excludedPaths.isEmpty {
-                shouldExclude = false
-            } else if excludedPaths == FileManager.defaultExcludedPaths {
-                shouldExclude = FileManager.shouldExclude(url: fileURL)
-            } else {
-                let filePath = fileURL.path
-                shouldExclude = excludedPaths.contains { filePath.contains($0) }
-            }
-            if shouldExclude {
-                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
-                    enumerator?.skipDescendants()
+        if let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .totalFileAllocatedSizeKey]),
+           values.isRegularFile == true {
+            size = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+        } else {
+            let enumerator = self.enumerator(
+                at: url,
+                includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey],
+                options: []
+            )
+            while let fileURL = enumerator?.nextObject() as? URL {
+                let shouldExclude: Bool
+                if excludedPaths.isEmpty {
+                    shouldExclude = false
+                } else if excludedPaths == FileManager.defaultExcludedPaths {
+                    shouldExclude = FileManager.shouldExclude(url: fileURL)
+                } else {
+                    let filePath = fileURL.path
+                    shouldExclude = excludedPaths.contains { filePath.contains($0) }
                 }
-                continue
-            }
+                if shouldExclude {
+                    if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                        enumerator?.skipDescendants()
+                    }
+                    continue
+                }
 
-            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]),
-                  let fileSize = values.fileSize else { continue }
+                guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]),
+                      let fileSize = values.fileSize else { continue }
 
-            if let allocated = values.totalFileAllocatedSize, allocated > 0,
-               fileSize / allocated >= FileManager.sparseFileRatioThreshold {
-                continue
-            }
-
-            if let allocated = values.totalFileAllocatedSize {
-                size += Int64(allocated)
-            } else {
-                size += Int64(fileSize)
+                size += Int64(values.totalFileAllocatedSize ?? fileSize)
             }
         }
+
+        FileManager._sizeCacheLock.lock()
+        FileManager._sizeCache.setObject(NSNumber(value: size), forKey: cacheKey)
+        FileManager._sizeCacheLock.unlock()
         return size
     }
 }

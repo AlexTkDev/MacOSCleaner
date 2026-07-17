@@ -6,8 +6,8 @@ public enum ConfidenceEngine {
         .spotlightBundleAttr, .loginItem,
     ]
 
-    public static func assess(_ evidence: Set<Evidence>, identity: AppIdentity, weights: ScoringWeights = .default) -> ConfidenceAssessment {
-        let score = weights.score(evidence)
+    public static func assess(_ evidence: Set<Evidence>, ruleScore: Int = 0, identity: AppIdentity, weights: ScoringWeights = .default) -> ConfidenceAssessment {
+        let score = weights.score(evidence) + ruleScore
         let missing = criticalEvidence.subtracting(evidence)
 
         var tier: ConfidenceTier
@@ -15,6 +15,7 @@ public enum ConfidenceEngine {
             if evidence.contains(.bundleIDExact) || evidence.contains(.bundleIDPrefix)
                 || evidence.contains(.packageReceipt) || evidence.contains(.spotlightBundleAttr)
                 || evidence.contains(.loginItem)
+                || ruleScore >= 100
                 || (evidence.contains(.teamID) && (evidence.contains(.launchAgent) || evidence.contains(.launchDaemon)
                     || evidence.contains(.extension) || evidence.contains(.appGroup) || evidence.contains(.container))) {
                 tier = .guaranteed

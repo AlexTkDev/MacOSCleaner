@@ -120,4 +120,58 @@ final class SafetyManagerTests: XCTestCase {
         
         XCTAssertNoThrow(try safetyManager.validate(url: url), "Default exceptions should still work")
     }
+
+    func testSensitiveUserDataProtectedDespiteLibraryException() {
+        let sensitive = [
+            "\(home!)/Library/Keychains/login.keychain-db",
+            "\(home!)/Library/Calendars/Calendar.sqlitedb",
+            "\(home!)/Library/Reminders/Container_v1",
+            "\(home!)/Library/Application Support/AddressBook/AddressBook-v22.abcddb",
+            "\(home!)/Library/Application Support/Google/Chrome/Default/Login Data",
+        ]
+        for path in sensitive {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Sensitive path \(path) must be protected")
+        }
+    }
+
+    func testLibraryRootsNotDeletableWholesale() {
+        let roots = [
+            "\(home!)",
+            "\(home!)/Library",
+            "\(home!)/Library/Preferences",
+            "\(home!)/Library/Application Support",
+            "\(home!)/Library/Group Containers",
+            "\(home!)/Library/Containers",
+        ]
+        for path in roots {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Root \(path) must not be deletable wholesale")
+        }
+    }
+
+    func testChildrenOfProtectedRootsStillDeletable() {
+        let children = [
+            "\(home!)/Library/Preferences/com.example.app.plist",
+            "\(home!)/Library/Group Containers/group.com.example.app",
+            "\(home!)/Library/Application Support/ExampleApp",
+            "/Library/LaunchAgents/com.example.agent.plist",
+        ]
+        for path in children {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertNoThrow(try safetyManager.validate(url: url), "Child \(path) must remain deletable")
+        }
+    }
+
+    func testVirtualizationUserDataUnderDocumentsAllowed() {
+        let vmPath = "\(home!)/Documents/my_project/Orbstack_files"
+        let url = URL(fileURLWithPath: vmPath)
+        XCTAssertNoThrow(try safetyManager.validate(url: url))
+    }
+
+    func testNonVMDataUnderDocumentsStillProtected() {
+        let path = "\(home!)/Documents/my_project/source.swift"
+        let url = URL(fileURLWithPath: path)
+        XCTAssertThrowsError(try safetyManager.validate(url: url))
+    }
 }

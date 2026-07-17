@@ -2,6 +2,9 @@ import SwiftUI
 
 struct RootView: View {
     @State private var selectedItem: NavigationItem? = .dashboard
+    /// Keep the sidebar visible; hiding `.windowToolbar` on Dashboard used to
+    /// collapse NavigationSplitView to detail-only on macOS 26+.
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
@@ -10,7 +13,7 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            NavigationSplitView {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
                 List(selection: $selectedItem) {
                     ForEach(SidebarSection.all) { section in
                         Section {
@@ -26,6 +29,7 @@ struct RootView: View {
                     }
                 }
                 .listStyle(.sidebar)
+                .navigationTitle("app_title".localized)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
             } detail: {
                 Group {
@@ -40,6 +44,7 @@ struct RootView: View {
                 .scrollEdgeEffectStyle(.hard, for: .top)
                 .frame(minWidth: 800, minHeight: 600)
             }
+            .navigationSplitViewStyle(.balanced)
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
@@ -90,14 +95,14 @@ private struct ScreenNavigationTitleModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if item == .dashboard {
+            // Keep the window toolbar (sidebar toggle lives there). Only drop the
+            // detail title so Dashboard stays chrome-light without collapsing the split.
             content
                 .navigationTitle("")
                 .toolbar(removing: .title)
-                .toolbarVisibility(.hidden, for: .windowToolbar)
         } else {
             content
                 .navigationTitle(item.localizedTitle)
-                .toolbarVisibility(.visible, for: .windowToolbar)
         }
     }
 }

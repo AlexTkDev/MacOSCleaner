@@ -30,6 +30,11 @@ public struct VMwareFusionRule: ApplicationRule {
         if path.contains("/virtual machines") {
             evidence.append(ArtifactEvidence(source: .rule, weight: 80))
         }
+        if path.contains("/documents/") || path.contains("/desktop/") {
+            if path.contains("vmware") || path.contains("virtual machines") || path.contains(".vmx") {
+                evidence.append(ArtifactEvidence(source: .rule, weight: 80))
+            }
+        }
         if path.contains("/preferences/vmware fusion") {
             evidence.append(ArtifactEvidence(source: .appName, weight: 70))
         }

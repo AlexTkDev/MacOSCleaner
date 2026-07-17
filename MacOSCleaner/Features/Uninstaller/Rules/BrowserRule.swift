@@ -50,6 +50,19 @@ public struct BrowserRule: ApplicationRule {
             evidence.append(ArtifactEvidence(source: .appName, weight: 50))
         }
 
+        // Google Chrome: ~/Library/{Application Support,Caches,Logs}/Google/Chrome
+        let bid = identity.bundleID.lowercased()
+        if bid.contains("google") && bid.contains("chrome") {
+            if path.contains("/application support/google/") || path.contains("/caches/google/") || path.contains("/logs/google/") {
+                if path.contains("/chrome") || name == "Google" {
+                    evidence.append(ArtifactEvidence(source: .rule, weight: 70))
+                }
+            }
+            if path.contains("/caches/com.google.chrome") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
+            }
+        }
+
         return evidence
     }
 }

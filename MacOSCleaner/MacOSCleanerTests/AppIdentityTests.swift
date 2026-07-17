@@ -89,6 +89,30 @@ final class AppIdentityTests: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
 
+    func test_resolve_vendorNames_excludeProductToken() {
+        // Product token "desktop" from ai.opencode.desktop must not become a vendor name
+        let appURL = makeAppBundle(named: "OpenCode", bundleID: "ai.opencode.desktop")
+        let expectation = expectation(description: "resolve")
+        Task {
+            let identity = await AppIdentity.resolve(from: appURL)
+            XCTAssertFalse(identity.vendorNames.contains { $0.lowercased() == "desktop" })
+            XCTAssertTrue(identity.vendorNames.contains { $0.lowercased() == "opencode" })
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 10)
+    }
+
+    func test_resolve_appGroups_empty_whenUnsigned() {
+        let appURL = makeAppBundle(named: "PlainApp", bundleID: "com.plain.app")
+        let expectation = expectation(description: "resolve")
+        Task {
+            let identity = await AppIdentity.resolve(from: appURL)
+            XCTAssertTrue(identity.appGroups.isEmpty)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 10)
+    }
+
     func test_resolve_teamID_isNil_whenUnsigned() {
         let appURL = makeAppBundle(named: "UnsignedApp", bundleID: "com.unsigned.app")
         let expectation = expectation(description: "resolve")

@@ -33,6 +33,12 @@ public struct ParallelsRule: ApplicationRule {
         if path.contains("/users/shared/parallels") {
             evidence.append(ArtifactEvidence(source: .rule, weight: 60))
         }
+        if path.contains("orbstack") && (path.contains("/documents/") || path.contains("/desktop/")) {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 80))
+        }
+        if path.contains("/virtual machines") || path.contains(".pvm") || path.contains(".vmx") {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 80))
+        }
         if path.contains("/usr/local/bin/prl") {
             evidence.append(ArtifactEvidence(source: .rule, weight: 60))
         }
