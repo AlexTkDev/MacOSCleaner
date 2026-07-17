@@ -18,16 +18,16 @@
 ## Screenshots
 
 <p align="center">
-  <img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard.png" width="45%">
-  <img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller.png" width="45%">
+  <img src="assets/screenshots/Dashboard.png" width="45%">
+  <img src="assets/screenshots/Uninstaller.png" width="45%">
 </p>
 <p align="center">
-  <img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan.png" width="45%">
-  <img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes.png" width="45%">
+  <img src="assets/screenshots/Cleanup_Scan.png" width="45%">
+  <img src="assets/screenshots/Processes.png" width="45%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/AlexTkDev/MacOSCleaner/tree/relese/assets/screenshots">📷 View all screenshots</a>
+  <a href="assets/screenshots">📷 View all screenshots</a>
 </p>
 
 ---
@@ -77,6 +77,7 @@
 - **Internet Plug-Ins** — legacy browser plug-ins
 - **Shared File Lists** — Finder sidebar / recent items lists
 - **iCloud Cloud Documents** — iCloud document cache (opt-in)
+- **User Logs** — system and user-level logs (`~/Library/Logs`, `/Library/Logs`)
 - **Photos Library Cache** — Photos.app library cache
 - **Voice Memos** — Voice Memos recordings (opt-in)
 - **GarageBand / Logic** — project files and caches (opt-in)
@@ -93,19 +94,22 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **Cleanup Options** — toggles before scan:
 - **Clean .DS_Store files** — removes Finder metadata from directories (off by default)
+- **Clean Maven repository** — removes Maven cached dependencies from `~/.m2/repository` (off by default)
+- **Clean Go module cache** — removes Go package caches from `GOMODCACHE` (off by default)
+- **Clean .dart_tool in projects** — scans and cleans Flutter/Dart development builds in common project locations (off by default)
 - **Clean iCloud Documents** — includes iCloud document cache (off by default)
 - **Clean Voice Memos** — includes Voice Memos recordings (off by default)
 - **Clean GarageBand / Logic** — includes project files and caches (off by default)
 - **Clean iMovie / Final Cut** — includes render files and libraries (off by default)
 - **Clean Sleep Image** — removes hibernation image file (off by default)
 
-**Disk Space** 📁 — browse large folders and files, inspect sizes, and move selected items to Trash.
+**Disk Space Analyzer** 📁 — scan any custom folder to browse its subdirectories and files sorted by size. Features categorized breakdowns (Videos, Audio, Photos, Apps, Documents, Archives) and lets you reveal items in Finder or move them to the Trash directly from the app.
 
-**Process Manager** ⚙️ — redesigned with modern macOS styling. Lists running processes, lets you terminate or force-kill them. Critical system processes (kernel_task, launchd, WindowServer) are protected.
+**Process Manager** ⚙️ — redesigned with modern macOS styling. Lists running processes in Flat or Grouped views. Sorts by CPU, memory, name, or threads. Supports terminating/force-killing individual processes, multiple selection, or entire groups. Critical system processes (kernel_task, launchd, WindowServer) are protected automatically. Custom user Whitelists and Blacklists let you prevent accidental termination of specific apps or quickly close blacklisted ones.
 
-**Startup Services** 🚀 — redesigned with modern macOS styling. Shows all LaunchAgents from `~/Library/LaunchAgents`, their load status, and lets you enable/disable them.
+**Startup Services** 🚀 — redesigned with modern macOS styling. Scans LaunchAgents and LaunchDaemons from both user-level (`~/Library`) and system-level (`/Library`) directories. Categorizes them automatically into My Services (User), Third-party, and System services. Allows you to load/unload or stop active services (asking for permissions via AppleScript when necessary), and configure custom vendor prefixes (System Vendors) to protect specific services from accidental modification.
 
-**App Uninstaller** 🗑️ — finds installed apps, scans up to 5 levels deep for residual files using 30 types of evidence (Bundle ID, Team ID, Spotlight, Plist contents, known catalog paths, and more). Shows total reclaimable space and real-time scan progress. Tailored rules for popular apps including Docker, Parallels, Adobe CC, MS Office, Discord, Figma, JetBrains, browsers, and more.
+**App Uninstaller** 🗑️ — drag and drop any `.app` bundle directly or select from the list. Finds installed apps, scans up to 5 levels deep for residual files using 30 types of evidence (Bundle ID, Team ID, Spotlight, Plist contents, known catalog paths, and more). Shows total reclaimable space and real-time scan progress. Tailored rules for popular apps including Docker, Parallels, Adobe CC, MS Office, Discord, Figma, JetBrains, browsers, and more.
 
 - **Scan Modes (Safe / Balanced)** — choose between *Safe* mode (depth 3, exact matches only, no Spotlight, highest confidence files) and *Balanced* mode (depth 5, full deep scan including Spotlight and fuzzy matching) to tailor uninstallation aggressiveness
 - **Background Deep Scanning** — apps are scanned thoroughly in the background; the UI updates in real time as each app's total size is finalized
@@ -118,7 +122,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
 
-**Settings** — rebuilt with native macOS `Form` styles to match System Settings. Light/dark/system theme, languages (English, Русский, Українська, Español), notifications, scan-on-startup, Trash behavior, Apple Intelligence toggle, and more.
+**Settings** — rebuilt with native macOS `Form` styles to match System Settings. Light/dark/system theme, languages (English, Русский, Українська, Español), notifications, scan-on-startup, Trash behavior (Empty Trash During Cleanup, Bypass Trash on Uninstall, Empty Trash Immediately), Apple Intelligence toggle, custom System Vendors, and more.
 
 ---
 
