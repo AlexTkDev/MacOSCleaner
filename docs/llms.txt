@@ -1,0 +1,26 @@
+# MacOSCleaner
+
+> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry. Personal use only.
+
+Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
+Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.0.0.
+License: source-available personal use only — not OSI open source; commercial use not permitted.
+
+## Docs
+
+- [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with features, FAQ, download
+- [Full agent brief](https://alextkdev.github.io/MacOSCleaner/llms-full.txt): Self-contained product facts for AI agents
+- [Sitemap](https://alextkdev.github.io/MacOSCleaner/sitemap.xml): Indexable URLs
+
+## GitHub
+
+- [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
+- [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / changelog
+- [v2.0.0 notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass, on-device AI, Disk Analyzer, forensic Uninstaller
+- [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
+- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE): Source-available personal use only
+
+## Optional
+
+- [Screenshots](https://github.com/AlexTkDev/MacOSCleaner/tree/relese/assets/screenshots): UI screenshots (Dashboard, Cleanup, Uninstaller, Analyzer, …)
+- [Author](https://github.com/AlexTkDev): AlexTkDev

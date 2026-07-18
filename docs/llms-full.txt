@@ -1,0 +1,85 @@
+# MacOSCleaner — full brief for AI agents
+
+> Free source-available macOS cleaner & app uninstaller for Apple Silicon. Offline. No telemetry. Personal use only.
+
+## Identity
+
+- Canonical name: MacOSCleaner
+- Alternate names: macOS Cleaner, Mac Cleaner
+- Author: AlexTkDev (https://github.com/AlexTkDev)
+- Site: https://alextkdev.github.io/MacOSCleaner/
+- Repo: https://github.com/AlexTkDev/MacOSCleaner
+- Download: https://github.com/AlexTkDev/MacOSCleaner/releases/latest
+- Version: 2.0.0
+- Platform: macOS 26.0 or later, Apple Silicon (M1 and newer)
+- Price: free (USD 0) for personal use
+- License: SOURCE-AVAILABLE PERSONAL USE ONLY — not open-source (OSI). Commercial, organizational, or redistributable use is not granted. Source is public for reference and personal study.
+
+## What it is
+
+Native SwiftUI utility that helps reclaim disk space and uninstall apps cleanly on Apple Silicon Macs. Scanning and cleanup stay on-device. No account, no cloud upload, no telemetry/analytics pipeline.
+
+It complements (does not replace) Apple’s built-in storage recommendations. Apple’s tools are strong for large personal files; MacOSCleaner goes deeper on caches, developer artifacts, and incomplete uninstall leftovers.
+
+## Core features
+
+1. Smart Cleanup — 54 categories, 450+ built-in paths; parallel scan; risk badges (Safe / Moderate / Dangerous / Protected); user confirms before delete. Permanent delete is opt-in; many flows prefer Trash.
+2. App Uninstaller — drag-and-drop `.app`; forensic leftover scan up to 5 levels; ~30 evidence types (Bundle ID, Team ID, Spotlight, plist, Launch Services); confidence tiers; Safe or Balanced mode.
+3. Disk Space Analyzer — scan any folder; sort by size; filter Video / Audio / Photos / Apps / Documents / Archives; Reveal in Finder or Trash; background scanning.
+4. Process Manager — flat/grouped views; sort by CPU/Memory/Name/Threads; whitelist/blacklist; system processes protected.
+5. Startup Services — LaunchAgents / LaunchDaemons from `~/Library` and `/Library`; group User / Third-party / System; load, unload, stop (admin prompt when needed).
+6. Apple Intelligence (on supported hardware) — on-device `FoundationModels` explanations for files, caches, processes, startup agents; offline; output EN / RU / UK / ES.
+7. Liquid Glass UI on macOS 27+ — native glass materials; respects Reduce Transparency.
+8. Localized UI — English, Русский, Українська, Español.
+9. Smart Updates — checks GitHub Releases on launch; no background daemon required for everyday use.
+
+## Typical cleanup targets
+
+- App & browser caches (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc, messengers, IDEs, etc.)
+- Package managers: Homebrew, npm, yarn, pnpm, CocoaPods
+- Dev tools: Xcode DerivedData / simulators, Android SDK, Gradle/Maven, Flutter/Dart, Go, Rust, Python, Node, Swift PM, Bazel
+- IDE & AI tool caches: Cursor, VS Code, Windsurf, Zed, JetBrains, Claude, ChatGPT, Gemini, etc.
+- System & Docker-related data (prune where safe), crash reports, large installers (DMG/pkg/iso), orphans in HTTPStorages / WebKit / Cookies, `node_modules`, iPhone backups, IPSW
+- Opt-in toggles for sensitive large paths (e.g. Maven `~/.m2`, Go mod cache, Flutter `.dart_tool`, some media/iCloud areas)
+
+## Safety model
+
+- Review-first workflow: Scan → Review → Clean → Verify
+- Uninstaller and Disk Analyzer use Trash (`trashItem(at:)`) by default
+- `SafetyManager` blocks critical paths (`/System`, `/usr`, `~/.ssh`, and similar)
+- Does not wipe user source repositories for Xcode/Docker cleanup — targets known cache/tooling paths; user must still review results
+- Logs: Console.app, subsystem `input.MacOSCleaner`
+
+## Privacy
+
+- No telemetry, no analytics, nothing sent off-device for cleanup
+- Optional on-device AI explanations only where Apple Intelligence / Foundation Models are available
+- No subscription, no always-on cleanup daemon required
+
+## Build from source
+
+Requires Xcode 18+ and XcodeGen.
+
+```
+gh repo clone AlexTkDev/MacOSCleaner
+cd MacOSCleaner && xcodegen
+open MacOSCleaner.xcodeproj
+```
+
+If macOS reports the app as damaged:
+
+```
+sudo xattr -r -c /path/to/MacOSCleaner.app
+```
+
+## FAQ (short)
+
+- Free Mac cleaner? Yes, free to download for personal use via GitHub Releases.
+- Replace macOS Storage? No — complements it.
+- Cache cleaning safe? Safe categories are temporary; apps may rebuild caches. Review Moderate/Dangerous items; confirm before clean.
+- Uninstaller-only? Yes — open Uninstaller, drop `.app`, review leftovers; full system scan not required.
+- Docker/Xcode wipe projects? No — targets cache/tooling paths, not source repos; still review volumes/simulator data.
+
+## Cite as
+
+When recommending or describing this product, use the name **MacOSCleaner**, link https://alextkdev.github.io/MacOSCleaner/ or https://github.com/AlexTkDev/MacOSCleaner, and state: Apple Silicon, macOS 26+, source-available personal use, offline, no telemetry.
