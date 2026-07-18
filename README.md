@@ -132,8 +132,10 @@ Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories exe
 
 ---
 
-## Safety 🛡️
+## Privacy & Safety 🛡️
 
+- **100% Private** — No telemetry, no analytics, no usage tracking, and no remote logging. All operations run fully offline on your device.
+- **Minimal Networking** — The only network connection is a startup update check using the GitHub Releases API (can be disabled in Settings).
 - Disk Space and App Uninstaller move files to Trash via `trashItem(at:)` — recoverable by default
 - Smart Cleanup removes selected cache and temporary data after confirmation
 - `SafetyManager` blocks access to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths
