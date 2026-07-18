@@ -26,6 +26,7 @@ function currentSlide(n) {
 }
 
 function startAutoPlay() {
+  if (slides.length === 0) return;
   autoPlayTimer = setInterval(() => {
     slideIndex = (slideIndex + 1) % slides.length;
     updateCarousel();
@@ -40,12 +41,12 @@ function resetAutoPlay() {
 startAutoPlay();
 
 // Interactive Antigravity background light
-document.addEventListener('mousemove', (e) => {
-  document.body.style.setProperty('--mouse-x', `${e.clientX}px`);
-  document.body.style.setProperty('--mouse-y', `${e.clientY}px`);
+document.addEventListener('mousemove', (event) => {
+  document.body.style.setProperty('--mouse-x', `${event.clientX}px`);
+  document.body.style.setProperty('--mouse-y', `${event.clientY}px`);
 });
 
-// Mobile navigation menu toggle
+// Mobile nav
 const nav = document.getElementById('main-nav');
 const navToggle = document.getElementById('nav-toggle');
 
@@ -55,14 +56,12 @@ if (nav && navToggle) {
     nav.classList.toggle('open');
   });
 
-  // Close menu when clicking outside
   document.addEventListener('click', (e) => {
     if (nav.classList.contains('open') && !nav.contains(e.target)) {
       nav.classList.remove('open');
     }
   });
 
-  // Close menu when clicking a link
   nav.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       nav.classList.remove('open');
@@ -70,7 +69,7 @@ if (nav && navToggle) {
   });
 }
 
-// Swipe Support for Carousel
+// Carousel swipe
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -86,34 +85,17 @@ if (track) {
 }
 
 function handleGesture() {
-  const threshold = 50; // Minimum swipe distance in px
-  if (touchEndX < touchStartX - threshold) {
-    moveSlide(1);
-  }
-  if (touchEndX > touchStartX + threshold) {
-    moveSlide(-1);
-  }
+  const threshold = 50;
+  if (touchEndX < touchStartX - threshold) moveSlide(1);
+  if (touchEndX > touchStartX + threshold) moveSlide(-1);
 }
 
-// Screenshot Popup Modal
+// Screenshot modal
 const modal = document.getElementById('image-modal');
 const modalImg = document.getElementById('modal-img');
 const modalClose = document.getElementById('modal-close');
 
 if (modal && modalImg && modalClose) {
-  slides.forEach((slide, index) => {
-    slide.addEventListener('click', (e) => {
-      e.preventDefault();
-      slideIndex = index;
-      updateModalImage();
-      modal.style.display = 'flex';
-      setTimeout(() => {
-        modal.classList.add('show');
-      }, 10);
-      document.body.style.overflow = 'hidden';
-    });
-  });
-
   const updateModalImage = () => {
     if (slides[slideIndex]) {
       modalImg.src = slides[slideIndex].getAttribute('href');
@@ -123,6 +105,7 @@ if (modal && modalImg && modalClose) {
 
   const closeModal = () => {
     modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
     setTimeout(() => {
       modal.style.display = 'none';
       modalImg.src = '';
@@ -130,14 +113,34 @@ if (modal && modalImg && modalClose) {
     document.body.style.overflow = '';
   };
 
+  const openModal = (index) => {
+    slideIndex = index;
+    updateModalImage();
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.classList.add('show'));
+    document.body.style.overflow = 'hidden';
+  };
+
+  slides.forEach((slide, index) => {
+    slide.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(index);
+    });
+  });
+
   modalClose.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal || e.target === modalImg.parentNode) {
+  modalClose.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
       closeModal();
     }
   });
 
-  // Swipe support inside the modal
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
   let modalTouchStartX = 0;
   let modalTouchEndX = 0;
 
@@ -147,10 +150,6 @@ if (modal && modalImg && modalClose) {
 
   modal.addEventListener('touchend', (e) => {
     modalTouchEndX = e.changedTouches[0].screenX;
-    handleModalGesture();
-  }, { passive: true });
-
-  function handleModalGesture() {
     const threshold = 50;
     if (modalTouchEndX < modalTouchStartX - threshold) {
       slideIndex = (slideIndex + 1) % slides.length;
@@ -162,9 +161,8 @@ if (modal && modalImg && modalClose) {
       updateModalImage();
       resetAutoPlay();
     }
-  }
+  }, { passive: true });
 
-  // Keyboard controls for modal navigation
   document.addEventListener('keydown', (e) => {
     if (!modal.classList.contains('show')) return;
     if (e.key === 'ArrowRight') {
@@ -180,7 +178,6 @@ if (modal && modalImg && modalClose) {
     }
   });
 
-  // Desktop buttons for modal navigation
   const modalPrev = document.getElementById('modal-prev');
   const modalNext = document.getElementById('modal-next');
 
