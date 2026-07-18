@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>macOS Cleaner – Source-Available Cleanup for Apple Silicon</title>
-  <meta name="description" content="Source-available macOS cleanup app. Clean caches, uninstall apps with forensic leftover scan, analyze disk space, and get local Apple Intelligence explanations — all offline.">
-  <meta name="keywords" content="macOS cleaner, clean mac, apple silicon cleaner, storage cleanup, uninstall mac apps, xcode cache cleaner, local ai, free space mac, open source mac cleaner, privacy-focused mac cleaner">
+  <title>MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller</title>
+  <meta name="description" content="Free source-available macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — offline, no telemetry.">
+  <meta name="keywords" content="mac cleaner, macOS cleaner, free mac cleaner, clean mac storage, app uninstaller mac, cache cleaner, disk cleanup, remove app leftovers, Xcode cleanup, Docker cleanup, Homebrew cache, developer cleanup">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="macOS Cleaner">
-  <meta property="og:description" content="Source-available macOS cleanup app for Apple Silicon. Caches, uninstaller, disk analyzer, local AI.">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
+  <meta property="og:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Native SwiftUI, offline, no telemetry.">
   <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/logo.jpeg">
   <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/">
+  <meta property="og:locale" content="en_US">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="macOS Cleaner">
-  <meta name="twitter:description" content="Source-available macOS cleanup app for Apple Silicon.">
+  <meta name="twitter:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
+  <meta name="twitter:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Offline, no telemetry.">
   <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/logo.jpeg">
 
   <link rel="icon" type="image/jpeg" href="logo.jpeg">
@@ -26,7 +28,8 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "macOS Cleaner",
+    "name": "MacOSCleaner",
+    "alternateName": ["macOS Cleaner", "Mac Cleaner"],
     "operatingSystem": "macOS 26.0 or later",
     "applicationCategory": "UtilityApplication",
     "offers": {
@@ -34,7 +37,7 @@
       "price": "0",
       "priceCurrency": "USD"
     },
-    "description": "Source-available macOS cleanup app for Apple Silicon. Clean caches, uninstall apps with forensic leftover scan, analyze disk space, and get local Apple Intelligence explanations fully offline with no telemetry.",
+    "description": "Free source-available macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
     "softwareVersion": "2.0.0",
     "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
     "featureList": [
@@ -46,10 +49,61 @@
       "Process Manager",
       "No telemetry"
     ],
+    "url": "https://alextkdev.github.io/MacOSCleaner/",
+    "image": "https://alextkdev.github.io/MacOSCleaner/logo.jpeg",
     "author": {
       "@type": "Person",
-      "name": "AlexTkDev"
+      "name": "AlexTkDev",
+      "url": "https://github.com/AlexTkDev"
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is MacOSCleaner a free Mac cleaner?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The app is free to download for personal use. Releases are published on GitHub."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it replace built-in macOS storage tools?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. It complements them. Apple’s storage recommendations help with large personal files; MacOSCleaner targets caches, developer artifacts, and incomplete uninstall leftovers more deeply."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is cache cleaning safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Safe categories recover temporary data; apps may rebuild caches on next launch. Moderate and dangerous items need a closer look — risk badges exist for that reason. Always review the list before confirming a clean."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it only as an app uninstaller?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Open the Uninstaller, drop a .app, review leftovers, and remove what you accept. You do not have to run a full system scan first."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Docker or Xcode cleanup wipe my projects?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cleanup targets known cache and tooling paths, not your source repositories. Still review results before deleting — especially custom Docker volumes or shared simulator data."
+        }
+      }
+    ]
   }
   </script>
 
@@ -69,7 +123,7 @@
 <nav id="main-nav">
   <div class="container">
     <a class="nav-brand" href="#">
-      <img src="logo.jpeg" width="40" height="40" alt="">
+      <img src="logo.jpeg" width="40" height="40" alt="MacOSCleaner">
       macOS Cleaner
     </a>
     <div class="nav-links" id="nav-links">
@@ -77,6 +131,7 @@
       <a href="#screenshots">screenshots</a>
       <a href="#cleaned">cleaned</a>
       <a href="#release">changelog</a>
+      <a href="#about">about</a>
       <a href="#how-it-works">how&nbsp;it&nbsp;works</a>
       <a href="#download">download</a>
       <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner">GitHub ↗</a>
@@ -109,8 +164,9 @@
         v2.0.0 — Liquid Glass + on-device AI
         <span aria-hidden="true">→</span>
       </a>
-      <h1>Free disk space.<br><span class="dim">Keep control.</span></h1>
-      <p class="hero-lead">Scan caches, uninstall apps with forensic leftover discovery, analyze folders by size, and get local Apple Intelligence explanations — review first, then clean.</p>
+      <h1>Free macOS Cleaner &amp; App Uninstaller</h1>
+      <p class="hero-tagline">Free disk space.<br><span class="dim">Keep control.</span></p>
+      <p class="hero-lead">Free Mac cleaner for Apple Silicon: clean Mac storage, remove caches, uninstall apps with leftover scan, and run disk cleanup — review first, then clean. Offline, no telemetry.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
           Download for macOS <span class="arrow">→</span>
@@ -405,11 +461,196 @@
   </div>
 </section>
 
+<!-- ===== ABOUT / SEO ===== -->
+<section id="about" class="about-seo">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="sec-label">05 · About</p>
+      <h2>Why choose MacOSCleaner</h2>
+      <p>A free macOS cleaner built for Apple Silicon — caches, leftovers, and developer data</p>
+    </div>
+
+    <article class="seo-layout reveal">
+      <p class="seo-lead">
+        <strong>MacOSCleaner</strong> is a free, source-available <strong>mac cleaner</strong> and <strong>macOS cleaner</strong> for Apple Silicon.
+        It helps you <strong>clean Mac storage</strong>, free disk space, and remove junk that builds up after normal use —
+        app caches, temporary files, browser data, package-manager leftovers, and more.
+        Unlike many commercial cleaners, scanning stays on your Mac: no account, no cloud upload, no telemetry.
+      </p>
+
+      <div class="seo-topics">
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </span>
+            Free Mac cleaner for everyday disk cleanup
+          </h3>
+          <p>
+            When people search for a <strong>free mac cleaner</strong>, they usually want one thing: reclaim space without risking the system.
+            MacOSCleaner focuses on that job. Smart Cleanup covers dozens of categories in one pass — a practical
+            <strong>cache cleaner</strong> and <strong>disk cleanup</strong> tool in a native SwiftUI app.
+            You review risk badges after the scan, pick what to remove, and confirm before anything leaves the disk.
+            Permanent delete is opt-in; many flows move items to Trash first so you can restore if needed.
+          </p>
+          <p>
+            Common targets for a Mac disk cleanup include user and app caches, logs, large download leftovers,
+            and data left behind by messengers, IDEs, and browsers. The app also surfaces folders that grow quietly
+            over months — the kind of storage creep that makes “clean Mac storage” feel urgent after an Xcode or Docker week.
+          </p>
+        </div>
+
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="m17 13 5 5m0-5-5 5"/></svg>
+            </span>
+            App uninstaller that finds leftovers
+          </h3>
+          <p>
+            Dragging an app to Trash often leaves preferences, support files, caches, and launch agents behind.
+            MacOSCleaner’s <strong>app uninstaller</strong> for Mac is built to <strong>remove app leftovers</strong>
+            with a forensic-style scan: Bundle ID, Team ID, Spotlight hits, plists, and Launch Services — across multiple levels.
+            You get confidence tiers so “guaranteed” hits are obvious and questionable paths stay optional.
+            That makes uninstall cleaner than a simple delete, and safer than a blind script.
+          </p>
+        </div>
+
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+            </span>
+            Developer cleanup: Xcode, Docker, Homebrew, and more
+          </h3>
+          <p>
+            Developers need a different kind of <strong>macOS cleaner</strong>.
+            DerivedData, simulators, device support files, and old archives can eat tens of gigabytes.
+            MacOSCleaner includes paths for <strong>Xcode cleanup</strong>, <strong>Docker cleanup</strong>
+            (images, containers, and related data where safe to target), and package managers such as
+            Homebrew, npm, yarn, and pnpm — so <strong>developer cleanup</strong> is part of the same workflow,
+            not a separate suite of terminal recipes you have to remember.
+          </p>
+          <p>
+            You still choose what to run. Dangerous or protected paths stay marked; system areas remain blocked.
+            The goal is not “delete everything that looks large,” but informed cleanup that fits how you work.
+          </p>
+        </div>
+
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+            </span>
+            How this macOS cleaner fits into a healthy Mac
+          </h3>
+          <p>
+            A good routine is simple: scan regularly, clean caches after big projects, and run the uninstaller
+            when you retire an app. Pair that with the built-in Disk Space Analyzer when you need to see
+            which folders dominate — video, photos, archives, or apps — then reveal in Finder or trash selectively.
+            Local Apple Intelligence explanations (on supported Apple Silicon) can clarify what a cache folder is
+            before you remove it, entirely offline.
+          </p>
+          <p>
+            MacOSCleaner also helps with launch agents and noisy processes: inspect startup services,
+            load or unload user agents when appropriate, and keep system processes protected.
+            That supports long-term performance, not only a one-time storage spike.
+          </p>
+        </div>
+
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            Privacy, safety, and who it is for
+          </h3>
+          <p>
+            Everything runs locally. There is no analytics pipeline and no anonymous “usage report.”
+            Safety checks block critical paths such as system directories and sensitive user locations.
+            The project is source-available for personal use — you can read how cleanup and uninstall logic works
+            instead of trusting a closed binary with opaque “deep clean” modes.
+          </p>
+          <p>
+            Commercial Mac cleaners often bundle subscriptions, upsells, or always-on background helpers.
+            MacOSCleaner keeps the opposite posture: open the app when you need a scan, review results,
+            clean what you selected, and quit. No background daemon required for everyday use.
+            Smart Updates only check GitHub Releases when you launch — still optional in spirit,
+            and never a reason to phone home with usage data.
+          </p>
+          <p>
+            If you need a <strong>mac cleaner</strong> for Apple Silicon, an <strong>app uninstaller</strong> that respects leftovers,
+            or a focused way to <strong>clean Mac storage</strong> without subscriptions, MacOSCleaner is built for that.
+            Download the latest release, scan, review, then clean — with control over every selection.
+          </p>
+        </div>
+
+        <div class="seo-topic">
+          <h3>
+            <span class="cell-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+            </span>
+            What you can clean in practice
+          </h3>
+          <p>
+            Typical wins after a first full Smart Cleanup: browser and messenger caches, IDE support folders,
+            package-manager download caches, and stale installers. Pair that with an uninstall pass for apps
+            you no longer use, and disk space often returns without deleting documents or photos.
+            When storage is still tight, the Disk Space Analyzer shows which folders dominate so you can
+            decide whether the next step is archive cleanup, media offload, or deeper developer cleanup —
+            including Xcode, Docker, and Homebrew cache paths when those tools are installed.
+            The same native UI covers these flows in English, Русский, Українська, and Español.
+          </p>
+        </div>
+      </div>
+
+      <div class="seo-faq">
+        <h3>Frequently asked questions</h3>
+        <dl>
+          <div class="faq-item">
+            <dt>Is MacOSCleaner a free Mac cleaner?</dt>
+            <dd>Yes. The app is free to download for personal use. Releases are published on GitHub.</dd>
+          </div>
+          <div class="faq-item">
+            <dt>Does it replace built-in macOS storage tools?</dt>
+            <dd>
+              No. It complements them. Apple’s storage recommendations help with large personal files;
+              MacOSCleaner targets caches, developer artifacts, and incomplete uninstall leftovers more deeply.
+            </dd>
+          </div>
+          <div class="faq-item">
+            <dt>Is cache cleaning safe?</dt>
+            <dd>
+              Safe categories recover temporary data; apps may rebuild caches on next launch.
+              Moderate and dangerous items need a closer look — risk badges exist for that reason.
+              Always review the list before confirming a clean.
+            </dd>
+          </div>
+          <div class="faq-item">
+            <dt>Can I use it only as an app uninstaller?</dt>
+            <dd>
+              Yes. Open the Uninstaller, drop a <code>.app</code>, review leftovers, and remove what you accept.
+              You do not have to run a full system scan first.
+            </dd>
+          </div>
+          <div class="faq-item">
+            <dt>Does Docker or Xcode cleanup wipe my projects?</dt>
+            <dd>
+              Cleanup targets known cache and tooling paths, not your source repositories.
+              Still review results before deleting — especially custom Docker volumes or shared simulator data.
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </article>
+  </div>
+</section>
+
 <!-- ===== HOW IT WORKS ===== -->
 <section id="how-it-works">
   <div class="container">
     <div class="section-header reveal">
-      <p class="sec-label">05 · How it works</p>
+      <p class="sec-label">06 · How it works</p>
       <h2>Scan → Review → Clean → Verify</h2>
       <p>Swift 6 · SwiftUI · XcodeGen · OSLog — parallel on Apple Silicon</p>
     </div>
@@ -477,6 +718,7 @@
   <div class="container">
     <p>© 2026 AlexTkDev · source-available, personal use only · no telemetry</p>
     <div class="footer-links">
+      <a href="#about">About</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner">GitHub</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE">License</a>
