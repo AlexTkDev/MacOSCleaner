@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller</title>
-  <meta name="description" content="Free source-available macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — offline, no telemetry.">
+  <meta name="description" content="Free source-available macOS cleaner for Apple Silicon. Clean storage, caches, app leftovers, Xcode and Docker — offline, no telemetry.">
   <meta name="keywords" content="mac cleaner, macOS cleaner, free mac cleaner, clean mac storage, app uninstaller mac, cache cleaner, disk cleanup, remove app leftovers, Xcode cleanup, Docker cleanup, Homebrew cache, developer cleanup">
-  <meta name="robots" content="index, follow">
+  <meta name="author" content="AlexTkDev">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
   <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/">
   <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
   <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
@@ -15,17 +18,41 @@
   <meta property="og:site_name" content="MacOSCleaner">
   <meta property="og:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
   <meta property="og:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Native SwiftUI, offline, no telemetry.">
-  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/logo.jpeg">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.jpeg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="MacOSCleaner app icon">
   <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/">
   <meta property="og:locale" content="en_US">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
   <meta name="twitter:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Offline, no telemetry.">
-  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/logo.jpeg">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.jpeg">
+  <meta name="twitter:image:alt" content="MacOSCleaner app icon">
 
-  <link rel="icon" type="image/jpeg" href="logo.jpeg">
+  <link rel="icon" type="image/png" sizes="96x96" href="static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="static/assets/logo-96.png">
+  <link rel="preconnect" href="https://objects.githubusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://objects.githubusercontent.com">
   
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MacOSCleaner",
+    "alternateName": ["macOS Cleaner", "Mac Cleaner"],
+    "url": "https://alextkdev.github.io/MacOSCleaner/",
+    "description": "Free source-available macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry.",
+    "inLanguage": "en",
+    "publisher": {
+      "@type": "Person",
+      "name": "AlexTkDev",
+      "url": "https://github.com/AlexTkDev"
+    }
+  }
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -34,14 +61,19 @@
     "alternateName": ["macOS Cleaner", "Mac Cleaner"],
     "operatingSystem": "macOS 26.0 or later",
     "applicationCategory": "UtilityApplication",
+    "applicationSubCategory": "Disk Cleanup Utility",
+    "isAccessibleForFree": true,
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "USD"
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
     },
     "description": "Free source-available macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
     "softwareVersion": "2.0.0",
     "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
+    "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
+    "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE",
     "featureList": [
       "Apple Intelligence local explanations",
       "Smart Cleanup for 54 categories",
@@ -52,7 +84,8 @@
       "No telemetry"
     ],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
-    "image": "https://alextkdev.github.io/MacOSCleaner/logo.jpeg",
+    "image": "https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.jpeg",
+    "screenshot": "https://alextkdev.github.io/MacOSCleaner/static/assets/hero-dashboard.jpeg",
     "author": {
       "@type": "Person",
       "name": "AlexTkDev",
@@ -118,14 +151,14 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="static/src/style.css">
 </head>
 <body>
 
 <nav id="main-nav">
   <div class="container">
     <a class="nav-brand" href="#">
-      <img src="logo.jpeg" width="40" height="40" alt="MacOSCleaner">
+      <img src="static/assets/logo-96.png" width="40" height="40" alt="MacOSCleaner">
       MacOSCleaner
     </a>
     <div class="nav-links" id="nav-links">
@@ -181,7 +214,7 @@
     </div>
 
     <figure class="hero-window">
-      <img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard_v2.png?raw=true" alt="MacOSCleaner dashboard" fetchpriority="high">
+      <img src="static/assets/hero-dashboard.jpeg" width="1600" height="1157" alt="MacOSCleaner dashboard" fetchpriority="high" decoding="async">
     </figure>
 
     <div class="hero-stats">
@@ -722,6 +755,7 @@
     <div class="footer-links">
       <a href="#about">About</a>
       <a href="llms.txt">llms.txt</a>
+      <a href="llms-full.txt">llms-full.txt</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner">GitHub</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE">License</a>
@@ -736,6 +770,6 @@
   <button class="modal-btn next" id="modal-next" aria-label="Next screenshot">&#10095;</button>
 </div>
 
-<script src="script.js" defer></script>
+<script src="static/src/script.js" defer></script>
 </body>
 </html>
