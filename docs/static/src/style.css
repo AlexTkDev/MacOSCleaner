@@ -637,6 +637,15 @@ section {
   flex: 0 0 100%;
   min-width: 0;
   cursor: zoom-in;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 .carousel-slide img {

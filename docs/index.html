@@ -34,9 +34,6 @@
 
   <link rel="icon" type="image/png" sizes="96x96" href="static/assets/logo-96.png">
   <link rel="apple-touch-icon" href="static/assets/logo-96.png">
-  <link rel="preconnect" href="https://objects.githubusercontent.com" crossorigin>
-  <link rel="dns-prefetch" href="https://objects.githubusercontent.com">
-  
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -151,14 +148,1299 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <link rel="stylesheet" href="static/src/style.css">
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #fafafa;
+  --bg-elevated: #ffffff;
+  --text: #111114;
+  --text-muted: #626a72;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --ok: #30a46c;
+  --line: rgba(17, 17, 20, 0.1);
+  --line-strong: rgba(17, 17, 20, 0.18);
+  --shadow-window: 0 1px 2px rgba(0, 0, 0, 0.06), 0 24px 60px -16px rgba(0, 0, 0, 0.22);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --container: 1120px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --bg-elevated: #121316;
+  --text: #ededef;
+  --text-muted: #989fa6;
+  --accent: #2997ff;
+  --accent-hover: #4aa3ff;
+  --ok: #3dd68c;
+  --line: rgba(237, 237, 239, 0.1);
+  --line-strong: rgba(237, 237, 239, 0.22);
+  --shadow-window: 0 1px 2px rgba(0, 0, 0, 0.5), 0 32px 80px -16px rgba(0, 0, 0, 0.6);
+  --glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+html { scroll-behavior: smooth; }
+
+section { scroll-margin-top: 60px; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Theme switch crossfade */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    fill 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.45s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition: none !important;
+  }
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 40px);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  border: 1px solid var(--line);
+  background: var(--bg-elevated);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* ===== Nav ===== */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 60px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+}
+
+nav .container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.nav-brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: block;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.nav-end {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+  border-color: var(--line);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: none;
+}
+
+[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s, backdrop-filter 0.2s;
+  white-space: nowrap;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+  border-color: var(--line);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.nav-links a.nav-github {
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  margin-left: 8px;
+}
+
+.nav-links a.nav-github:hover {
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* ===== Hero ===== */
+.hero {
+  position: relative;
+  padding: 148px 0 72px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 70%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 70%);
+  pointer-events: none;
+}
+
+.hero .container { position: relative; }
+
+.hero-copy {
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--bg-elevated) 75%, transparent);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.hero-badge:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.hero-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: 0 0 auto;
+}
+
+.hero h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(0.82rem, 1.6vw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.hero-tagline {
+  font-size: clamp(2.5rem, 6.4vw, 4.3rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  margin: 0 0 22px;
+}
+
+.hero-tagline .dim { color: var(--text-muted); }
+
+.hero-lead {
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 37em;
+  margin: 0 auto 30px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-window {
+  position: relative;
+  max-width: 1040px;
+  margin: 60px auto 0;
+  animation: fadeUp 0.6s ease 0.12s both;
+}
+
+.hero-window::before {
+  content: "";
+  position: absolute;
+  inset: -8% -14%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 14%, transparent), transparent);
+  pointer-events: none;
+}
+
+.hero-window img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Stats */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 960px;
+  margin: 52px auto 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.stat {
+  padding: 22px 10px;
+}
+
+.stat + .stat { border-left: 1px solid var(--line); }
+
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, backdrop-filter 0.2s;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.btn-secondary {
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+  color: var(--text);
+  border-color: var(--line-strong);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+  border-color: var(--text-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.btn .arrow { transition: transform 0.15s; }
+.btn:hover .arrow { transform: translateX(3px); }
+
+/* ===== Sections ===== */
+section {
+  padding: 88px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-header {
+  margin-bottom: 44px;
+  max-width: 44rem;
+}
+
+.sec-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.sec-label::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--accent);
+  margin-right: 10px;
+  vertical-align: baseline;
+}
+
+.section-header h2 {
+  font-size: clamp(1.65rem, 3.2vw, 2.15rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* ===== Cell grids (features / cleaned) ===== */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  list-style: none;
+}
+
+.cells > * {
+  position: relative;
+  background: var(--bg);
+  padding: 26px 24px;
+  transition: background 0.25s, box-shadow 0.25s, backdrop-filter 0.25s;
+}
+
+.cells > *:hover {
+  background: color-mix(in srgb, var(--text) 5%, var(--bg));
+  backdrop-filter: blur(20px) saturate(1.7);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 8%, transparent), 0 8px 28px rgba(0, 0, 0, 0.08);
+  z-index: 1;
+}
+
+.cell-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.cell-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cells h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 7px;
+}
+
+.cells p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.cell-cat h3 {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.cell-cat .cell-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+.cell-cat .cell-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.clean-note {
+  margin-top: 22px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ===== Screenshots ===== */
+.shot-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+  justify-content: center;
+  text-align: center;
+}
+
+.shot-tab {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s, backdrop-filter 0.2s;
+  white-space: nowrap;
+}
+
+.shot-tab:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+  border-color: var(--line);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.shot-tab.active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  border-color: var(--line-strong);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.shot-stage {
+  position: relative;
+}
+
+.shot-viewport {
+  position: relative;
+  overflow: hidden;
+  transition: height 0.35s ease;
+}
+
+.carousel-track {
+  display: flex;
+  align-items: flex-start;
+  transition: transform 0.35s ease;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  cursor: zoom-in;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: auto;
+  display: block;
+  vertical-align: top;
+}
+
+.shot-nav {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--bg-elevated) 72%, transparent);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: var(--glass-shine), 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.shot-nav.prev { left: 12px; }
+.shot-nav.next { right: 12px; }
+
+.shot-nav:hover {
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  border-color: var(--text-muted);
+  box-shadow: var(--glass-shine), 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.shot-nav:active { transform: translateY(-50%) scale(0.96); }
+
+.screenshots-more {
+  margin-top: 20px;
+}
+
+.screenshots-more a {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.screenshots-more a:hover { color: var(--text); }
+
+/* ===== Release / changelog ===== */
+.release-list {
+  border-left: 1px solid var(--line-strong);
+  padding-left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 760px;
+}
+
+.release-list article { position: relative; }
+
+.release-list article::before {
+  content: "";
+  position: absolute;
+  left: -37px;
+  top: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--line-strong);
+}
+
+.release-list article:first-child::before {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.release-list h3 {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+}
+
+.release-list ul { list-style: none; }
+
+.release-list li {
+  padding: 5px 0 5px 16px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  position: relative;
+}
+
+.release-list li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+.release-list li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.release-cta { margin-top: 36px; }
+
+.release-cta a {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.release-cta a:hover { color: var(--text); }
+
+/* ===== Steps ===== */
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+.steps li {
+  border-top: 1px solid var(--line-strong);
+  padding: 18px 12px 12px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  transition: background 0.25s, box-shadow 0.25s, backdrop-filter 0.25s;
+}
+
+.steps li:hover {
+  background: color-mix(in srgb, var(--text) 5%, var(--bg));
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.step-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.steps h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 7px;
+}
+
+.steps p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* ===== Download ===== */
+#download { border-bottom: none; }
+
+.download-panel {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 44px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  padding: 44px;
+}
+
+.download-panel h2 {
+  font-size: clamp(1.55rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  margin-bottom: 10px;
+}
+
+.download-panel .dl-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 26px;
+}
+
+.download-panel .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.terminal {
+  background: #0c0d10;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+}
+
+.terminal-bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.terminal-bar .terminal-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  font-size: 0.68rem;
+  color: #6d747c;
+}
+
+.terminal-body {
+  padding: 14px 16px;
+  color: #d5d9de;
+  overflow-x: auto;
+}
+
+.terminal-body .cmt { color: #6d747c; }
+.terminal-body .prompt { color: #3dd68c; user-select: none; }
+.terminal-body .t-line { white-space: nowrap; }
+
+/* ===== SEO / About ===== */
+.about-seo .section-header {
+  max-width: 36rem;
+}
+
+.about-seo .seo-lead {
+  margin: 0 0 48px;
+  color: var(--text-muted);
+  font-size: clamp(1.05rem, 1.4vw, 1.18rem);
+  line-height: 1.7;
+}
+
+.about-seo .seo-lead strong,
+.about-seo .seo-topic strong,
+.about-seo .seo-faq strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.about-seo .seo-topics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(32px, 5vw, 56px);
+  border-top: 1px solid var(--line);
+}
+
+.about-seo .seo-topic {
+  padding: 28px 0 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.about-seo .seo-topic h3 {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text);
+  font-size: 1.12rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  margin: 0 0 12px;
+}
+
+.about-seo .seo-topic h3 .cell-icon {
+  margin-top: 1px;
+}
+
+.about-seo .seo-topic p {
+  margin: 0 0 0.95em;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.about-seo .seo-topic p:last-child { margin-bottom: 0; }
+
+.about-seo .seo-faq {
+  margin-top: 56px;
+}
+
+.about-seo .seo-faq > h3 {
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  margin: 0 0 20px;
+}
+
+.about-seo .seo-faq dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.about-seo .faq-item {
+  position: relative;
+  background: var(--bg);
+  padding: 22px 24px;
+  transition: background 0.25s, box-shadow 0.25s, backdrop-filter 0.25s;
+}
+
+.about-seo .faq-item:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.about-seo .faq-item:hover {
+  background: color-mix(in srgb, var(--text) 5%, var(--bg));
+  backdrop-filter: blur(20px) saturate(1.7);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 8%, transparent), 0 8px 28px rgba(0, 0, 0, 0.08);
+  z-index: 1;
+}
+
+.about-seo .seo-faq dt {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.about-seo .seo-faq dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.about-seo .seo-faq code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
+/* ===== Footer ===== */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 30px 0;
+}
+
+footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+footer a:hover { color: var(--text); }
+
+/* ===== Modal ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(12px);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  transform: scale(0.97);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content { transform: scale(1); }
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 300;
+  cursor: pointer;
+  z-index: 1010;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+}
+
+.modal-close:hover { background: rgba(255, 255, 255, 0.22); }
+
+.modal-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 20px;
+  z-index: 1010;
+  transition: background 0.2s;
+}
+
+.modal-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+.modal-btn.prev { left: 28px; }
+.modal-btn.next { right: 28px; }
+
+/* ===== Reveal on scroll ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy, .hero-window { animation: none; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nav-links a:hover,
+  .shot-tab:hover,
+  .shot-tab.active,
+  .cells > *:hover,
+  .steps li:hover,
+  .about-seo .faq-item:hover,
+  .btn-secondary,
+  .btn-secondary:hover,
+  .shot-nav,
+  .hero-badge {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .cells > *:hover,
+  .steps li:hover,
+  .about-seo .faq-item:hover {
+    background: color-mix(in srgb, var(--text) 6%, var(--bg));
+    box-shadow: none;
+  }
+
+  .nav-links a:hover,
+  .shot-tab:hover,
+  .shot-tab.active {
+    background: var(--bg-elevated);
+    box-shadow: none;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .cells { grid-template-columns: repeat(2, 1fr); }
+  .cells > *:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .steps { grid-template-columns: repeat(2, 1fr); }
+  .download-panel { grid-template-columns: 1fr; gap: 32px; }
+
+  .about-seo .seo-topics,
+  .about-seo .seo-faq dl {
+    grid-template-columns: 1fr;
+  }
+
+  .about-seo .faq-item:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .nav-toggle { display: flex; }
+
+  .nav-links {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 20px 16px;
+    display: none;
+  }
+
+  .nav-end { margin-left: auto; }
+
+  nav.open .nav-links { display: flex; }
+
+  .nav-links a {
+    padding: 12px 10px;
+    font-size: 0.86rem;
+  }
+
+  .nav-links a.nav-github {
+    margin-left: 0;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  nav.open .nav-toggle span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  nav.open .nav-toggle span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 120px 0 56px; }
+
+  .hero-window { display: none; }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-actions .btn { justify-content: center; }
+
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .stat + .stat { border-left: none; }
+  .stat:nth-child(even) { border-left: 1px solid var(--line); }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+
+  section { padding: 60px 0; }
+
+  .cells { grid-template-columns: 1fr; }
+  .cells > *:last-child:nth-child(odd) { grid-column: auto; }
+  .steps { grid-template-columns: 1fr; }
+
+  .about-seo .seo-lead { margin-bottom: 36px; }
+  .about-seo .seo-faq { margin-top: 40px; }
+  .about-seo .faq-item { padding: 18px 16px; }
+
+  .release-list { padding-left: 24px; }
+  .release-list article::before { left: -29px; }
+
+  .download-panel { padding: 28px 20px; }
+
+  .download-panel .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .download-panel .actions .btn { justify-content: center; }
+
+  .shot-nav {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .shot-nav.prev { left: 8px; }
+  .shot-nav.next { right: 8px; }
+
+  footer .container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .modal-btn.prev { left: 10px; }
+  .modal-btn.next { right: 10px; }
+  .modal-close { top: 12px; right: 12px; }
+}
+
+  </style>
 </head>
 <body>
 
 <nav id="main-nav">
   <div class="container">
-    <a class="nav-brand" href="#">
-      <img src="static/assets/logo-96.png" width="40" height="40" alt="MacOSCleaner">
+    <a class="nav-brand" href="https://alextkdev.github.io/MacOSCleaner/" aria-label="MacOSCleaner home">
+      <img src="static/assets/logo-96.png" width="40" height="40" alt="">
       MacOSCleaner
     </a>
     <div class="nav-links" id="nav-links">
@@ -166,10 +1448,10 @@
       <a href="#screenshots">screenshots</a>
       <a href="#cleaned">cleaned</a>
       <a href="#release">changelog</a>
-      <a href="#about">about</a>
+      <a href="#about" aria-label="About">about</a>
       <a href="#how-it-works">how&nbsp;it&nbsp;works</a>
       <a href="#download">download</a>
-      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner">GitHub ↗</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
     </div>
     <div class="nav-end">
       <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
@@ -190,6 +1472,7 @@
   </div>
 </nav>
 
+<main id="main">
 <!-- ===== HERO ===== -->
 <header class="hero">
   <div class="container">
@@ -206,7 +1489,7 @@
         <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
           Download for macOS <span class="arrow">→</span>
         </a>
-        <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner">
+        <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">
           View on GitHub
         </a>
       </div>
@@ -359,19 +1642,19 @@
       <button class="shot-nav prev" id="shot-prev" type="button" aria-label="Previous screenshot">&#10094;</button>
       <div class="shot-viewport">
         <div class="carousel-track">
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard_v2.png?raw=true" alt="Dashboard" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_page_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_page_v2.png?raw=true" alt="Cleanup Page" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_v2.png?raw=true" alt="Cleanup Scan" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_Results_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_Results_v2.png?raw=true" alt="Cleanup Scan Results" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Disk_analyzer_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Disk_analyzer_v2.png?raw=true" alt="Disk Space Analyzer" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_v2.png?raw=true" alt="Uninstaller" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_scan_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_scan_v2.png?raw=true" alt="Uninstaller Scan" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes_v2.png?raw=true" alt="Processes" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Startup_Services_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Startup_Services_v2.png?raw=true" alt="Startup Services" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Permission_screen_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Permission_screen_v2.png?raw=true" alt="Permission Screen" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/About_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/About_v2.png?raw=true" alt="About" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_1_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_1_v2.png?raw=true" alt="Settings General" loading="lazy"></a>
-          <a class="carousel-slide" href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_2_v2.png?raw=true"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_2_v2.png?raw=true" alt="Settings Uninstaller" loading="lazy"></a>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Dashboard_v2.png?raw=true" alt="Dashboard" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_page_v2.png?raw=true" alt="Cleanup Page" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_v2.png?raw=true" alt="Cleanup Scan" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan Results screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Cleanup_Scan_Results_v2.png?raw=true" alt="Cleanup Scan Results" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Disk Space Analyzer screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Disk_analyzer_v2.png?raw=true" alt="Disk Space Analyzer" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_v2.png?raw=true" alt="Uninstaller" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Scan screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Uninstaller_scan_v2.png?raw=true" alt="Uninstaller Scan" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Processes_v2.png?raw=true" alt="Processes" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Startup_Services_v2.png?raw=true" alt="Startup Services" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Permission_screen_v2.png?raw=true" alt="Permission Screen" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge About screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/About_v2.png?raw=true" alt="About" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Settings General screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_1_v2.png?raw=true" alt="Settings General" loading="lazy"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Settings Uninstaller screenshot"><img src="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/assets/screenshots/Settings_2_v2.png?raw=true" alt="Settings Uninstaller" loading="lazy"></button>
         </div>
       </div>
       <button class="shot-nav next" id="shot-next" type="button" aria-label="Next screenshot">&#10095;</button>
@@ -726,7 +2009,7 @@
             Download ZIP <span class="arrow">→</span>
           </a>
           <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>
-          <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner">Source</a>
+          <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">Source</a>
         </div>
       </div>
       <div class="terminal" aria-label="Build from source">
@@ -748,15 +2031,16 @@
     </div>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="container">
     <p>© 2026 AlexTkDev · source-available, personal use only · no telemetry</p>
     <div class="footer-links">
-      <a href="#about">About</a>
+      <a href="#about" aria-label="About">About</a>
       <a href="llms.txt">llms.txt</a>
       <a href="llms-full.txt">llms-full.txt</a>
-      <a href="https://github.com/AlexTkDev/MacOSCleaner">GitHub</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE">License</a>
     </div>

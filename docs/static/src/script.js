@@ -187,7 +187,9 @@ const modalClose = document.getElementById('modal-close');
 if (modal && modalImg && modalClose) {
   const updateModalImage = () => {
     if (slides[slideIndex]) {
-      modalImg.src = slides[slideIndex].getAttribute('href');
+      const img = slides[slideIndex].querySelector('img');
+      modalImg.src = img ? img.src : '';
+      modalImg.alt = img && img.alt ? `Zoomed: ${img.alt}` : 'Zoomed screenshot';
       updateCarousel();
     }
   };
@@ -198,6 +200,7 @@ if (modal && modalImg && modalClose) {
     setTimeout(() => {
       modal.style.display = 'none';
       modalImg.src = '';
+      modalImg.alt = 'Zoomed screenshot';
     }, 300);
     document.body.style.overflow = '';
   };
@@ -212,10 +215,7 @@ if (modal && modalImg && modalClose) {
   };
 
   slides.forEach((slide, index) => {
-    slide.addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal(index);
-    });
+    slide.addEventListener('click', () => openModal(index));
   });
 
   modalClose.addEventListener('click', closeModal);
