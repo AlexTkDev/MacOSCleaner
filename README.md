@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src=".github/logo.png" alt="macOS Cleaner" width="48" style="vertical-align:middle"> MacOS Cleaner
+  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="70" style="vertical-align:middle"> MacOS Cleaner
 </h1>
 
 [![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
