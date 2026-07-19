@@ -279,3 +279,38 @@ if (modal && modalImg && modalClose) {
     });
   }
 }
+
+// Hero background cursor tracking with trailing effect
+const heroSection = document.querySelector('.hero');
+if (heroSection) {
+  let mouseX = 0;
+  let mouseY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let isHovering = false;
+  
+  heroSection.addEventListener('mousemove', (e) => {
+    const rect = heroSection.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  }, { passive: true });
+
+  heroSection.addEventListener('mouseenter', () => {
+    isHovering = true;
+  });
+
+  heroSection.addEventListener('mouseleave', () => {
+    isHovering = false;
+  });
+
+  function animateHeroDots() {
+    if (isHovering) {
+      currentX += (mouseX - currentX) * 0.08;
+      currentY += (mouseY - currentY) * 0.08;
+      heroSection.style.setProperty('--mouse-x', `${currentX}px`);
+      heroSection.style.setProperty('--mouse-y', `${currentY}px`);
+    }
+    requestAnimationFrame(animateHeroDots);
+  }
+  animateHeroDots();
+}

@@ -259,7 +259,25 @@ nav .container {
   pointer-events: none;
 }
 
-.hero .container { position: relative; }
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 45%, transparent) 1.2px, transparent 1.2px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%);
+  mask-image: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+.hero:hover::after {
+  opacity: 1;
+}
+
+.hero .container { position: relative; z-index: 2; }
 
 .hero-copy {
   animation: fadeUp 0.6s ease both;
@@ -676,8 +694,13 @@ section {
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
-.shot-nav.prev { left: 12px; }
-.shot-nav.next { right: 12px; }
+.shot-nav.prev { left: -22px; }
+.shot-nav.next { right: -22px; }
+
+@media (min-width: 1280px) {
+  .shot-nav.prev { left: -66px; }
+  .shot-nav.next { right: -66px; }
+}
 
 .shot-nav:hover {
   background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
