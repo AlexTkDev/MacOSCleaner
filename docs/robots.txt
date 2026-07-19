@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 
 Sitemap: https://alextkdev.github.io/MacOSCleaner/sitemap.xml
+Sitemap: https://alextkdev.github.io/MacOSCleaner/sitemap.txt
 
 # Machine-readable brief for AI agents (https://llmstxt.org/)
 # https://alextkdev.github.io/MacOSCleaner/llms.txt
