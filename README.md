@@ -1,6 +1,8 @@
 <h1 align="center">
-  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="60" align="center"> MacOS Cleaner
+  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="100" align="absmiddle"> <span style="font-size:4em; font-weight:bold">MacOS Cleaner</span>
 </h1>
+
+<span align="center">
 
 [![License: Custom Non-Commercial](https://img.shields.io/badge/License-Custom%20NC-orange.svg)](LICENSE)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS-000000.svg?logo=apple&logoColor=white)](https://apple.com)
@@ -8,6 +10,8 @@
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/documentation/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
 [![Version: 2.0.0](https://img.shields.io/badge/Release-2.0.0-brightgreen.svg)]()
+
+</span>
 
 🧹 Free up disk space by cleaning caches, temp files, app leftovers, and more. Review candidates first, confirm what to remove, and recover from Trash when you need to.
 
