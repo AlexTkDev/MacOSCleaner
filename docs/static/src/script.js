@@ -25,7 +25,12 @@ function syncViewportHeight() {
 function updateCarousel() {
   if (!track || slides.length === 0) return;
   track.style.transform = `translateX(-${slideIndex * 100}%)`;
-  tabs.forEach((tab, i) => tab.classList.toggle('active', i === slideIndex));
+  tabs.forEach((tab, i) => {
+    const on = i === slideIndex;
+    tab.classList.toggle('active', on);
+    if (on) tab.setAttribute('aria-current', 'true');
+    else tab.removeAttribute('aria-current');
+  });
   syncViewportHeight();
 }
 
