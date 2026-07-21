@@ -1,1 +1,3 @@
 https://alextkdev.github.io/MacOSCleaner/
+https://alextkdev.github.io/MacOSCleaner/about.html
+https://alextkdev.github.io/MacOSCleaner/support.html

@@ -1,5 +1,7 @@
 # 🧹 macOS Cache Cleanup
 
+> **Note:** This branch (`gh-pages`) contains the source code for the project's website. For the main app source code, switch to the `main` branch.
+
 A high-performance shell script for safely cleaning up caches, temporary files, and application remnants on macOS. 
 It uses an intelligent **whitelist and app-discovery approach**: only known-safe directories are targeted, and leftover files are detected based on the currently installed applications.
 

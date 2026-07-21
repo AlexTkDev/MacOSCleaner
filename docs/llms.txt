@@ -6,21 +6,23 @@ Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Ma
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.0.0.
 License: source-available personal use only — not OSI open source; commercial use not permitted.
 
-## Docs
+## Pages & Docs
 
-- [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with features, FAQ, download
+- [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with core features, interactive screenshot showcase, changelog, and direct ZIP download
+- [About & FAQ](https://alextkdev.github.io/MacOSCleaner/about.html): Deep-dive into cache safety, forensic uninstaller leftovers, developer cleanup (Xcode, Docker, Homebrew), privacy model, and FAQs
+- [Support the Project](https://alextkdev.github.io/MacOSCleaner/support.html): Support options (Ko-fi subscription and Crypto donations) with roadmap breakdown
 - [Full agent brief](https://alextkdev.github.io/MacOSCleaner/llms-full.txt): Self-contained product facts for AI agents
-- [Sitemap](https://alextkdev.github.io/MacOSCleaner/sitemap.xml): Indexable URLs
+- [XML Sitemap](https://alextkdev.github.io/MacOSCleaner/sitemap.xml): Indexable URLs for search engines and crawlers
 
-## GitHub
+## GitHub & Source
 
 - [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
-- [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / changelog
-- [v2.0.0 notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass, on-device AI, Disk Analyzer, forensic Uninstaller
+- [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / release notes
+- [v2.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass UI, on-device AI, Disk Analyzer, forensic Uninstaller
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
 - [License](https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE): Source-available personal use only
 
-## Optional
+## Community & Support
 
-- [Screenshots](https://github.com/AlexTkDev/MacOSCleaner/tree/relese/assets/screenshots): UI screenshots (Dashboard, Cleanup, Uninstaller, Analyzer, …)
+- [Ko-fi](https://ko-fi.com/alextkdev): Support development via monthly subscription or one-time tip
 - [Author](https://github.com/AlexTkDev): AlexTkDev

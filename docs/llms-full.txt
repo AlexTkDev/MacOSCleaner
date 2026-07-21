@@ -7,7 +7,9 @@
 - Canonical name: MacOSCleaner
 - Alternate names: macOS Cleaner, Mac Cleaner
 - Author: AlexTkDev (https://github.com/AlexTkDev)
-- Site: https://alextkdev.github.io/MacOSCleaner/
+- Main Site: https://alextkdev.github.io/MacOSCleaner/
+- About & FAQ: https://alextkdev.github.io/MacOSCleaner/about.html
+- Support & Donate: https://alextkdev.github.io/MacOSCleaner/support.html
 - Repo: https://github.com/AlexTkDev/MacOSCleaner
 - Download: https://github.com/AlexTkDev/MacOSCleaner/releases/latest
 - Version: 2.0.0
@@ -79,6 +81,11 @@ sudo xattr -r -c /path/to/MacOSCleaner.app
 - Cache cleaning safe? Safe categories are temporary; apps may rebuild caches. Review Moderate/Dangerous items; confirm before clean.
 - Uninstaller-only? Yes — open Uninstaller, drop `.app`, review leftovers; full system scan not required.
 - Docker/Xcode wipe projects? No — targets cache/tooling paths, not source repos; still review volumes/simulator data.
+
+## Support & Contributions
+
+- Ko-fi: https://ko-fi.com/alextkdev (monthly subscription or tip)
+- Crypto: USDT (TRC20 / TON), BTC, SOL via https://alextkdev.github.io/MacOSCleaner/support.html
 
 ## Cite as
 

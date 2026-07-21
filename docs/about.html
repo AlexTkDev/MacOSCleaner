@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller</title>
+  <meta name="description" content="Learn about MacOSCleaner: why it was built, how safe cache cleaning works, app leftovers uninstaller, developer cleanup, and privacy.">
+  <meta name="keywords" content="mac cleaner, macOS cleaner, free mac cleaner, clean mac storage, app uninstaller mac, cache cleaner, disk cleanup, remove app leftovers, Xcode cleanup, Docker cleanup, Homebrew cache, developer cleanup">
+  <meta name="author" content="AlexTkDev">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/about.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="About MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
+  <meta property="og:description" content="Learn about MacOSCleaner: why it was built, safe cache cleaning, app leftovers uninstaller, developer cleanup, and privacy.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="MacOSCleaner app icon">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/about.html">
+  <meta property="og:locale" content="en_US">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
+  <meta name="twitter:description" content="Learn about MacOSCleaner: safe cache cleaning, app leftovers uninstaller, developer cleanup, and privacy.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner app icon">
+
+  <link rel="icon" type="image/png" sizes="96x96" href="static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="static/src/style.css">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="index.html" aria-label="MacOSCleaner home">
+      <img src="static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="index.html#screenshots">screenshots</a>
+      <a href="index.html#cleaned">cleaned</a>
+      <a href="index.html#release">changelog</a>
+      <a href="about.html" class="active" style="color: var(--text);">about</a>
+      <a href="index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="index.html#download">download</a>
+      <a href="support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="index.html" class="back-link">← Back to home</a>
+      <h1>About MacOSCleaner</h1>
+      <p>A free macOS cleaner built for Apple Silicon — caches, leftovers, and developer data</p>
+    </div>
+  </header>
+
+  <section id="about" class="about-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout reveal">
+        <p class="seo-lead">
+          <strong>MacOSCleaner</strong> is a free, source-available <strong>mac cleaner</strong> and <strong>macOS cleaner</strong> for Apple Silicon.
+          It helps you <strong>clean Mac storage</strong>, free disk space, and remove junk that builds up after normal use —
+          app caches, temporary files, browser data, package-manager leftovers, and more.
+          Unlike many commercial cleaners, scanning stays on your Mac: no account, no cloud upload, no telemetry.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              </span>
+              Free Mac cleaner for everyday disk cleanup
+            </h3>
+            <p>
+              When people search for a <strong>free mac cleaner</strong>, they usually want one thing: reclaim space without risking the system.
+              MacOSCleaner focuses on that job. Smart Cleanup covers dozens of categories in one pass — a practical
+              <strong>cache cleaner</strong> and <strong>disk cleanup</strong> tool in a native SwiftUI app.
+              You review risk badges after the scan, pick what to remove, and confirm before anything leaves the disk.
+              Permanent delete is opt-in; many flows move items to Trash first so you can restore if needed.
+            </p>
+            <p>
+              Common targets for a Mac disk cleanup include user and app caches, logs, large download leftovers,
+              and data left behind by messengers, IDEs, and browsers. The app also surfaces folders that grow quietly
+              over months — the kind of storage creep that makes “clean Mac storage” feel urgent after an Xcode or Docker week.
+            </p>
+          </div>
+
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="m17 13 5 5m0-5-5 5"/></svg>
+              </span>
+              App uninstaller that finds leftovers
+            </h3>
+            <p>
+              Dragging an app to Trash often leaves preferences, support files, caches, and launch agents behind.
+              MacOSCleaner’s <strong>app uninstaller</strong> for Mac is built to <strong>remove app leftovers</strong>
+              with a forensic-style scan: Bundle ID, Team ID, Spotlight hits, plists, and Launch Services — across multiple levels.
+              You get confidence tiers so “guaranteed” hits are obvious and questionable paths stay optional.
+              That makes uninstall cleaner than a simple delete, and safer than a blind script.
+            </p>
+          </div>
+
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              Developer cleanup: Xcode, Docker, Homebrew, and more
+            </h3>
+            <p>
+              Developers need a different kind of <strong>macOS cleaner</strong>.
+              DerivedData, simulators, device support files, and old archives can eat tens of gigabytes.
+              MacOSCleaner includes paths for <strong>Xcode cleanup</strong>, <strong>Docker cleanup</strong>
+              (images, containers, and related data where safe to target), and package managers such as
+              Homebrew, npm, yarn, and pnpm — so <strong>developer cleanup</strong> is part of the same workflow,
+              not a separate suite of terminal recipes you have to remember.
+            </p>
+            <p>
+              You still choose what to run. Dangerous or protected paths stay marked; system areas remain blocked.
+              The goal is not “delete everything that looks large,” but informed cleanup that fits how you work.
+            </p>
+          </div>
+
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+              </span>
+              How this macOS cleaner fits into a healthy Mac
+            </h3>
+            <p>
+              A good routine is simple: scan regularly, clean caches after big projects, and run the uninstaller
+              when you retire an app. Pair that with the built-in Disk Space Analyzer when you need to see
+              which folders dominate — video, photos, archives, or apps — then reveal in Finder or trash selectively.
+              Local Apple Intelligence explanations (on supported Apple Silicon) can clarify what a cache folder is
+              before you remove it, entirely offline.
+            </p>
+            <p>
+              MacOSCleaner also helps with launch agents and noisy processes: inspect startup services,
+              load or unload user agents when appropriate, and keep system processes protected.
+              That supports long-term performance, not only a one-time storage spike.
+            </p>
+          </div>
+
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              Privacy, safety, and who it is for
+            </h3>
+            <p>
+              Everything runs locally. There is no analytics pipeline and no anonymous “usage report.”
+              Safety checks block critical paths such as system directories and sensitive user locations.
+              The project is source-available for personal use — you can read how cleanup and uninstall logic works
+              instead of trusting a closed binary with opaque “deep clean” modes.
+            </p>
+            <p>
+              Commercial Mac cleaners often bundle subscriptions, upsells, or always-on background helpers.
+              MacOSCleaner keeps the opposite posture: open the app when you need a scan, review results,
+              clean what you selected, and quit. No background daemon required for everyday use.
+              Smart Updates only check GitHub Releases when you launch — still optional in spirit,
+              and never a reason to phone home with usage data.
+            </p>
+            <p>
+              If you need a <strong>mac cleaner</strong> for Apple Silicon, an <strong>app uninstaller</strong> that respects leftovers,
+              or a focused way to <strong>clean Mac storage</strong> without subscriptions, MacOSCleaner is built for that.
+              Download the latest release, scan, review, then clean — with control over every selection.
+            </p>
+          </div>
+
+          <div class="seo-topic">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              What you can clean in practice
+            </h3>
+            <p>
+              Typical wins after a first full Smart Cleanup: browser and messenger caches, IDE support folders,
+              package-manager download caches, and stale installers. Pair that with an uninstall pass for apps
+              you no longer use, and disk space often returns without deleting documents or photos.
+              When storage is still tight, the Disk Space Analyzer shows which folders dominate so you can
+              decide whether the next step is archive cleanup, media offload, or deeper developer cleanup —
+              including Xcode, Docker, and Homebrew cache paths when those tools are installed.
+              The same native UI covers these flows in English, Русский, Українська, and Español.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Is MacOSCleaner a free Mac cleaner?</dt>
+              <dd>Yes. The app is free to download for personal use. Releases are published on GitHub.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Does it replace built-in macOS storage tools?</dt>
+              <dd>
+                No. It complements them. Apple’s storage recommendations help with large personal files;
+                MacOSCleaner targets caches, developer artifacts, and incomplete uninstall leftovers more deeply.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is cache cleaning safe?</dt>
+              <dd>
+                Safe categories recover temporary data; apps may rebuild caches on next launch.
+                Moderate and dangerous items need a closer look — risk badges exist for that reason.
+                Always review the list before confirming a clean.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Can I use it only as an app uninstaller?</dt>
+              <dd>
+                Yes. Open the Uninstaller, drop a <code>.app</code>, review leftovers, and remove what you accept.
+                You do not have to run a full system scan first.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Does Docker or Xcode cleanup wipe my projects?</dt>
+              <dd>
+                Cleanup targets known cache and tooling paths, not your source repositories.
+                Still review results before deleting — especially custom Docker volumes or shared simulator data.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · source-available, personal use only · no telemetry</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="support.html">Support</a>
+      <a href="llms.txt">llms.txt</a>
+      <a href="llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<div id="crypto-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" style="align-items: center; justify-content: center;">
+  <div style="background: var(--bg-elevated); padding: 32px; border-radius: var(--radius); border: 1px solid var(--line); max-width: 95%; width: 460px; text-align: center; position: relative; box-shadow: var(--shadow-window);">
+    <span class="modal-close" id="crypto-modal-close" role="button" tabindex="0" aria-label="Close" style="top: 16px; right: 20px; font-size: 28px; color: var(--text-muted); cursor: pointer;">&times;</span>
+    
+    <h3 style="margin-bottom: 24px; font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em;">Donate Crypto</h3>
+    
+    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;" id="crypto-tabs">
+      <button class="shot-tab active" data-crypto="usdt-trc20">USDT (TRC20)</button>
+      <button class="shot-tab" data-crypto="usdt-ton">USDT (TON)</button>
+      <button class="shot-tab" data-crypto="btc">BTC</button>
+      <button class="shot-tab" data-crypto="sol">SOL</button>
+    </div>
+    
+    <div id="crypto-usdt-trc20" class="crypto-panel">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH" alt="USDT TRC20 QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH</p>
+      <a href="tron:TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+    </div>
+    
+    <div id="crypto-usdt-ton" class="crypto-panel" style="display: none;">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT" alt="USDT TON QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT</p>
+      <a href="ton://transfer/UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+    </div>
+    
+    <div id="crypto-btc" class="crypto-panel" style="display: none;">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ" alt="BTC QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ</p>
+      <a href="bitcoin:34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+    </div>
+    
+    <div id="crypto-sol" class="crypto-panel" style="display: none;">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t" alt="SOL QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t</p>
+      <a href="solana:6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+    </div>
+  </div>
+</div>
+
+<script src="static/src/script.js" defer></script>
+</body>
+</html>

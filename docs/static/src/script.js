@@ -314,3 +314,53 @@ if (heroSection) {
   }
   animateHeroDots();
 }
+
+// Crypto modal
+const cryptoModal = document.getElementById('crypto-modal');
+const cryptoModalClose = document.getElementById('crypto-modal-close');
+const openCryptoModalBtn = document.getElementById('open-crypto-modal');
+const cryptoTabs = document.querySelectorAll('#crypto-tabs .shot-tab');
+const cryptoPanels = document.querySelectorAll('.crypto-panel');
+
+if (cryptoModal && openCryptoModalBtn) {
+  const openCrypto = (e) => {
+    e.preventDefault();
+    cryptoModal.style.display = 'flex';
+    cryptoModal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => cryptoModal.classList.add('show'));
+    document.body.style.overflow = 'hidden';
+  };
+
+  openCryptoModalBtn.addEventListener('click', openCrypto);
+
+  const openCryptoModalSupportBtn = document.getElementById('open-crypto-modal-support');
+  if (openCryptoModalSupportBtn) openCryptoModalSupportBtn.addEventListener('click', openCrypto);
+
+  const closeCryptoModal = () => {
+    cryptoModal.classList.remove('show');
+    cryptoModal.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+      cryptoModal.style.display = 'none';
+    }, 300);
+    document.body.style.overflow = '';
+  };
+
+  if (cryptoModalClose) {
+    cryptoModalClose.addEventListener('click', closeCryptoModal);
+  }
+
+  cryptoModal.addEventListener('click', (e) => {
+    if (e.target === cryptoModal) closeCryptoModal();
+  });
+
+  cryptoTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      cryptoTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const cryptoId = tab.getAttribute('data-crypto');
+      cryptoPanels.forEach(p => {
+        p.style.display = p.id === 'crypto-' + cryptoId ? 'block' : 'none';
+      });
+    });
+  });
+}
