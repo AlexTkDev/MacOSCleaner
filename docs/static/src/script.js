@@ -1,6 +1,6 @@
 let slideIndex = 0;
 const slides = document.querySelectorAll('.carousel-slide');
-const tabs = document.querySelectorAll('.shot-tab');
+const tabs = document.querySelectorAll('.shot-tabs .shot-tab');
 const track = document.querySelector('.carousel-track');
 const viewport = document.querySelector('.shot-viewport');
 
@@ -318,11 +318,10 @@ if (heroSection) {
 // Crypto modal
 const cryptoModal = document.getElementById('crypto-modal');
 const cryptoModalClose = document.getElementById('crypto-modal-close');
-const openCryptoModalBtn = document.getElementById('open-crypto-modal');
 const cryptoTabs = document.querySelectorAll('#crypto-tabs .shot-tab');
 const cryptoPanels = document.querySelectorAll('.crypto-panel');
 
-if (cryptoModal && openCryptoModalBtn) {
+if (cryptoModal) {
   const openCrypto = (e) => {
     e.preventDefault();
     cryptoModal.style.display = 'flex';
@@ -331,10 +330,9 @@ if (cryptoModal && openCryptoModalBtn) {
     document.body.style.overflow = 'hidden';
   };
 
-  openCryptoModalBtn.addEventListener('click', openCrypto);
-
-  const openCryptoModalSupportBtn = document.getElementById('open-crypto-modal-support');
-  if (openCryptoModalSupportBtn) openCryptoModalSupportBtn.addEventListener('click', openCrypto);
+  document.querySelectorAll('#open-crypto-modal, #open-crypto-modal-support, [data-open-crypto]').forEach(btn => {
+    btn.addEventListener('click', openCrypto);
+  });
 
   const closeCryptoModal = () => {
     cryptoModal.classList.remove('show');
