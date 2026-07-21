@@ -10,6 +10,7 @@
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/documentation/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
 [![Version: 2.0.0](https://img.shields.io/badge/Release-2.0.0-brightgreen.svg)]()
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/alextkdev)
 
 </span>
 
