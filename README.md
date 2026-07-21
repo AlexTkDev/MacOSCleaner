@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="100" align="absmiddle"> <span style="font-size:4em; font-weight:bold">MacOS Cleaner</span>
+  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="100" align="absmiddle"> <span style="font-size:3em; font-weight:bold">MacOS Cleaner</span>
 </h1>
 
 <span align="center">
