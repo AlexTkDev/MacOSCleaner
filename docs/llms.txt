@@ -20,7 +20,7 @@ License: source-available personal use only — not OSI open source; commercial 
 - [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / release notes
 - [v2.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass UI, on-device AI, Disk Analyzer, forensic Uninstaller
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
-- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/relese/LICENSE): Source-available personal use only
+- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Source-available personal use only
 
 ## Community & Support
 
