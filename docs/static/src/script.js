@@ -22,6 +22,8 @@ function syncViewportHeight() {
   }
 }
 
+const demoVideo = document.getElementById('demo-video');
+
 function updateCarousel() {
   if (!track || slides.length === 0) return;
   track.style.transform = `translateX(-${slideIndex * 100}%)`;
@@ -32,11 +34,26 @@ function updateCarousel() {
     else tab.removeAttribute('aria-current');
   });
   syncViewportHeight();
+  // Play/pause demo video based on active slide
+  if (demoVideo) {
+    if (slideIndex === 0) {
+      demoVideo.play().catch(() => {});
+    } else {
+      demoVideo.pause();
+    }
+  }
 }
 
 function goToSlide(n) {
   slideIndex = (n + slides.length) % slides.length;
   updateCarousel();
+}
+
+if (demoVideo) {
+  demoVideo.addEventListener('click', () => {
+    if (demoVideo.paused) demoVideo.play().catch(() => {});
+    else demoVideo.pause();
+  });
 }
 
 tabs.forEach(tab => {
