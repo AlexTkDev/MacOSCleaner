@@ -592,6 +592,14 @@
 
 </div>
 
+<!-- Screenshot Modal -->
+<div id="image-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Screenshot Viewer">
+  <span class="modal-close" id="modal-close" role="button" tabindex="0" aria-label="Close modal">&times;</span>
+  <button class="modal-btn prev" id="modal-prev" aria-label="Previous screenshot">&#10094;</button>
+  <img class="modal-content" id="modal-img" src="" alt="Zoomed screenshot" loading="lazy" decoding="async">
+  <button class="modal-btn next" id="modal-next" aria-label="Next screenshot">&#10095;</button>
+</div>
+
 <div id="crypto-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" style="align-items: center; justify-content: center;">
   <div style="background: var(--bg-elevated); padding: 32px; border-radius: var(--radius); border: 1px solid var(--line); max-width: 95%; width: 460px; text-align: center; position: relative; box-shadow: var(--shadow-window);">
     <span class="modal-close" id="crypto-modal-close" role="button" tabindex="0" aria-label="Close" style="top: 16px; right: 20px; font-size: 28px; color: var(--text-muted); cursor: pointer;">&times;</span>

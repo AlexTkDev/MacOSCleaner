@@ -232,7 +232,11 @@ if (modal && modalImg && modalClose) {
   };
 
   slides.forEach((slide, index) => {
-    slide.addEventListener('click', () => openModal(index));
+    slide.addEventListener('click', () => {
+      if (!slide.classList.contains('carousel-slide--video')) {
+        openModal(index);
+      }
+    });
   });
 
   modalClose.addEventListener('click', closeModal);
@@ -250,6 +254,22 @@ if (modal && modalImg && modalClose) {
   let modalTouchStartX = 0;
   let modalTouchEndX = 0;
 
+  const navigateModal = (direction) => {
+    let nextIndex = slideIndex + direction;
+    if (nextIndex >= slides.length) nextIndex = 0;
+    if (nextIndex < 0) nextIndex = slides.length - 1;
+    
+    // Skip video slides in modal
+    while (slides[nextIndex] && slides[nextIndex].classList.contains('carousel-slide--video')) {
+      nextIndex += direction;
+      if (nextIndex >= slides.length) nextIndex = 0;
+      if (nextIndex < 0) nextIndex = slides.length - 1;
+    }
+    
+    goToSlide(nextIndex);
+    updateModalImage();
+  };
+
   modal.addEventListener('touchstart', (e) => {
     modalTouchStartX = e.changedTouches[0].screenX;
   }, { passive: true });
@@ -258,23 +278,19 @@ if (modal && modalImg && modalClose) {
     modalTouchEndX = e.changedTouches[0].screenX;
     const threshold = 50;
     if (modalTouchEndX < modalTouchStartX - threshold) {
-      goToSlide(slideIndex + 1);
-      updateModalImage();
+      navigateModal(1);
     }
     if (modalTouchEndX > modalTouchStartX + threshold) {
-      goToSlide(slideIndex - 1);
-      updateModalImage();
+      navigateModal(-1);
     }
   }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (!modal.classList.contains('show')) return;
     if (e.key === 'ArrowRight') {
-      goToSlide(slideIndex + 1);
-      updateModalImage();
+      navigateModal(1);
     } else if (e.key === 'ArrowLeft') {
-      goToSlide(slideIndex - 1);
-      updateModalImage();
+      navigateModal(-1);
     } else if (e.key === 'Escape') {
       closeModal();
     }
@@ -286,13 +302,11 @@ if (modal && modalImg && modalClose) {
   if (modalPrev && modalNext) {
     modalPrev.addEventListener('click', (e) => {
       e.stopPropagation();
-      goToSlide(slideIndex - 1);
-      updateModalImage();
+      navigateModal(-1);
     });
     modalNext.addEventListener('click', (e) => {
       e.stopPropagation();
-      goToSlide(slideIndex + 1);
-      updateModalImage();
+      navigateModal(1);
     });
   }
 }
