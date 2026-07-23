@@ -177,7 +177,7 @@ Use **⌘R** to run, **⌘U** to test, or **Product → Archive** to create a di
 
 **⚠️ Fix damaged app attributes** (if macOS asks you to move app to trash):
 ```bash
-sudo xattr -r -c /path/to/MacOSCleaner.app
+sudo xattr -r -c /Applications/MacOSCleaner.app
 ```
 
 ---
