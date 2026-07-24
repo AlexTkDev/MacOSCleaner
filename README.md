@@ -158,4 +158,7 @@ Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSC
 
 ## License
 
-Source-available Personal Use Only License — free to use and study for personal, non-commercial purposes. Commercial use, redistribution, and derivative works require explicit permission. See [LICENSE](LICENSE) for details.
+Dual-licensed under:
+- **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source use, personal study, and distribution.
+- **Commercial License** for proprietary, enterprise, or closed-source integration. [Contact the author](https://github.com/AlexTkDev) for commercial licensing inquiries.
+
