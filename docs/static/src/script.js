@@ -393,3 +393,59 @@ if (cryptoModal) {
     });
   });
 }
+
+// Fast animated stats counters with IntersectionObserver
+function initStatCounters() {
+  const statElements = document.querySelectorAll('.stat-num[data-count]');
+  if (!statElements.length) return;
+
+  const animateCount = (el) => {
+    const target = parseInt(el.getAttribute('data-count'), 10);
+    const suffix = el.getAttribute('data-suffix') || '';
+    if (isNaN(target)) return;
+    if (target === 0) {
+      el.textContent = '0' + suffix;
+      return;
+    }
+
+    const duration = 1200; // ms
+    const startTime = performance.now();
+
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const update = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      const current = Math.floor(easedProgress * target);
+
+      el.textContent = current + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        el.textContent = target + suffix;
+      }
+    };
+
+    requestAnimationFrame(update);
+  };
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  statElements.forEach(el => observer.observe(el));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStatCounters);
+} else {
+  initStatCounters();
+}
+

@@ -19,19 +19,21 @@
   <meta property="og:site_name" content="MacOSCleaner">
   <meta property="og:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
   <meta property="og:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Native SwiftUI, offline, no telemetry.">
-  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png">
-  <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="512">
-  <meta property="og:image:height" content="512">
-  <meta property="og:image:alt" content="MacOSCleaner app icon">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
   <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/">
   <meta property="og:locale" content="en_US">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
   <meta name="twitter:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Offline, no telemetry.">
-  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png">
-  <meta name="twitter:image:alt" content="MacOSCleaner app icon">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+
 
   <link rel="icon" type="image/png" sizes="96x96" href="static/assets/logo-96.png">
   <link rel="apple-touch-icon" href="static/assets/logo-96.png">
@@ -222,22 +224,23 @@
 
     <div class="hero-stats">
       <div class="stat">
-        <div class="stat-num">54</div>
+        <div class="stat-num" data-count="54">0</div>
         <div class="stat-label">cleanup categories</div>
       </div>
       <div class="stat">
-        <div class="stat-num">450+</div>
+        <div class="stat-num" data-count="450" data-suffix="+">0+</div>
         <div class="stat-label">built-in paths</div>
       </div>
       <div class="stat">
-        <div class="stat-num">30</div>
+        <div class="stat-num" data-count="30">0</div>
         <div class="stat-label">evidence types</div>
       </div>
       <div class="stat">
-        <div class="stat-num">0</div>
+        <div class="stat-num" data-count="0">0</div>
         <div class="stat-label">telemetry — none collected</div>
       </div>
     </div>
+
   </div>
 </header>
 
@@ -462,9 +465,11 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">04 · Changelog</p>
-      <h2>What's new in v2.0.0</h2>
+      <h2>What's new in v2.0.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0" target="_blank" rel="noopener" class="changelog-link" title="View v2.0.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
       <p>On-device AI, Liquid Glass, Disk Analyzer, forensic Uninstaller</p>
     </div>
+    
+    <!-- Active Latest Release Details -->
     <div class="release-list reveal">
       <article>
         <h3>On-Device Apple Intelligence</h3>
@@ -497,11 +502,119 @@
         </ul>
       </article>
     </div>
+
+    <div class="release-current-cta reveal" style="margin-top: 24px;">
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+        View v2.0.0 release notes on GitHub →
+      </a>
+    </div>
+
+
+    <!-- Previous Releases Timeline / Accordion -->
+    <div class="changelog-previous reveal">
+      <h3 class="changelog-subhead">Previous Releases</h3>
+      
+      <div class="changelog-timeline">
+        <!-- v1.1.1 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v1.1.1</span>
+            <span class="changelog-title">UI Polish, Memory Efficiency &amp; Safety Hardening</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/1.1.1" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>UI &amp; Animation Polish</strong> — refined NavigationSplitView transitions and high-DPI card rendering</li>
+              <li><strong>Memory Optimization</strong> — ultra-low memory footprint during deep recursive scans of massive cache trees</li>
+              <li><strong>Process Manager Safety</strong> — expanded protected process rules for macOS system daemons</li>
+              <li><strong>Localization Fixes</strong> — corrected localized strings in German, Spanish, and Ukrainian language bundles</li>
+              <li><strong>Bug Fixes</strong> — fixed edge-case UI freeze during rapid category selection during active scans</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v1.1</span>
+            <span class="changelog-title">Developer Caches, Opt-in Deep Clean &amp; Parallel Scanning</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/1.1" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>Developer Tool Caches</strong> — added dedicated scanning for Xcode DerivedData, Simulators, Android Studio SDK, Homebrew, SwiftPM, Cargo, Go, and JetBrains caches</li>
+              <li><strong>Opt-in Deep Cleanup</strong> — introduced configurable toggles for Maven (<code>~/.m2</code>), Go module cache, Flutter <code>.dart_tool</code>, and <code>.DS_Store</code> files</li>
+              <li><strong>Multi-Core Parallel Scanning</strong> — rewritten scanning engine using Swift 6 TaskGroups to scan all 54 categories simultaneously</li>
+              <li><strong>Dynamic Electron Discovery</strong> — automatically finds and categorizes caches for Slack, Discord, VS Code, Cursor, and Figma</li>
+              <li><strong>Full Localization Support</strong> — complete UI translations for English, Русский, Українська, and Español</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.1 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v1.0.1</span>
+            <span class="changelog-title">SafetyManager Hardening &amp; Trash Recovery Enhancements</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/1.0.1" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>SafetyManager System Protection</strong> — strictly enforced zero-deletion rules for <code>/System</code>, <code>/usr</code>, <code>/bin</code>, and <code>~/.ssh</code></li>
+              <li><strong>Trash Item Safe Removal</strong> — upgraded cleanup operations to use native <code>trashItem(at:)</code> by default for recoverable deletion</li>
+              <li><strong>App Uninstaller Forensics</strong> — expanded leftover detection rules up to 3 levels deep in <code>~/Library/Containers</code></li>
+              <li><strong>Performance Tweaks</strong> — cache deduplication of inode size calculations to prevent double-counting</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v1.0</span>
+            <span class="changelog-title">Initial Public Release &amp; Core SwiftUI Engine</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/1.0" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>54 Cleanup Categories</strong> — smart cache scanner for system logs, webkit, mail attachments, and browser caches</li>
+              <li><strong>App Uninstaller</strong> — drag and drop app bundle uninstaller with identity and bundle ID matching</li>
+              <li><strong>Native macOS UI</strong> — dark &amp; light theme support built with SwiftUI for Apple Silicon</li>
+              <li><strong>100% Privacy &amp; Offline</strong> — fully local execution without telemetry, background daemons, or tracking</li>
+            </ul>
+          </div>
+        </details>
+
+      </div>
+    </div>
+
+
     <div class="release-cta reveal">
-      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0">full release notes →</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases" target="_blank" rel="noopener">View all releases on GitHub →</a>
     </div>
   </div>
 </section>
+
 
 <!-- ===== HOW IT WORKS ===== -->
 <section id="how-it-works">
