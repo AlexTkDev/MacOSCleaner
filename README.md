@@ -150,15 +150,18 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 ---
 
-## Feedback
+## Feedback & Contributions
 
 Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues) — contributions are welcome.
+
+*Note: All contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md) to maintain dual-licensing capabilities.*
 
 ---
 
 ## License
 
 Dual-licensed under:
-- **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source use, personal study, and distribution.
+- **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source use, personal study, and distribution. Any redistribution or resale of binaries under GPLv3 must include or provide free access to the complete source code under GPLv3.
 - **Commercial License** for proprietary, enterprise, or closed-source integration. [Contact the author](https://github.com/AlexTkDev) for commercial licensing inquiries.
+
 

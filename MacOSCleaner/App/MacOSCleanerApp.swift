@@ -1,5 +1,9 @@
+// Copyright (C) 2026 AlexTkDev
+// Licensed under GNU General Public License v3.0 (GPLv3)
+
 import SwiftUI
 import OSLog
+
 
 private let crashLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner", category: "Crash")
 
