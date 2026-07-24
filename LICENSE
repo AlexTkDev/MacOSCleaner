@@ -24,6 +24,10 @@ license to:
   b) View and study the source code for personal reference and learning only.
   c) Fork the repository on GitHub solely for personal study, provided all
      original copyright and license notices are preserved.
+  d) App directories, software catalogs, and package repositories (such as
+     KomiStore, MacUpdate, Softpedia, Homebrew, etc.) are explicitly permitted
+     to index, list, host, and distribute original unmodified release binaries (.dmg/.app)
+     and link to official releases for end-user discovery.
 
 "Personal use" means use by a single natural person on their own devices
 for private, non-revenue-generating purposes, explicitly excluding any
