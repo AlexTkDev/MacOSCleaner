@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# AI / answer-engine crawlers (explicit allow)
+# AI / Search Engine Crawlers (Explicit Allow)
 User-agent: GPTBot
 Allow: /
 
@@ -14,10 +14,16 @@ Allow: /
 User-agent: ClaudeBot
 Allow: /
 
+User-agent: Claude-Web
+Allow: /
+
 User-agent: anthropic-ai
 Allow: /
 
 User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
 Allow: /
 
 User-agent: Applebot-Extended
@@ -26,15 +32,35 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+User-agent: GoogleOther
+Allow: /
+
 User-agent: Bytespider
 Allow: /
 
 User-agent: CCBot
 Allow: /
 
+User-agent: Cohere-ai
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+# Sitemaps
 Sitemap: https://alextkdev.github.io/MacOSCleaner/sitemap.xml
 Sitemap: https://alextkdev.github.io/MacOSCleaner/sitemap.txt
 
-# Machine-readable brief for AI agents (https://llmstxt.org/)
+# LLM Machine-readable briefs (llmstxt.org)
 # https://alextkdev.github.io/MacOSCleaner/llms.txt
 # https://alextkdev.github.io/MacOSCleaner/llms-full.txt
+
