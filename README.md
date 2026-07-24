@@ -1,6 +1,6 @@
 # 🧹 macOS Cache Cleanup
 
-> **Note:** This branch (`gh-pages`) contains the source code for the project's website. For the main app source code, switch to the `main` branch.
+> **Note:** This branch (`gh-pages`) contains the source code for the project's website and shell utility scripts. For the main native app source code, switch to the `release` / `main` branch.
 
 A high-performance shell script for safely cleaning up caches, temporary files, and application remnants on macOS. 
 It uses an intelligent **whitelist and app-discovery approach**: only known-safe directories are targeted, and leftover files are detected based on the currently installed applications.
@@ -85,3 +85,10 @@ The script is built with modular helper functions:
 - `clean_contents`: Safely empties a directory while preserving the folder itself.
 - `_is_installed`: Cross-references folder names with the list of installed applications.
 - `print_step`: Displays a beautiful progress bar and formatted status for each stage.
+
+---
+
+## 📜 Feedback & License
+
+- **[Contributor License Agreement (CLA)](CLA.md)**: Contributions to the codebase are covered by the CLA for dual-licensing compatibility.
+- **License**: Dual-licensed under **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source distribution and **Commercial License** for proprietary integration.
