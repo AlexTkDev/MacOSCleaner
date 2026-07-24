@@ -355,11 +355,18 @@ const cryptoPanels = document.querySelectorAll('.crypto-panel');
 if (cryptoModal) {
   const openCrypto = (e) => {
     e.preventDefault();
+    cryptoModal.querySelectorAll('img[data-src]').forEach(img => {
+      if (img.dataset.src) {
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+    });
     cryptoModal.style.display = 'flex';
     cryptoModal.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(() => cryptoModal.classList.add('show'));
     document.body.style.overflow = 'hidden';
   };
+
 
   document.querySelectorAll('#open-crypto-modal, #open-crypto-modal-support, [data-open-crypto]').forEach(btn => {
     btn.addEventListener('click', openCrypto);

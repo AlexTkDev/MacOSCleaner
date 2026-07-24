@@ -10,8 +10,10 @@
   <meta name="author" content="AlexTkDev">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="preload" as="image" href="static/assets/hero-dashboard.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" href="static/src/style.css" as="style">
   <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/">
+
   <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
   <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
 
@@ -732,28 +734,29 @@
     </div>
     
     <div id="crypto-usdt-trc20" class="crypto-panel">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH" alt="USDT TRC20 QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <img data-src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH" alt="USDT TRC20 QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;" loading="lazy">
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH</p>
       <a href="tron:TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
     <div id="crypto-usdt-ton" class="crypto-panel" style="display: none;">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT" alt="USDT TON QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <img data-src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT" alt="USDT TON QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;" loading="lazy">
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT</p>
       <a href="ton://transfer/UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
     <div id="crypto-btc" class="crypto-panel" style="display: none;">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ" alt="BTC QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <img data-src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ" alt="BTC QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;" loading="lazy">
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ</p>
       <a href="bitcoin:34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
     <div id="crypto-sol" class="crypto-panel" style="display: none;">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t" alt="SOL QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;">
+      <img data-src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t" alt="SOL QR" style="border-radius: 8px; margin: 0 auto 20px; display: block; max-width: 100%; width: 220px; height: 220px; background: white; padding: 10px;" loading="lazy">
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t</p>
       <a href="solana:6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
+
   </div>
 </div>
 
