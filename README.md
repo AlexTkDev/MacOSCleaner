@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="100" align="absmiddle"> <span style="font-size:3em; font-weight:bold">MacOS Cleaner</span>
+  <img src=".github/logo.png?v=2" alt="MacOS Cleaner" width="100" align="absmiddle"> <span style="font-size:2em; font-weight:bold">MacOS Cleaner</span>
 </h1>
 
 <span align="center">
@@ -35,6 +35,13 @@
 
 ---
 
+## 🚀 Quick Install & Download
+
+### GitHub Releases (DMG)
+Download the latest signed release directly from **[GitHub Releases](https://github.com/AlexTkDev/MacOSCleaner/releases/latest)**.
+
+---
+
 ## Features
 
 🧠 **Apple Intelligence** — Native local AI explanations powered by `FoundationModels` (requires macOS 26.0+). Operates fully offline on supported Apple Silicon Macs. Explains files, caches, running processes, and startup agents to help you decide what is safe to remove. Prompts are optimized in English for higher model reasoning, with explanations output in your preferred UI language (English, Русский, Українська, Español). Fully toggleable in settings, with real-time model status tracking.
@@ -45,53 +52,10 @@
 
 **Smart Cleanup** 🔍 — scans 54 categories with 450+ built-in cleaning paths:
 
-- **App Caches** — Google, Spotify, JetBrains, opencode, browsers (Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc), messengers (Telegram, Discord, Slack, Signal, WeChat, Teams)
-- **Package Managers** — Homebrew, npm, yarn, pnpm, CocoaPods
-- **Dev Tools** — Xcode DerivedData, iOS Simulators (old runtimes too), Android SDK + Studio caches, Gradle/Maven, Flutter/Dart, language caches (Go, Rust, Python, Node.js, Ruby, Java, Julia, Elixir, Haskell, Swift PM, R, Maven, pnpm-store, Yarn, Poetry, Cargo git, SwiftPM repos, Bazel)
-- **IDE Caches** — Cursor, VS Code (incl. Insiders), Windsurf, Zed, JetBrains, Nova, Sublime Text, Atom, Eclipse, opencode, Claude, ChatGPT, Gemini, Perplexity, GitHub Desktop, Slack, Discord, Figma, Notion, Postman, Insomnia, Linear, Tower, TablePlus + dynamic Electron cache discovery
-- **Browser Sub-Caches** — Firefox Profiles/*/cache2, Safari LocalStorage/Databases, Chrome Code Cache/GPUCache/Service Worker/GrShaderCache, Edge/Brave/Arc Code Cache
-- **System Caches** — QuickLook ThumbnailsAgent, fonts, Spotlight, Siri, CloudKit, TimeMachine, icons
-- **Docker** — container and image cleanup
-- **App Containers** — sandboxed caches in Containers + Group Containers
-- **Dotfile Caches** — AI CLI tools (opencode, Claude, Gemini, Codex, Aider), dev tools (npm logs, Terraform, Helm, Bazel, ccache, vcpkg)
-- **Scattered Junk** — .DS_Store, __MACOSX, stray logs, Windows metadata (Thumbs.db, desktop.ini), broken symlinks
-- **Orphaned Remnants** — known leftovers from removed apps via `KnownResidualCatalog`
-- **Orphaned Files** — leftovers from uninstalled apps in HTTPStorages, WebKit, Cookies, /Users/Shared
-- **Old IDE Versions** — cleans system caches for VS Code, Cursor, Windsurf, Zed, Sublime Text, Eclipse, Atom; detects and removes leftover JetBrains cache/log directories for no-longer-installed products; cleans old Android Studio version caches (keeps latest); removes stale CachedData subdirectories for VS Code, Cursor, Windsurf (keeps latest version)
-- **Large Files** — old DMG/pkg/iso/zip installers, node_modules (recursive), iPhone backups, IPSW firmware
-- **Dynamic Cache Discovery** — auto-discovers large reverse-DNS caches in ~/Library/Caches; Apple caches (com.apple.*) at ≥ 5 MB, others at ≥ 20 MB
-- **Time Machine Snapshots** — local APFS snapshots (macOS recreates them automatically)
-- **iOS Backups** — re-downloadable from iCloud
-- **Mail Downloads** — cached email attachments (all Mail accounts)
-- **Saved Application State** — window/session state (recreated on app launch)
-- **Crash Reports** — old crash logs and diagnostic files
-- **AssetsV2 / iWork Templates** — Pages/Numbers/Keynote templates (~800 MB, re-downloaded on demand)
-- **iCloud CloudKit Cache** — metadata cache (rebuilt automatically)
-- **SwiftPM Cache** — build/download cache (rebuilt on next build)
-- **Carthage Cache** — dependency cache and spec repos
-- **Steam Cache** — app cache, shader cache, depot cache, logs
-- **Teams Cache** — Electron caches (Cache, Code Cache, GPUCache, IndexedDB)
-- **Adobe Caches** — application and media caches
-- **Chrome Extra Caches** — GrShaderCache, disk cache, code cache, GPU cache, service workers
-- **Launch Agents** — user-level LaunchAgents in ~/Library/LaunchAgents
-- **Launch Daemons** — system-level LaunchDaemons (sudo)
-- **Privileged Helpers** — system helper tools (sudo)
-- **Package Receipts** — pkgutil receipt databases
-- **Internet Plug-Ins** — legacy browser plug-ins
-- **Shared File Lists** — Finder sidebar / recent items lists
-- **iCloud Cloud Documents** — iCloud document cache (opt-in)
-- **User Logs** — system and user-level logs (`~/Library/Logs`, `/Library/Logs`)
-- **Photos Library Cache** — Photos.app library cache
-- **Voice Memos** — Voice Memos recordings (opt-in)
-- **GarageBand / Logic** — project files and caches (opt-in)
-- **iMovie / Final Cut** — render files and libraries (opt-in)
-- **Garmin / Fitbit** — device sync caches
-- **Old Backups** — stale .backup files in Home, Desktop, Documents, Downloads
-- **DNS Cache Flush** — flushes DNS resolver cache (command, sudo)
-- **Font Cache** — rebuilds font databases (command, sudo)
-- **Sleep Image** — removes /var/vm/sleepimage (command, sudo, opt-in)
-- **Duplicate Files** — sha256 duplicate detection in ~/Documents, ~/Desktop, ~/Downloads, ~/Pictures, ~/Movies
-- **Unused Apps** — apps not launched in 180+ days (scan-only)
+- **Caches & Containers** — Browsers (Safari, Chrome, Firefox, Arc, etc.), Messengers, App Containers, System & WebKit caches, dynamic Electron discovery.
+- **Dev Tools & IDEs** — Xcode DerivedData, Simulators, Android SDK/Studio, Package Managers (Homebrew, npm, Cargo, Go, SwiftPM), JetBrains, VS Code, Cursor, Docker.
+- **System & Maintenance** — Time Machine snapshots, Mail attachments, Logs, Crash Reports, QuickLook thumbnails, Font & DNS cache flushing, LaunchAgents/Daemons.
+- **Leftovers & Junk** — Uninstalled app remnants (HTTPStorages, Containers, Cookies), `.DS_Store`, `__MACOSX`, broken symlinks, old installers (DMG/pkg), duplicates, unused apps (180+ days).
 
 Cleanup tasks run in parallel across all available cores for maximum speed. All categories are always scanned. Dev-related ones show a purple "DEV" badge. Risk badges (Safe / Moderate / Dangerous / Protected) appear after scan — you pick what to delete, then confirm.
 
