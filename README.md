@@ -154,6 +154,8 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues) — contributions are welcome.
 
+For detailed documentation, user guides, and FAQs, visit the 📖 [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
+
 *Note: All contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md) to maintain dual-licensing capabilities.*
 
 ---
