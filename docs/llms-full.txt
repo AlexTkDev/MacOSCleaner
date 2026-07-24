@@ -15,7 +15,8 @@
 - Version: 2.0.0
 - Platform: macOS 26.0 or later, Apple Silicon (M1 and newer)
 - Price: free (USD 0) for personal use
-- License: SOURCE-AVAILABLE PERSONAL USE ONLY — not open-source (OSI). Commercial, organizational, or redistributable use is not granted. Source is public for reference and personal study.
+- License: Dual-licensed under GNU GPLv3 (Open Source) for general open-source use/distribution, and Commercial License for proprietary or enterprise integration.
+
 
 ## What it is
 
