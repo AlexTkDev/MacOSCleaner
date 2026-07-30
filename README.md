@@ -91,4 +91,4 @@ The script is built with modular helper functions:
 ## 📜 Feedback & License
 
 - **[Contributor License Agreement (CLA)](CLA.md)**: Contributions to the codebase are covered by the CLA for dual-licensing compatibility.
-- **License**: Dual-licensed under **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source distribution and **Commercial License** for proprietary integration.
+- **License**: Dual-licensed under **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** (Custom Non-Commercial) for open-source and non-commercial distribution, and **Commercial License** for proprietary/commercial integration. Selling software binaries or commercial services derived from this software without a commercial license is strictly prohibited.
