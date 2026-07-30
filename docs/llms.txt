@@ -4,7 +4,7 @@
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.0.0.
-License: Dual-licensed under GNU GPLv3 (Open Source) and Commercial License.
+License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 
 
 ## Pages & Docs
@@ -21,7 +21,7 @@ License: Dual-licensed under GNU GPLv3 (Open Source) and Commercial License.
 - [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / release notes
 - [v2.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass UI, on-device AI, Disk Analyzer, forensic Uninstaller
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
-- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Dual-licensed under GNU GPLv3 / Commercial
+- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Dual-licensed under GNU GPLv3 + Commons Clause v1.0 / Commercial
 
 
 ## Community & Support
