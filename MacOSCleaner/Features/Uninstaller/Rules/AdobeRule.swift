@@ -56,48 +56,55 @@ public struct AdobeRule: ApplicationRule {
 
     public func evidence(for candidate: URL, identity: AppIdentity) -> [ArtifactEvidence] {
         let path = candidate.path.lowercased()
+        let bid = identity.bundleID.lowercased()
         var evidence: [ArtifactEvidence] = []
 
-        if path.contains("/application support/adobe") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 70))
+        // Vendor root / user content — never boost (registry shared / user_content).
+        if path.hasSuffix("/application support/adobe")
+            || path.hasSuffix("/.adobe")
+            || path.contains("/creative cloud files") {
+            return []
         }
-        if path.contains("/preferences/com.adobe.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
+
+        // Own bundle-ID paths only — never broad com.adobe.*.
+        if !bid.isEmpty {
+            if path.contains("/preferences/\(bid)") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
+            }
+            if path.contains("/caches/\(bid)") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 50))
+            }
+            if path.contains("/launchagents/\(bid)") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
+            }
+            if path.contains("/launchdaemons/\(bid)") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
+            }
+            if path.contains("/saved application state/\(bid)") {
+                evidence.append(ArtifactEvidence(source: .bundleID, weight: 60))
+            }
         }
-        if path.contains("/caches/com.adobe.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 50))
-        }
-        if path.contains("/caches/adobe") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 50))
-        }
-        if path.contains("/logs/adobe") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 40))
-        }
-        if path.contains("/launchagents/com.adobe.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
-        }
-        if path.contains("/launchdaemons/com.adobe.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
-        }
-        if path.contains("/saved application state/com.adobe.") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 60))
-        }
-        if path.hasSuffix("/.adobe") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 60))
-        }
-        if path.hasSuffix("/creative cloud files") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 60))
-        }
+
+        let app = identity.appName.lowercased().replacingOccurrences(of: "adobe ", with: "")
+
+        // App-specific Adobe/<Product> folder only.
         if path.contains("/application support/adobe/") {
             let components = path.components(separatedBy: "/")
             if let adobeIndex = components.firstIndex(of: "adobe"),
                adobeIndex + 1 < components.count {
                 let sub = components[adobeIndex + 1]
-                if identity.appName.lowercased().contains(sub.lowercased()) ||
-                   sub.lowercased().contains(identity.appName.lowercased()) {
+                if !sub.isEmpty, !app.isEmpty,
+                   app.contains(sub) || sub.contains(app) {
                     evidence.append(ArtifactEvidence(source: .rule, weight: 60))
                 }
             }
+        }
+
+        if !app.isEmpty, path.contains("/caches/adobe/"), path.contains(app) {
+            evidence.append(ArtifactEvidence(source: .appName, weight: 50))
+        }
+        if !app.isEmpty, path.contains("/logs/adobe/"), path.contains(app) {
+            evidence.append(ArtifactEvidence(source: .appName, weight: 40))
         }
 
         return evidence

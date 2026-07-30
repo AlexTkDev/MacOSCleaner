@@ -2,6 +2,8 @@ import Foundation
 
 public final class LanguageManager: @unchecked Sendable {
     public static let shared = LanguageManager()
+    /// Serializes language switches across XCTest classes that share this singleton.
+    public static let testingLock = NSLock()
     
     private let bundleLock = NSLock()
     private var _bundle: Bundle = .main
@@ -40,13 +42,35 @@ public final class LanguageManager: @unchecked Sendable {
     private func updateBundle(for langCode: String) {
         bundleLock.lock()
         defer { bundleLock.unlock() }
-        
-        guard let path = Bundle.main.path(forResource: langCode, ofType: "lproj"),
-              let langBundle = Bundle(path: path) else {
-            self._bundle = .main
+
+        if let langBundle = Self.localizationBundle(for: langCode, in: .main) {
+            self._bundle = langBundle
             return
         }
-        self._bundle = langBundle
+        // Prefer English over Bundle.main (system preferred languages) on miss.
+        if let enBundle = Self.localizationBundle(for: "en", in: .main) {
+            self._bundle = enBundle
+            return
+        }
+        self._bundle = .main
+    }
+
+    /// Resolves `xx.lproj` even when `path(forResource:)` skips non-preferred localizations.
+    private static func localizationBundle(for langCode: String, in bundle: Bundle) -> Bundle? {
+        if let path = bundle.path(forResource: langCode, ofType: "lproj"),
+           let langBundle = Bundle(path: path) {
+            return langBundle
+        }
+        if let url = bundle.url(forResource: langCode, withExtension: "lproj"),
+           let langBundle = Bundle(path: url.path) {
+            return langBundle
+        }
+        let resourceRoot = bundle.resourceURL ?? bundle.bundleURL.appendingPathComponent("Contents/Resources")
+        let direct = resourceRoot.appendingPathComponent("\(langCode).lproj")
+        if FileManager.default.fileExists(atPath: direct.path) {
+            return Bundle(path: direct.path)
+        }
+        return nil
     }
     
     public func localizedString(_ key: String) -> String {
@@ -61,6 +85,12 @@ extension AppLanguage {
         case .russian: return Locale(identifier: "ru_RU")
         case .ukrainian: return Locale(identifier: "uk_UA")
         case .spanish: return Locale(identifier: "es_ES")
+        case .german: return Locale(identifier: "de_DE")
+        case .japanese: return Locale(identifier: "ja_JP")
+        case .french: return Locale(identifier: "fr_FR")
+        case .chineseSimplified: return Locale(identifier: "zh_Hans_CN")
+        case .italian: return Locale(identifier: "it_IT")
+        case .portugueseBrazil: return Locale(identifier: "pt_BR")
         }
     }
 }

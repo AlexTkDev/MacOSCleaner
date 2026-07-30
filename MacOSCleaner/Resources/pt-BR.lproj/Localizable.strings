@@ -1,0 +1,840 @@
+/* Common */
+"welcome_msg" = "Bem-vindo de volta!";
+"app_title" = "Cleaner";
+"sidebar_select_item" = "Selecione um item na barra lateral";
+"sidebar_section_tools" = "Limpeza";
+"sidebar_section_system" = "Sistema";
+"close" = "Fechar";
+"cancel_description" = "A operação foi cancelada pelo usuário.";
+"reset" = "Redefinir";
+"cancel" = "Cancelar";
+"done" = "Concluído";
+"try_again" = "Tentar novamente";
+"error" = "Erro";
+"version" = "Versão";
+"size" = "Tamanho";
+"last_used" = "Último uso";
+
+/* Siri & Automator Settings */
+"settings_siri_section_title" = "Integração Siri e Automator";
+"settings_siri_toggle_title" = "Ativar integração com a Siri";
+"settings_siri_toggle_description" = "Permite controlar a limpeza por comandos de voz da Siri e Atalhos.";
+"settings_automator_toggle_title" = "Atalhos e Fluxos do Automator";
+"settings_automator_toggle_description" = "Permite executar ações de limpeza pelo Automator, app Atalhos e agendamentos.";
+"settings_siri_instruction_title" = "Como configurar no macOS";
+"settings_siri_instruction_body" = "Abra o app Atalhos → Na barra lateral, selecione MacOSCleaner. Todas as ações disponíveis para a Siri e Automator serão listadas lá.";
+"settings_open_shortcuts_button" = "Abrir app Atalhos";
+"settings_active_commands_header" = "Comandos ativos da Siri e Atalhos";
+"settings_cmd_developer_caches" = "Limpar caches de desenvolvedor (DerivedData, Homebrew, Docker)";
+"settings_cmd_storage_status" = "Obter status do armazenamento";
+"settings_cmd_clean_category" = "Limpar categoria específica (Caches, Logs, etc.)";
+"settings_cmd_scheduled_cleanup" = "Executar limpeza agendada (Automator)";
+
+/* Custom Siri Commands Editor */
+"siri_add_command_button" = "Adicionar comando";
+"siri_add_command_title" = "Novo comando da Siri";
+"siri_edit_command_title" = "Editar comando da Siri";
+"siri_command_name_label" = "Título do comando";
+"siri_command_phrase_label" = "Frase de voz da Siri";
+"siri_command_category_label" = "Ação / Categoria";
+"siri_no_commands_empty" = "Nenhum comando personalizado adicionado";
+"cancel_action" = "Cancelar";
+"save_action" = "Salvar";
+"edit_action" = "Editar";
+
+/* Sidebar / Navigation Menu */
+"menu_startup_vendors" = "Desenvolvedores do Sistema";
+
+/* Duplicate Finder Screen */
+"menu_duplicates" = "Localizador de Duplicatas";
+"duplicate_title" = "Localizador de Arquivos Duplicados";
+"duplicates_subtitle" = "Encontre e remova arquivos idênticos para liberar espaço.";
+"duplicate_start_scan" = "Buscar duplicatas";
+"duplicate_folder_home" = "Pasta do usuário";
+"duplicate_folder_downloads" = "Downloads";
+"duplicate_folder_documents" = "Documentos";
+"duplicate_folder_custom" = "Escolher pasta...";
+"duplicate_search_placeholder" = "Filtrar duplicatas...";
+"duplicate_smart_select" = "Seleção Inteligente";
+"duplicate_select_keep_oldest" = "Manter cópias mais antigas";
+"duplicate_select_keep_newest" = "Manter cópias mais recentes";
+"duplicate_select_all" = "Selecionar tudo";
+"duplicate_deselect_all" = "Desmarcar tudo";
+"duplicate_scanning_start" = "Inicializando escaneamento de duplicatas...";
+"duplicate_scan_completed" = "Escaneamento concluído: %ld grupos de duplicatas encontrados";
+"duplicate_scan_cancelled" = "Escaneamento cancelado";
+"duplicate_scan_failed" = "Falha no escaneamento: %@";
+"duplicate_stage_collecting" = "Coletando arquivos (%ld escaneados)...";
+"duplicate_stage_size_filtering" = "Filtrando candidatos por tamanho...";
+"duplicate_stage_header_hashing" = "Calculando hash dos cabeçalhos (%ld de %ld)...";
+"duplicate_stage_full_hashing" = "Calculando assinaturas SHA-256 (%ld de %ld)...";
+"duplicate_stage_completed" = "Análise de duplicatas concluída";
+"duplicate_empty_title" = "Nenhum arquivo duplicado encontrado";
+"duplicate_empty_subtitle" = "Selecione uma pasta para buscar arquivos idênticos.";
+"duplicate_group_title" = "%ld Arquivos idênticos (%@ cada)";
+"duplicate_group_wasted" = "%@ recuperáveis";
+"duplicate_reveal_in_finder" = "Mostrar no Finder";
+"duplicate_selected_summary" = "%ld arquivos selecionados para remoção";
+"duplicate_selected_reclaim" = "%@ de espaço total recuperável";
+"duplicate_move_to_trash" = "Mover para o Lixo";
+"duplicate_trash_confirm_title" = "Mover duplicatas selecionadas para o Lixo?";
+"duplicate_trash_confirm_action" = "Mover para o Lixo";
+"duplicate_trash_confirm_message" = "Tem certeza de que deseja mover %ld arquivos duplicados (%@) para o Lixo?";
+"duplicate_trash_completed" = "%ld arquivos (%@) movidos com sucesso para o Lixo";
+"duplicate_trash_failed" = "Falha ao mover arquivos para o Lixo: %@";
+
+/* Disk Analyzer Screen */
+"menu_disk_space" = "Análise de Disco";
+"disk_analyzer_title" = "Analisador de Espaço em Disco";
+"disk_space_subtitle" = "Analise a distribuição de espaço em disco e encontre arquivos grandes.";
+"disk_analyzer_scan" = "Escanear pasta";
+"disk_analyzer_scanning" = "Escaneando...";
+"disk_analyzer_back" = "Voltar";
+"disk_analyzer_delete_confirm" = "Mover itens selecionados para o Lixo?";
+"delete_action" = "Excluir";
+"disk_analyzer_show_in_finder" = "Mostrar no Finder";
+"disk_analyzer_move_to_trash" = "Mover para o Lixo";
+"disk_analyzer_select_folder" = "Selecionar pasta para escanear";
+"disk_analyzer_empty" = "A pasta está vazia ou ainda não foi escaneada";
+"disk_analyzer_no_permissions" = "Sem permissão de acesso para esta pasta";
+"folder" = "Pasta";
+"disk_analyzer_category_empty" = "Nenhum arquivo encontrado na categoria '%@'";
+"disk_analyzer_category_all" = "Tudo";
+"disk_analyzer_category_video" = "Vídeos";
+"disk_analyzer_category_audio" = "Áudios";
+"disk_analyzer_category_photo" = "Fotos";
+"disk_analyzer_category_apps" = "Aplicativos";
+"disk_analyzer_category_docs" = "Documentos";
+"disk_analyzer_category_archives" = "Arquivos compactados";
+
+/* About View */
+"about_title" = "Sobre o MacOS Cleaner";
+"about_version" = "Versão %@";
+"about_developer" = "Desenvolvido por AlexTkDev";
+"about_problem_link" = "Se você encontrar um problema com o app, reporte aqui";
+"about_linkedin" = "Perfil no LinkedIn";
+"about_website" = "Website";
+"about_star_github" = "Avaliar no GitHub ⭐";
+"settings_about_star_github" = "Avaliar no GitHub ⭐";
+"about_copyright" = "© 2026 AlexTkDev. Todos os direitos reservados.";
+
+/* Dashboard View */
+"menu_dashboard" = "Painel";
+"dashboard_title" = "Painel Principal";
+"dashboard_subtitle" = "Visão geral do sistema e estado do armazenamento.";
+"dashboard_system_info" = "Informações do Sistema";
+"dashboard_model" = "Modelo";
+"dashboard_os_version" = "Versão do macOS";
+"dashboard_processor" = "Processador";
+"dashboard_memory" = "Memória";
+"dashboard_disk_usage" = "Uso do Disco";
+"dashboard_used" = "Usado";
+"dashboard_free" = "Livre";
+"dashboard_total" = "Total";
+"dashboard_statistics" = "Estatísticas";
+"dashboard_total_freed" = "Total liberado";
+"dashboard_cleanups" = "Limpezas";
+"dashboard_status" = "Status";
+"dashboard_healthy" = "Saudável";
+"dashboard_recent_operations" = "Operações recentes";
+"dashboard_no_recent_operations" = "Nenhuma operação recente";
+"dashboard_radar_caches" = "Caches";
+"dashboard_radar_logs" = "Logs";
+"dashboard_radar_dev" = "Desenvolvimento";
+"dashboard_radar_apps" = "Aplicativos";
+"dashboard_radar_media" = "Mídia";
+"dashboard_radar_other" = "Outros";
+"dashboard_radar_tooltip_format" = "%@: %@";
+
+/* Language Names */
+"language.english" = "Inglês";
+"language.russian" = "Russo";
+"language.ukrainian" = "Ucraniano";
+"language.spanish" = "Espanhol";
+"language.german" = "Alemão";
+"language.japanese" = "Japonês";
+"language.french" = "Francês";
+"language.chinese_simplified" = "Chinês (Simplificado)";
+"language.italian" = "Italiano";
+"language.portuguese_brazil" = "Português (Brasil)";
+
+/* Settings View */
+"menu_settings" = "Ajustes";
+"settings_title" = "Ajustes";
+"settings_subtitle" = "Configurar preferências do aplicativo";
+"settings_general" = "Geral";
+"settings_language" = "Idioma";
+"settings_theme" = "Aparência";
+"theme_system" = "Sistema";
+"theme_light" = "Claro";
+"theme_dark" = "Escuro";
+"settings_notifications" = "Notificações";
+"settings_tooltips" = "Dicas de ferramentas";
+"settings_auto_scan" = "Escaneamento automático ao iniciar";
+"settings_processes" = "Processos";
+"settings_refresh_interval" = "Intervalo de atualização";
+"settings_sort_by" = "Ordenar por";
+"settings_startup" = "Inicialização";
+"settings_trash_deletion" = "Lixo e Exclusão";
+"settings_empty_trash_during_cleanup" = "Esvaziar o Lixo durante a limpeza";
+"settings_bypass_trash_on_uninstall" = "Ignorar o Lixo ao desinstalar";
+"settings_empty_trash_immediately" = "Esvaziar o Lixo imediatamente";
+"settings_advanced" = "Avançado";
+"settings_show_related" = "Mostrar arquivos associados no desinstalador";
+"settings_skip_expert" = "Pular modo especialista";
+"settings_data" = "Dados";
+"settings_forget_everything" = "Redefinir tudo";
+"settings_forget_description" = "Apagar todos os dados salvos e redefinir ajustes.";
+"settings_reset_button" = "Redefinir todos os ajustes";
+
+/* Uninstaller Scan Mode */
+"settings_uninstaller" = "Desinstalador";
+"scan_mode" = "Modo de escaneamento";
+"scan_mode.safe" = "Seguro";
+"scan_mode.balanced" = "Equilibrado";
+"scan_mode.balanced.default" = "Padrão";
+"scan_mode.safe.desc" = "Encontra apenas arquivos com alta certeza (Bundle ID ou nome). Risco mínimo.";
+"scan_mode.balanced.desc" = "Escaneamento completo incluindo busca Spotlight (mdfind). Recomendado.";
+
+/* Update Checker */
+"update.check" = "Buscar atualizações";
+"update.available" = "Versão %@ está disponível";
+"update.download" = "Baixar no GitHub";
+"update.up_to_date" = "Atualizado";
+"update.up_to_date_message" = "Você está usando a versão mais recente do aplicativo.";
+"update.releases_label" = "Versões:";
+"update.website_label" = "Website:";
+"update.checking" = "Verificando...";
+
+/* Settings Tooltips */
+"settings_tooltip_language" = "Selecione o idioma da interface do aplicativo.";
+"settings_notifications_status" = "Status das notificações";
+"settings_notifications_granted" = "Permitido";
+"settings_notifications_denied" = "Negado (abrir Ajustes do Sistema)";
+"settings_notifications_not_determined" = "Não solicitado";
+"settings_open_notification_settings" = "Abrir ajustes de notificação";
+"settings_tooltip_theme" = "Escolha a aparência visual do aplicativo.";
+"settings_tooltip_notifications" = "Exibir notificações do sistema após escaneamentos e limpezas.";
+"settings_tooltip_tooltips" = "Exibir descrições de ajuda ao passar o ponteiro do mouse.";
+"settings_tooltip_auto_scan" = "Iniciar escaneamento automaticamente ao abrir o app.";
+"settings_tooltip_refresh_interval" = "Frequência de atualização da lista de processos.";
+"settings_tooltip_sort_by" = "Ordem de classificação padrão para a lista de processos.";
+"settings_tooltip_empty_trash" = "Esvazia o Lixo durante o processo de limpeza.";
+"settings_tooltip_bypass_trash" = "Excluir permanentemente os arquivos ao desinstalar.";
+"settings_tooltip_show_related" = "Exibir arquivos associados no desinstalador.";
+"settings_tooltip_empty_trash_immediately" = "Esvaziar o Lixo imediatamente após mover os itens.";
+"settings_tooltip_skip_expert" = "Pular seleção manual e desinstalar o aplicativo completamente.";
+"settings_tooltip_forget" = "Remover todas as preferências e restaurar os padrões de fábrica.";
+
+/* Settings Reset Dialog */
+"settings_reset_confirm_title" = "Redefinir todos os ajustes?";
+"settings_reset_confirm_button" = "Redefinir tudo";
+"settings_reset_confirm_message" = "Todos os dados salvos serão apagados. Esta ação não pode ser desfeita.";
+"settings_trash_warning" = "Estes ajustes tornam a exclusão irreversível.";
+
+/* Startup Services View */
+"menu_startup_services" = "Serviços de Inicialização";
+"startup_title" = "Serviços de Inicialização";
+"startup_subtitle" = "Gerencie agentes que iniciam automaticamente.";
+"startup_refresh" = "Atualizar lista";
+"startup_scanning" = "Escaneando serviços...";
+"startup_no_agents" = "Nenhum serviço de inicialização";
+"startup_no_agents_sub" = "Nenhum agente encontrado em ~/Library/LaunchAgents.";
+"startup_scan_failed" = "Falha no escaneamento";
+"startup_status_loaded" = "Carregado";
+"startup_status_unloaded" = "Não carregado";
+"startup_disable" = "Desativar";
+"startup_enable" = "Ativar";
+
+"startup_category_user" = "Meus serviços";
+"startup_category_third_party" = "De terceiros";
+"startup_category_system" = "Do sistema";
+"startup_filter_all" = "Todos";
+"startup_help_user" = "Serviço do usuário em ~/Library/. Seguro para desativar.";
+"startup_help_third_party" = "Serviço de terceiros em /Library/. Desative com cuidado.";
+"startup_help_system" = "Serviço do sistema Apple. Não recomendado desativar.";
+
+"settings_startup_vendors" = "Desenvolvedores do Sistema";
+"startup_vendors_title" = "Desenvolvedores do Sistema";
+"startup_vendors_description" = "Prefixos considerados como serviços do sistema.";
+"startup_vendors_description_sub" = "Serviços com estes prefixos são marcados como 'Sistema'.";
+"startup_vendors_current" = "Prefixos atuais";
+"startup_vendors_reset" = "Redefinir";
+"startup_vendors_empty" = "Nenhum prefixo adicionado";
+"startup_vendors_protected" = "Protegido";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "O prefixo deve conter um ponto";
+"startup_vendors_error_duplicate" = "Este prefixo já existe";
+
+/* Cleanup View */
+"menu_cleanup" = "Limpeza";
+"cleanup_title" = "Limpeza";
+"cleanup_subtitle" = "Limpe caches, logs e arquivos desnecessários com segurança.";
+"cleanup_scanning" = "Escaneando o sistema...";
+"cleanup_clean" = "O sistema está limpo";
+"cleanup_clean_sub" = "Nenhum arquivo desnecessário foi encontrado durante o escaneamento.";
+"cleanup_rescan" = "Escanear novamente";
+"cleanup_cleaning" = "Limpando...";
+"cleanup_ready" = "Pronto para limpar";
+"cleanup_ready_sub" = "Escaneie seu sistema para encontrar arquivos temporários seguros.";
+"cleanup_additional_options" = "Opções adicionais de limpeza";
+"cleanup_option_ds_store" = "Limpar arquivos .DS_Store";
+"cleanup_option_ds_store_sub" = "Remove arquivos de metadados gerados pelo sistema.";
+"cleanup_option_maven" = "Limpar repositório Maven (~/.m2/repository)";
+"cleanup_option_maven_sub" = "Remove dependências baixadas do Maven.";
+"cleanup_option_modcache" = "Limpar cache de módulos Go (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "Remove módulos Go baixados.";
+"cleanup_option_projects" = "Limpar .dart_tool nos projetos";
+"cleanup_option_projects_sub" = "Remove caches de projetos Flutter/Dart.";
+"cleanup_option_cloud_docs" = "Limpar documentos do iCloud";
+"cleanup_option_cloud_docs_sub" = "Remove cache local de documentos do iCloud.";
+"cleanup_option_voice_memos" = "Limpar Gravador de Voz";
+"cleanup_option_voice_memos_sub" = "Remove gravações do app Gravador.";
+"cleanup_option_garageband_logic" = "Limpar GarageBand / Logic";
+"cleanup_option_garageband_logic_sub" = "Remove arquivos de projeto e caches do GarageBand/Logic Pro.";
+"cleanup_option_imovie_final_cut" = "Limpar iMovie / Final Cut";
+"cleanup_option_imovie_final_cut_sub" = "Remove arquivos de renderização e bibliotecas do iMovie/Final Cut Pro.";
+"cleanup_option_sleep_image" = "Limpar imagem de repouso (Sleep Image)";
+"cleanup_option_sleep_image_sub" = "Remove arquivo de hibernação do sistema.";
+"cleanup_extended_title" = "Limpeza Estendida";
+"cleanup_start_scan" = "Iniciar Escaneamento";
+"cleanup_failed" = "Falha na Limpeza";
+"cleanup_failed_default" = "Ocorreu um erro durante a limpeza.";
+"cleanup_script_logs" = "Logs do script:";
+"cleanup_complete" = "Limpeza Concluída";
+"cleanup_complete_sub" = "%@ de espaço em disco liberados com sucesso.";
+"cleanup_summary" = "Resumo dos Itens Excluídos";
+"cleanup_skipped" = "Não foi possível limpar";
+"cleanup_selected" = "Selecionado: %@";
+"cleanup_hide_logs" = "Ocultar logs";
+"cleanup_show_logs" = "Mostrar logs";
+"cleanup_copy" = "Copiar";
+"cleanup_copy_logs" = "Copiar logs";
+"cleanup_now" = "Limpar Agora";
+"cleanup_manual_instructions" = "Instruções de limpeza manual";
+"cleanup_scan_results" = "Resultados do Escaneamento";
+"cleanup_scan_results_sub" = "Selecione os itens que deseja remover e clique em 'Limpar Agora'.";
+"cleanup_recommended" = "Recomendado para remoção";
+"cleanup_deselect_all" = "Desmarcar tudo";
+"cleanup_select_all" = "Selecionar tudo";
+"cleanup_show_all_count" = "Mostrar todos (%lld mais)";
+"cleanup_debug_log" = "Log de depuração (%lld linhas)";
+
+"cleanup_scan_complete_title" = "Escaneamento Concluído";
+"cleanup_scan_complete_body" = "Encontrados %@ de arquivos para limpar.";
+"cleanup_emptying_trash" = "Esvaziando o Lixo...";
+"cleanup_complete_title" = "Limpeza Concluída";
+"cleanup_complete_body" = "%@ liberados com sucesso.";
+
+"trash_user_label" = "Lixo do Usuário";
+"trash_user_description" = "Conteúdo do Lixo do seu sistema.";
+"trash_access_prompt_message" = "Selecione a pasta do Lixo para conceder acesso.";
+"trash_access_prompt_button" = "Conceder acesso";
+
+/* Uninstaller View */
+"menu_uninstaller" = "Desinstalador";
+"uninstaller_title" = "Desinstalador";
+"uninstaller_subtitle" = "Desinstalação completa de aplicativos e arquivos restantes.";
+"uninstaller_search" = "Buscar aplicativos";
+"uninstaller_reload" = "Recarregar aplicativos";
+"uninstaller_confirm_perm_delete" = "Excluir permanentemente?";
+"uninstaller_confirm_move_trash" = "Mover para o Lixo?";
+"uninstaller_delete_permanently" = "Excluir permanentemente";
+"uninstaller_move_trash" = "Mover para o Lixo";
+"uninstaller_uninstall_app_warning_perm" = "Isso excluirá permanentemente %@ e %lld arquivos associados. Ação irreversível.";
+"uninstaller_uninstall_app_warning_trash" = "Isso moverá %@ e %lld arquivos associados para o Lixo.";
+"uninstaller_drag_drop" = "Arraste o .app aqui para escanear";
+"uninstaller_or_select" = "OU SELECIONE DA LISTA";
+"uninstaller_unknown_bundle" = "Bundle ID desconhecido";
+"uninstaller_expert_mode" = "Modo Especialista";
+"uninstaller_select_files" = "(selecionar arquivos associados)";
+"uninstaller_action_info_perm" = "Ação Permanente";
+"uninstaller_action_info_perm_sub" = "Os arquivos são excluídos permanentemente.";
+"uninstaller_action_info_trash" = "Ação Reversível";
+"uninstaller_action_info_trash_sub" = "Os arquivos são movidos para o Lixo.";
+"uninstaller_space_reclaim" = "Espaço total a recuperar: %@";
+"uninstaller_button_uninstall" = "Desinstalar Aplicativo";
+"uninstaller_related_files_count" = "%lld arquivos associados encontrados";
+"uninstaller_developer_components" = "Dados de desenvolvedor associados";
+"uninstaller_developer_components_description" = "Gerencie estes itens na Limpeza Inteligente.";
+"uninstaller_open_cleanup" = "Abrir Limpeza Inteligente";
+"uninstaller_expert_tip" = "No modo especialista você pode selecionar manualmente caches e preferências.";
+"uninstaller_cleanup_items" = "Itens de Limpeza";
+"uninstaller_scanning_apps" = "Escaneando aplicativos...";
+"uninstaller.deep_scanning_progress" = "Escaneando arquivos restantes: %d de %d apps...";
+"uninstaller.analyzing" = "Analisando...";
+"uninstaller_complete_title" = "Desinstalação Concluída";
+"uninstaller_complete_body" = "O aplicativo %@ foi removido com sucesso.";
+"shared_data_warning" = "Estes dados são compartilhados com outros aplicativos.";
+
+/* Processes View */
+"menu_processes" = "Processos";
+"processes_title" = "Processos";
+"processes_subtitle" = "Gerencie processos em execução no sistema.";
+"processes_search" = "Buscar processos...";
+"processes_scanning" = "Escaneando processos...";
+"processes_terminate" = "Encerrar";
+"processes_force_kill" = "Forçar encerramento";
+"processes_protected" = "Protegido";
+"processes_refresh" = "Atualizar lista";
+"processes_confirm_terminate" = "Encerrar processo?";
+"processes_confirm_terminate_message" = "Tem certeza de que deseja encerrar %@ (PID %lld)?";
+"processes_confirm_force" = "Forçar encerramento?";
+"processes_confirm_force_message" = "Forçar encerramento pode causar perda de dados. Encerrar %@ (PID %lld)?";
+"processes_no_results" = "Nenhum processo correspondente encontrado.";
+"processes_no_processes" = "Nenhum processo encontrado";
+"processes_no_processes_sub" = "Nenhum processo em execução detectado.";
+"processes_scan_failed" = "Falha no escaneamento";
+"processes_manage_blacklist" = "Gerenciar lista negra";
+"processes_manage_whitelist" = "Gerenciar lista branca";
+"processes_tooltip_blacklist" = "Processos que você pode encerrar a qualquer momento.";
+"processes_tooltip_whitelist" = "Processos protegidos contra encerramento acidental.";
+"processes_tooltip_refresh" = "Atualizar lista de processos";
+"processes_section_user" = "Seus processos";
+"processes_section_system" = "Processos do sistema";
+"processes_badge_blacklist" = "Lista negra (%lld)";
+"processes_badge_whitelist" = "Lista branca (%lld)";
+"processes_blacklist_title" = "Lista negra";
+"processes_blacklist_placeholder" = "Nome do processo a bloquear...";
+"processes_whitelist_title" = "Lista branca";
+"processes_whitelist_placeholder" = "Nome do processo a proteger...";
+"add" = "Adicionar";
+
+/* Permissions */
+"permissions_title" = "Permissões Necessárias";
+"permissions_subtitle" = "O MacOSCleaner precisa de acesso a pastas do sistema para a limpeza.";
+"permissions_fda_description" = "Necessário para acessar ~/Library/Caches e outras pastas.";
+"permissions_instructions_title" = "Como conceder Acesso Total ao Disco:";
+"permissions_step1" = "Clique em 'Abrir Ajustes do Sistema' abaixo.";
+"permissions_step2" = "Encontre o MacOSCleaner na lista.";
+"permissions_step3" = "Ative a chave de seleção.";
+"permissions_step4" = "Retorne ao MacOSCleaner e clique em 'Verificar Status'.";
+"permissions_open_settings" = "Abrir Ajustes do Sistema";
+"permissions_check_status" = "Verificar Status";
+"permissions_dismiss_temp" = "Lembrar mais tarde";
+"permissions_dismiss_permanent" = "Não mostrar novamente";
+"permissions_warning_title" = "Tem certeza?";
+"permissions_warning_message" = "Sem o Acesso Total ao Disco, muitos arquivos desnecessários não poderão ser encontrados.";
+"permissions_warning_confirm" = "Nunca permitir";
+"permissions_status_granted" = "Concedido";
+"permissions_status_required" = "Necessário";
+"permissions_window_title" = "Permissões";
+
+"settings_permissions" = "Permissões";
+"settings_fda_description" = "Necessário para limpar caches do sistema e dados de aplicativos.";
+"settings_open_settings" = "Abrir Ajustes";
+"settings_check_permissions" = "Verificar permissões";
+"settings_show_permission_guide" = "Conceder Acesso Total ao Disco";
+
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld MB";
+
+"processes_view_mode_grouped" = "Agrupado";
+"processes_view_mode_flat" = "Lista plana";
+"processes_selected_count" = "%lld selecionados";
+"processes_process_count" = "%lld processos";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lldh %lldm";
+"process_uptime_minutes_format" = "%lldm";
+
+"version_unknown" = "N/D";
+
+"risk.safe" = "Seguro";
+"risk.moderate" = "Moderado";
+"risk.dangerous" = "Perigoso";
+"risk.protected" = "Protegido";
+
+"cleanup_dev_badge" = "DEV";
+
+"refresh_manual" = "Manual";
+"refresh_5s" = "A cada 5 segundos";
+"refresh_10s" = "A cada 10 segundos";
+"refresh_30s" = "A cada 30 segundos";
+
+"sort_cpu" = "Uso de CPU";
+"sort_memory" = "Uso de Memória";
+"sort_name" = "Nome";
+"sort_threads" = "Contagem de Threads";
+
+"category.app_caches" = "Caches de aplicativos do usuário";
+"category.package_managers" = "Gerenciadores de pacotes";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "Simuladores iOS";
+"category.android_caches" = "Caches do Android";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "Caches de IDE / Electron";
+"category.browser_caches" = "Caches de navegadores";
+"category.messaging_media" = "Mensagens / Mídia";
+"category.docker" = "Docker";
+"category.language_caches" = "Caches de linguagens";
+"category.user_logs" = "Logs do usuário";
+"category.system_caches" = "Caches do sistema";
+"category.app_containers" = "Contêineres de apps";
+"category.dotfile_caches" = "Caches de dotfiles";
+"category.scattered_junk" = "Arquivos desnecessários dispersos";
+"category.orphaned_remnants" = "Resíduos órfãos";
+"category.orphaned_files" = "Arquivos órfãos";
+"category.large_files" = "Arquivos grandes";
+"category.dynamic_cache_discovery" = "Descoberta dinâmica de cache";
+"category.time_machine_snapshots" = "Instantâneos do Time Machine";
+"category.ios_backups" = "Backups do iOS";
+"category.mail_downloads" = "Downloads do Mail";
+"category.saved_app_state" = "Estado salvo de aplicativos";
+"category.crash_reporter" = "Relatórios de erro";
+"category.assets_v2" = "AssetsV2 / Modelos do iWork";
+"category.cloud_kit_cache" = "Cache do iCloud CloudKit";
+"category.swift_pm_cache" = "Cache do Swift Package Manager";
+"category.carthage_cache" = "Cache do Carthage";
+"category.steam_cache" = "Cache da Steam";
+"category.teams_cache" = "Cache do Microsoft Teams";
+"category.adobe_caches" = "Caches da Adobe";
+"category.chrome_extra_caches" = "Caches extras do Chrome";
+"category.ide_old_versions" = "Versões antigas de IDEs";
+"category.launch_agents" = "Launch Agents";
+"category.launch_daemons" = "Launch Daemons";
+"category.privileged_helpers" = "Ferramentas auxiliares com privilégios";
+"category.pkg_receipts" = "Comprovantes de pacotes";
+"category.internet_plugins" = "Plug-ins de Internet";
+"category.shared_file_lists" = "Listas de arquivos compartilhados";
+"category.cloud_docs" = "Documentos do iCloud";
+"category.photos_cache" = "Cache do Fotos";
+"category.voice_memos" = "Gravador de Voz";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "Backups antigos";
+"category.ai_models" = "Modelos de IA e dados LLM";
+"category.installer_packages" = "Pacotes de instalação";
+"category.dns_flush" = "Cache DNS";
+"category.font_cache" = "Cache de fontes";
+"category.sleep_image" = "Imagem de repouso";
+"category.duplicate_files" = "Arquivos duplicados";
+"category.unused_apps" = "Apps não utilizados";
+
+"view_mode" = "Modo de visualização";
+"sort_by" = "Ordenar por";
+"cancel_selection" = "Cancelar seleção";
+"select_multiple" = "Selecionar múltiplos";
+"select_all" = "Selecionar tudo";
+"deselect_all" = "Desmarcar tudo";
+"terminate_selected" = "Encerrar selecionados";
+"force_kill_selected" = "Forçar encerramento dos selecionados";
+"processes_terminate_all" = "Encerrar todos";
+"processes_force_kill_all" = "Forçar encerramento de todos";
+"process.unknown" = "Desconhecido";
+
+"uninstaller.progress.discovering" = "Buscando aplicativos...";
+"uninstaller.progress.complete" = "Escaneamento concluído";
+
+"uninstaller.tier.ignore" = "Ignorar";
+"uninstaller.tier.possible" = "Possível";
+"uninstaller.tier.very_likely" = "Muito provável";
+"uninstaller.tier.guaranteed" = "Garantido";
+
+"developer.android_sdk" = "Android SDK";
+"developer.android_data" = "Dados e dispositivos virtuais do Android";
+"developer.gradle_cache" = "Cache do Gradle";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "Simuladores iOS";
+"developer.flutter_cache" = "Cache do Flutter";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+"permissions.full_disk_access" = "Acesso Total ao Disco";
+"permissions.accessibility" = "Acessibilidade";
+"permissions.automation" = "Automação (Eventos Apple)";
+"permissions.trash_access" = "Acesso ao Lixo";
+"permissions.notification_provisional" = "Provisório";
+"permissions.notification_ephemeral" = "Efêmero";
+"permissions.unknown_status" = "Desconhecido";
+
+"process.category.applications" = "Aplicativos";
+"process.category.launch_agents" = "Launch Agents";
+"process.category.launch_daemons" = "Launch Daemons";
+"process.category.system" = "Sistema";
+
+"uninstaller.scanning_deep" = "Escaneamento profundo em andamento...";
+"uninstaller.why_this_file" = "Por que este arquivo?";
+"uninstaller.related_files" = "Arquivos associados";
+"uninstaller.developer_artifacts" = "Artefatos de desenvolvedor";
+"uninstaller.progress.developer_components" = "Verificando componentes de desenvolvedor...";
+"uninstaller.footer.summary" = "%lld arquivo(s) selecionado(s) em %@ níveis";
+"uninstaller.metadata.difficulty" = "Dificuldade de desinstalação";
+"uninstaller.metadata.difficulty.critical" = "Crítica";
+"uninstaller.metadata.difficulty.high" = "Alta";
+"uninstaller.metadata.difficulty.medium" = "Média";
+"uninstaller.metadata.difficulty.low" = "Baixa";
+"uninstaller.metadata.parent_suite" = "Suíte";
+"uninstaller.metadata.known_issues" = "Problemas conhecidos";
+"uninstaller.shared_component" = "Compartilhado";
+"uninstaller.shared_component.help" = "Compartilhado com outros apps — não selecionado para remoção.";
+
+"format_bytes_b" = "%lld B";
+"format_bytes_kb" = "%.1f KB";
+"format_bytes_mb" = "%.1f MB";
+"format_bytes_gb" = "%.2f GB";
+
+"process_block_pid_format" = "PID %lld é um processo crítico do sistema";
+"process_block_whitelist_name_format" = "%@ está na sua lista branca (protegido)";
+"process_block_whitelist_bundle_format" = "%@ está na sua lista branca (protegido)";
+"process_block_protected_format" = "%@ é um processo protegido do sistema";
+"process_block_no_path_format" = "%@ não possui informações de caminho";
+
+"error_ps_failed_format" = "Falha ao listar processos: %@";
+"error_operation_blocked_format" = "Não é possível encerrar %@: %@";
+"error_kill_failed_format" = "Falha ao encerrar %@ (saída %lld): %@";
+"error_timeout" = "Operação expirada";
+"error_safety_violation_format" = "Violação de segurança: %@";
+"error_command_failed_format" = "Comando falhou: %@";
+"error_invalid_transition_format" = "Transição inválida de %@ para %@";
+
+"os_version_format" = "macOS %lld.%lld.%lld";
+
+"uninstaller_show_in_finder" = "Mostrar no Finder";
+"uninstaller_used_by" = "Usado por %@";
+
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "Ativar explicações de IA local";
+"settings_tooltip_enable_ai" = "Usar modelos de IA locais no dispositivo para explicar arquivos associados.";
+"settings_ai_status" = "Status da IA";
+"settings_ai_status_disabled" = "Desativado";
+"settings_ai_status_ready" = "Pronto";
+"settings_ai_status_unsupported_device" = "Dispositivo não suportado";
+"settings_ai_status_not_enabled" = "Não ativado nos Ajustes do Sistema";
+"settings_ai_status_downloading" = "Baixando recursos do modelo...";
+"settings_ai_status_unavailable" = "Indisponível";
+
+"uninstaller_explain_with_ai" = "Explicar com IA";
+"uninstaller_ai_explaining" = "Gerando explicação...";
+"uninstaller_ai_failed" = "A IA não está disponível ou falhou ao gerar a descrição.";
+
+"cleanup_option_tm_snapshots" = "Instantâneos do Time Machine";
+"cleanup_option_tm_snapshots_sub" = "Exclui com segurança instantâneos APFS locais.";
+
+"settings_category_overview" = "Visão Geral";
+"settings_category_general" = "Geral";
+"settings_category_permissions" = "Permissões";
+"settings_category_cleanup" = "Limpeza";
+"settings_category_automation" = "Siri e IA";
+"settings_category_ai" = "Apple Intelligence";
+"settings_category_processes" = "Processos";
+"settings_category_advanced" = "Avançado";
+"settings_category_about" = "Sobre";
+"settings_category_danger_zone" = "Zona de Perigo";
+
+"settings_overview_subtitle" = "Otimizador e Limpador Nativo do macOS";
+"settings_overview_auto_scan" = "Auto Escaneamento";
+"settings_overview_scan_at_launch" = "Escanear ao abrir";
+"settings_quick_actions" = "Ações Rápidas";
+"settings_quick_actions_sub" = "Tarefas administrativas comuns";
+"settings_quick_action_check_updates" = "Buscar Atualizações";
+"settings_quick_action_check_updates_sub" = "Verificar versões no GitHub";
+"settings_quick_action_update_available" = "Atualização disponível!";
+"settings_quick_action_permissions_sub" = "Gerenciar Acesso ao Disco e Lixo";
+"settings_quick_action_shortcuts_siri" = "Atalhos e Siri";
+"settings_quick_action_shortcuts_siri_sub" = "Configurar automações";
+"settings_quick_action_advanced_sub" = "Diagnóstico e Depuração";
+"settings_system_status" = "Status do Sistema";
+"settings_system_status_sub" = "Saúde do app e métricas";
+"settings_system_status_db" = "Banco de dados do app";
+
+"settings_appearance_language" = "Aparência e Idioma";
+"settings_appearance_language_sub" = "Personalizar interface do app";
+"settings_language_sub" = "Idioma de exibição";
+"settings_theme_sub" = "Esquema de cores";
+"settings_tooltips_sub" = "Dicas visuais ao passar o mouse";
+"settings_software_updates" = "Atualizações de Software";
+"settings_software_updates_sub" = "Verificação de versão";
+"settings_current_version" = "Versão atual";
+
+"settings_permissions_sub" = "Direitos de acesso ao sistema";
+"settings_permissions_overall" = "Status Geral de Permissão";
+"settings_permissions_overall_sub" = "Necessário para escanear caches";
+"settings_fda_title" = "Acesso Total ao Disco (FDA)";
+"settings_fda_body" = "Permite encontrar arquivos órfãos e caches com segurança.";
+"settings_open_privacy_settings" = "Abrir ajustes de privacidade";
+"settings_check_status" = "Verificar Status";
+"settings_permission_guide" = "Guia";
+"settings_notifications_enable" = "Ativar Notificações";
+"settings_notifications_enable_sub" = "Receber alertas ao concluir a limpeza";
+"settings_notifications_denied_body" = "Notificações negadas nos Ajustes do Sistema";
+"status_granted" = "Concedido";
+"status_attention" = "Atenção necessária";
+"status_required" = "Necessário";
+"status_disabled" = "Desativado";
+
+"settings_scan_config" = "Configuração de Escaneamento";
+"settings_scan_config_sub" = "Opções do desinstalador e busca de arquivos desnecessários";
+"settings_scan_mode_sub" = "Profundidade de busca de arquivos órfãos";
+"settings_auto_scan_sub" = "Escanear automaticamente ao iniciar o app";
+"settings_show_related_sub" = "Incluir arquivos de configuração e cache";
+"settings_deletion_behavior" = "Comportamento de Exclusão e Lixo";
+"settings_deletion_behavior_sub" = "Regras de manuseio seguro do Lixo";
+"settings_trash_safety_note" = "Os ajustes de segurança afetam a exclusão permanente.";
+"settings_empty_trash_cleanup_sub" = "Esvaziar o Lixo do sistema automaticamente";
+"settings_bypass_trash_sub" = "Excluir permanentemente sem mover para o Lixo";
+"settings_empty_trash_immediately_sub" = "Ignorar o buffer do Lixo";
+
+"settings_automation_title" = "Siri e Atalhos";
+"settings_automation_sub" = "Automação de voz e fluxo de trabalho";
+"settings_enable_siri_sub" = "Iniciar limpezas com frases da Siri";
+"settings_enable_shortcuts_sub" = "Permitir AppIntents do MacOSCleaner nos Atalhos";
+"settings_open_shortcuts_title" = "Abrir Atalhos do macOS";
+"settings_open_shortcuts_sub" = "Gerenciar fluxos no app Atalhos";
+"settings_launch_shortcuts_button" = "Iniciar app Atalhos";
+"settings_custom_siri_commands" = "Comandos da Siri Personalizados";
+"settings_custom_siri_commands_sub" = "Gatilhos de frases de voz";
+"settings_no_custom_commands" = "Nenhum comando personalizado configurado.";
+
+"settings_ai_sub" = "Modelo de IA local para recomendações inteligentes";
+"settings_enable_ai_sub" = "Analisar arquivos com FoundationModels";
+"settings_ai_readiness" = "Status de prontidão do modelo";
+"settings_ai_readiness_sub" = "Disponibilidade do motor de IA local";
+"settings_ai_capabilities" = "Recursos disponíveis";
+"settings_ai_capabilities_sub" = "Funções inteligentes e privacidade total";
+"settings_ai_feat_smart_cleanup" = "Limpeza Inteligente";
+"settings_ai_feat_smart_cleanup_sub" = "Categorização de cache baseada em risco";
+"settings_ai_feat_recs" = "Recomendações Inteligentes";
+"settings_ai_feat_recs_sub" = "Sugestões de remoção baseadas na atividade";
+"settings_ai_feat_duplicates" = "Localizador de Duplicatas";
+"settings_ai_feat_duplicates_sub" = "Agrupamento semântico de arquivos idênticos";
+"settings_ai_feat_privacy" = "Proteção de Privacidade";
+"settings_ai_feat_privacy_sub" = "Todo processamento de IA roda localmente no NPU";
+"settings_ai_feat_voice" = "Controle de Voz pela Siri";
+"settings_ai_feat_voice_sub" = "Acionar tarefas de manutenção por voz";
+"settings_ai_feat_shortcuts" = "Scripts de Automação";
+"settings_ai_feat_shortcuts_sub" = "Integração profunda com os Atalhos do macOS";
+
+"settings_processes_title" = "Ajustes do Monitor de Processos";
+"settings_processes_sub" = "Configuração do scanner de CPU e Memória";
+"settings_refresh_interval_sub" = "Frequência de atualização de processos";
+"settings_sort_option_title" = "Opção de ordenação padrão";
+"settings_sort_option_sub" = "Ordenar processos ativos pelo consumo de recursos";
+
+"settings_advanced_dev_title" = "Desenvolvedor e Avançado";
+"settings_advanced_dev_sub" = "Diagnósticos estendidos e parâmetros de escaneamento";
+"settings_show_related_app_files" = "Mostrar arquivos de aplicativos associados";
+"settings_show_related_app_files_sub" = "Incluir pastas oculta de plist e contêineres";
+"settings_startup_vendors_sub" = "Gerenciar desenvolvedores de inicialização conhecidos";
+
+"settings_about_tagline" = "Projetado para macOS 26+. Criado com Swift 6, SwiftUI e Liquid Glass.";
+"settings_about_resources" = "Recursos e Suporte";
+"settings_about_resources_sub" = "Links oficiais e documentação de lançamentos";
+"settings_about_github" = "Repositório GitHub (Código fonte)";
+"settings_about_github_releases" = "Repositório GitHub (Versões)";
+"settings_about_wiki" = "Documentação e Wiki";
+"settings_about_wiki_sub" = "Guias detalhados de uso do aplicativo";
+"settings_about_report_issue" = "Reportar um Problema";
+"settings_about_report_issue_sub" = "Relatórios de erros e sugestões";
+"settings_about_website" = "Website";
+
+"settings_privacy_safety_title" = "Privacidade e Segurança 🛡️";
+"settings_privacy_safety_sub" = "Proteção do sistema e garantia de privacidade";
+"settings_privacy_item_1_title" = "100% Privado";
+"settings_privacy_item_1_desc" = "Sem telemetria, sem análise, sem rastreamento. Todas as operações rodam totalmente offline.";
+"settings_privacy_item_2_title" = "Rede Mínima";
+"settings_privacy_item_2_desc" = "A única conexão é a verificação de atualizações no GitHub Releases.";
+"settings_privacy_item_3_title" = "Recuperação Segura do Lixo";
+"settings_privacy_item_3_desc" = "Os arquivos são movidos para o Lixo via trashItem(at:) — totalmente recuperáveis.";
+"settings_privacy_item_4_title" = "Confirmação de Limpeza Inteligente";
+"settings_privacy_item_4_desc" = "Remove caches selecionados após confirmação explícita.";
+"settings_privacy_item_5_title" = "Proteção SafetyManager";
+"settings_privacy_item_5_desc" = "Bloqueia acesso a /System, /usr, /bin, ~/.ssh e outros caminhos críticos.";
+"settings_privacy_item_6_title" = "ProcessSafetyPolicy";
+"settings_privacy_item_6_desc" = "Protege processos críticos do sistema contra encerramento acidental.";
+"settings_privacy_item_7_title" = "Exclusão Permanente Opcional";
+"settings_privacy_item_7_desc" = "A exclusão permanente é opcional e claramente sinalizada.";
+"settings_privacy_item_8_title" = "Encerramento Seguro de Apps";
+"settings_privacy_item_8_desc" = "Apps são encerrados com segurança antes da limpeza.";
+"settings_privacy_item_9_title" = "Acesso Total ao Disco";
+"settings_privacy_item_9_desc" = "Solicitado na inicialização para escaneamento completo.";
+"settings_about_privacy_policy_sub" = "100% local, garantia zero telemetria";
+"settings_about_acknowledgements" = "Agradecimentos";
+"settings_about_acknowledgements_sub" = "Bibliotecas e Frameworks de Código Aberto";
+
+"settings_danger_zone_title" = "Zona de Perigo";
+"settings_danger_zone_sub" = "Ações irreversíveis do aplicativo";
+"settings_reset_all_title" = "Redefinir todos os ajustes do aplicativo";
+"settings_reset_all_sub" = "Redefine preferências, comandos da Siri e caches para o padrão de fábrica.";
+"settings_reset_action_button" = "Redefinir dados e preferências";
+
+"settings_search_prompt" = "Buscar ajustes...";
+"settings_search_results_title" = "Resultados da busca para «%@»";
+"settings_search_no_results" = "Nenhum ajuste encontrado";
+"settings_search_no_results_sub" = "Tente buscar por termos como 'Lixo', 'FDA' ou 'IA'";
+
+
+/* Evidence Categories */
+"uninstaller.evidence_category.identity" = "Correspondência de identidade";
+"uninstaller.evidence_category.signature" = "Assinatura de código";
+"uninstaller.evidence_category.system" = "Integração do sistema";
+"uninstaller.evidence_category.metadata" = "Metadados do arquivo";
+"uninstaller.evidence_category.content" = "Análise de conteúdo";
+"uninstaller.evidence_category.graph" = "Propagação de gráfico";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+/* Evidence Descriptions */
+"uninstaller.evidence.bundleIDExact.title" = "Correspondência de Bundle ID";
+"uninstaller.evidence.bundleIDExact.description" = "O nome corresponde ao Bundle ID do app.";
+"uninstaller.evidence.bundleIDPrefix.title" = "Prefixo do Bundle ID";
+"uninstaller.evidence.bundleIDPrefix.description" = "O nome começa com '%@'.";
+"uninstaller.evidence.appNameExact.title" = "Correspondência do nome do app";
+"uninstaller.evidence.appNameExact.description" = "O nome corresponde ao nome do aplicativo.";
+"uninstaller.evidence.appNamePrefix.title" = "Prefixo do nome do app";
+"uninstaller.evidence.appNamePrefix.description" = "O nome começa com o nome do aplicativo.";
+"uninstaller.evidence.executableName.title" = "Nome do executável";
+"uninstaller.evidence.executableName.description" = "O nome corresponde ao executável do app.";
+"uninstaller.evidence.frameworkName.title" = "Nome do framework";
+"uninstaller.evidence.frameworkName.description" = "O arquivo é um framework usado pelo app.";
+"uninstaller.evidence.xpcServiceName.title" = "Serviço XPC";
+"uninstaller.evidence.xpcServiceName.description" = "O arquivo é um serviço XPC do app.";
+"uninstaller.evidence.plugInName.title" = "Nome do plug-in";
+"uninstaller.evidence.plugInName.description" = "O arquivo é um plug-in do app.";
+"uninstaller.evidence.vendorName.title" = "Nome do desenvolvedor";
+"uninstaller.evidence.vendorName.description" = "O arquivo pertence ao mesmo desenvolvedor.";
+"uninstaller.evidence.teamID.title" = "Correspondência de Team ID";
+"uninstaller.evidence.teamID.description" = "Assinado pela equipe %@ do aplicativo.";
+"uninstaller.evidence.developerSignature.title" = "Assinatura do desenvolvedor";
+"uninstaller.evidence.developerSignature.description" = "Assinado com o mesmo certificado de desenvolvedor.";
+"uninstaller.evidence.launchAgent.title" = "Launch Agent";
+"uninstaller.evidence.launchAgent.description" = "Um Launch Agent registrado pelo app.";
+"uninstaller.evidence.launchDaemon.title" = "Launch Daemon";
+"uninstaller.evidence.launchDaemon.description" = "Um Launch Daemon registrado pelo app.";
+"uninstaller.evidence.loginItem.title" = "Item de inicialização";
+"uninstaller.evidence.loginItem.description" = "Um item de inicialização registrado pelo app.";
+"uninstaller.evidence.appGroup.title" = "Grupo de apps";
+"uninstaller.evidence.appGroup.description" = "Pertence ao contêiner de grupo do app.";
+"uninstaller.evidence.container.title" = "Contêiner do app";
+"uninstaller.evidence.container.description" = "Contêiner sandbox do aplicativo.";
+"uninstaller.evidence.extension.title" = "Extensão do app";
+"uninstaller.evidence.extension.description" = "Extensão registrada pelo app.";
+"uninstaller.evidence.xpcConnection.title" = "Conexão XPC";
+"uninstaller.evidence.xpcConnection.description" = "Uma conexão XPC usada pelo app.";
+"uninstaller.evidence.packageReceipt.title" = "Comprovante de pacote";
+"uninstaller.evidence.packageReceipt.description" = "Registrado através de um comprovante de pacote.";
+"uninstaller.evidence.knownCatalog.title" = "Resíduo conhecido";
+"uninstaller.evidence.knownCatalog.description" = "Listado no catálogo de resíduos conhecidos.";
+"uninstaller.evidence.plistContent.title" = "Conteúdo Plist";
+"uninstaller.evidence.plistContent.description" = "O arquivo plist contém o nome ou Bundle ID do app.";
+"uninstaller.evidence.spotlight.title" = "Índice do Spotlight";
+"uninstaller.evidence.spotlight.description" = "Encontrado através da busca do Spotlight.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Atributo de pacote do Spotlight";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Os metadados relatam o Bundle ID '%@'.";
+"uninstaller.evidence.spotlightCreator.title" = "Criador no Spotlight";
+"uninstaller.evidence.spotlightCreator.description" = "Os metadados de criador correspondem.";
+"uninstaller.evidence.fileContent.title" = "Conteúdo do arquivo";
+"uninstaller.evidence.fileContent.description" = "O conteúdo do arquivo faz referência ao app.";
+"uninstaller.evidence.electronCache.title" = "Cache do Electron";
+"uninstaller.evidence.electronCache.description" = "Cache de aplicativo baseado em Electron.";
+"uninstaller.evidence.jetBrainsConfig.title" = "Config do JetBrains";
+"uninstaller.evidence.jetBrainsConfig.description" = "Configuração de IDE do JetBrains.";
+"uninstaller.evidence.flutterBuild.title" = "Build do Flutter";
+"uninstaller.evidence.flutterBuild.description" = "Artefato de build do Flutter.";
+"uninstaller.evidence.parentDirectory.title" = "Diretório pai";
+"uninstaller.evidence.parentDirectory.description" = "Encontrado em um diretório associado ao app.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Registrado no banco de dados de Launch Services.";

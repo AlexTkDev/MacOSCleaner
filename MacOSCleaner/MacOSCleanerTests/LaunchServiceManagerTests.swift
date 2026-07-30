@@ -8,8 +8,8 @@ final class LaunchServiceManagerTests: XCTestCase {
 
     override func setUp() async throws {
         fileManager = .default
-        let home = NSHomeDirectory()
-        tempDir = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/MacOSCleanerTests")
+        tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerTests_Launch_\(UUID().uuidString)", isDirectory: true)
 
         if fileManager.fileExists(atPath: tempDir.path) {
             try? fileManager.removeItem(at: tempDir)
@@ -40,7 +40,10 @@ final class LaunchServiceManagerTests: XCTestCase {
 
         XCTAssertEqual(services.count, 1)
         XCTAssertEqual(services.first?.id, "com.test.agent")
-        XCTAssertEqual(services.first?.path, plistURL.path)
+        XCTAssertEqual(
+            (services.first?.path as NSString?)?.standardizingPath,
+            (plistURL.path as NSString).standardizingPath
+        )
     }
 
     func testScanFiltersNonPlists() async throws {
@@ -98,18 +101,19 @@ final class LaunchServiceManagerTests: XCTestCase {
         let services = try await manager.scan()
 
         XCTAssertEqual(services.count, 1)
-        XCTAssertEqual(services.first?.category, .user)
+        XCTAssertEqual(services.first?.category, .thirdParty)
     }
 
     // MARK: - Categorize Logic Tests (no files needed)
 
-    private let home = NSHomeDirectory()
+    private let fixtureHome = "/Users/test-fixture-home"
 
     func testCategorizeUserPath() {
         let result = manager.categorize(
-            path: "\(home)/Library/LaunchAgents/com.user.agent.plist",
+            path: "\(fixtureHome)/Library/LaunchAgents/com.user.agent.plist",
             label: "com.user.agent",
-            prefixes: ["com.apple."]
+            prefixes: ["com.apple."],
+            homeDirectory: fixtureHome
         )
         XCTAssertEqual(result, .user)
     }
@@ -118,7 +122,8 @@ final class LaunchServiceManagerTests: XCTestCase {
         let result = manager.categorize(
             path: "/Library/LaunchDaemons/com.apple.test.plist",
             label: "com.apple.test",
-            prefixes: ["com.apple."]
+            prefixes: ["com.apple."],
+            homeDirectory: fixtureHome
         )
         XCTAssertEqual(result, .system)
     }
@@ -127,16 +132,18 @@ final class LaunchServiceManagerTests: XCTestCase {
         let result = manager.categorize(
             path: "/Library/LaunchAgents/com.adguard.agent.plist",
             label: "com.adguard.agent",
-            prefixes: ["com.apple."]
+            prefixes: ["com.apple."],
+            homeDirectory: fixtureHome
         )
         XCTAssertEqual(result, .thirdParty)
     }
 
     func testCategorizeUserTakesPrecedenceOverLabel() {
         let result = manager.categorize(
-            path: "\(home)/Library/LaunchAgents/com.apple.Safari.plist",
+            path: "\(fixtureHome)/Library/LaunchAgents/com.apple.Safari.plist",
             label: "com.apple.Safari",
-            prefixes: ["com.apple."]
+            prefixes: ["com.apple."],
+            homeDirectory: fixtureHome
         )
         XCTAssertEqual(result, .user)
     }
@@ -145,7 +152,8 @@ final class LaunchServiceManagerTests: XCTestCase {
         let result = manager.categorize(
             path: "/Library/LaunchDaemons/com.custom.vendor.plist",
             label: "com.custom.vendor",
-            prefixes: ["com.apple.", "com.custom."]
+            prefixes: ["com.apple.", "com.custom."],
+            homeDirectory: fixtureHome
         )
         XCTAssertEqual(result, .system)
     }

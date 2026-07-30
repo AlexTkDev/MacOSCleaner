@@ -15,17 +15,78 @@
 "size" = "Tamaño";
 "last_used" = "Último uso";
 
+// Siri & Automator Settings
+"settings_siri_section_title" = "Integración con Siri y Automator";
+"settings_siri_toggle_title" = "Activar integración con Siri";
+"settings_siri_toggle_description" = "Permitir controlar la limpieza mediante comandos de voz de Siri y Atajos.";
+"settings_automator_toggle_title" = "Flujos de trabajo de Atajos y Automator";
+"settings_automator_toggle_description" = "Permitir ejecutar intenciones de limpieza desde Automator, la app Atajos y programaciones.";
+"settings_siri_instruction_title" = "Cómo configurar en macOS";
+"settings_siri_instruction_body" = "Abre la aplicación Atajos (Shortcuts.app) → En la barra lateral selecciona MacOSCleaner. Allí se mostrarán todas las acciones disponibles para Siri, Atajos y Automator.";
+"settings_open_shortcuts_button" = "Abrir Atajos";
+"settings_active_commands_header" = "Comandos activos de Siri y Atajos";
+"settings_cmd_developer_caches" = "Limpiar cachés de desarrollador (DerivedData, Homebrew, Docker)";
+"settings_cmd_storage_status" = "Obtener estado del almacenamiento en disco";
+"settings_cmd_clean_category" = "Limpiar categoría específica (cachés, registros, etc.)";
+"settings_cmd_scheduled_cleanup" = "Ejecutar limpieza programada (Automator)";
+
+// Custom Siri Commands Editor
+"siri_add_command_button" = "Añadir comando";
+"siri_add_command_title" = "Nuevo comando de Siri";
+"siri_edit_command_title" = "Editar comando de Siri";
+"siri_command_name_label" = "Título del comando";
+"siri_command_phrase_label" = "Frase de voz de Siri";
+"siri_command_category_label" = "Acción / Categoría";
+"siri_no_commands_empty" = "No se han añadido comandos personalizados";
+"cancel_action" = "Cancelar";
+"save_action" = "Guardar";
+"edit_action" = "Editar";
+
 // Sidebar / Navigation Menu
-"menu_dashboard" = "Panel";
-"menu_cleanup" = "Limpieza";
-"menu_startup_services" = "Servicios de inicio";
 "menu_startup_vendors" = "Proveedores de inicio";
-"menu_uninstaller" = "Desinstalador";
-"menu_settings" = "Ajustes";
-"menu_disk_space" = "Analizador de disco";
+
+// Duplicate Finder Screen
+"menu_duplicates" = "Buscador de duplicados";
+"duplicate_title" = "Buscador de archivos duplicados";
+"duplicates_subtitle" = "Buscar y eliminar archivos idénticos para liberar espacio.";
+"duplicate_start_scan" = "Buscar duplicados";
+"duplicate_folder_home" = "Carpeta personal";
+"duplicate_folder_downloads" = "Descargas";
+"duplicate_folder_documents" = "Documentos";
+"duplicate_folder_custom" = "Elegir carpeta...";
+"duplicate_search_placeholder" = "Filtrar duplicados...";
+"duplicate_smart_select" = "Selección inteligente";
+"duplicate_select_keep_oldest" = "Conservar copias antiguas";
+"duplicate_select_keep_newest" = "Conservar copias recientes";
+"duplicate_select_all" = "Seleccionar todo";
+"duplicate_deselect_all" = "Deseleccionar todo";
+"duplicate_scanning_start" = "Inicializando escáner...";
+"duplicate_scan_completed" = "Escaneo completado: %ld grupos de duplicados";
+"duplicate_scan_cancelled" = "Escaneo cancelado";
+"duplicate_scan_failed" = "Error al escanear: %@";
+"duplicate_stage_collecting" = "Recopilando archivos (%ld escaneados)...";
+"duplicate_stage_size_filtering" = "Filtrando por tamaño...";
+"duplicate_stage_header_hashing" = "Calculando hash de encabezados (%ld de %ld)...";
+"duplicate_stage_full_hashing" = "Calculando firmas SHA-256 (%ld de %ld)...";
+"duplicate_stage_completed" = "Análisis completado";
+"duplicate_empty_title" = "No se encontraron duplicados";
+"duplicate_empty_subtitle" = "Seleccione una carpeta para buscar archivos idénticos.";
+"duplicate_group_title" = "%ld archivos idénticos (%@ c/u)";
+"duplicate_group_wasted" = "%@ recuperable";
+"duplicate_reveal_in_finder" = "Mostrar en Finder";
+"duplicate_selected_summary" = "%ld archivos seleccionados";
+"duplicate_selected_reclaim" = "%@ a recuperar";
+"duplicate_move_to_trash" = "Mover a la Papelera";
+"duplicate_trash_confirm_title" = "¿Mover duplicados a la Papelera?";
+"duplicate_trash_confirm_action" = "Mover a la Papelera";
+"duplicate_trash_confirm_message" = "¿Está seguro de mover %ld duplicados (%@) a la Papelera?";
+"duplicate_trash_completed" = "Se movieron %ld archivos (%@) a la Papelera";
+"duplicate_trash_failed" = "Error al mover a la Papelera: %@";
 
 // Disk Analyzer Screen
+"menu_disk_space" = "Analizador de disco";
 "disk_analyzer_title" = "Analizador de espacio de disco";
+"disk_space_subtitle" = "Análisis de la distribución del espacio en disco y búsqueda de archivos grandes.";
 "disk_analyzer_scan" = "Escanear carpeta";
 "disk_analyzer_scanning" = "Escaneando...";
 "disk_analyzer_back" = "Volver";
@@ -54,10 +115,14 @@
 "about_problem_link" = "Si tiene un problema con la aplicación, avíseme aquí";
 "about_linkedin" = "Perfil de LinkedIn";
 "about_website" = "Sitio web";
+"about_star_github" = "Dar una ⭐️ en GitHub";
+"settings_about_star_github" = "Dar una ⭐️ en GitHub";
 "about_copyright" = "© 2026 AlexTkDev. Todos los derechos reservados.";
 
 // Dashboard View
+"menu_dashboard" = "Panel";
 "dashboard_title" = "Panel";
+"dashboard_subtitle" = "Resumen del estado del sistema y del almacenamiento.";
 "dashboard_system_info" = "Información del sistema";
 "dashboard_model" = "Modelo";
 "dashboard_os_version" = "Versión del SO";
@@ -87,8 +152,15 @@
 "language.russian" = "Ruso";
 "language.ukrainian" = "Ucraniano";
 "language.spanish" = "Español";
+"language.german" = "Alemán";
+"language.japanese" = "Japonés";
+"language.french" = "Francés";
+"language.chinese_simplified" = "Chino (Simplificado)";
+"language.italian" = "Italiano";
+"language.portuguese_brazil" = "Portugués (Brasil)";
 
 // Settings View
+"menu_settings" = "Ajustes";
 "settings_title" = "Ajustes";
 "settings_subtitle" = "Configurar preferencias de la aplicación";
 "settings_general" = "General";
@@ -166,6 +238,7 @@
 "settings_trash_warning" = "Estos ajustes hacen que la eliminación sea irreversible. Los archivos que omiten la Papelera o se vacían inmediatamente no se pueden recuperar.";
 
 // Startup Services View
+"menu_startup_services" = "Servicios de inicio";
 "startup_title" = "Servicios de inicio";
 "startup_subtitle" = "Gestionar agentes que se inician automáticamente.";
 "startup_refresh" = "Actualizar lista";
@@ -205,6 +278,9 @@
 "startup_vendors_error_duplicate" = "Este prefijo ya existe";
 
 // Cleanup View
+"menu_cleanup" = "Limpieza";
+"cleanup_title" = "Limpieza";
+"cleanup_subtitle" = "Limpie de forma segura cachés, registros y basura del sistema.";
 "cleanup_scanning" = "Escaneando sistema...";
 "cleanup_clean" = "El sistema está limpio";
 "cleanup_clean_sub" = "No se encontraron archivos innecesarios durante el escaneo.";
@@ -269,7 +345,9 @@
 "trash_access_prompt_button" = "Conceder acceso";
 
 // Uninstaller View
+"menu_uninstaller" = "Desinstalador";
 "uninstaller_title" = "Desinstalador";
+"uninstaller_subtitle" = "Desinstalación completa de aplicaciones y sus archivos residuales.";
 "uninstaller_search" = "Buscar aplicaciones";
 "uninstaller_reload" = "Recargar aplicaciones";
 "uninstaller_confirm_perm_delete" = "¿Eliminar permanentemente?";
@@ -453,6 +531,8 @@
 "category.imovie_final_cut" = "iMovie / Final Cut";
 "category.garmin_fitbit" = "Garmin / Fitbit";
 "category.old_backups" = "Copias de seguridad antiguas";
+"category.ai_models" = "Modelos de IA y datos LLM";
+"category.installer_packages" = "Paquetes de instalación";
 "category.dns_flush" = "Caché de DNS";
 "category.font_cache" = "Caché de fuentes";
 "category.sleep_image" = "Imagen de suspensión";
@@ -585,6 +665,15 @@
 "uninstaller.developer_artifacts" = "Artefactos de desarrollador";
 "uninstaller.progress.developer_components" = "Verificando componentes de desarrollador...";
 "uninstaller.footer.summary" = "%lld archivo(s) seleccionado(s) en %@ niveles";
+"uninstaller.metadata.difficulty" = "Dificultad de desinstalación";
+"uninstaller.metadata.difficulty.critical" = "Crítica";
+"uninstaller.metadata.difficulty.high" = "Alta";
+"uninstaller.metadata.difficulty.medium" = "Media";
+"uninstaller.metadata.difficulty.low" = "Baja";
+"uninstaller.metadata.parent_suite" = "Suite";
+"uninstaller.metadata.known_issues" = "Problemas conocidos";
+"uninstaller.shared_component" = "Compartido";
+"uninstaller.shared_component.help" = "Compartido con otras apps — no seleccionado para eliminar.";
 
 // Format Helpers
 "format_bytes_b" = "%lld B";
@@ -627,3 +716,161 @@
 "uninstaller_explain_with_ai" = "Explicar con IA";
 "uninstaller_ai_explaining" = "Generando explicación...";
 "uninstaller_ai_failed" = "La IA no está disponible o no pudo generar la explicación.";
+
+"cleanup_option_tm_snapshots" = "Instantáneas de Time Machine";
+"cleanup_option_tm_snapshots_sub" = "Elimina de forma segura las instantáneas locales de APFS para liberar espacio purgable (requiere contraseña).";
+
+/* New Settings Redesign */
+"settings_category_overview" = "Resumen";
+"settings_category_general" = "General";
+"settings_category_permissions" = "Permisos";
+"settings_category_cleanup" = "Limpieza";
+"settings_category_automation" = "Siri e IA";
+"settings_category_ai" = "Apple Intelligence";
+"settings_category_processes" = "Procesos";
+"settings_category_advanced" = "Avanzado";
+"settings_category_about" = "Acerca de";
+"settings_category_danger_zone" = "Zona de peligro";
+
+"settings_overview_subtitle" = "Limpiador y optimizador nativo para macOS";
+"settings_overview_auto_scan" = "Escaneo automático";
+"settings_overview_scan_at_launch" = "Escanear al iniciar";
+"settings_quick_actions" = "Acciones rápidas";
+"settings_quick_actions_sub" = "Tareas administrativas comunes";
+"settings_quick_action_check_updates" = "Buscar actualizaciones";
+"settings_quick_action_check_updates_sub" = "Comprobar lanzamientos en GitHub";
+"settings_quick_action_update_available" = "¡Actualización disponible!";
+"settings_quick_action_permissions_sub" = "Gestionar acceso a disco y Papelera";
+"settings_quick_action_shortcuts_siri" = "Atajos y Siri";
+"settings_quick_action_shortcuts_siri_sub" = "Configurar automatizaciones";
+"settings_quick_action_advanced_sub" = "Depuración y diagnóstico";
+"settings_system_status" = "Estado del sistema";
+"settings_system_status_sub" = "Salud y métricas de la app";
+"settings_system_status_db" = "Base de datos de la app";
+
+"settings_appearance_language" = "Apariencia e idioma";
+"settings_appearance_language_sub" = "Personalizar interfaz de usuario";
+"settings_language_sub" = "Idioma de pantalla de la interfaz";
+"settings_theme_sub" = "Esquema de colores de la aplicación";
+"settings_tooltips_sub" = "Sugerencias al pasar el cursor";
+"settings_software_updates" = "Actualizaciones de software";
+"settings_software_updates_sub" = "Comprobación de versiones";
+"settings_current_version" = "Versión actual";
+
+"settings_permissions_sub" = "Derechos de acceso al sistema";
+"settings_permissions_overall" = "Estado general de permisos";
+"settings_permissions_overall_sub" = "Requerido para escanear cachés y residuos de apps";
+"settings_fda_title" = "Acceso total al disco (FDA)";
+"settings_fda_body" = "El acceso total al disco permite a MacOSCleaner buscar de forma segura archivos huérfanos, DerivedData y registros.";
+"settings_open_privacy_settings" = "Abrir Ajustes de Privacidad";
+"settings_check_status" = "Comprobar estado";
+"settings_permission_guide" = "Guía";
+"settings_notifications_enable" = "Activar notificaciones";
+"settings_notifications_enable_sub" = "Recibir alertas al finalizar la limpieza o acumular basura";
+"settings_notifications_denied_body" = "Notificaciones denegadas en Ajustes del Sistema";
+"status_granted" = "Concedido";
+"status_attention" = "Atención requerida";
+"status_required" = "Requerido";
+"status_disabled" = "Desactivado";
+
+"settings_scan_config" = "Configuración de escaneo";
+"settings_scan_config_sub" = "Opciones del desinstalador y búsqueda de basura";
+"settings_scan_mode_sub" = "Profundidad de escaneo de archivos huérfanos";
+"settings_auto_scan_sub" = "Iniciar escaneo automáticamente al abrir la app";
+"settings_show_related_sub" = "Incluir archivos de configuración y caché en el desinstalador";
+"settings_deletion_behavior" = "Comportamiento de eliminación y Papelera";
+"settings_deletion_behavior_sub" = "Reglas de manejo seguro de basura";
+"settings_trash_safety_note" = "La configuración de la papelera afecta a la eliminación permanente.";
+"settings_empty_trash_cleanup_sub" = "Vaciar la Papelera automáticamente tras limpiar la basura";
+"settings_bypass_trash_sub" = "Eliminar permanentemente los residuos de apps sin pasar por la Papelera";
+"settings_empty_trash_immediately_sub" = "Omitir el búfer de la Papelera en todas las operaciones";
+
+"settings_automation_title" = "Siri y Atajos";
+"settings_automation_sub" = "Automatización por voz y flujos de trabajo";
+"settings_enable_siri_sub" = "Activar tareas de limpieza con frases de Siri";
+"settings_enable_shortcuts_sub" = "Permitir AppIntents de MacOSCleaner en Atajos de macOS";
+"settings_open_shortcuts_title" = "Abrir Atajos de macOS";
+"settings_open_shortcuts_sub" = "Gestionar flujos en la app Atajos del sistema";
+"settings_launch_shortcuts_button" = "Iniciar app Atajos";
+"settings_custom_siri_commands" = "Comandos personalizados de Siri";
+"settings_custom_siri_commands_sub" = "Frases activadoras de voz";
+"settings_no_custom_commands" = "No hay comandos personalizados de Siri configurados.";
+
+"settings_ai_sub" = "Modelo de IA local para recomendaciones inteligentes";
+"settings_enable_ai_sub" = "Analizar archivos del sistema localmente con FoundationModels";
+"settings_ai_readiness" = "Estado del modelo de IA";
+"settings_ai_readiness_sub" = "Disponibilidad del motor de IA en el dispositivo";
+"settings_ai_capabilities" = "Capacidades disponibles";
+"settings_ai_capabilities_sub" = "Funciones inteligentes y total privacidad en el dispositivo";
+"settings_ai_feat_smart_cleanup" = "Limpieza inteligente";
+"settings_ai_feat_smart_cleanup_sub" = "Categorización y clasificación de cachés según el riesgo";
+"settings_ai_feat_recs" = "Recomendaciones inteligentes";
+"settings_ai_feat_recs_sub" = "Sugerencias de eliminación de residuos según la actividad";
+"settings_ai_feat_duplicates" = "Buscador de duplicados";
+"settings_ai_feat_duplicates_sub" = "Agrupación semántica de archivos idénticos";
+"settings_ai_feat_privacy" = "Protección de privacidad";
+"settings_ai_feat_privacy_sub" = "Todo el procesamiento de IA se ejecuta localmente en el NPU de Apple Silicon";
+"settings_ai_feat_voice" = "Control por voz de Siri";
+"settings_ai_feat_voice_sub" = "Iniciar tareas de mantenimiento con comandos de voz";
+"settings_ai_feat_shortcuts" = "Scripts de automatización";
+"settings_ai_feat_shortcuts_sub" = "Integración profunda con Atajos de macOS";
+
+"settings_processes_title" = "Ajustes del monitor de procesos";
+"settings_processes_sub" = "Configuración del escáner en segundo plano de CPU y Memoria";
+"settings_refresh_interval_sub" = "Frecuencia de actualización de la lista de procesos";
+"settings_sort_option_title" = "Orden de clasificación predeterminado";
+"settings_sort_option_sub" = "Ordenar procesos según el consumo de recursos";
+
+"settings_advanced_dev_title" = "Desarrollador y avanzado";
+"settings_advanced_dev_sub" = "Parámetros avanzados de diagnóstico y escaneo";
+"settings_show_related_app_files" = "Mostrar archivos de aplicación asociados";
+"settings_show_related_app_files_sub" = "Incluir archivos plist ocultos y contenedores en los resultados";
+"settings_startup_vendors_sub" = "Gestionar proveedores conocidos de inicio";
+
+"settings_about_tagline" = "Diseñado para macOS 26+. Creado con Swift 6, SwiftUI y Liquid Glass.";
+"settings_about_resources" = "Recursos y soporte";
+"settings_about_resources_sub" = "Enlaces oficiales y documentación de lanzamientos";
+"settings_about_github" = "Repositorio GitHub (Código fuente)";
+"settings_about_github_releases" = "Repositorio GitHub (Lanzamientos)";
+"settings_about_wiki" = "Documentación y Wiki";
+"settings_about_wiki_sub" = "Guías detalladas sobre cómo usar la aplicación";
+"settings_about_report_issue" = "Informar de un problema";
+"settings_about_website" = "Sitio web";
+
+/* Privacy & Safety (About) */
+"settings_privacy_safety_title" = "Privacidad y seguridad 🛡️";
+"settings_privacy_safety_sub" = "Protección del sistema y garantías de privacidad de datos";
+"settings_privacy_item_1_title" = "100% privado";
+"settings_privacy_item_1_desc" = "Sin telemetría, análisis, seguimiento de uso ni registro remoto. Todas las operaciones se ejecutan localmente en tu dispositivo.";
+"settings_privacy_item_2_title" = "Red mínima";
+"settings_privacy_item_2_desc" = "La única conexión de red es la comprobación de actualizaciones al inicio usando la API de GitHub Releases (se puede desactivar).";
+"settings_privacy_item_3_title" = "Recuperación segura de la papelera";
+"settings_privacy_item_3_desc" = "El Desinstalador de apps y el Análisis de disco mueven los archivos a la papelera mediante trashItem(at:) — recuperables por defecto.";
+"settings_privacy_item_4_title" = "Confirmación de limpieza inteligente";
+"settings_privacy_item_4_desc" = "Elimina las cachés seleccionadas y los datos temporales solo después de una confirmación explícita.";
+"settings_privacy_item_5_title" = "Protección SafetyManager";
+"settings_privacy_item_5_desc" = "Bloquea el acceso a /System, /usr, /bin, ~/.ssh y otras rutas críticas.";
+"settings_privacy_item_6_title" = "Política ProcessSafetyPolicy";
+"settings_privacy_item_6_desc" = "Protege los procesos críticos del sistema de finalizaciones accidentales.";
+"settings_privacy_item_7_title" = "Eliminación permanente opcional";
+"settings_privacy_item_7_desc" = "El vaciado automático de la papelera y el borrado permanente están desactivados por defecto y requieren una activación explícita.";
+"settings_privacy_item_8_title" = "Cierre suave de aplicaciones";
+"settings_privacy_item_8_desc" = "Las aplicaciones se cierran antes de la limpieza (cierre suave → cierre forzado después de 3s).";
+"settings_privacy_item_9_title" = "Acceso total al disco";
+"settings_privacy_item_9_desc" = "Se solicita Acceso total al disco al inicio para tener una capacidad de escaneo completa.";
+"settings_about_privacy_policy_sub" = "100% local, garantía de cero telemetría";
+"settings_about_acknowledgements" = "Agradecimientos";
+"settings_about_acknowledgements_sub" = "Librerías y frameworks de código abierto";
+
+"settings_danger_zone_title" = "Zona de peligro";
+"settings_danger_zone_sub" = "Acciones irreversibles de la aplicación";
+"settings_reset_all_title" = "Restablecer todos los ajustes de la app";
+"settings_reset_all_sub" = "Restablece todas las preferencias, comandos de Siri y cachés a los valores de fábrica.";
+"settings_reset_action_button" = "Restablecer datos y preferencias";
+
+"settings_search_prompt" = "Buscar en ajustes...";
+"settings_search_results_title" = "Resultados de búsqueda para «%@»";
+"settings_search_no_results" = "No se encontraron ajustes";
+"settings_search_no_results_sub" = "Pruebe a buscar 'papelera', 'FDA', 'IA' o 'tema'";
+
+"settings_about_report_issue_sub" = "Reportes de errores y sugerencias";

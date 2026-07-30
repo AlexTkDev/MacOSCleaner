@@ -27,7 +27,6 @@ public struct StartupServicesView: View {
                 }
             }
         }
-        .navigationSubtitle("startup_subtitle".localized)
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button(action: { Task { await viewModel.scan() } }) {

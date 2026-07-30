@@ -5,18 +5,16 @@ public enum EmbeddedCleanupPaths {
     // MARK: - App Caches
 
     public static let appCaches: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Caches/Google", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.google.SoftwareUpdate", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.google.GoogleUpdater", category: .appCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/GoogleUpdater", category: .appCaches),
-        CleanupPath(path: "~/Library/Google/GoogleSoftwareUpdate", category: .appCaches),
-        CleanupPath(path: "~/Library/HTTPStorages/com.google.GoogleUpdater", category: .appCaches),
+        // Never ~/Library/Caches/Google wholesale — updater/Keystone live under Google trees.
+        CleanupPath(path: "~/Library/Caches/Google/Chrome", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/org.carthage.CarthageKit", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/CocoaPods", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/pip", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/Homebrew", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/ms-playwright-go", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.spotify.client", category: .appCaches),
+        CleanupPath(path: "~/Library/Application Support/Spotify/PersistentCache", category: .appCaches),
+        CleanupPath(path: "~/Library/Caches/us.zoom.xos", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.Xcode", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.instruments", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/org.swift.swiftpm", category: .appCaches),
@@ -41,9 +39,6 @@ public enum EmbeddedCleanupPaths {
     public static let browserCaches: [CleanupPath] = [
         CleanupPath(path: "~/Library/Caches/com.apple.Safari", category: .browserCaches),
         CleanupPath(path: "~/Library/Caches/Apple/com.apple.Safari", category: .browserCaches),
-        CleanupPath(path: "~/Library/Safari/LocalStorage", category: .browserCaches),
-        CleanupPath(path: "~/Library/Safari/Databases", category: .browserCaches),
-        CleanupPath(path: "~/Library/WebKit/com.apple.Safari", category: .browserCaches),
         CleanupPath(path: "~/Library/WebKit/WebsiteData", category: .browserCaches),
         CleanupPath(path: "~/Library/Safari/Favicon Cache", category: .browserCaches),
         CleanupPath(path: "~/Library/Safari/Touch Icons Cache", category: .browserCaches),
@@ -61,7 +56,8 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Caches/company.thebrowser.Browser", category: .browserCaches),
         CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Code Cache", category: .browserCaches),
         CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/GPUCache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Service Worker", category: .browserCaches),
+        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Service Worker/CacheStorage", category: .browserCaches),
+        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Service Worker/ScriptCache", category: .browserCaches),
         CleanupPath(path: "~/Library/Application Support/Google/Chrome/GrShaderCache", category: .browserCaches),
         CleanupPath(path: "~/Library/Application Support/Firefox/Profiles/*/cache2", category: .browserCaches),
         CleanupPath(path: "~/Library/Application Support/Firefox/Profiles/*/startupCache", category: .browserCaches),
@@ -82,7 +78,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Caches/com.hnc.Discord", category: .messagingMedia),
         CleanupPath(path: "~/Library/Caches/com.spotify.client", category: .messagingMedia),
         CleanupPath(path: "~/Library/Caches/us.zoom.xos", category: .messagingMedia),
-        CleanupPath(path: "~/Library/Messages/Attachments", category: .messagingMedia),
         CleanupPath(path: "~/Library/Caches/com.signal.Signal", category: .messagingMedia),
         CleanupPath(path: "~/Library/Caches/com.tencent.xinWeChat", category: .messagingMedia),
         CleanupPath(path: "~/Library/Caches/com.microsoft.teams2", category: .messagingMedia),
@@ -96,28 +91,32 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Application Support/Cursor/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Cursor/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Cursor/Code Cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Cursor/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Cursor/CachedExtensionVSIXs", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Cursor/User/workspaceStorage", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Cursor/Crashpad", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Cursor/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Cursor/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Cursor/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Cursor/Service Worker/ScriptCache", category: .ideCaches),
         // VS Code
         CleanupPath(path: "~/Library/Application Support/Code/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Code/CachedData", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Code/Code Cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Code/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Code/CachedExtensionVSIXs", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Code/User/workspaceStorage", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Code/Crashpad", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Code/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Code/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Code/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Code/Service Worker/ScriptCache", category: .ideCaches),
         // Windsurf
         CleanupPath(path: "~/Library/Application Support/Windsurf/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Windsurf/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Windsurf/Code Cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Windsurf/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Windsurf/CachedExtensionVSIXs", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Windsurf/User/workspaceStorage", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Windsurf/Crashpad", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Windsurf/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Windsurf/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Windsurf/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Windsurf/Service Worker/ScriptCache", category: .ideCaches),
         // Zed
         CleanupPath(path: "~/Library/Application Support/dev.zed.Zed/cache", category: .ideCaches),
         CleanupPath(path: "~/.config/zed/cache", category: .ideCaches),
@@ -125,11 +124,12 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Code Cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/CachedExtensionVSIXs", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/User/workspaceStorage", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Crashpad", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Service Worker/ScriptCache", category: .ideCaches),
         // Nova
         CleanupPath(path: "~/Library/Application Support/Nova/Caches", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/com.panic.Nova", category: .ideCaches),
@@ -141,52 +141,54 @@ public enum EmbeddedCleanupPaths {
         // JetBrains
         CleanupPath(path: "~/Library/Caches/JetBrains", category: .ideCaches),
         CleanupPath(path: "~/Library/Logs/JetBrains", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/JetBrains/Toolbox/apps", category: .ideCaches),
         // GitHub Desktop
         CleanupPath(path: "~/Library/Application Support/GitHub Desktop/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/GitHub Desktop/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/GitHub Desktop/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/GitHub Desktop/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/GitHub Desktop/GPUCache", category: .ideCaches),
         // Figma / Notion / Linear / Postman / Insomnia
         CleanupPath(path: "~/Library/Application Support/Figma/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Figma/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Figma/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Figma/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Figma/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Notion/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Notion/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Notion/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Notion/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Notion/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Linear/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Linear/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Linear/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Linear/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Linear/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Postman/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Postman/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Postman/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Postman/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Postman/GPUCache", category: .ideCaches),
         // Claude / ChatGPT
         CleanupPath(path: "~/Library/Application Support/Claude/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Claude/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Claude/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Claude/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Claude/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Claude/GPUCache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Claude/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Claude/Service Worker/ScriptCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Claude/Crashpad", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ChatGPT/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ChatGPT/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ChatGPT/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/ChatGPT/Session Storage", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/ChatGPT/Service Worker", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ChatGPT/GPUCache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ChatGPT/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/ChatGPT/Service Worker/ScriptCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ChatGPT/Crashpad", category: .ideCaches),
         // Slack / Discord
         CleanupPath(path: "~/Library/Application Support/Slack/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Slack/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Slack/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Slack/Service Worker", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Slack/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Slack/GPUCache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Slack/Service Worker/CacheStorage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Slack/Service Worker/ScriptCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/discord/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/discord/CachedData", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/discord/Code Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/discord/Session Storage", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/discord/GPUCache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/discord/Crashpad", category: .ideCaches),
         // GitHub Desktop
         CleanupPath(path: "~/Library/Caches/com.github.GitHubClient", category: .ideCaches),
@@ -242,7 +244,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cache/org.swift.swiftpm", category: .languageCaches),
         CleanupPath(path: "~/.swiftpm/cache", category: .languageCaches),
         CleanupPath(path: "~/.swiftpm/repositories", category: .languageCaches),
-        CleanupPath(path: "~/.m2/repository", category: .languageCaches),
         CleanupPath(path: "~/.pnpm-store", category: .languageCaches),
         CleanupPath(path: "~/.yarn", category: .languageCaches),
         CleanupPath(path: "~/.cache/yarn", category: .languageCaches),
@@ -251,7 +252,8 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cache/bazelisk", category: .languageCaches),
         CleanupPath(path: "~/.gem", category: .languageCaches),
         CleanupPath(path: "~/.cocoapods", category: .languageCaches),
-        CleanupPath(path: "~/.pub-cache", category: .languageCaches),
+        CleanupPath(path: "~/.pub-cache/hosted", category: .languageCaches),
+        CleanupPath(path: "~/.pub-cache/git", category: .languageCaches),
         CleanupPath(path: "~/.dartServer", category: .languageCaches),
     ]
 
@@ -283,7 +285,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.config/aider/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/continue/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/cody/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.local/share/ollama/models", category: .dotfileCaches),
         CleanupPath(path: "~/.npm/_logs", category: .dotfileCaches),
         CleanupPath(path: "~/.terraform.d/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.cache/helm/repository", category: .dotfileCaches),
@@ -431,8 +432,9 @@ public enum EmbeddedCleanupPaths {
 
     // MARK: - Old Backups (NEW)
 
+    /// Discovery hints only — `cleanOldBackups` never wholesale-deletes these.
+    /// `~/Backups` is intentionally absent (never clean that root).
     public static let oldBackups: [CleanupPath] = [
-        CleanupPath(path: "~/Backups", category: .oldBackups),
         CleanupPath(path: "~/Desktop/*.backup", category: .oldBackups),
         CleanupPath(path: "~/Documents/*.backup", category: .oldBackups),
         CleanupPath(path: "~/Downloads/*.backup", category: .oldBackups),
@@ -483,7 +485,7 @@ public enum EmbeddedCleanupPaths {
         case .oldBackups: base = oldBackups
         default: base = []
         }
-        let generated = GeneratedCleanupPaths.paths(for: category)
+        let generated = GeneratedCleanupPaths.cachePaths(for: category)
         guard !generated.isEmpty else { return base }
         var seen = Set(base.map(\.path))
         var merged = base

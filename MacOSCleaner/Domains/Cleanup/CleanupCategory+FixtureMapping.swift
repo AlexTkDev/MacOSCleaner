@@ -70,6 +70,7 @@ extension CleanupCategory {
             labels.insert("Orphaned files")
         case .largeFiles:
             labels.insert("Large files")
+            labels.insert("Large Files")
         case .dynamicCacheDiscovery:
             labels.formUnion(["Dynamic cache discovery", "Auto-cleanable", "Review manually"])
         case .timeMachineSnapshots:
@@ -127,6 +128,10 @@ extension CleanupCategory {
             labels.insert("Garmin / Fitbit")
         case .oldBackups:
             labels.insert("Old Backups")
+        case .aiModels:
+            labels.insert("AI Models")
+        case .installerPackages:
+            labels.insert("Installer Packages")
         case .dnsFlush:
             labels.insert("DNS Cache")
         case .fontCache:

@@ -3,6 +3,12 @@ import XCTest
 
 @MainActor
 final class AppSettingsTests: XCTestCase {
+    override func invokeTest() {
+        LanguageManager.testingLock.lock()
+        defer { LanguageManager.testingLock.unlock() }
+        super.invokeTest()
+    }
+
     override func setUp() async throws {
         let keysToReset = [
             "settings_language", "settings_theme", "settings_showNotifications",

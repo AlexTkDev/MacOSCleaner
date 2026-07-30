@@ -2,27 +2,28 @@ import XCTest
 @testable import MacOSCleaner
 
 final class VerificationEngineTests: XCTestCase {
+    var fileSystemContext: FileSystemContext!
     var testRoot: URL!
     var mockRunner: MockCommandRunner!
     var plistCache: PlistContentCache!
     var codesignCache: CodesignCache!
 
-    override func setUp() {
-        super.setUp()
-        testRoot = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VerificationEngineTests_\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: testRoot, withIntermediateDirectories: true)
-
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        fileSystemContext = try FileSystemContext.isolatedTestRoot()
+        testRoot = fileSystemContext.homeDirectory
         mockRunner = MockCommandRunner()
         plistCache = PlistContentCache()
         codesignCache = CodesignCache()
     }
 
-    override func tearDown() {
-        if let testRoot {
-            try? FileManager.default.removeItem(at: testRoot)
+    override func tearDownWithError() throws {
+        if let root = fileSystemContext?.allowedRoots.first {
+            try? FileManager.default.removeItem(at: root)
         }
-        super.tearDown()
+        fileSystemContext = nil
+        testRoot = nil
+        try super.tearDownWithError()
     }
 
     func testVerify_noLeftovers_returnsZero() async {
@@ -57,7 +58,8 @@ final class VerificationEngineTests: XCTestCase {
         let engine = VerificationEngine(
             commandRunner: mockRunner,
             codesignCache: codesignCache,
-            plistCache: plistCache
+            plistCache: plistCache,
+            fileSystemContext: fileSystemContext
         )
 
         let report = await engine.verify(identity: identity)
@@ -66,18 +68,14 @@ final class VerificationEngineTests: XCTestCase {
         XCTAssertTrue(report.leftovers.isEmpty)
     }
 
-    func testVerify_withRealDir_detectsLeftover() async {
-        // Create a directory in ~/Library/Application Support/ so CandidateCollector
-        // finds it via file system scan (no mdfind mocking needed).
+    func testVerify_withIsolatedDir_detectsLeftover() async throws {
         let appName = "TestApp_\(UUID().uuidString)"
-        let supportDir = URL(fileURLWithPath: NSHomeDirectory())
-            .appendingPathComponent("Library/Application Support")
-            .appendingPathComponent(appName)
-        try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
-        addTeardownBlock { try? FileManager.default.removeItem(at: supportDir) }
+        let supportDir = testRoot
+            .appendingPathComponent("Library/Application Support", isDirectory: true)
+            .appendingPathComponent(appName, isDirectory: true)
+        try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
+        try Data(repeating: 1, count: 64).write(to: supportDir.appendingPathComponent("marker.dat"))
 
-        // The directory name matches identity.appName, so EvidenceProbe will
-        // produce .appNameExact (weight 60) which exceeds .veryLikely threshold.
         let identity = AppIdentity(
             bundleID: "com.test.\(appName)",
             appName: appName,
@@ -104,12 +102,14 @@ final class VerificationEngineTests: XCTestCase {
         )
 
         let engine = VerificationEngine(
+            commandRunner: mockRunner,
             codesignCache: codesignCache,
-            plistCache: plistCache
+            plistCache: plistCache,
+            fileSystemContext: fileSystemContext
         )
 
         let report = await engine.verify(identity: identity)
-        XCTAssertTrue(report.hasLeftovers, "Should detect leftover directory in ~/Library/Application Support/")
+        XCTAssertTrue(report.hasLeftovers, "Should detect leftover under isolated Application Support")
         XCTAssertGreaterThan(report.count, 0)
     }
 }

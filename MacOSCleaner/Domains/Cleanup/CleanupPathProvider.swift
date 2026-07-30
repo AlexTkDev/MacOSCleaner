@@ -75,8 +75,17 @@ public enum CleanupPathType: String, Sendable {
 }
 
 public enum CleanupPathExpander {
+    /// Hard cap on glob fan-out to keep scans bounded.
+    public static let defaultMaxMatches = 256
+
     /// Expands `~` and simple `*`/`?` path components; returns only existing paths.
-    public static func expand(_ template: String, home: String, fileManager: FileManager = .default) -> [String] {
+    /// Skips symlink directories; stops after `maxMatches`.
+    public static func expand(
+        _ template: String,
+        home: String,
+        fileManager: FileManager = .default,
+        maxMatches: Int = CleanupPathExpander.defaultMaxMatches
+    ) -> [String] {
         let absolute = template.hasPrefix("~") ? home + template.dropFirst() : template
         guard absolute.contains("*") || absolute.contains("?") else {
             return fileManager.fileExists(atPath: absolute) ? [absolute] : []
@@ -87,21 +96,38 @@ public enum CleanupPathExpander {
             if component.contains("*") || component.contains("?") {
                 for base in matches {
                     let dir = base.isEmpty ? "/" : base
+                    let dirURL = URL(fileURLWithPath: dir, isDirectory: true)
+                    if Self.isSymlinkDirectory(dirURL, fileManager: fileManager) { continue }
                     guard let children = try? fileManager.contentsOfDirectory(atPath: dir) else { continue }
                     for child in children where Self.fnmatch(pattern: component, string: child) {
-                        next.append(base + "/" + child)
+                        let childPath = base + "/" + child
+                        if Self.isSymlinkDirectory(URL(fileURLWithPath: childPath), fileManager: fileManager) {
+                            continue
+                        }
+                        next.append(childPath)
+                        if next.count >= maxMatches { return Array(next.prefix(maxMatches)) }
                     }
                 }
             } else {
                 for base in matches {
                     let candidate = base + "/" + component
                     if fileManager.fileExists(atPath: candidate) { next.append(candidate) }
+                    if next.count >= maxMatches { return Array(next.prefix(maxMatches)) }
                 }
             }
             matches = next
             if matches.isEmpty { return [] }
+            if matches.count > maxMatches {
+                return Array(matches.prefix(maxMatches))
+            }
         }
         return matches
+    }
+
+    private static func isSymlinkDirectory(_ url: URL, fileManager: FileManager) -> Bool {
+        guard let attrs = try? fileManager.attributesOfItem(atPath: url.path),
+              let type = attrs[.type] as? FileAttributeType else { return false }
+        return type == .typeSymbolicLink
     }
 
     private static func fnmatch(pattern: String, string: String) -> Bool {

@@ -1,10 +1,11 @@
+// Copyright (C) 2026 AlexTkDev
+// Licensed under GNU General Public License v3.0 (GPLv3)
+
 import SwiftUI
 
+
 struct RootView: View {
-    @State private var selectedItem: NavigationItem? = .dashboard
-    /// Keep the sidebar visible; hiding `.windowToolbar` on Dashboard used to
-    /// collapse NavigationSplitView to detail-only on macOS 26+.
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var selectedItem: NavigationItem = .dashboard
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
@@ -13,41 +14,23 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            NavigationSplitView(columnVisibility: $columnVisibility) {
-                List(selection: $selectedItem) {
-                    ForEach(SidebarSection.all) { section in
-                        Section {
-                            ForEach(section.items) { item in
-                                Label(item.localizedTitle, systemImage: item.systemImage)
-                                    .tag(item)
-                            }
-                        } header: {
-                            if let titleKey = section.titleKey {
-                                Text(titleKey.localized)
-                            }
+            VStack(spacing: 0) {
+                topNavigationBar
+                
+                contentView(for: selectedItem)
+                    .navigationTitle("MacOS Cleaner")
+                    .navigationSubtitle(selectedItem.localizedSubtitle ?? "")
+                    .toolbar {
+                        ToolbarItem(placement: .automatic) {
+                            Spacer()
                         }
                     }
-                }
-                .listStyle(.sidebar)
-                .navigationTitle("app_title".localized)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 280)
-            } detail: {
-                Group {
-                    if let selectedItem {
-                        contentView(for: selectedItem)
-                            .modifier(ScreenNavigationTitleModifier(item: selectedItem))
-                    } else {
-                        Text("sidebar_select_item".localized)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .scrollEdgeEffectStyle(.hard, for: .top)
-                .frame(minWidth: 800, minHeight: 600)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationSplitViewStyle(.balanced)
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
+        .frame(minWidth: 1024, minHeight: 680)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }
@@ -60,6 +43,74 @@ struct RootView: View {
         }
     }
 
+    // MARK: - Navigation Groups
+    private let navGroups: [[NavigationItem]] = [
+        [.dashboard],
+        [.cleanup, .diskSpace, .duplicates, .uninstaller],
+        [.processes, .startupServices],
+        [.settings]
+    ]
+
+    private var topNavigationBar: some View {
+        HStack(spacing: 0) {
+            ForEach(navGroups.indices, id: \.self) { groupIndex in
+                let group = navGroups[groupIndex]
+
+                HStack(spacing: 2) {
+                    ForEach(group, id: \.self) { item in
+                        navButton(for: item)
+                    }
+                }
+
+                if groupIndex < navGroups.count - 1 {
+                    Divider()
+                        .frame(height: 16)
+                        .opacity(0.4)
+                        .padding(.horizontal, 6)
+                }
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 5)
+        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 14))
+        .id(appSettings.language)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 14)
+    }
+
+    @ViewBuilder
+    private func navButton(for item: NavigationItem) -> some View {
+        let isSelected = selectedItem == item
+        Button {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                selectedItem = item
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: item.systemImage)
+                    .font(.system(size: 13, weight: .regular))
+                Text(item.localizedTitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .fixedSize()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .glassEffect(Glass.regular.tint(Color.accentColor).interactive(), in: Capsule())
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .help(item.localizedTitle)
+    }
+
+
     @ViewBuilder
     private func contentView(for item: NavigationItem) -> some View {
         switch item {
@@ -69,6 +120,8 @@ struct RootView: View {
             CleanupView(viewModel: cleanupViewModel)
         case .diskSpace:
             DiskAnalyzerView(settings: appSettings)
+        case .duplicates:
+            DuplicatesView()
         case .processes:
             ProcessesView(settings: appSettings)
         case .startupServices:
@@ -90,22 +143,7 @@ struct RootView: View {
     }
 }
 
-private struct ScreenNavigationTitleModifier: ViewModifier {
-    let item: NavigationItem
 
-    func body(content: Content) -> some View {
-        if item == .dashboard {
-            // Keep the window toolbar (sidebar toggle lives there). Only drop the
-            // detail title so Dashboard stays chrome-light without collapsing the split.
-            content
-                .navigationTitle("")
-                .toolbar(removing: .title)
-        } else {
-            content
-                .navigationTitle(item.localizedTitle)
-        }
-    }
-}
 
 #Preview {
     let journal = TransactionJournal()

@@ -153,8 +153,8 @@ public actor LaunchServiceManager {
         return labels
     }
 
-    public nonisolated func categorize(path: String, label: String, prefixes: [String]) -> ServiceCategory {
-        let home = NSHomeDirectory()
+    public nonisolated func categorize(path: String, label: String, prefixes: [String], homeDirectory: String = NSHomeDirectory()) -> ServiceCategory {
+        let home = homeDirectory
         if path.hasPrefix("\(home)/Library/") {
             return .user
         }

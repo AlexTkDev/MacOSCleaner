@@ -1,4 +1,7 @@
 import Foundation
+import AppKit
+import ApplicationServices
+import CoreServices
 
 public actor AppDiscovery {
     public static let defaultHomebrewCellarDirectories = [
@@ -31,9 +34,7 @@ public actor AppDiscovery {
         ].compactMap { $0 }
 
         for dir in appDirs {
-            if let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
-                urls.append(contentsOf: contents.filter { $0.pathExtension == "app" })
-            }
+            urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
         }
 
         // Homebrew formulae can expose user-facing apps directly inside a keg
@@ -43,6 +44,9 @@ public actor AppDiscovery {
             in: homebrewCellarDirectories,
             fileManager: fileManager
         ))
+
+        // LaunchServices sees apps registered outside the usual filesystem roots.
+        urls.append(contentsOf: Self.launchServicesApplications())
 
         // Application Support (Google Updater, etc.)
         let appSupportDirs = [
@@ -75,7 +79,40 @@ public actor AppDiscovery {
             }
         }
 
-        return Array(Set(urls)).filter { !isSystemComponent($0) }
+        return Array(Set(urls)).filter { !Self.isUndeletableSystemApp($0) }
+    }
+
+    /// Top-level `.app` plus one nested level (e.g. `/Applications/Utilities/*.app`).
+    static func applicationBundles(in directory: URL, fileManager: FileManager = .default) -> [URL] {
+        guard let contents = directoryContents(at: directory, fileManager: fileManager) else { return [] }
+        var apps: [URL] = []
+        for item in contents {
+            if item.pathExtension.lowercased() == "app", isDirectory(item) {
+                apps.append(item)
+                continue
+            }
+            guard isDirectory(item),
+                  let nested = directoryContents(at: item, fileManager: fileManager)
+            else { continue }
+            for child in nested where child.pathExtension.lowercased() == "app" && isDirectory(child) {
+                apps.append(child)
+            }
+        }
+        return apps
+    }
+
+    /// Apps that cannot be uninstalled: anything under `/System` (including
+    /// `/Applications` symlinks into Cryptexes), plus Apple components outside `/Applications`.
+    static func isUndeletableSystemApp(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+        let resolved = url.resolvingSymlinksInPath().standardizedFileURL.path
+        if path.hasPrefix("/System/") || resolved.hasPrefix("/System/") {
+            return true
+        }
+        // `/Applications/Safari.app` → Cryptex already caught above via resolved path.
+        guard !path.hasPrefix("/Applications/") else { return false }
+        guard let bundleID = Bundle(url: url)?.bundleIdentifier else { return false }
+        return bundleID.hasPrefix("com.apple.")
     }
 
     static func homebrewApplications(
@@ -162,6 +199,12 @@ public actor AppDiscovery {
         return applications
     }
 
+    private static func launchServicesApplications() -> [URL] {
+        // Public SDK has no LSCopyAllApplicationURLs. Directory scan in findAll() covers
+        // /Applications and ~/Applications; running apps are an extra signal.
+        Array(Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleURL)))
+    }
+
     private static func directoryContents(at url: URL, fileManager: FileManager) -> [URL]? {
         try? fileManager.contentsOfDirectory(
             at: url,
@@ -174,12 +217,4 @@ public actor AppDiscovery {
         (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
     }
 
-    /// Apple's own apps are uninstallable only when installed in /Applications (Xcode, GarageBand, etc.).
-    /// A `com.apple.*` bundle anywhere else (Application Support, DerivedData) is an OS component
-    /// (e.g. Script Editor templates in /Library/Application Support/Script Editor) and must not be listed.
-    private func isSystemComponent(_ url: URL) -> Bool {
-        guard !url.path.hasPrefix("/Applications/") else { return false }
-        guard let bundleID = Bundle(url: url)?.bundleIdentifier else { return false }
-        return bundleID.hasPrefix("com.apple.")
-    }
 }

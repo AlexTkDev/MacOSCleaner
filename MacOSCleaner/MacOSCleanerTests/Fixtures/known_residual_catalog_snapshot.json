@@ -1,0 +1,1522 @@
+{
+  "entries": [
+    {
+      "name": "1Password (developer tool for many)",
+      "bundleIDs": [
+        "com.1password.1password"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.config/op",
+        "~/.op",
+        "~/Library/Caches/com.1password.1password",
+        "~/Library/Containers/com.1password.1password",
+        "~/Library/Group Containers/2BUA8C4S2C.com.agilebits",
+        "~/Library/Preferences/com.1password.1password-helper.plist",
+        "~/Library/Preferences/com.1password.1password.plist"
+      ]
+    },
+    {
+      "name": "Alacritty",
+      "bundleIDs": [
+        "org.alacritty"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.config/alacritty",
+        "~/Library/Preferences/org.alacritty.plist"
+      ]
+    },
+    {
+      "name": "Alfred (developer-focused launcher)",
+      "bundleIDs": [
+        "com.runningwithcrayons.alfred-preferences"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Alfred",
+        "~/Library/Caches/com.runningwithcrayons.Alfred",
+        "~/Library/Preferences/com.runningwithcrayons.Alfred-Preferences.plist",
+        "~/Library/Preferences/com.runningwithcrayons.Alfred.plist"
+      ]
+    },
+    {
+      "name": "Android Studio",
+      "bundleIDs": [
+        "com.google.android.studio"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/AndroidStudio*",
+        "~/Library/Application Support/Google/AndroidStudio*",
+        "~/Library/Caches/AndroidStudio*",
+        "~/Library/Caches/Google/AndroidStudio*",
+        "~/Library/Caches/JetBrains/AndroidStudio*",
+        "~/Library/HTTPStorages/com.google.android.studio",
+        "~/Library/Logs/AndroidStudio*",
+        "~/Library/Logs/Google/AndroidStudio*",
+        "~/Library/Preferences/AndroidStudio*",
+        "~/Library/Preferences/com.android.*",
+        "~/Library/Preferences/com.google.android.studio.plist",
+        "~/Library/Saved Application State/com.google.android.studio.savedState"
+      ]
+    },
+    {
+      "name": "Antigravity IDE",
+      "bundleIDs": [
+        "com.google.antigravity-ide"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.antigravity",
+        "~/.antigravity-ide",
+        "~/Library/Application Support/Antigravity IDE",
+        "~/Library/Application Support/com.google.antigravity-ide",
+        "~/Library/Caches/com.google.antigravity-ide",
+        "~/Library/Caches/com.google.antigravity-ide.ShipIt",
+        "~/Library/HTTPStorages/com.google.antigravity-ide",
+        "~/Library/Logs/Antigravity IDE",
+        "~/Library/Preferences/com.google.antigravity-ide*.plist",
+        "~/Library/Saved Application State/com.google.antigravity-ide.savedState"
+      ]
+    },
+    {
+      "name": "Araxis Merge",
+      "bundleIDs": [
+        "com.araxis.merge"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Araxis Merge",
+        "~/Library/Preferences/com.araxis.merge.plist"
+      ]
+    },
+    {
+      "name": "Arc Browser",
+      "bundleIDs": [
+        "company.thebrowser.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Arc",
+        "~/Library/Caches/Arc",
+        "~/Library/Caches/company.thebrowser.Browser",
+        "~/Library/HTTPStorages/company.thebrowser.Browser",
+        "~/Library/Logs/Arc",
+        "~/Library/Preferences/company.thebrowser.Browser.plist",
+        "~/Library/Saved Application State/company.thebrowser.Browser.savedState",
+        "~/Library/WebKit/company.thebrowser.Browser"
+      ]
+    },
+    {
+      "name": "Avast Secure Browser",
+      "bundleIDs": [
+        "com.avast.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/AvastSoftware/AvastSecureBrowser",
+        "~/Library/Caches/com.avast.browser",
+        "~/Library/Preferences/com.avast.browser.plist"
+      ]
+    },
+    {
+      "name": "Azure Data Studio",
+      "bundleIDs": [
+        "com.microsoft.azuredatastudio"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/azuredatastudio",
+        "~/Library/Caches/com.microsoft.azuredatastudio",
+        "~/Library/Preferences/com.microsoft.azuredatastudio.plist",
+        "~/Library/Saved Application State/com.microsoft.azuredatastudio.savedState"
+      ]
+    },
+    {
+      "name": "Basilisk",
+      "bundleIDs": [
+        "org.basilisk.basilisk"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Basilisk",
+        "~/Library/Caches/org.basilisk.basilisk",
+        "~/Library/Preferences/org.basilisk.basilisk.plist"
+      ]
+    },
+    {
+      "name": "BBEdit",
+      "bundleIDs": [
+        "com.barebones.bbedit"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/BBEdit",
+        "~/Library/Caches/com.barebones.bbedit",
+        "~/Library/Preferences/com.barebones.bbedit.plist"
+      ]
+    },
+    {
+      "name": "Beyond Compare",
+      "bundleIDs": [
+        "com.scootersoftware.beyondcompare"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Beyond Compare",
+        "~/Library/Preferences/com.ScooterSoftware.BeyondCompare.plist"
+      ]
+    },
+    {
+      "name": "Bitwarden",
+      "bundleIDs": [
+        "com.bitwarden.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.config/Bitwarden CLI",
+        "~/Library/Application Support/Bitwarden",
+        "~/Library/Caches/com.bitwarden.desktop",
+        "~/Library/Preferences/com.bitwarden.desktop.plist"
+      ]
+    },
+    {
+      "name": "Brave Browser",
+      "bundleIDs": [
+        "com.brave.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/BraveSoftware/Brave-Browser",
+        "~/Library/Caches/com.brave.Browser",
+        "~/Library/Caches/com.brave.Browser.ShipIt",
+        "~/Library/Logs/BraveSoftware",
+        "~/Library/Preferences/com.brave.Browser.plist",
+        "~/Library/Saved Application State/com.brave.Browser.savedState"
+      ]
+    },
+    {
+      "name": "Brave Browser Beta / Nightly",
+      "bundleIDs": [
+        "com.brave.browser.beta",
+        "com.brave.browser.nightly"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/BraveSoftware/Brave-Browser-Beta",
+        "~/Library/Application Support/BraveSoftware/Brave-Browser-Nightly",
+        "~/Library/Caches/com.brave.Browser.beta",
+        "~/Library/Caches/com.brave.Browser.nightly"
+      ]
+    },
+    {
+      "name": "Bruno",
+      "bundleIDs": [
+        "com.usebruno.app"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Bruno",
+        "~/Library/Caches/com.usebruno.app",
+        "~/Library/Preferences/com.usebruno.app.plist"
+      ]
+    },
+    {
+      "name": "Camino (discontinued)",
+      "bundleIDs": [
+        "org.mozilla.camino"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Camino",
+        "~/Library/Preferences/org.mozilla.camino.plist"
+      ]
+    },
+    {
+      "name": "CCleaner Browser",
+      "bundleIDs": [
+        "com.piriform.ccleaner.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/CCleaner Browser",
+        "~/Library/Caches/com.piriform.ccleaner.browser",
+        "~/Library/Preferences/com.piriform.ccleaner.browser.plist"
+      ]
+    },
+    {
+      "name": "Charles Proxy",
+      "bundleIDs": [
+        "com.xk72.charles"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Charles",
+        "~/Library/Caches/com.xk72.Charles",
+        "~/Library/Logs/Charles",
+        "~/Library/Preferences/com.xk72.Charles.plist"
+      ]
+    },
+    {
+      "name": "Chromium (unbranded)",
+      "bundleIDs": [
+        "org.chromium.chromium"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Chromium",
+        "~/Library/Caches/org.chromium.Chromium",
+        "~/Library/Preferences/org.chromium.Chromium.plist"
+      ]
+    },
+    {
+      "name": "Coast by Opera (discontinued)",
+      "bundleIDs": [
+        "com.opera.coastmac"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Coast",
+        "~/Library/Preferences/com.opera.CoastMac.plist"
+      ]
+    },
+    {
+      "name": "Cursor (VS Code Fork)",
+      "bundleIDs": [
+        "com.todesktop.230313mzl4w4u92"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.cursor",
+        "~/Library/Application Support/Cursor",
+        "~/Library/Caches/com.todesktop.230313mzl4w4u92",
+        "~/Library/HTTPStorages/com.todesktop.230313mzl4w4u92",
+        "~/Library/Preferences/com.todesktop.230313mzl4w4u92.plist",
+        "~/Library/Saved Application State/com.todesktop.230313mzl4w4u92.savedState"
+      ]
+    },
+    {
+      "name": "Dash",
+      "bundleIDs": [
+        "com.kapeli.dashdoc"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Dash",
+        "~/Library/Caches/com.kapeli.dashdoc",
+        "~/Library/Preferences/com.kapeli.dashdoc.plist",
+        "~/Library/Saved Application State/com.kapeli.dashdoc.savedState"
+      ]
+    },
+    {
+      "name": "DataGrip (JetBrains)",
+      "bundleIDs": [
+        "com.jetbrains.datagrip"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/JetBrains/DataGrip*",
+        "~/Library/Caches/JetBrains/DataGrip*",
+        "~/Library/Logs/JetBrains/DataGrip*",
+        "~/Library/Preferences/com.jetbrains.datagrip.plist"
+      ]
+    },
+    {
+      "name": "DBeaver",
+      "bundleIDs": [
+        "org.jkiss.dbeaver.core.product"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/DBeaverData",
+        "~/Library/Caches/org.jkiss.dbeaver.core.product",
+        "~/Library/DBeaverData",
+        "~/Library/Preferences/org.jkiss.dbeaver.core.product.plist",
+        "~/Library/Saved Application State/org.jkiss.dbeaver.core.product.savedState"
+      ]
+    },
+    {
+      "name": "DevDocs (desktop app)",
+      "bundleIDs": [
+        "io.devdocs.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/DevDocs",
+        "~/Library/Caches/io.devdocs.desktop",
+        "~/Library/Preferences/io.devdocs.desktop.plist"
+      ]
+    },
+    {
+      "name": "DevUtils",
+      "bundleIDs": [
+        "com.devutils.app"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/DevUtils",
+        "~/Library/Preferences/com.devutils.app.plist"
+      ]
+    },
+    {
+      "name": "Docker Desktop",
+      "bundleIDs": [
+        "com.docker.docker"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "/Library/LaunchDaemons/com.docker.socket.plist",
+        "/Library/LaunchDaemons/com.docker.vmnetd.plist",
+        "/Library/PrivilegedHelperTools/com.docker.vmnetd",
+        "~/Library/Application Support/Docker Desktop",
+        "~/Library/Caches/Docker Desktop",
+        "~/Library/Caches/com.docker.docker",
+        "~/Library/Containers/com.docker.docker",
+        "~/Library/Group Containers/group.com.docker",
+        "~/Library/HTTPStorages/com.docker.docker",
+        "~/Library/Logs/Docker Desktop",
+        "~/Library/Preferences/com.docker.docker.plist",
+        "~/Library/Preferences/com.docker.helper.plist",
+        "~/Library/Saved Application State/com.docker.docker.savedState"
+      ]
+    },
+    {
+      "name": "DuckDuckGo Browser",
+      "bundleIDs": [
+        "com.duckduckgo.macos.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/DuckDuckGo",
+        "~/Library/Caches/com.duckduckgo.macos.browser",
+        "~/Library/Preferences/com.duckduckgo.macos.browser.plist"
+      ]
+    },
+    {
+      "name": "Epic Privacy Browser",
+      "bundleIDs": [
+        "com.hiddenreflex.epic"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Epic",
+        "~/Library/Caches/com.hiddenreflex.epic",
+        "~/Library/Preferences/com.hiddenreflex.epic.plist"
+      ]
+    },
+    {
+      "name": "Espresso",
+      "bundleIDs": [
+        "com.macrabbit.espresso"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Espresso",
+        "~/Library/Preferences/com.macrabbit.Espresso.plist"
+      ]
+    },
+    {
+      "name": "Figma (Desktop)",
+      "bundleIDs": [
+        "com.figma.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Figma",
+        "~/Library/Caches/com.figma.Desktop",
+        "~/Library/Caches/com.figma.Desktop.ShipIt",
+        "~/Library/Logs/Figma",
+        "~/Library/Preferences/com.figma.Desktop.plist",
+        "~/Library/Saved Application State/com.figma.Desktop.savedState"
+      ]
+    },
+    {
+      "name": "Firefox Developer Edition",
+      "bundleIDs": [
+        "org.mozilla.firefoxdeveloperedition"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Firefox/Profiles/*.dev-edition-default*",
+        "~/Library/Caches/org.mozilla.firefoxdeveloperedition",
+        "~/Library/Preferences/org.mozilla.firefoxdeveloperedition.plist"
+      ]
+    },
+    {
+      "name": "Firefox ESR",
+      "bundleIDs": [
+        "org.mozilla.firefox_esr"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Firefox/Profiles/*.default-esr*",
+        "~/Library/Caches/org.mozilla.firefox_esr",
+        "~/Library/Preferences/org.mozilla.firefox_esr.plist"
+      ]
+    },
+    {
+      "name": "Firefox Nightly",
+      "bundleIDs": [
+        "org.mozilla.nightly"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Firefox/Profiles/*.default-nightly*",
+        "~/Library/Caches/org.mozilla.nightly",
+        "~/Library/Preferences/org.mozilla.nightly.plist"
+      ]
+    },
+    {
+      "name": "Floorp",
+      "bundleIDs": [
+        "net.ablaze.floorp"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Floorp",
+        "~/Library/Caches/net.ablaze.floorp",
+        "~/Library/Preferences/net.ablaze.floorp.plist"
+      ]
+    },
+    {
+      "name": "Fork",
+      "bundleIDs": [
+        "com.danpristupov.fork"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.DanPristupov.Fork",
+        "~/Library/Caches/com.DanPristupov.Fork",
+        "~/Library/Preferences/com.DanPristupov.Fork.plist"
+      ]
+    },
+    {
+      "name": "Framer",
+      "bundleIDs": [
+        "com.framer.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Framer",
+        "~/Library/Caches/com.framer.desktop",
+        "~/Library/Preferences/com.framer.desktop.plist",
+        "~/Library/Saved Application State/com.framer.desktop.savedState"
+      ]
+    },
+    {
+      "name": "Ghostery Browser",
+      "bundleIDs": [
+        "com.ghostery.browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Ghostery",
+        "~/Library/Caches/com.ghostery.browser",
+        "~/Library/Preferences/com.ghostery.browser.plist"
+      ]
+    },
+    {
+      "name": "GitHub Desktop",
+      "bundleIDs": [
+        "com.github.githubclient"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/GitHub Desktop",
+        "~/Library/Caches/com.github.GitHubClient",
+        "~/Library/Caches/com.github.GitHubClient.ShipIt",
+        "~/Library/HTTPStorages/com.github.GitHubClient",
+        "~/Library/Logs/GitHub Desktop",
+        "~/Library/Preferences/com.github.GitHubClient.plist",
+        "~/Library/Saved Application State/com.github.GitHubClient.savedState"
+      ]
+    },
+    {
+      "name": "GitKraken",
+      "bundleIDs": [
+        "com.axosoft.gitkraken"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/GitKraken",
+        "~/Library/Caches/com.axosoft.GitKraken",
+        "~/Library/Caches/com.axosoft.GitKraken.ShipIt",
+        "~/Library/Logs/GitKraken",
+        "~/Library/Preferences/com.axosoft.GitKraken.plist",
+        "~/Library/Saved Application State/com.axosoft.GitKraken.savedState"
+      ]
+    },
+    {
+      "name": "Gitpod Desktop",
+      "bundleIDs": [
+        "io.gitpod.gitpod-desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Gitpod",
+        "~/Library/Caches/io.gitpod.gitpod-desktop",
+        "~/Library/Preferences/io.gitpod.gitpod-desktop.plist"
+      ]
+    },
+    {
+      "name": "Google Chrome",
+      "bundleIDs": [
+        "com.google.chrome"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "/Library/Application Support/Google/Chrome",
+        "~/Library/Application Support/Google/Chrome",
+        "~/Library/Caches/Google/Chrome",
+        "~/Library/Caches/com.google.Chrome",
+        "~/Library/Caches/com.google.Chrome.ShipIt",
+        "~/Library/HTTPStorages/com.google.Chrome",
+        "~/Library/Logs/Google/Chrome",
+        "~/Library/Preferences/com.google.Chrome.helper.plist",
+        "~/Library/Preferences/com.google.Chrome.plist",
+        "~/Library/Saved Application State/com.google.Chrome.savedState",
+        "~/Library/WebKit/com.google.Chrome"
+      ]
+    },
+    {
+      "name": "Google Chrome Canary",
+      "bundleIDs": [
+        "com.google.chrome.canary"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Google/Chrome Canary",
+        "~/Library/Caches/com.google.Chrome.canary",
+        "~/Library/Preferences/com.google.Chrome.canary.plist",
+        "~/Library/Saved Application State/com.google.Chrome.canary.savedState"
+      ]
+    },
+    {
+      "name": "Hoppscotch",
+      "bundleIDs": [
+        "io.hoppscotch.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Hoppscotch",
+        "~/Library/Caches/io.hoppscotch.desktop",
+        "~/Library/Preferences/io.hoppscotch.desktop.plist"
+      ]
+    },
+    {
+      "name": "HTTPie Desktop",
+      "bundleIDs": [
+        "io.httpie.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/HTTPie",
+        "~/Library/Caches/io.httpie.desktop",
+        "~/Library/Preferences/io.httpie.desktop.plist"
+      ]
+    },
+    {
+      "name": "Hyper",
+      "bundleIDs": [
+        "co.zeit.hyper"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.hyper.js",
+        "~/.hyper_plugins",
+        "~/Library/Application Support/Hyper",
+        "~/Library/Caches/co.zeit.hyper",
+        "~/Library/Preferences/co.zeit.hyper.plist"
+      ]
+    },
+    {
+      "name": "iCab",
+      "bundleIDs": [
+        "de.icab.icab"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/iCab",
+        "~/Library/Preferences/de.icab.iCab.plist"
+      ]
+    },
+    {
+      "name": "Insomnia",
+      "bundleIDs": [
+        "com.insomnia.app"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Insomnia",
+        "~/Library/Caches/com.insomnia.app",
+        "~/Library/Caches/com.insomnia.app.ShipIt",
+        "~/Library/Preferences/com.insomnia.app.plist",
+        "~/Library/Saved Application State/com.insomnia.app.savedState"
+      ]
+    },
+    {
+      "name": "iStat Menus",
+      "bundleIDs": [
+        "com.bjango.istatmenus"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/iStat Menus",
+        "~/Library/Caches/com.bjango.istatmenus",
+        "~/Library/Preferences/com.bjango.istatmenus.plist",
+        "~/Library/Preferences/com.bjango.istatmenus.status.plist"
+      ]
+    },
+    {
+      "name": "iTerm2",
+      "bundleIDs": [
+        "com.googlecode.iterm2"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/iTerm2",
+        "~/Library/Caches/com.googlecode.iterm2",
+        "~/Library/HTTPStorages/com.googlecode.iterm2",
+        "~/Library/Preferences/com.googlecode.iterm2.plist",
+        "~/Library/Saved Application State/com.googlecode.iterm2.savedState"
+      ]
+    },
+    {
+      "name": "JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, GoLand, Rider, DataGrip, RubyMine, PhpStorm, AppCode)",
+      "bundleIDs": [],
+      "bundleIDPrefixes": [
+        "com.jetbrains."
+      ],
+      "pathTemplates": [
+        "~/Library/Application Support/JetBrains",
+        "~/Library/Caches/JetBrains",
+        "~/Library/HTTPStorages/com.jetbrains.*",
+        "~/Library/Logs/JetBrains",
+        "~/Library/Preferences/com.jetbrains.*.plist",
+        "~/Library/Saved Application State/com.jetbrains.*.savedState",
+        "~/Library/WebKit/com.jetbrains.*"
+      ]
+    },
+    {
+      "name": "Kaleidoscope",
+      "bundleIDs": [
+        "com.blackpixel.kaleidoscope"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Kaleidoscope",
+        "~/Library/Caches/com.blackpixel.kaleidoscope",
+        "~/Library/Preferences/com.blackpixel.kaleidoscope.plist"
+      ]
+    },
+    {
+      "name": "Karabiner-Elements",
+      "bundleIDs": [
+        "org.pqrs.karabiner-elements.preferences"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "/Library/Application Support/org.pqrs/Karabiner-Elements",
+        "/Library/LaunchDaemons/org.pqrs.karabiner.agent.plist",
+        "/Library/LaunchDaemons/org.pqrs.karabiner.kextd.plist",
+        "~/.config/karabiner",
+        "~/.local/share/karabiner",
+        "~/Library/Preferences/org.pqrs.Karabiner-Elements.plist"
+      ]
+    },
+    {
+      "name": "KeePassXC",
+      "bundleIDs": [
+        "org.keepassx.keepassxc"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/KeePassXC",
+        "~/Library/Caches/org.keepassx.keepassxc",
+        "~/Library/Preferences/org.keepassx.keepassxc.plist"
+      ]
+    },
+    {
+      "name": "Kitty",
+      "bundleIDs": [
+        "net.kovidgoyal.kitty"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.cache/kitty",
+        "~/.config/kitty",
+        "~/Library/Preferences/net.kovidgoyal.kitty.plist"
+      ]
+    },
+    {
+      "name": "LibreWolf",
+      "bundleIDs": [
+        "io.gitlab.librewolf-community"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/LibreWolf",
+        "~/Library/Caches/io.gitlab.librewolf-community",
+        "~/Library/Preferences/io.gitlab.librewolf-community.plist"
+      ]
+    },
+    {
+      "name": "Lunascape",
+      "bundleIDs": [
+        "jp.lunascape.lunascape"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Lunascape",
+        "~/Library/Caches/jp.lunascape.lunascape",
+        "~/Library/Preferences/jp.lunascape.lunascape.plist"
+      ]
+    },
+    {
+      "name": "Maccy (clipboard manager)",
+      "bundleIDs": [
+        "org.p0deje.maccy"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Containers/org.p0deje.Maccy",
+        "~/Library/Preferences/org.p0deje.Maccy.plist"
+      ]
+    },
+    {
+      "name": "Maxthon Browser",
+      "bundleIDs": [
+        "com.maxthon.mac.maxthon"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Maxthon",
+        "~/Library/Caches/com.maxthon.mac.maxthon",
+        "~/Library/Preferences/com.maxthon.mac.maxthon.plist"
+      ]
+    },
+    {
+      "name": "Microsoft Edge",
+      "bundleIDs": [
+        "com.microsoft.edgemac"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Microsoft Edge",
+        "~/Library/Caches/com.microsoft.edgemac",
+        "~/Library/Caches/com.microsoft.edgemac.ShipIt",
+        "~/Library/HTTPStorages/com.microsoft.edgemac",
+        "~/Library/Logs/Microsoft Edge",
+        "~/Library/Preferences/com.microsoft.edgemac.plist",
+        "~/Library/Saved Application State/com.microsoft.edgemac.savedState"
+      ]
+    },
+    {
+      "name": "Microsoft Edge Dev / Beta / Canary",
+      "bundleIDs": [
+        "com.microsoft.edgemac.dev",
+        "com.microsoft.edgemac.beta",
+        "com.microsoft.edgemac.canary"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Microsoft Edge Beta",
+        "~/Library/Application Support/Microsoft Edge Canary",
+        "~/Library/Application Support/Microsoft Edge Dev",
+        "~/Library/Caches/com.microsoft.edgemac.Beta",
+        "~/Library/Caches/com.microsoft.edgemac.Canary",
+        "~/Library/Caches/com.microsoft.edgemac.Dev"
+      ]
+    },
+    {
+      "name": "MongoDB Compass",
+      "bundleIDs": [
+        "com.mongodb.compass"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/MongoDB Compass",
+        "~/Library/Caches/com.mongodb.compass",
+        "~/Library/Preferences/com.mongodb.compass.plist",
+        "~/Library/Saved Application State/com.mongodb.compass.savedState"
+      ]
+    },
+    {
+      "name": "Mozilla Firefox",
+      "bundleIDs": [
+        "org.mozilla.firefox"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Firefox",
+        "~/Library/Caches/Firefox",
+        "~/Library/Caches/org.mozilla.firefox",
+        "~/Library/Logs/Firefox",
+        "~/Library/Preferences/org.mozilla.firefox.plist",
+        "~/Library/Saved Application State/org.mozilla.firefox.savedState"
+      ]
+    },
+    {
+      "name": "Mullvad Browser",
+      "bundleIDs": [
+        "net.mullvad.mullvadbrowser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/MullvadBrowser",
+        "~/Library/Caches/net.mullvad.MullvadBrowser",
+        "~/Library/Preferences/net.mullvad.MullvadBrowser.plist"
+      ]
+    },
+    {
+      "name": "MySQL Workbench",
+      "bundleIDs": [
+        "com.oracle.mysql.workbench"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/MySQL/Workbench",
+        "~/Library/Caches/com.oracle.mysql.workbench",
+        "~/Library/Preferences/com.oracle.mysql.workbench.plist"
+      ]
+    },
+    {
+      "name": "Navicat",
+      "bundleIDs": [
+        "com.navicat.navicatpremium"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/PremiumSoft CyberTech/Navicat",
+        "~/Library/Caches/com.navicat.NavicatPremium",
+        "~/Library/Preferences/com.navicat.NavicatPremium.plist"
+      ]
+    },
+    {
+      "name": "Nova (Panic)",
+      "bundleIDs": [
+        "com.panic.nova"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Nova",
+        "~/Library/Caches/com.panic.Nova",
+        "~/Library/Preferences/com.panic.Nova.plist",
+        "~/Library/Saved Application State/com.panic.Nova.savedState"
+      ]
+    },
+    {
+      "name": "OmniWeb",
+      "bundleIDs": [
+        "com.omnigroup.omniweb5"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/OmniWeb",
+        "~/Library/Caches/com.omnigroup.OmniWeb5",
+        "~/Library/Preferences/com.omnigroup.OmniWeb5.plist"
+      ]
+    },
+    {
+      "name": "OpenCode",
+      "bundleIDs": [
+        "ai.opencode.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/ai.opencode.desktop",
+        "~/Library/Caches/ai.opencode.desktop",
+        "~/Library/Caches/ai.opencode.desktop.ShipIt",
+        "~/Library/HTTPStorages/ai.opencode.desktop",
+        "~/Library/Preferences/ai.opencode.desktop*.plist",
+        "~/Library/Saved Application State/ai.opencode.desktop.savedState"
+      ]
+    },
+    {
+      "name": "Opera",
+      "bundleIDs": [
+        "com.operasoftware.opera"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.operasoftware.Opera",
+        "~/Library/Caches/com.operasoftware.Opera",
+        "~/Library/Preferences/com.operasoftware.Opera.plist",
+        "~/Library/Saved Application State/com.operasoftware.Opera.savedState"
+      ]
+    },
+    {
+      "name": "Opera Developer",
+      "bundleIDs": [
+        "com.operasoftware.operadeveloperedition"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.operasoftware.OperaDeveloperEdition",
+        "~/Library/Caches/com.operasoftware.OperaDeveloperEdition"
+      ]
+    },
+    {
+      "name": "Opera GX",
+      "bundleIDs": [
+        "com.operasoftware.operagx"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.operasoftware.OperaGX",
+        "~/Library/Caches/com.operasoftware.OperaGX",
+        "~/Library/Preferences/com.operasoftware.OperaGX.plist"
+      ]
+    },
+    {
+      "name": "OrbStack",
+      "bundleIDs": [
+        "dev.orbstack.orbstack"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.orbstack",
+        "~/Library/Application Support/OrbStack",
+        "~/Library/Caches/dev.orbstack.OrbStack",
+        "~/Library/Logs/OrbStack",
+        "~/Library/Preferences/dev.orbstack.OrbStack.plist",
+        "~/Library/Saved Application State/dev.orbstack.OrbStack.savedState"
+      ]
+    },
+    {
+      "name": "Orion",
+      "bundleIDs": [
+        "com.kagi.kagimacos"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Orion",
+        "~/Library/Caches/com.kagi.kagimacOS",
+        "~/Library/Preferences/com.kagi.kagimacOS.plist"
+      ]
+    },
+    {
+      "name": "Pale Moon",
+      "bundleIDs": [
+        "org.palemoon.palemoon"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Pale Moon",
+        "~/Library/Caches/org.palemoon.PaleMoon",
+        "~/Library/Preferences/org.palemoon.PaleMoon.plist"
+      ]
+    },
+    {
+      "name": "Paste (clipboard manager)",
+      "bundleIDs": [
+        "com.wiheads.paste"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Paste",
+        "~/Library/Caches/com.wiheads.paste",
+        "~/Library/Containers/com.wiheads.paste",
+        "~/Library/Preferences/com.wiheads.paste.plist"
+      ]
+    },
+    {
+      "name": "pgAdmin 4",
+      "bundleIDs": [
+        "org.pgadmin.pgadmin4"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/pgAdmin",
+        "~/Library/Caches/org.pgadmin.pgadmin4",
+        "~/Library/Preferences/org.pgadmin.pgadmin4.plist",
+        "~/Library/Saved Application State/org.pgadmin.pgadmin4.savedState"
+      ]
+    },
+    {
+      "name": "Postman",
+      "bundleIDs": [
+        "com.postmanlabs.mac"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Postman",
+        "~/Library/Caches/com.postmanlabs.mac",
+        "~/Library/Caches/com.postmanlabs.mac.ShipIt",
+        "~/Library/HTTPStorages/com.postmanlabs.mac",
+        "~/Library/Logs/Postman",
+        "~/Library/Preferences/com.postmanlabs.mac.plist",
+        "~/Library/Saved Application State/com.postmanlabs.mac.savedState"
+      ]
+    },
+    {
+      "name": "Principle",
+      "bundleIDs": [
+        "com.danielhooper.principle"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Principle",
+        "~/Library/Preferences/com.danielhooper.principle.plist"
+      ]
+    },
+    {
+      "name": "ProtoPie",
+      "bundleIDs": [
+        "studio.protopie"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/ProtoPie",
+        "~/Library/Preferences/studio.protopie.plist"
+      ]
+    },
+    {
+      "name": "Proxyman",
+      "bundleIDs": [
+        "com.proxyman.nsproxy"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.proxyman.NSProxy",
+        "~/Library/Caches/com.proxyman.NSProxy",
+        "~/Library/Preferences/com.proxyman.NSProxy.plist"
+      ]
+    },
+    {
+      "name": "Rancher Desktop",
+      "bundleIDs": [
+        "io.rancher.desktop"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "/Library/LaunchDaemons/io.rancher.desktop.helper.plist",
+        "/Library/PrivilegedHelperTools/io.rancher.desktop.helper",
+        "~/.local/share/rancher-desktop",
+        "~/.rd",
+        "~/Library/Application Support/rancher-desktop",
+        "~/Library/Caches/io.rancher.desktop",
+        "~/Library/Logs/rancher-desktop",
+        "~/Library/Preferences/io.rancher.desktop.plist",
+        "~/Library/Saved Application State/io.rancher.desktop.savedState"
+      ]
+    },
+    {
+      "name": "RapidAPI (Paw)",
+      "bundleIDs": [
+        "com.luckymarmot.paw"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Paw",
+        "~/Library/Caches/com.luckymarmot.Paw",
+        "~/Library/Preferences/com.luckymarmot.Paw.plist"
+      ]
+    },
+    {
+      "name": "Raycast (developer-focused launcher)",
+      "bundleIDs": [
+        "com.raycast.macos"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.raycast.macos",
+        "~/Library/Caches/com.raycast.macos",
+        "~/Library/HTTPStorages/com.raycast.macos",
+        "~/Library/Preferences/com.raycast.macos.plist",
+        "~/Library/Saved Application State/com.raycast.macos.savedState"
+      ]
+    },
+    {
+      "name": "RedisInsight",
+      "bundleIDs": [
+        "com.redis.redisinsight"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/RedisInsight",
+        "~/Library/Caches/com.redis.RedisInsight",
+        "~/Library/Preferences/com.redis.RedisInsight.plist"
+      ]
+    },
+    {
+      "name": "Roccat Browser",
+      "bundleIDs": [
+        "com.runecats.roccat"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Roccat",
+        "~/Library/Preferences/com.runecats.Roccat.plist"
+      ]
+    },
+    {
+      "name": "SeaMonkey",
+      "bundleIDs": [
+        "org.mozilla.seamonkey"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/SeaMonkey",
+        "~/Library/Caches/org.mozilla.seamonkey",
+        "~/Library/Preferences/org.mozilla.seamonkey.plist"
+      ]
+    },
+    {
+      "name": "Sequel Ace",
+      "bundleIDs": [
+        "com.sequel-ace.sequel-ace"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Caches/com.sequel-ace.sequel-ace",
+        "~/Library/Containers/com.sequel-ace.sequel-ace",
+        "~/Library/Group Containers/com.sequel-ace.sequel-ace",
+        "~/Library/Preferences/com.sequel-ace.sequel-ace.plist"
+      ]
+    },
+    {
+      "name": "Sequel Pro (discontinued)",
+      "bundleIDs": [
+        "com.sequelpro.sequelpro"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Sequel Pro",
+        "~/Library/Caches/com.sequelpro.SequelPro",
+        "~/Library/Preferences/com.sequelpro.SequelPro.plist"
+      ]
+    },
+    {
+      "name": "SigmaOS",
+      "bundleIDs": [
+        "com.sigmaos.sigmaos.macos"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/SigmaOS",
+        "~/Library/Caches/com.sigmaos.sigmaos.macos",
+        "~/Library/Preferences/com.sigmaos.sigmaos.macos.plist"
+      ]
+    },
+    {
+      "name": "Simulator (iOS)",
+      "bundleIDs": [
+        "com.apple.iphonesimulator"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Caches/com.apple.dt.Xcode/DVTPortal",
+        "~/Library/Caches/com.apple.dt.Xcode/Downloads",
+        "~/Library/Developer/CoreSimulator"
+      ]
+    },
+    {
+      "name": "Sketch",
+      "bundleIDs": [
+        "com.bohemiancoding.sketch3"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.bohemiancoding.sketch3",
+        "~/Library/Caches/com.bohemiancoding.sketch3",
+        "~/Library/Preferences/com.bohemiancoding.sketch3.plist",
+        "~/Library/Saved Application State/com.bohemiancoding.sketch3.savedState"
+      ]
+    },
+    {
+      "name": "Sleipnir",
+      "bundleIDs": [
+        "com.fenrir-inc.sleipnir"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Sleipnir",
+        "~/Library/Caches/com.fenrir-inc.Sleipnir",
+        "~/Library/Preferences/com.fenrir-inc.Sleipnir.plist"
+      ]
+    },
+    {
+      "name": "Sourcetree",
+      "bundleIDs": [
+        "com.torusknot.sourcetreenotmas"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/SourceTree",
+        "~/Library/Caches/com.torusknot.SourceTreeNotMAS",
+        "~/Library/Preferences/com.torusknot.SourceTreeNotMAS.plist",
+        "~/Library/Saved Application State/com.torusknot.SourceTreeNotMAS.savedState"
+      ]
+    },
+    {
+      "name": "Stainless",
+      "bundleIDs": [
+        "com.mesadynamics.stainless"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Stainless",
+        "~/Library/Preferences/com.mesadynamics.Stainless.plist"
+      ]
+    },
+    {
+      "name": "Sublime Text",
+      "bundleIDs": [
+        "com.sublimetext.4"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Sublime Text",
+        "~/Library/Application Support/Sublime Text 3",
+        "~/Library/Application Support/Sublime Text 4",
+        "~/Library/Application Support/Sublime Text*/Cache",
+        "~/Library/Application Support/Sublime Text*/Index",
+        "~/Library/Application Support/Sublime Text*/Installed Packages",
+        "~/Library/Application Support/Sublime Text*/Local/License.sublime_license",
+        "~/Library/Application Support/Sublime Text*/Local/Session.sublime_session",
+        "~/Library/Application Support/Sublime Text*/Packages/User",
+        "~/Library/Caches/com.sublimetext.4",
+        "~/Library/Preferences/com.sublimetext.4.plist",
+        "~/Library/Saved Application State/com.sublimetext.4.savedState"
+      ]
+    },
+    {
+      "name": "Tabby",
+      "bundleIDs": [
+        "org.tabby"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/tabby",
+        "~/Library/Caches/org.tabby",
+        "~/Library/Preferences/org.tabby.plist"
+      ]
+    },
+    {
+      "name": "TablePlus",
+      "bundleIDs": [
+        "com.tableplus.tableplus"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.tableplus.TablePlus",
+        "~/Library/Caches/com.tableplus.TablePlus",
+        "~/Library/Containers/com.tableplus.TablePlus",
+        "~/Library/Logs/TablePlus",
+        "~/Library/Preferences/com.tableplus.TablePlus.plist",
+        "~/Library/Saved Application State/com.tableplus.TablePlus.savedState"
+      ]
+    },
+    {
+      "name": "TextMate",
+      "bundleIDs": [
+        "com.macromates.textmate"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/TextMate",
+        "~/Library/Caches/com.macromates.TextMate",
+        "~/Library/Preferences/com.macromates.TextMate.plist"
+      ]
+    },
+    {
+      "name": "Tor Browser",
+      "bundleIDs": [
+        "org.torproject.torbrowser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/TorBrowser-Data",
+        "~/Library/Caches/org.torproject.torbrowser",
+        "~/Library/Preferences/org.torproject.torbrowser.plist"
+      ]
+    },
+    {
+      "name": "Tower",
+      "bundleIDs": [
+        "com.fournova.tower3"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/com.fournova.Tower3",
+        "~/Library/Caches/com.fournova.Tower3",
+        "~/Library/Preferences/com.fournova.Tower3.plist"
+      ]
+    },
+    {
+      "name": "UTM",
+      "bundleIDs": [
+        "com.utmapp.utm"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/UTM",
+        "~/Library/Caches/com.utmapp.UTM",
+        "~/Library/Containers/com.utmapp.UTM",
+        "~/Library/Preferences/com.utmapp.UTM.plist",
+        "~/Library/Saved Application State/com.utmapp.UTM.savedState"
+      ]
+    },
+    {
+      "name": "Vagrant",
+      "bundleIDs": [
+        "com.vagrant.vagrant"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.vagrant.d",
+        "~/Library/Caches/com.vagrant.vagrant"
+      ]
+    },
+    {
+      "name": "Visual Studio Code",
+      "bundleIDs": [
+        "com.microsoft.vscode"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.vscode",
+        "~/Library/Application Support/Code",
+        "~/Library/Caches/com.microsoft.VSCode",
+        "~/Library/Caches/com.microsoft.VSCode.ShipIt",
+        "~/Library/HTTPStorages/com.microsoft.VSCode",
+        "~/Library/Logs/Code",
+        "~/Library/Preferences/com.microsoft.VSCode.helper.plist",
+        "~/Library/Preferences/com.microsoft.VSCode.plist",
+        "~/Library/Saved Application State/com.microsoft.VSCode.savedState"
+      ]
+    },
+    {
+      "name": "Vivaldi",
+      "bundleIDs": [
+        "com.vivaldi.vivaldi"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Vivaldi",
+        "~/Library/Caches/com.vivaldi.Vivaldi",
+        "~/Library/Caches/com.vivaldi.Vivaldi.ShipIt",
+        "~/Library/Preferences/com.vivaldi.Vivaldi.plist",
+        "~/Library/Saved Application State/com.vivaldi.Vivaldi.savedState"
+      ]
+    },
+    {
+      "name": "Warp",
+      "bundleIDs": [
+        "dev.warp.warp-stable"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.warp",
+        "~/Library/Application Support/dev.warp.Warp-Stable",
+        "~/Library/Caches/dev.warp.Warp-Stable",
+        "~/Library/HTTPStorages/dev.warp.Warp-Stable",
+        "~/Library/Preferences/dev.warp.Warp-Stable.plist",
+        "~/Library/Saved Application State/dev.warp.Warp-Stable.savedState"
+      ]
+    },
+    {
+      "name": "Waterfox",
+      "bundleIDs": [
+        "net.waterfox.waterfox"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Waterfox",
+        "~/Library/Caches/net.waterfox.waterfox",
+        "~/Library/Preferences/net.waterfox.waterfox.plist"
+      ]
+    },
+    {
+      "name": "WezTerm",
+      "bundleIDs": [
+        "com.github.wez.wezterm"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.config/wezterm",
+        "~/.wezterm.lua",
+        "~/Library/Preferences/com.github.wez.wezterm.plist"
+      ]
+    },
+    {
+      "name": "Windsurf (VS Code Fork by Codeium)",
+      "bundleIDs": [
+        "com.exafunction.windsurf"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.windsurf",
+        "~/Library/Application Support/Windsurf",
+        "~/Library/Caches/com.exafunction.windsurf",
+        "~/Library/Preferences/com.exafunction.windsurf.plist",
+        "~/Library/Saved Application State/com.exafunction.windsurf.savedState"
+      ]
+    },
+    {
+      "name": "Wireshark",
+      "bundleIDs": [
+        "org.wireshark.wireshark"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Wireshark",
+        "~/Library/Caches/org.wireshark.Wireshark",
+        "~/Library/Preferences/org.wireshark.Wireshark.plist"
+      ]
+    },
+    {
+      "name": "Xcode",
+      "bundleIDs": [
+        "com.apple.dt.xcode"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "/Library/Application Support/Xcode",
+        "~/Library/Caches/com.apple.dt.SourceKitService",
+        "~/Library/Caches/com.apple.dt.Xcode",
+        "~/Library/Caches/com.apple.dt.XcodePreviews",
+        "~/Library/Caches/org.swift.swiftpm",
+        "~/Library/Developer/CoreSimulator",
+        "~/Library/Developer/Xcode",
+        "~/Library/HTTPStorages/com.apple.dt.Xcode",
+        "~/Library/Logs/CoreSimulator",
+        "~/Library/Logs/DiagnosticReports/SourceKitService*",
+        "~/Library/Logs/DiagnosticReports/simulator*",
+        "~/Library/Preferences/com.apple.dt.Xcode.plist",
+        "~/Library/Preferences/com.apple.dt.xcodebuild.plist",
+        "~/Library/Saved Application State/com.apple.dt.Xcode.savedState",
+        "~/Library/WebKit/com.apple.dt.Xcode"
+      ]
+    },
+    {
+      "name": "Yandex Browser",
+      "bundleIDs": [
+        "ru.yandex.desktop.yandex-browser"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/Library/Application Support/Yandex/YandexBrowser",
+        "~/Library/Caches/ru.yandex.desktop.yandex-browser",
+        "~/Library/Preferences/ru.yandex.desktop.yandex-browser.plist"
+      ]
+    },
+    {
+      "name": "Zed Editor",
+      "bundleIDs": [
+        "dev.zed.zed"
+      ],
+      "bundleIDPrefixes": [],
+      "pathTemplates": [
+        "~/.config/zed",
+        "~/.zed",
+        "~/Library/Application Support/Zed",
+        "~/Library/Caches/dev.zed.Zed",
+        "~/Library/Logs/Zed",
+        "~/Library/Preferences/dev.zed.Zed.plist"
+      ]
+    }
+  ]
+}

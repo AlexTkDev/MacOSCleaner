@@ -1,6 +1,4 @@
 import SwiftUI
-import UserNotifications
-import FoundationModels
 
 // MARK: - SettingsView
 
@@ -10,430 +8,161 @@ struct SettingsView: View {
     let onForget: () -> Void
     @Binding var availableUpdate: String?
 
-    @State private var showResetConfirmation = false
-    @State private var trashManager = TrashManager()
-    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
-    @State private var isCheckingForUpdates = false
+    @State private var selectedCategory: SettingsCategory? = .general
+    @State private var searchText: String = ""
 
     var body: some View {
-        Form {
-            permissionsSection
-            generalSection
-            processesSection
-            uninstallerSection
-            aiSection
-            startupSection
-            trashDeletionSection
-            advancedSection
-            resetSection
+        NavigationSplitView(columnVisibility: .constant(.all)) {
+            sidebarContent
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 240)
+        } detail: {
+            detailView
         }
-        .formStyle(.grouped)
-        .scrollContentBackground(.hidden)
-        .confirmationDialog(
-            "settings_reset_confirm_title".localized,
-            isPresented: $showResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("settings_reset_confirm_button".localized, role: .destructive) {
-                settings.resetAll()
-                onForget()
+        .searchable(text: $searchText, prompt: Text("settings_search_prompt".localized))
+        .frame(minWidth: 700, minHeight: 520)
+    }
+
+    // MARK: - Custom Sidebar
+
+    private var sidebarContent: some View {
+        ScrollView {
+            VStack(spacing: 4) {
+                ForEach(SettingsCategory.allCases) { category in
+                    sidebarRow(for: category)
+                }
             }
-            Button("cancel".localized, role: .cancel) { }
-        } message: {
-            Text("settings_reset_confirm_message".localized)
+            .padding(.horizontal, 10)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
         }
     }
 
-    // MARK: - Permissions
+    private func sidebarRow(for category: SettingsCategory) -> some View {
+        let isSelected = (selectedCategory == category)
 
-    private var permissionsSection: some View {
-        Section {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("permissions.full_disk_access".localized)
-                    Text("settings_fda_description".localized)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+        return Button {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                selectedCategory = category
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: category.iconName)
+                    .foregroundStyle(isSelected ? Color.white : category.iconColor)
+                    .font(.headline)
+                    .frame(width: 22)
+
+                Text(category.displayName)
+                    .font(.body.weight(isSelected ? .semibold : .regular))
+                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+
                 Spacer()
-                HStack(spacing: 6) {
-                    if permissionsManager.hasFullDiskAccess {
-                        Label("permissions_status_granted".localized, systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    } else {
-                        Label("permissions_status_required".localized, systemImage: "exclamationmark.circle.fill")
-                            .foregroundStyle(.orange)
-                    }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor)
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
 
-                    Button {
-                        permissionsManager.openFullDiskAccessSettings()
-                    } label: {
-                        Image(systemName: "arrow.up.forward.app")
-                    }
-                    .buttonStyle(.plain)
+    // MARK: - Detail View
+
+    @ViewBuilder
+    private var detailView: some View {
+        if !searchText.isEmpty {
+            searchResultsView
+        } else {
+            switch selectedCategory ?? .general {
+            case .general:
+                SettingsGeneralView(
+                    settings: settings,
+                    permissionsManager: permissionsManager,
+                    availableUpdate: $availableUpdate,
+                    onForget: onForget
+                )
+            case .cleanup:
+                SettingsCleanupView(
+                    settings: settings
+                )
+            case .automation:
+                SettingsAutomationView(
+                    settings: settings
+                )
+            case .processes:
+                SettingsProcessesView(
+                    settings: settings
+                )
+            case .advanced:
+                SettingsAdvancedView(
+                    settings: settings
+                )
+            case .about:
+                SettingsAboutView()
+            }
+        }
+    }
+
+    // MARK: - Search Results
+
+    private var searchResultsView: some View {
+        let results = SettingsSearchRegistry.search(searchText)
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(String(format: "settings_search_results_title".localized, searchText))
+                    .font(.headline)
                     .foregroundStyle(.secondary)
-                }
-                .font(.caption)
-                .labelStyle(.iconOnly)
-            }
+                    .padding(.bottom, 4)
 
-            Button {
-                permissionsManager.refresh()
-            } label: {
-                Label("settings_check_permissions".localized, systemImage: "arrow.clockwise")
-            }
-            .buttonStyle(.plain)
-
-            if !permissionsManager.hasFullDiskAccess {
-                Button {
-                    permissionsManager.requestGuidanceAgain()
-                } label: {
-                    Label("settings_show_permission_guide".localized, systemImage: "hand.raised")
-                }
-                .buttonStyle(.plain)
-            }
-        } header: {
-            Label("settings_permissions".localized, systemImage: "lock.shield")
-        }
-    }
-
-    // MARK: - General
-
-    private var generalSection: some View {
-        Section {
-            Picker("settings_language".localized, selection: $settings.language) {
-                ForEach(AppLanguage.allCases) { lang in
-                    Text(lang.displayName).tag(lang)
-                }
-            }
-            .tooltip("settings_tooltip_language".localized, enabled: settings.showTooltips)
-
-            Picker("settings_theme".localized, selection: $settings.theme) {
-                ForEach(AppTheme.allCases) { theme in
-                    Text(theme.localizedName).tag(theme)
-                }
-            }
-            .pickerStyle(.segmented)
-            .tooltip("settings_tooltip_theme".localized, enabled: settings.showTooltips)
-
-            Toggle("settings_notifications".localized, isOn: $settings.showNotifications)
-                .tooltip("settings_tooltip_notifications".localized, enabled: settings.showTooltips)
-
-            if settings.showNotifications {
-                notificationStatusView
-            }
-
-            Toggle("settings_tooltips".localized, isOn: $settings.showTooltips)
-                .tooltip("settings_tooltip_tooltips".localized, enabled: settings.showTooltips)
-
-            Toggle("settings_auto_scan".localized, isOn: $settings.autoScanOnStartup)
-                .tooltip("settings_tooltip_auto_scan".localized, enabled: settings.showTooltips)
-
-            HStack {
-                Text("update.check".localized)
-                Spacer()
-                if isCheckingForUpdates {
-                    ProgressView().controlSize(.small)
-                    Text("update.checking".localized).foregroundStyle(.secondary)
-                } else if let version = availableUpdate {
-                    Button {
-                        NSWorkspace.shared.open(UpdateChecker.releasesURL)
-                    } label: {
-                        Text(String(format: "update.available".localized, version))
-                    }
-                    .buttonStyle(.link)
+                if results.isEmpty {
+                    ContentUnavailableView(
+                        "settings_search_no_results".localized,
+                        systemImage: "magnifyingglass",
+                        description: Text("settings_search_no_results_sub".localized)
+                    )
                 } else {
-                    Text("update.up_to_date".localized).foregroundStyle(.secondary)
-                    Button {
-                        Task {
-                            isCheckingForUpdates = true
-                            availableUpdate = await UpdateChecker().checkForUpdate()
-                            isCheckingForUpdates = false
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        } header: {
-            Label("settings_general".localized, systemImage: "gearshape")
-        }
-    }
+                    ForEach(results) { item in
+                        Button {
+                            searchText = ""
+                            selectedCategory = item.category
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: item.iconName)
+                                    .font(.title3)
+                                    .foregroundStyle(item.category.iconColor)
+                                    .frame(width: 28)
 
-    // MARK: - Processes
-
-    private var processesSection: some View {
-        Section {
-            Picker("settings_refresh_interval".localized, selection: $settings.processRefreshInterval) {
-                ForEach(RefreshInterval.allCases) { interval in
-                    Text(interval.localizedName).tag(interval)
-                }
-            }
-            .tooltip("settings_tooltip_refresh_interval".localized, enabled: settings.showTooltips)
-
-            Picker("settings_sort_by".localized, selection: $settings.processSortOption) {
-                ForEach(ProcessSortOption.allCases) { option in
-                    Text(option.localizedName).tag(option)
-                }
-            }
-            .tooltip("settings_tooltip_sort_by".localized, enabled: settings.showTooltips)
-        } header: {
-            Label("settings_processes".localized, systemImage: "cpu")
-        }
-    }
-
-    // MARK: - Uninstaller
-
-    private var uninstallerSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 10) {
-                Picker("scan_mode".localized, selection: $settings.uninstallerScanMode) {
-                    ForEach(ScanMode.allCases) { mode in
-                        Text(mode.localizedName).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                ForEach(ScanMode.allCases) { mode in
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: settings.uninstallerScanMode == mode
-                              ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(settings.uninstallerScanMode == mode
-                                             ? (mode == .safe ? Color.blue : Color.green)
-                                             : Color.secondary)
-                            .font(.caption)
-                            .padding(.top, 2)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text(mode.localizedName)
-                                    .font(.callout)
-                                    .fontWeight(.medium)
-                                if mode == .balanced {
-                                    Text("scan_mode.balanced.default".localized)
-                                        .font(.caption2)
-                                        .padding(.horizontal, 5)
-                                        .padding(.vertical, 1)
-                                        .background(Color.green.opacity(0.15))
-                                        .foregroundStyle(.green)
-                                        .clipShape(Capsule())
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.title)
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    if let subtitle = item.subtitle {
+                                        Text(subtitle)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
+
+                                Spacer()
+
+                                StatusPill(item.category.displayName, iconName: item.category.iconName, style: .neutral, size: .small)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
                             }
-                            Text(mode.localizedDescription)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                            .padding(12)
+                            .background(Color.primary.opacity(0.03))
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
-        } header: {
-            Label("settings_uninstaller".localized, systemImage: "trash.slash")
-        }
-    }
-
-    // MARK: - Startup
-
-    private var startupSection: some View {
-        Section {
-            StartupVendorSettingsView()
-        } header: {
-            Label("settings_startup".localized, systemImage: "bolt.horizontal.circle")
-        }
-    }
-
-    // MARK: - Trash & Deletion
-
-    private var trashDeletionSection: some View {
-        Section {
-            HStack {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.yellow)
-                Text("settings_trash_warning".localized)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Toggle("settings_empty_trash_during_cleanup".localized, isOn: $settings.emptyTrashDuringCleanup)
-                .tooltip("settings_tooltip_empty_trash".localized, enabled: settings.showTooltips)
-                .onChange(of: settings.emptyTrashDuringCleanup) { _, newValue in
-                    if newValue {
-                        Task {
-                            do {
-                                try await trashManager.requestTrashAccess()
-                            } catch {
-                                settings.emptyTrashDuringCleanup = false
-                            }
-                        }
-                    }
-                }
-
-            Toggle("settings_bypass_trash_on_uninstall".localized, isOn: $settings.bypassTrashOnUninstall)
-                .tooltip("settings_tooltip_bypass_trash".localized, enabled: settings.showTooltips)
-
-            Toggle("settings_empty_trash_immediately".localized, isOn: $settings.emptyTrashImmediately)
-                .tooltip("settings_tooltip_empty_trash_immediately".localized, enabled: settings.showTooltips)
-        } header: {
-            Label("settings_trash_deletion".localized, systemImage: "trash")
-        }
-    }
-
-    // MARK: - Apple Intelligence
-
-    private var aiSection: some View {
-        Section {
-            Toggle("settings_enable_ai".localized, isOn: $settings.enableAI)
-                .tooltip("settings_tooltip_enable_ai".localized, enabled: settings.showTooltips)
-
-            HStack {
-                Text("settings_ai_status".localized)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                aiStatusLabel
-            }
-        } header: {
-            Label("settings_ai_title".localized, systemImage: "sparkles")
-        }
-    }
-
-    @ViewBuilder
-    private var aiStatusLabel: some View {
-        if !settings.enableAI {
-            Label("settings_ai_status_disabled".localized, systemImage: "slash.circle")
-                .foregroundStyle(.secondary)
-                .font(.caption)
-        } else {
-            let status = SystemLanguageModel.default.availability
-            switch status {
-            case .available:
-                Label("settings_ai_status_ready".localized, systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                    .font(.caption)
-            case .unavailable(let reason):
-                switch reason {
-                case .deviceNotEligible:
-                    Label("settings_ai_status_unsupported_device".localized, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
-                        .font(.caption)
-                case .appleIntelligenceNotEnabled:
-                    Label("settings_ai_status_not_enabled".localized, systemImage: "exclamationmark.circle.fill")
-                        .foregroundStyle(.orange)
-                        .font(.caption)
-                case .modelNotReady:
-                    Label("settings_ai_status_downloading".localized, systemImage: "arrow.down.circle.fill")
-                        .foregroundStyle(.blue)
-                        .font(.caption)
-                @unknown default:
-                    Label("settings_ai_status_unavailable".localized, systemImage: "xmark.circle.fill")
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                }
-            }
-        }
-    }
-
-    // MARK: - Advanced
-
-    private var advancedSection: some View {
-        Section {
-            Toggle("settings_show_related".localized, isOn: $settings.showRelatedFiles)
-                .tooltip("settings_tooltip_show_related".localized, enabled: settings.showTooltips)
-        } header: {
-            Label("settings_advanced".localized, systemImage: "wrench.and.screwdriver")
-        }
-    }
-
-    // MARK: - Reset
-
-    private var resetSection: some View {
-        Section {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("settings_forget_everything".localized)
-                    Text("settings_forget_description".localized)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button("settings_reset_button".localized, role: .destructive) {
-                    showResetConfirmation = true
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                .controlSize(.small)
-                .tooltip("settings_tooltip_forget".localized, enabled: settings.showTooltips)
-            }
-        } header: {
-            Label("settings_data".localized, systemImage: "arrow.counterclockwise")
-        }
-    }
-
-    // MARK: - Notification Status
-
-    private var notificationStatusView: some View {
-        HStack {
-            Text("settings_notifications_status".localized)
-                .foregroundStyle(.secondary)
-            Spacer()
-            HStack(spacing: 6) {
-                Group {
-                    switch notificationStatus {
-                    case .authorized:
-                        Label("settings_notifications_granted".localized, systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    case .denied:
-                        Label("settings_notifications_denied".localized, systemImage: "xmark.circle.fill")
-                            .foregroundStyle(.red)
-                    case .notDetermined:
-                        Label("settings_notifications_not_determined".localized, systemImage: "questionmark.circle.fill")
-                            .foregroundStyle(.orange)
-                    case .provisional:
-                        Label("permissions.notification_provisional".localized, systemImage: "exclamationmark.circle.fill")
-                            .foregroundStyle(.orange)
-                    case .ephemeral:
-                        Label("permissions.notification_ephemeral".localized, systemImage: "exclamationmark.circle.fill")
-                            .foregroundStyle(.orange)
-                    @unknown default:
-                        Label("permissions.unknown_status".localized, systemImage: "questionmark.circle.fill")
-                            .foregroundStyle(.gray)
-                    }
-                }
-                .font(.caption)
-                .labelStyle(.iconOnly)
-
-                if notificationStatus == .denied {
-                    Button("settings_open_notification_settings".localized) {
-                        NotificationManager.shared.openNotificationSettings()
-                    }
-                    .buttonStyle(.plain)
-                    .font(.caption)
-                }
-            }
-        }
-        .onAppear { updateNotificationStatus() }
-        .onChange(of: settings.showNotifications) { _, _ in updateNotificationStatus() }
-    }
-
-    private func updateNotificationStatus() {
-        Task {
-            let status = await NotificationManager.shared.checkAuthorizationStatus()
-            await MainActor.run {
-                notificationStatus = status
-            }
-        }
-    }
-}
-
-// MARK: - Conditional Tooltip
-
-private extension View {
-    @ViewBuilder
-    func tooltip(_ text: String, enabled: Bool) -> some View {
-        if enabled {
-            self.help(text)
-        } else {
-            self
+            .padding(20)
         }
     }
 }
@@ -443,7 +172,6 @@ private extension View {
         settings: AppSettings(),
         permissionsManager: PermissionsManager(),
         onForget: {},
-        availableUpdate: .constant("1.5.0")
+        availableUpdate: .constant("2.1.0")
     )
-    .frame(width: 700, height: 700)
 }

@@ -46,6 +46,8 @@ public actor UninstallerService {
     public enum DeletionRisk: String, Sendable, CaseIterable {
         case safe
         case normal
+        /// Shared updater / SIP component — shown for info, never auto-selected.
+        case shared
     }
 
     public enum ScanState: Equatable, Sendable {
@@ -62,9 +64,9 @@ public actor UninstallerService {
         public let category: CleanupCategory
         public let sizeBytes: Int64
         public let url: URL
-        public var isSelected: Bool = true
+        public var isSelected: Bool = false
 
-        public init(title: String, category: CleanupCategory, sizeBytes: Int64, url: URL, isSelected: Bool = true) {
+        public init(title: String, category: CleanupCategory, sizeBytes: Int64, url: URL, isSelected: Bool = false) {
             self.title = title
             self.category = category
             self.sizeBytes = sizeBytes
@@ -127,7 +129,9 @@ public actor UninstallerService {
         }
 
         public var totalSize: Int64 {
-            let relatedSize = relatedFiles.filter(\.isSelected).reduce(0) { $0 + $1.size }
+            let relatedSize = relatedFiles
+                .filter { $0.isSelected && $0.deletionRisk != .shared }
+                .reduce(0) { $0 + $1.size }
             let devSize = developerComponents.filter(\.isSelected).reduce(0) { $0 + $1.sizeBytes }
             return size + relatedSize + devSize
         }
@@ -137,11 +141,12 @@ public actor UninstallerService {
 
     public func scanAllApplications() async throws -> [AppInfo] {
         let discovery = AppDiscovery(commandRunner: commandRunner)
-        let urls = await discovery.findAll()
+        // Keep distinct bundle URLs separate even when bundle IDs collide.
+        let urls = uniqueApplicationURLs(await discovery.findAll())
 
         await MainActor.run {
             progress.currentStep = 0
-            progress.totalSteps = urls.count
+            progress.totalSteps = max(urls.count, 1)
             progress.message = "uninstaller.progress.discovering".localized
             progress.percentage = 0.0
         }
@@ -149,12 +154,23 @@ public actor UninstallerService {
         return try await withThrowingTaskGroup(of: AppInfo?.self) { group in
             for url in urls {
                 group.addTask {
-                    let app = try? await self.discoverAndIndex(url)
-                    await MainActor.run {
-                        self.progress.currentStep += 1
-                        self.progress.percentage = Double(self.progress.currentStep) / Double(self.progress.totalSteps)
+                    do {
+                        let app = try await self.discoverAndIndex(url)
+                        await MainActor.run {
+                            self.progress.currentStep += 1
+                            self.progress.percentage = Double(self.progress.currentStep) / Double(self.progress.totalSteps)
+                        }
+                        return app
+                    } catch {
+                        Logger.uninstaller.warning(
+                            "Skip '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)"
+                        )
+                        await MainActor.run {
+                            self.progress.currentStep += 1
+                            self.progress.percentage = Double(self.progress.currentStep) / Double(self.progress.totalSteps)
+                        }
+                        return nil
                     }
-                    return app
                 }
             }
 
@@ -166,12 +182,27 @@ public actor UninstallerService {
             let merged = mergeApps(apps)
 
             await MainActor.run {
+                // Align counter with what the UI actually lists.
+                progress.totalSteps = max(merged.count, 1)
+                progress.currentStep = merged.count
                 progress.message = "uninstaller.progress.complete".localized
                 progress.percentage = 1.0
             }
 
             return merged.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         }
+    }
+
+    /// Keep one entry per physical app bundle path.
+    private func uniqueApplicationURLs(_ urls: [URL]) -> [URL] {
+        var seen = Set<String>()
+        var unique: [URL] = []
+        for url in urls {
+            let standardized = url.standardizedFileURL.path
+            guard seen.insert(standardized).inserted else { continue }
+            unique.append(url)
+        }
+        return unique.sorted { $0.path.localizedCompare($1.path) == .orderedAscending }
     }
 
     private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
@@ -284,10 +315,14 @@ public actor UninstallerService {
             let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
                 ? .normal : .safe
 
+            // Other .app bundles (Homebrew siblings, copies) — show, never preselect.
+            let isOtherAppBundle = node.url.pathExtension.lowercased() == "app"
+                && node.url.standardizedFileURL.path != identity.bundleURL.standardizedFileURL.path
+
             let file = RelatedFile(
                 url: node.url,
                 // Weak matches are shown but never pre-selected for deletion
-                isSelected: assessment.tier >= .veryLikely,
+                isSelected: !isOtherAppBundle && assessment.tier >= .veryLikely,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,
@@ -297,7 +332,74 @@ public actor UninstallerService {
         }
 
         // Dedup by prefix, sort by tier then path
-        return dedupAndSort(related)
+        var result = dedupAndSort(related)
+
+        let sharedSet = Set(collection.sharedPaths.map { $0.standardizedFileURL.path })
+        let informationalSet = Set(collection.informationalPaths.map { $0.standardizedFileURL.path })
+
+        // Demote any leftover that matches shared/user_content (belt-and-suspenders).
+        result = result.map { file in
+            let path = file.url.standardizedFileURL.path
+            if sharedSet.contains(path) {
+                return RelatedFile(
+                    url: file.url,
+                    isSelected: false,
+                    size: file.size,
+                    deletionRisk: .shared,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
+            }
+            if informationalSet.contains(path) {
+                return RelatedFile(
+                    url: file.url,
+                    isSelected: false,
+                    size: file.size,
+                    deletionRisk: .normal,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
+            }
+            return file
+        }
+
+        // Shared components (Keystone, MAU, …): informational only, never selected.
+        let existing = Set(result.map { $0.url.standardizedFileURL.path })
+        for url in collection.sharedPaths {
+            let standardized = url.standardizedFileURL
+            guard !existing.contains(standardized.path) else { continue }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            let fileSize = await getDirectorySize(url: standardized)
+            result.append(RelatedFile(
+                url: standardized,
+                isSelected: false,
+                size: fileSize,
+                deletionRisk: .shared,
+                evidence: [],
+                confidence: .guaranteed
+            ))
+        }
+
+        // User content roots: shown for review, never preselected.
+        let informationalExisting = Set(result.map { $0.url.standardizedFileURL.path })
+        for url in collection.informationalPaths {
+            let standardized = url.standardizedFileURL
+            guard !informationalExisting.contains(standardized.path) else { continue }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            let fileSize = await getDirectorySize(url: standardized)
+            result.append(RelatedFile(
+                url: standardized,
+                isSelected: false,
+                size: fileSize,
+                deletionRisk: .normal,
+                evidence: [],
+                confidence: .guaranteed
+            ))
+        }
+
+        return result
     }
 
     // MARK: - Batch Deep Scan
@@ -323,12 +425,34 @@ public actor UninstallerService {
         try await discoverAndIndex(appURL)
     }
 
+    // MARK: - Orphaned App Residuals
+
+    public func scanOrphanedResiduals() async throws -> [OrphanItem] {
+        let orphanEngine = AppResidualsOrphanEngine(
+            safetyManager: safetyManager,
+            trashManager: trashManager,
+            commandRunner: commandRunner
+        )
+        return try await orphanEngine.scanOrphans()
+    }
+
+    public func removeOrphanedResiduals(_ items: [OrphanItem], bypassTrash: Bool = false) async throws -> Int64 {
+        let orphanEngine = AppResidualsOrphanEngine(
+            safetyManager: safetyManager,
+            trashManager: trashManager,
+            commandRunner: commandRunner
+        )
+        return try await orphanEngine.trashOrphans(items, bypassTrash: bypassTrash)
+    }
+
     // MARK: - Uninstall
 
     public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
 
-        let relatedTargets = app.relatedFiles.filter(\.isSelected).map(\.url)
+        let relatedTargets = app.relatedFiles
+            .filter { $0.isSelected && $0.deletionRisk != .shared }
+            .map(\.url)
         let devTargets = app.developerComponents.filter(\.isSelected).map(\.url)
         let deletionTargets = relatedTargets + devTargets
         let snapshot = UninstallSnapshot(
@@ -348,6 +472,7 @@ public actor UninstallerService {
         }
 
         for file in app.relatedFiles where file.isSelected {
+            guard file.deletionRisk != .shared else { continue }
             let path = file.url.path
             if (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") {
                 // bootout is the modern reliable unload; fall back to legacy unload
@@ -366,6 +491,7 @@ public actor UninstallerService {
             }
         }
 
+        var trashedURLs: [URL] = []
         if bypassTrash {
             try safetyManager.validate(url: app.url, policy: .uninstall)
             do {
@@ -386,7 +512,8 @@ public actor UninstallerService {
             }
         } else {
             do {
-                _ = try await trashManager.trashItem(at: app.url, policy: .uninstall)
+                let trashed = try await trashManager.trashItem(at: app.url, policy: .uninstall)
+                trashedURLs.append(trashed)
                 Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
             } catch {
                 Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -394,7 +521,8 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    _ = try await trashManager.trashItem(at: target, policy: .uninstall)
+                    let trashed = try await trashManager.trashItem(at: target, policy: .uninstall)
+                    trashedURLs.append(trashed)
                     Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
                 } catch {
                     Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -411,12 +539,13 @@ public actor UninstallerService {
             }
         }
 
-        if emptyTrashImmediately {
+        // Only permanently delete items we just moved into Trash — never empty whole ~/.Trash.
+        if emptyTrashImmediately, !bypassTrash, !trashedURLs.isEmpty {
             do {
                 try await trashManager.requestTrashAccess()
-                _ = try await trashManager.emptyTrash()
+                _ = try await trashManager.permanentlyDelete(urls: trashedURLs)
             } catch {
-                Logger.uninstaller.error("emptyTrash failed: \(error.localizedDescription, privacy: .public)")
+                Logger.uninstaller.error("permanent delete of trashed items failed: \(error.localizedDescription, privacy: .public)")
             }
         }
 
@@ -442,8 +571,8 @@ public actor UninstallerService {
 
     /// Mail message storage must never be offered as an app residual.
     /// ~/Library/Mail/Bundles stays allowed — Mail plugins are legitimate residuals.
-    static func isProtectedMailPath(_ path: String) -> Bool {
-        let home = NSHomeDirectory()
+    static func isProtectedMailPath(_ path: String, homeDirectory: String = NSHomeDirectory()) -> Bool {
+        let home = homeDirectory
         let mailRoot = "\(home)/Library/Mail"
         let bundles = "\(home)/Library/Mail/Bundles"
         let mailContainer = "\(home)/Library/Containers/com.apple.mail"
@@ -471,7 +600,7 @@ public actor UninstallerService {
     private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
         var merged: [String: AppInfo] = [:]
         for app in apps {
-            let key = "\(app.bundleID ?? "")-\(app.name)"
+            let key = app.url.standardizedFileURL.path
             if let existing = merged[key] {
                 merged[key] = preferredApp(existing, app)
             } else {

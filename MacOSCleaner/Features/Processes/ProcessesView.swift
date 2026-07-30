@@ -4,6 +4,8 @@ public struct ProcessesView: View {
     let settings: AppSettings
     @State private var viewModel = ProcessesViewModel()
     @State private var isEditMode = false
+    @State private var forceKillPopoverGroup: ProcessGroup?
+    @State private var expandedGroupIDs: Set<String> = []
 
     public init(settings: AppSettings) {
         self.settings = settings
@@ -39,88 +41,10 @@ public struct ProcessesView: View {
                     }
                 }
             }
+            .padding(.top, 4)
         }
-        .navigationSubtitle("processes_subtitle".localized)
         .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "processes_search".localized)
-        .toolbar {
-            if !viewModel.memoryHogs.isEmpty {
-                ToolbarItem(placement: .status) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "memorychip")
-                            .font(.system(size: 12))
-                        Text(viewModel.totalMemoryFormatted)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Capsule().fill(Color.red.opacity(0.1)))
-                    .foregroundColor(.red)
-                }
-            }
-
-            ToolbarItem(placement: .automatic) {
-                Menu {
-                    Picker("view_mode".localized, selection: $viewModel.viewMode) {
-                        ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
-                            Text(mode.localizedName).tag(mode)
-                        }
-                    }
-                    Divider()
-                    Picker("sort_by".localized, selection: $viewModel.sortOption) {
-                        ForEach(ProcessSortOption.allCases) { option in
-                            Text(option.localizedName).tag(option)
-                        }
-                    }
-                    Divider()
-                    Button(action: {
-                        isEditMode.toggle()
-                        if !isEditMode {
-                            viewModel.deselectAll()
-                        }
-                    }) {
-                        Label(
-                            isEditMode ? "cancel_selection".localized : "select_multiple".localized,
-                            systemImage: isEditMode ? "xmark.circle" : "checkmark.circle"
-                        )
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                }
-            }
-
-            ToolbarItem(placement: .automatic) {
-                Button(action: { viewModel.showBlacklistAlert = true }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "xmark.circle")
-                        if !viewModel.blacklist.isEmpty {
-                            Text("\(viewModel.blacklist.count)")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                    }
-                }
-                .help("processes_tooltip_blacklist".localized)
-            }
-
-            ToolbarItem(placement: .automatic) {
-                Button(action: { viewModel.showWhitelistAlert = true }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "lock.circle")
-                        if !viewModel.whitelist.isEmpty {
-                            Text("\(viewModel.whitelist.count)")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                    }
-                }
-                .help("processes_tooltip_whitelist".localized)
-            }
-
-            ToolbarItem(placement: .automatic) {
-                Button(action: { Task { await viewModel.scan() } }) {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("processes_tooltip_refresh".localized)
-            }
-        }
+        .toolbar(content: toolbarContent)
         .sheet(isPresented: $viewModel.showBlacklistAlert) {
             blacklistSheet
         }
@@ -129,6 +53,94 @@ public struct ProcessesView: View {
         }
         .onAppear {
             Task { await viewModel.scan() }
+        }
+    }
+
+    @ToolbarContentBuilder
+    private func toolbarContent() -> some ToolbarContent {
+        ToolbarItem(placement: .automatic) {
+            if !viewModel.memoryHogs.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "memorychip")
+                    Text(viewModel.totalMemoryFormatted)
+                        .monospacedDigit()
+                }
+                .font(.caption)
+                .fontWeight(.medium)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .foregroundStyle(Color.red)
+                .background(
+                    Capsule().fill(Color.red.opacity(0.1))
+                )
+                .overlay(
+                    Capsule().strokeBorder(Color.red.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, 6)
+            }
+        }
+
+        ToolbarItem(placement: .automatic) {
+            Menu {
+                Picker("view_mode".localized, selection: $viewModel.viewMode) {
+                    ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
+                        Text(mode.localizedName).tag(mode)
+                    }
+                }
+                Divider()
+                Picker("sort_by".localized, selection: $viewModel.sortOption) {
+                    ForEach(ProcessSortOption.allCases) { option in
+                        Text(option.localizedName).tag(option)
+                    }
+                }
+                Divider()
+                Button(action: {
+                    isEditMode.toggle()
+                    if !isEditMode {
+                        viewModel.deselectAll()
+                    }
+                }) {
+                    Label(
+                        isEditMode ? "cancel_selection".localized : "select_multiple".localized,
+                        systemImage: isEditMode ? "xmark.circle" : "checkmark.circle"
+                    )
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+        }
+
+        ToolbarItem(placement: .automatic) {
+            Button(action: { viewModel.showBlacklistAlert = true }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle")
+                    if !viewModel.blacklist.isEmpty {
+                        Text("\(viewModel.blacklist.count)")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                }
+            }
+            .help("processes_tooltip_blacklist".localized)
+        }
+
+        ToolbarItem(placement: .automatic) {
+            Button(action: { viewModel.showWhitelistAlert = true }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "lock.circle")
+                    if !viewModel.whitelist.isEmpty {
+                        Text("\(viewModel.whitelist.count)")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                }
+            }
+            .help("processes_tooltip_whitelist".localized)
+        }
+
+        ToolbarItem(placement: .automatic) {
+            Button(action: { Task { await viewModel.scan() } }) {
+                Image(systemName: "arrow.clockwise")
+            }
+            .help("processes_tooltip_refresh".localized)
         }
     }
 
@@ -197,65 +209,77 @@ public struct ProcessesView: View {
     }
 
     private func processGroupRow(_ group: ProcessGroup) -> some View {
-        DisclosureGroup {
+        let isExpandedBinding = Binding(
+            get: { expandedGroupIDs.contains(group.id) || group.isExpanded },
+            set: { newValue in
+                if newValue {
+                    expandedGroupIDs.insert(group.id)
+                } else {
+                    expandedGroupIDs.remove(group.id)
+                }
+            }
+        )
+        return DisclosureGroup(isExpanded: isExpandedBinding) {
             ForEach(group.processes) { process in
                 processRow(process)
                     .padding(.leading, 20)
             }
         } label: {
             HStack(spacing: 12) {
-                if let icon = group.processes.first(where: { $0.bundleID != nil }) {
-                    AppIconView(path: icon.path)
-                } else {
-                    Image(systemName: "app.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.secondary)
-                        .frame(width: 24)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(group.displayName)
-                        .font(.system(.body, design: .monospaced))
-                        .fontWeight(.medium)
-
-                    HStack(spacing: 8) {
-                        Text(String(format: "processes_process_count".localized, group.processCount))
-                            .font(.caption)
+                HStack(spacing: 12) {
+                    if let icon = group.processes.first(where: { $0.bundleID != nil }) {
+                        AppIconView(path: icon.path)
+                    } else {
+                        Image(systemName: "app.fill")
+                            .font(.system(size: 18))
                             .foregroundColor(.secondary)
+                            .frame(width: 24)
+                    }
 
-                        HStack(spacing: 2) {
-                            Image(systemName: "cpu")
-                                .font(.system(size: 10))
-                            Text(group.totalCPUFormatted)
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        }
-                        .foregroundColor(group.totalCPU > 50 ? .red : .secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(group.displayName)
+                            .font(.system(.body, design: .monospaced))
+                            .fontWeight(.medium)
 
-                        HStack(spacing: 2) {
-                            Image(systemName: "memorychip")
-                                .font(.system(size: 10))
-                            Text(group.totalMemoryFormatted)
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        HStack(spacing: 8) {
+                            Text(String(format: "processes_process_count".localized, group.processCount))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            HStack(spacing: 2) {
+                                Image(systemName: "cpu")
+                                    .font(.system(size: 10))
+                                Text(group.totalCPUFormatted)
+                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            }
+                            .foregroundColor(group.totalCPU > 50 ? .red : .secondary)
+
+                            HStack(spacing: 2) {
+                                Image(systemName: "memorychip")
+                                    .font(.system(size: 10))
+                                Text(group.totalMemoryFormatted)
+                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            }
+                            .foregroundColor(group.totalMemory > 1_000_000_000 ? .red : .secondary)
                         }
-                        .foregroundColor(group.totalMemory > 1_000_000_000 ? .red : .secondary)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if isExpandedBinding.wrappedValue {
+                        expandedGroupIDs.remove(group.id)
+                    } else {
+                        expandedGroupIDs.insert(group.id)
                     }
                 }
 
                 Spacer()
 
-                Menu {
-                    Button(action: { Task { await viewModel.terminateGroup(group) } }) {
-                        Label("processes_terminate_all".localized, systemImage: "xmark.circle")
-                    }
-                    Button(role: .destructive, action: { Task { await viewModel.forceKillGroup(group) } }) {
-                        Label("processes_force_kill_all".localized, systemImage: "exclamationmark.triangle")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 16))
-                }
-                .menuStyle(.borderlessButton)
-                .frame(width: 30)
+                ProcessSplitButton(
+                    title: "processes_terminate_all".localized,
+                    onTerminate: { Task { await viewModel.terminateGroup(group) } },
+                    onForceKill: { Task { await viewModel.forceKillGroup(group) } }
+                )
             }
             .padding(.vertical, 8)
         }

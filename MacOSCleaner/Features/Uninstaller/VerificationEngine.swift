@@ -12,6 +12,7 @@ public actor VerificationEngine {
     private let thresholds: ScoreThresholds
     private let weights: ScoringWeights
     private let ruleRegistry: ApplicationRuleRegistry
+    private let fileSystemContext: FileSystemContext
 
     public init(
         commandRunner: any CommandRunning = CommandRunner(),
@@ -19,7 +20,8 @@ public actor VerificationEngine {
         plistCache: PlistContentCache = PlistContentCache(),
         thresholds: ScoreThresholds = .default,
         weights: ScoringWeights = .default,
-        ruleRegistry: ApplicationRuleRegistry = ApplicationRuleRegistry.createDefault()
+        ruleRegistry: ApplicationRuleRegistry = ApplicationRuleRegistry.createDefault(),
+        fileSystemContext: FileSystemContext = .production
     ) {
         self.commandRunner = commandRunner
         self.codesignCache = codesignCache
@@ -27,12 +29,17 @@ public actor VerificationEngine {
         self.thresholds = thresholds
         self.weights = weights
         self.ruleRegistry = ruleRegistry
+        self.fileSystemContext = fileSystemContext
     }
 
     public func verify(identity: AppIdentity) async -> VerificationReport {
         Logger.verification.info("Verifying '\(identity.appName, privacy: .public)' after uninstall")
 
-        let collector = CandidateCollector(fileManager: .default, commandRunner: commandRunner)
+        let collector = CandidateCollector(
+            fileManager: .default,
+            commandRunner: commandRunner,
+            fileSystemContext: fileSystemContext
+        )
         let candidates = await collector.collect(identity: identity)
 
         guard !candidates.isEmpty else {

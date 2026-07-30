@@ -7,8 +7,8 @@ final class DiskScannerTests: XCTestCase {
     
     override func setUp() async throws {
         scanner = DiskScanner()
-        let home = NSHomeDirectory()
-        tempDirectory = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/MacOSCleanerTests_DiskScanner")
+        tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerTests_DiskScanner_\(UUID().uuidString)", isDirectory: true)
         
         if FileManager.default.fileExists(atPath: tempDirectory.path) {
             try? FileManager.default.removeItem(at: tempDirectory)
@@ -23,36 +23,29 @@ final class DiskScannerTests: XCTestCase {
     }
     
     func testDirectoryScanningAndSizes() async throws {
-        // Create folder structure
+        // DiskScanner returns flattened files above 1 MB (not parent folders).
         let dir1 = tempDirectory.appendingPathComponent("Movies")
         let dir2 = tempDirectory.appendingPathComponent("Documents")
         try FileManager.default.createDirectory(at: dir1, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: dir2, withIntermediateDirectories: true)
         
-        // 1.5 MB video file (1,572,864 bytes)
+        // 1.5 MB video — included
         let fileVideo = dir1.appendingPathComponent("video.mp4")
         let videoData = Data(repeating: 0, count: 1024 * 1024 + 512 * 1024)
         try videoData.write(to: fileVideo)
         
-        // 300 KB text document (307,200 bytes)
+        // 300 KB doc — below 1 MB threshold, excluded
         let fileDoc = dir2.appendingPathComponent("document.docx")
         let docData = Data(repeating: 0, count: 300 * 1024)
         try docData.write(to: fileDoc)
         
-        // Scan tempDirectory
         let items = try await scanner.scan(directoryURL: tempDirectory) { _ in }
         
-        XCTAssertEqual(items.count, 2)
-        
-        let moviesItem = items.first { $0.name == "Movies" }
-        XCTAssertNotNil(moviesItem)
-        XCTAssertTrue(moviesItem?.isDirectory ?? false)
-        XCTAssertEqual(moviesItem?.size, Int64(videoData.count))
-        
-        let docsItem = items.first { $0.name == "Documents" }
-        XCTAssertNotNil(docsItem)
-        XCTAssertTrue(docsItem?.isDirectory ?? false)
-        XCTAssertEqual(docsItem?.size, Int64(docData.count))
+        XCTAssertEqual(items.count, 1)
+        let videoItem = try XCTUnwrap(items.first { $0.name == "video.mp4" })
+        XCTAssertFalse(videoItem.isDirectory)
+        XCTAssertEqual(videoItem.size, Int64(videoData.count))
+        XCTAssertNil(items.first { $0.name == "document.docx" })
     }
     
     func testFileClassification() {

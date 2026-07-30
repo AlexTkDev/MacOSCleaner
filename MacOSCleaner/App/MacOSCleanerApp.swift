@@ -1,5 +1,9 @@
+// Copyright (C) 2026 AlexTkDev
+// Licensed under GNU General Public License v3.0 (GPLv3)
+
 import SwiftUI
 import OSLog
+
 
 private let crashLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner", category: "Crash")
 
@@ -32,8 +36,11 @@ struct MacOSCleanerApp: App {
         let engine = CleanupEngine(commandRunner: commandRunner)
         self.cleanupViewModel = CleanupViewModel(engine: engine, journal: journal, settings: appSettings)
 
-        // Preload Launch Services cache
-        Task { await LSRegisterCache().warmup() }
+        // Preload Launch Services cache and register AppShortcuts
+        Task {
+            await LSRegisterCache().warmup()
+            MacOSCleanerShortcuts.updateAppShortcutParameters()
+        }
     }
     
     private static func installCrashHandlers() {
@@ -63,7 +70,7 @@ struct MacOSCleanerApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("MacOS Cleaner") {
             RootView(
                 cleanupViewModel: cleanupViewModel,
                 journal: journal,
@@ -75,6 +82,7 @@ struct MacOSCleanerApp: App {
                 availableUpdate = await updateChecker.checkForUpdate()
             }
         }
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("about_title".localized) {

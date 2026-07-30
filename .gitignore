@@ -120,3 +120,8 @@ xcuserdata/
 opencode.json
 .agents
 problematic_apps/
+implementation_plan.md
+
+# Protected Engine Catalogs (Local only)
+MacOSCleaner/Resources/engine_paths.json
+MacOSCleaner/Resources/ui_metadata.json

@@ -4,8 +4,12 @@ public struct CandidateCollection: Sendable {
     public let candidates: Set<URL>
     /// Subset of `candidates` owned by a package-manager receipt — guaranteed app files.
     public let receiptPaths: Set<URL>
-    /// Subset from KnownResidualCatalog — high-confidence curated residuals.
+    /// Subset from GeneratedCleanupPaths registry — high-confidence curated residuals (cache only).
     public let catalogPaths: Set<URL>
+    /// Shared components (Keystone, AutoUpdate, …) — informational only, never auto-deleted.
+    public let sharedPaths: Set<URL>
+    /// User content / models — shown for review, never preselected.
+    public let informationalPaths: Set<URL>
 }
 
 public actor CandidateCollector {
@@ -13,16 +17,19 @@ public actor CandidateCollector {
     private let commandRunner: any CommandRunning
     private let homebrewCellarDirectories: [URL]
     private let darwinCacheDirectory: URL
+    private let fileSystemContext: FileSystemContext
 
     public init(
         fileManager: FileManager = .default,
         commandRunner: any CommandRunning = CommandRunner(),
         homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories,
-        darwinCacheDirectory: URL? = nil
+        darwinCacheDirectory: URL? = nil,
+        fileSystemContext: FileSystemContext = .production
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
         self.homebrewCellarDirectories = homebrewCellarDirectories
+        self.fileSystemContext = fileSystemContext
         let cacheDirectory = darwinCacheDirectory
             ?? fileManager.temporaryDirectory
                 .deletingLastPathComponent()
@@ -36,7 +43,7 @@ public actor CandidateCollector {
 
     public func collectDetailed(identity: AppIdentity, mode: ScanMode = .balanced) async -> CandidateCollection {
         var candidates = Set<URL>()
-        let home = NSHomeDirectory()
+        let home = fileSystemContext.homePath
         let maxDepth = mode == .safe ? 3 : 5
 
         // 1. Fixed popular paths
@@ -99,21 +106,18 @@ public actor CandidateCollector {
         ]
         for dir in deepFolders {
             let url = URL(fileURLWithPath: dir)
-            candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth))
+            candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
         }
 
         // 3. Package-manager receipts. Homebrew can keep the same app bundle in
         // several versioned formulae (python@3.12 and python@3.14).
-        var receiptPaths = await collectPkgutilReceiptPaths(identity: identity)
-        let homebrewApplications = AppDiscovery.homebrewFormulaApplications(
-            containing: identity.bundleURL,
-            cellarDirectories: homebrewCellarDirectories,
-            fileManager: fileManager
-        )
-        receiptPaths.formUnion(homebrewApplications.filter {
-            Bundle(url: $0)?.bundleIdentifier?.caseInsensitiveCompare(identity.bundleID) == .orderedSame
-        })
+        let receiptPaths = await collectPkgutilReceiptPaths(identity: identity)
         candidates.formUnion(receiptPaths)
+
+        // Homebrew sibling kegs: discover as candidates, never elevate to receiptPaths
+        // (other versions must stay unselected for delete).
+        let homebrewSiblings = collectHomebrewSiblingApps(identity: identity)
+        candidates.formUnion(homebrewSiblings)
 
         // 4. mdfind (balanced only)
         if mode == .balanced {
@@ -134,7 +138,7 @@ public actor CandidateCollector {
             let jbPath = "\(home)/Library/Application Support/JetBrains"
             if fileManager.fileExists(atPath: jbPath) {
                 candidates.formUnion(await shallowScan(URL(fileURLWithPath: jbPath), identity: identity, mode: mode))
-                candidates.formUnion(await deepScan(URL(fileURLWithPath: jbPath), identity: identity, depth: 0, maxDepth: maxDepth))
+                candidates.formUnion(await deepScan(URL(fileURLWithPath: jbPath), identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
             }
         }
 
@@ -149,45 +153,7 @@ public actor CandidateCollector {
             }
         }
 
-        // 8. Adobe-specific
-        let adobeVendor = identity.appName.lowercased().hasPrefix("adobe") ||
-            identity.bundleID.lowercased().hasPrefix("com.adobe.")
-        if adobeVendor {
-            let adobePaths = [
-                "\(home)/Library/Application Support/Adobe",
-                "/Library/Application Support/Adobe",
-                "\(home)/Library/Preferences/Adobe",
-                "/Library/Preferences/Adobe",
-                "\(home)/.adobe",
-                "\(home)/Creative Cloud Files",
-            ]
-            for p in adobePaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
-            }
-        }
-
-        // 9. Microsoft Office-specific
-        let msVendor = identity.appName.lowercased().hasPrefix("microsoft") ||
-            identity.bundleID.lowercased().hasPrefix("com.microsoft.")
-        if msVendor {
-            let msPaths = [
-                "\(home)/Library/Application Support/Microsoft",
-                "\(home)/Library/Application Support/Microsoft Office",
-                "\(home)/Library/Group Containers/UBF8T346G9.Office",
-                "\(home)/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite",
-                "/Library/Application Support/Microsoft",
-                "\(home)/Library/Containers/com.microsoft.word",
-                "\(home)/Library/Containers/com.microsoft.excel",
-                "\(home)/Library/Containers/com.microsoft.powerpoint",
-                "\(home)/Library/Containers/com.microsoft.outlook",
-                "\(home)/Library/Containers/com.microsoft.teams",
-            ]
-            for p in msPaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
-            }
-        }
-
-        // 10. Steam-specific
+        // 8. Steam-specific
         if identity.bundleID == "com.valvesoftware.steam" || identity.appName == "Steam" {
             let steamPaths = [
                 "\(home)/Library/Application Support/Steam",
@@ -197,7 +163,7 @@ public actor CandidateCollector {
             }
         }
 
-        // 11. Epic Games-specific
+        // 9. Epic Games-specific
         if identity.bundleID == "com.epicgames.EpicGamesLauncher" || identity.appName.lowercased().contains("epic") {
             let epicPaths = [
                 "\(home)/Library/Application Support/Epic",
@@ -208,7 +174,7 @@ public actor CandidateCollector {
             }
         }
 
-        // 12. Unity-specific
+        // 10. Unity-specific
         if identity.bundleID.lowercased().hasPrefix("com.unity3d.") || identity.appName == "Unity Hub" {
             let unityPaths = [
                 "\(home)/Library/Application Support/Unity",
@@ -220,7 +186,7 @@ public actor CandidateCollector {
             }
         }
 
-        // 13. Network extension / VPN-specific
+        // 11. Network extension / VPN-specific
         let isNetworkExt = identity.bundleID.lowercased().contains("littlesnitch") ||
             identity.bundleID.lowercased().contains("nordvpn") ||
             identity.bundleID.lowercased().contains("expressvpn") ||
@@ -238,19 +204,28 @@ public actor CandidateCollector {
             }
         }
 
-        // 14. VM / container user data outside ~/Library (OrbStack_files, Parallels, …)
+        // 12. VM / container user data outside ~/Library (OrbStack_files, Parallels, …)
         if isVirtualizationApp(identity) {
-            candidates.formUnion(await scanVMUserData(identity: identity, home: home))
+            candidates.formUnion(await scanVMUserData(identity: identity))
         }
 
-        // 15. Browser vendor folders (Google/Chrome, Mozilla/Firefox, …)
+        // 13. Browser vendor folders (Google/Chrome, Mozilla/Firefox, …)
         candidates.formUnion(await collectBrowserVendorPaths(identity: identity, home: home, maxDepth: maxDepth))
 
-        // 16. Known residual catalog (exact/glob templates for problematic apps)
-        let catalogPaths = collectCatalogPaths(identity: identity, home: home)
-        candidates.formUnion(catalogPaths)
+        // 14. Generated cleanup registry (exact/glob templates for known residuals)
+        let registry = collectRegistryPaths(identity: identity, home: home)
+        candidates.formUnion(registry.candidates)
+        // Shared / user_content must never compete as selectable delete candidates.
+        candidates.subtract(registry.sharedPaths)
+        candidates.subtract(registry.informationalPaths)
 
-        return CandidateCollection(candidates: candidates, receiptPaths: receiptPaths, catalogPaths: catalogPaths)
+        return CandidateCollection(
+            candidates: candidates,
+            receiptPaths: receiptPaths,
+            catalogPaths: registry.catalogPaths,
+            sharedPaths: registry.sharedPaths,
+            informationalPaths: registry.informationalPaths
+        )
     }
 
     private func collectDarwinCachePaths(identity: AppIdentity) -> Set<URL> {
@@ -271,11 +246,102 @@ public actor CandidateCollector {
         })
     }
 
-    private func collectCatalogPaths(identity: AppIdentity, home: String) -> Set<URL> {
+    /// Bundle IDs excluded from registry lookup (SIP system apps).
+    private static let registryExcludedBundleIDs: Set<String> = ["com.apple.safari"]
+
+    private struct RegistryCollectionResult: Sendable {
+        var candidates: Set<URL> = []
+        var catalogPaths: Set<URL> = []
+        var sharedPaths: Set<URL> = []
+        var informationalPaths: Set<URL> = []
+    }
+
+    private func collectRegistryPaths(identity: AppIdentity, home: String) -> RegistryCollectionResult {
+        let bundleID = identity.bundleID.lowercased()
+        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown."),
+              !Self.registryExcludedBundleIDs.contains(bundleID),
+              let appPaths = GeneratedCleanupPaths.appPaths(forBundleID: identity.bundleID)
+        else {
+            return RegistryCollectionResult()
+        }
+
+        var result = RegistryCollectionResult()
+        var catalogEligible = Set<URL>()
+
+        for entry in appPaths.paths {
+            for path in expandRegistryPath(entry, home: home) {
+                let url = URL(fileURLWithPath: path)
+                switch entry.purpose {
+                case .shared:
+                    result.sharedPaths.insert(url)
+                case .userContent:
+                    result.informationalPaths.insert(url)
+                case .cache, .appData:
+                    guard !entry.requiresAdmin else { continue }
+                    result.candidates.insert(url)
+                    if entry.purpose == .cache {
+                        catalogEligible.insert(url)
+                    }
+                }
+            }
+        }
+
+        result.catalogPaths = Self.excludingAncestorPaths(catalogEligible)
+        return result
+    }
+
+    private func expandRegistryPath(_ entry: RegistryPath, home: String) -> [String] {
+        let resolved = PathToken.home.resolveTemplate(entry.template, home: home)
+        return CleanupPathExpander.expand(resolved, home: home, fileManager: fileManager)
+    }
+
+    /// Drops catalog paths that are strict ancestors of another catalog path.
+    private static func excludingAncestorPaths(_ paths: Set<URL>) -> Set<URL> {
+        let normalized = paths.map { $0.standardizedFileURL }
+        return Set(normalized.filter { candidate in
+            let path = candidate.path
+            return !normalized.contains { other in
+                other.path != path && other.path.hasPrefix(path + "/")
+            }
+        })
+    }
+
+    /// Sibling `.app` bundles in configured Homebrew Cellar directories that share
+    /// the same bundle name. Returned as candidates only — never receiptPaths.
+    private func collectHomebrewSiblingApps(identity: AppIdentity) -> Set<URL> {
+        guard !homebrewCellarDirectories.isEmpty else { return [] }
+        let targetName = identity.bundleURL.lastPathComponent.lowercased()
+        guard targetName.hasSuffix(".app") else { return [] }
+
         var found = Set<URL>()
-        for template in KnownResidualCatalog.pathTemplates(for: identity) {
-            for path in KnownResidualCatalog.expand(template: template, home: home, fileManager: fileManager) {
-                found.insert(URL(fileURLWithPath: path))
+        for cellar in homebrewCellarDirectories {
+            guard let formulae = try? fileManager.contentsOfDirectory(
+                at: cellar,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ) else { continue }
+            for formula in formulae {
+                guard let versions = try? fileManager.contentsOfDirectory(
+                    at: formula,
+                    includingPropertiesForKeys: [.isDirectoryKey],
+                    options: [.skipsHiddenFiles]
+                ) else { continue }
+                for version in versions {
+                    guard let apps = try? fileManager.contentsOfDirectory(
+                        at: version,
+                        includingPropertiesForKeys: [.isDirectoryKey],
+                        options: [.skipsHiddenFiles]
+                    ) else { continue }
+                    for app in apps where app.lastPathComponent.lowercased() == targetName {
+                        let resolved = app.resolvingSymlinksInPath()
+                        if let bundleID = Bundle(url: resolved)?.bundleIdentifier?.lowercased(),
+                           !bundleID.isEmpty,
+                           bundleID != identity.bundleID.lowercased() {
+                            continue
+                        }
+                        found.insert(resolved)
+                    }
+                }
             }
         }
         return found
@@ -322,19 +388,19 @@ public actor CandidateCollector {
         return found
     }
 
-    private func deepScan(_ url: URL, identity: AppIdentity, depth: Int, maxDepth: Int) async -> Set<URL> {
+    private func deepScan(_ url: URL, identity: AppIdentity, depth: Int, maxDepth: Int, mode: ScanMode) async -> Set<URL> {
         guard depth <= maxDepth else { return [] }
         var found = Set<URL>()
         guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil) else {
             return found
         }
         for item in contents {
-            if matchCandidate(item, identity: identity, mode: .balanced) {
+            if matchCandidate(item, identity: identity, mode: mode) {
                 found.insert(item)
             }
             var isDir: ObjCBool = false
             if fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue {
-                let sub = await deepScan(item, identity: identity, depth: depth + 1, maxDepth: maxDepth)
+                let sub = await deepScan(item, identity: identity, depth: depth + 1, maxDepth: maxDepth, mode: mode)
                 found.formUnion(sub)
             }
         }
@@ -393,11 +459,9 @@ public actor CandidateCollector {
         // Safe mode: only exact matches above
         if mode == .safe { return false }
 
-        // Balanced: vendor, contains, executable matching
+        // Balanced: exact vendor directory name only (e.g. "Adobe").
+        // Do NOT match "Microsoft Excel" via contains("Microsoft") — that cross-selects siblings.
         if identity.vendorNames.contains(name) {
-            return true
-        }
-        if identity.vendorNames.contains(where: { lowerName.contains($0.lowercased()) }) {
             return true
         }
         if lowerName.contains(lowerBundleID) {
@@ -459,11 +523,11 @@ public actor CandidateCollector {
                     let productURL = vendorURL.appendingPathComponent(product)
                     if fileManager.fileExists(atPath: productURL.path) {
                         found.insert(productURL)
-                        found.formUnion(await deepScan(productURL, identity: identity, depth: 0, maxDepth: maxDepth))
+                        found.formUnion(await deepScan(productURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
                     }
                 } else {
                     found.insert(vendorURL)
-                    found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth))
+                    found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
                 }
             }
         }
@@ -488,10 +552,10 @@ public actor CandidateCollector {
             tokens.formUnion(["orbstack", "orbstack_files", "orbstack files"])
         }
         if bid.contains("parallels") || name.contains("parallels") {
-            tokens.formUnion(["parallels", ".pvm"])
+            tokens.formUnion(["parallels"])
         }
         if bid.contains("vmware") || name.contains("vmware") {
-            tokens.formUnion(["vmware", "virtual machines", ".vmx"])
+            tokens.formUnion(["vmware", "virtual machines"])
         }
         if bid.contains("virtualbox") || name.contains("virtualbox") {
             tokens.formUnion(["virtualbox", "virtualbox vms"])
@@ -505,11 +569,11 @@ public actor CandidateCollector {
         return Array(tokens)
     }
 
-    private func scanVMUserData(identity: AppIdentity, home: String) async -> Set<URL> {
+    private func scanVMUserData(identity: AppIdentity) async -> Set<URL> {
         let tokens = vmDataTokens(for: identity)
         guard !tokens.isEmpty else { return [] }
         var found = Set<URL>()
-        let roots = ["\(home)/Documents", "\(home)/Desktop", "/Users/Shared"]
+        let roots = ["/Users/Shared"]
         for root in roots {
             let url = URL(fileURLWithPath: root)
             found.formUnion(await scanVMDataDir(url, tokens: tokens, depth: 0, maxDepth: 5))
@@ -525,7 +589,7 @@ public actor CandidateCollector {
         }
         for item in contents {
             let lower = item.lastPathComponent.lowercased()
-            if tokens.contains(where: { lower.contains($0) }) || item.pathExtension.lowercased() == "pvm" || item.pathExtension.lowercased() == "vmx" {
+            if tokens.contains(where: { lower.contains($0) }) {
                 found.insert(item)
             }
             var isDir: ObjCBool = false
@@ -547,7 +611,7 @@ public actor CandidateCollector {
         }
 
         // Name lookups are fuzzy — restrict to ~/Library where residuals actually live
-        let home = NSHomeDirectory()
+        let home = fileSystemContext.homePath
         let names = Set([identity.appName, identity.executableName].filter { !$0.isEmpty })
         for name in names {
             queries.append(("kMDItemFSName == '\(mdfindEscape(name))*'cd", "\(home)/Library"))

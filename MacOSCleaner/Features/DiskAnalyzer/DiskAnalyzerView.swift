@@ -11,7 +11,7 @@ public struct DiskAnalyzerView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 16) {
-                categoryFilterView
+                headerControlsView
                 
                 if viewModel.isScanning {
                     scanningView
@@ -23,15 +23,6 @@ public struct DiskAnalyzerView: View {
             }
             .padding()
         }
-        .navigationSubtitle(viewModel.currentURL?.path ?? "")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("disk_analyzer_scan".localized) {
-                    viewModel.selectFolderAndScan()
-                }
-                .buttonStyle(.borderedProminent)
-            }
-        }
         .onAppear {
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
@@ -39,52 +30,53 @@ public struct DiskAnalyzerView: View {
         }
     }
     
-    private var categoryFilterView: some View {
-        HStack {
-            Spacer()
-            GlassEffectContainer(spacing: 8) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(FileCategory.allCases, id: \.self) { category in
-                            categoryFilterButton(for: category)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 4)
+    private var headerControlsView: some View {
+        HStack(spacing: 12) {
+            // Folder Selector Menu (matching DuplicatesView)
+            Menu {
+                Button(action: { viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser) }) {
+                    Label("duplicate_folder_home".localized, systemImage: "house")
+                }
+                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!) }) {
+                    Label("duplicate_folder_downloads".localized, systemImage: "arrow.down.circle")
+                }
+                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!) }) {
+                    Label("duplicate_folder_documents".localized, systemImage: "doc")
+                }
+                Divider()
+                Button(action: { viewModel.selectFolderAndScan() }) {
+                    Label("duplicate_folder_custom".localized, systemImage: "folder.badge.plus")
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "folder")
+                    Text(viewModel.rootURL?.lastPathComponent ?? FileManager.default.homeDirectoryForCurrentUser.lastPathComponent)
+                        .lineLimit(1)
                 }
             }
+
             Spacer()
+
+            categoryFilterView
+
+            Spacer()
+
+            // Scan Action Button
+            Button(action: { viewModel.selectFolderAndScan() }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "folder.badge.plus")
+                    Text("disk_analyzer_scan".localized)
+                }
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
-
-    private static let categoryFilterActiveBlue = Color(red: 0, green: 0.533, blue: 1)
-
-    private func categoryFilterButton(for category: FileCategory) -> some View {
-        let isSelected = viewModel.selectedCategory == category
-
-        return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                viewModel.selectedCategory = category
-            }
-        } label: {
-            Text(category.localizedName)
-                .font(.callout)
-                .fontWeight(.medium)
-                .foregroundStyle(isSelected ? .white : .primary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
-        .background {
-            Capsule().fill(
-                isSelected ? Self.categoryFilterActiveBlue : Color.black.opacity(0.16)
-            )
-        }
-        .glassEffect(
-            isSelected
-                ? Glass.regular.tint(Self.categoryFilterActiveBlue).interactive()
-                : Glass.regular,
-            in: Capsule()
+    
+    private var categoryFilterView: some View {
+        GlassPillPicker(
+            items: FileCategory.allCases,
+            selection: $viewModel.selectedCategory,
+            label: { $0.localizedName }
         )
     }
     

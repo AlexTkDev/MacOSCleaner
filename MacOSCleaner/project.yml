@@ -14,13 +14,28 @@ targets:
       - Features
       - Infrastructure
       - Models
-      - Resources
+      - path: Resources
+        excludes:
+          - engine_paths.json
+      - SharedViews
+    preBuildScripts:
+      - name: Verify Generated Cleanup Paths
+        script: |
+          swift "$PROJECT_DIR/../scripts/generate_cleanup_paths.swift" --check && touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
+        inputFiles:
+          - $(SRCROOT)/Resources/engine_paths.json
+          - $(SRCROOT)/Domains/Cleanup/GeneratedCleanupPaths.swift
+          - $(SRCROOT)/../scripts/generate_cleanup_paths.swift
+          - $(SRCROOT)/../scripts/validate_engine_paths.py
+        outputFiles:
+          - $(DERIVED_FILE_DIR)/cleanup_paths_verified.stamp
+        basedOnDependencyAnalysis: true
     entitlements:
       path: MacOSCleaner.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 2.0.0
+        MARKETING_VERSION: 2.1.0
         CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: 6.0

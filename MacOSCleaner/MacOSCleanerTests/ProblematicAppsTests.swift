@@ -449,11 +449,37 @@ final class ProblematicAppsTests: XCTestCase {
     }
 
     private func loadFixture(_ name: String) throws -> BaselineFixture {
-        let bundle = Bundle(for: Self.self)
-        guard let url = bundle.url(forResource: name, withExtension: "json") else {
-            throw TestError.fixtureNotFound(name)
-        }
+        let url = try XCTUnwrap(
+            Self.testResourceURL(name: name, extension: "json"),
+            "fixtureNotFound(\(name))"
+        )
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(BaselineFixture.self, from: data)
+    }
+
+    /// Prefer test-bundle Resources; fall back to source-tree Fixtures (stable under xcodebuild).
+    private static func testResourceURL(name: String, extension ext: String) -> URL? {
+        let testBundle = Bundle(for: ProblematicAppsTests.self)
+        if let url = testBundle.url(forResource: name, withExtension: ext) {
+            return url
+        }
+        if let url = Bundle.main.url(forResource: name, withExtension: ext) {
+            return url
+        }
+        let candidates = [
+            testBundle.resourceURL?.appendingPathComponent("\(name).\(ext)"),
+            testBundle.bundleURL.appendingPathComponent("Contents/Resources/\(name).\(ext)"),
+            Bundle.main.resourceURL?.appendingPathComponent("\(name).\(ext)"),
+            // Source tree: MacOSCleanerTests/Fixtures/<name>.json
+            URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent()
+                .appendingPathComponent("Fixtures/\(name).\(ext)"),
+        ]
+        for url in candidates {
+            if let url, FileManager.default.fileExists(atPath: url.path) {
+                return url
+            }
+        }
+        return nil
     }
 }

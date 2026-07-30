@@ -38,7 +38,7 @@ public final class CleanupItemManager {
 
     // MARK: - File Item Append (new hierarchical flow)
 
-    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?) {
+    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true) {
         let sizeMB = max(1, Int(sizeBytes / (1024 * 1024)))
         let risk = Self.determineRisk(for: path)
 
@@ -47,7 +47,7 @@ public final class CleanupItemManager {
             sizeMB: sizeMB,
             sizeBytes: sizeBytes,
             risk: risk,
-            isSelected: true,
+            isSelected: isSelected,
             isDeletable: true,
             path: path,
             modificationDate: modificationDate,
@@ -61,6 +61,7 @@ public final class CleanupItemManager {
                 items[idx].children.append(newItem)
                 items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
                 items[idx].sizeBytes = items[idx].children.reduce(0) { $0 + $1.sizeBytes }
+                items[idx].isSelected = items[idx].children.contains(where: \.isSelected)
             }
         } else {
             let parent = CleanupPreviewItem(
@@ -68,12 +69,26 @@ public final class CleanupItemManager {
                 sizeMB: sizeMB,
                 sizeBytes: sizeBytes,
                 risk: Self.determineRisk(for: targetParent),
-                isSelected: true,
+                isSelected: isSelected,
                 isDeletable: true,
                 children: [newItem]
             )
             items.append(parent)
         }
+    }
+
+    /// Selected leaf paths under a parent preview group (Trash, Old Backups, …).
+    public func selectedLeafURLs(underParentLabel label: String) -> [URL] {
+        guard let parent = items.first(where: { $0.label == label }) else { return [] }
+        return parent.children.compactMap { child in
+            guard child.isSelected, let path = child.path else { return nil }
+            return URL(fileURLWithPath: path)
+        }
+    }
+
+    public func setSelection(underParentLabel label: String, isSelected: Bool) {
+        guard let idx = items.firstIndex(where: { $0.label == label }) else { return }
+        updateItemSelection(&items[idx], isSelected: isSelected)
     }
 
     // MARK: - Legacy Preview Item Append (backward compatibility)
@@ -261,6 +276,18 @@ public final class CleanupItemManager {
         if l.contains("time machine") || l.contains("tmutil") { return .moderate }
         // iOS backups — moderate (user data, re-downloadable from iCloud)
         if l.contains("ios backup") || l.contains("mobilesync") { return .moderate }
+        // AI / LLM model stores — moderate (large user downloads, opt-in)
+        if l.contains("ollama") || l.contains("huggingface") || l.contains("lm studio")
+            || l.contains("lm-studio") || l.contains("/jan") || l.hasSuffix("/jan")
+            || l.contains("ai models") || l.contains("mlx") || l.contains("whisper")
+            || l.contains("vllm") || l.contains("torch") || l.contains("diffusionbee") {
+            return .moderate
+        }
+        // Installers / large archives — moderate (user downloads, opt-in)
+        if l.contains("installer") || l.hasSuffix(".dmg") || l.hasSuffix(".pkg")
+            || l.hasSuffix(".iso") || l.contains("large file") {
+            return .moderate
+        }
         // Xcode / Android / Gradle — moderate
         if l.contains("xcode") || l.contains("android") || l.contains("gradle") { return .moderate }
 

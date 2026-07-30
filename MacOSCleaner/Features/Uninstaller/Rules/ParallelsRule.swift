@@ -36,7 +36,8 @@ public struct ParallelsRule: ApplicationRule {
         if path.contains("orbstack") && (path.contains("/documents/") || path.contains("/desktop/")) {
             evidence.append(ArtifactEvidence(source: .rule, weight: 80))
         }
-        if path.contains("/virtual machines") || path.contains(".pvm") || path.contains(".vmx") {
+        // VM disk extensions only when path is clearly Parallels-related.
+        if path.contains("parallels"), path.contains(".pvm") || path.contains("/virtual machines") {
             evidence.append(ArtifactEvidence(source: .rule, weight: 80))
         }
         if path.contains("/usr/local/bin/prl") {

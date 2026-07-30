@@ -38,47 +38,48 @@ public actor TrashManager {
         }
     }
     
+    /// Wholesale `~/.Trash` empty is disabled — would delete unrelated user items.
+    /// Use `permanentlyDelete(urls:)` with session-selected / just-trashed URLs only.
     @discardableResult
     public func emptyTrash() async throws -> Int64 {
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
-        
+        Logger.trash.error("emptyTrash() refused — wholesale Trash wipe disabled")
+        throw TrashError.trashOperationFailed(
+            "Wholesale emptyTrash is disabled; permanently delete only explicitly selected URLs."
+        )
+    }
+
+    /// Permanently deletes only the given URLs (typically items just moved into Trash).
+    /// Does not empty unrelated Trash contents.
+    @discardableResult
+    public func permanentlyDelete(urls: [URL]) async throws -> Int64 {
         try await ensureAccess()
-        
-        guard fileManager.fileExists(atPath: trashURL.path) else {
-            Logger.trash.info("Trash folder not found, nothing to empty")
-            return 0
-        }
-        
-        let contents: [URL]
-        do {
-            contents = try fileManager.contentsOfDirectory(at: trashURL, includingPropertiesForKeys: [.fileSizeKey], options: [])
-        } catch {
-            Logger.trash.error("Cannot list Trash contents: \(error.localizedDescription, privacy: .public)")
-            throw TrashError.trashOperationFailed("Cannot list Trash: \(error.localizedDescription)")
-        }
-        
+
         var totalFreed: Int64 = 0
         var failedCount = 0
-        
-        for url in contents {
+
+        for url in urls {
             do {
+                try Task.checkCancellation()
                 try safetyManager.validate(url: url)
+                guard fileManager.fileExists(atPath: url.path) else { continue }
                 let size = fileManager.getDirectorySize(url: url)
                 try fileManager.removeItem(at: url)
                 totalFreed += size
-                Logger.trash.debug("Deleted from Trash: \(url.path, privacy: .public) (\(size) bytes)")
+                Logger.trash.debug("Permanently deleted: \(url.path, privacy: .public) (\(size) bytes)")
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 failedCount += 1
                 Logger.trash.error("Failed to delete '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }
         }
-        
+
         if failedCount > 0 {
-            Logger.trash.warning("emptyTrash: \(contents.count) items, \(failedCount) failures, \(totalFreed) bytes freed")
+            Logger.trash.warning("permanentlyDelete: \(urls.count) items, \(failedCount) failures, \(totalFreed) bytes freed")
         } else {
-            Logger.trash.info("emptyTrash: all \(contents.count) items deleted, \(totalFreed) bytes freed")
+            Logger.trash.info("permanentlyDelete: \(urls.count) items deleted, \(totalFreed) bytes freed")
         }
-        
+
         return totalFreed
     }
     

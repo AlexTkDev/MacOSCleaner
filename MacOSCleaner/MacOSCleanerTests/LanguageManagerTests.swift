@@ -2,11 +2,21 @@ import XCTest
 @testable import MacOSCleaner
 
 final class LanguageManagerTests: XCTestCase {
+
+    override func invokeTest() {
+        LanguageManager.testingLock.lock()
+        defer { LanguageManager.testingLock.unlock() }
+        super.invokeTest()
+    }
     
     override func setUp() {
         super.setUp()
-        // Reset to English before each test
         LanguageManager.shared.setLanguage(.english)
+    }
+
+    override func tearDown() {
+        LanguageManager.shared.setLanguage(.english)
+        super.tearDown()
     }
     
     func testLocalizationDefaultEnglish() {

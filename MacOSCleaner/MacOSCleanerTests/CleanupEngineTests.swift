@@ -527,11 +527,12 @@ struct CleanupEngineTests {
 
     @Test("Safety violation on home SSH")
     func safetyViolationOnHomeSSH() async throws {
-        let engine = CleanupEngine()
-        let home = NSHomeDirectory()
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
 
         do {
-            _ = try await engine.cleanContents(of: "\(home)/.ssh", dryRun: false)
+            _ = try await engine.cleanContents(of: "\(ctx.homePath)/.ssh", dryRun: false)
             Issue.record("Expected safety violation error")
         } catch {
             #expect(error is SafetyError)
@@ -804,8 +805,8 @@ struct CleanupEngineTests {
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {
-        let tempDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Caches/MacOSCleanerTests_\(UUID().uuidString)")
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerTests_\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         return tempDir
     }

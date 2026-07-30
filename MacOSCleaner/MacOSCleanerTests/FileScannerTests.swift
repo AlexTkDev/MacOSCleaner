@@ -7,8 +7,8 @@ final class FileScannerTests: XCTestCase {
     
     override func setUp() async throws {
         scanner = FileScanner()
-        let home = NSHomeDirectory()
-        tempDirectory = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/MacOSCleanerTests_Scanner")
+        tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerTests_Scanner_\(UUID().uuidString)", isDirectory: true)
         
         if FileManager.default.fileExists(atPath: tempDirectory.path) {
             try? FileManager.default.removeItem(at: tempDirectory)

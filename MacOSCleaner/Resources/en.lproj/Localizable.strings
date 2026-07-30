@@ -15,17 +15,78 @@
 "size" = "Size";
 "last_used" = "Last Used";
 
+/* Siri & Automator Settings */
+"settings_siri_section_title" = "Siri & Automator Integration";
+"settings_siri_toggle_title" = "Enable Siri Integration";
+"settings_siri_toggle_description" = "Allow controlling cleanup via Siri voice commands and App Shortcuts.";
+"settings_automator_toggle_title" = "Shortcuts & Automator Workflows";
+"settings_automator_toggle_description" = "Allow running cleanup intents from Automator, Shortcuts app, and schedules.";
+"settings_siri_instruction_title" = "How to Configure in macOS";
+"settings_siri_instruction_body" = "Open Shortcuts.app → In the sidebar select MacOSCleaner. All available actions for Siri, Shortcuts, and Automator will be listed there.";
+"settings_open_shortcuts_button" = "Open Shortcuts.app";
+"settings_active_commands_header" = "Active Siri & Shortcuts Commands";
+"settings_cmd_developer_caches" = "Clean Developer Caches (DerivedData, Homebrew, Docker)";
+"settings_cmd_storage_status" = "Get Disk Storage Status";
+"settings_cmd_clean_category" = "Clean Specific Category (Caches, Logs, etc.)";
+"settings_cmd_scheduled_cleanup" = "Run Scheduled Cleanup (Automator)";
+
+/* Custom Siri Commands Editor */
+"siri_add_command_button" = "Add Command";
+"siri_add_command_title" = "New Siri Command";
+"siri_edit_command_title" = "Edit Siri Command";
+"siri_command_name_label" = "Command Title";
+"siri_command_phrase_label" = "Siri Voice Phrase";
+"siri_command_category_label" = "Action / Category";
+"siri_no_commands_empty" = "No custom commands added";
+"cancel_action" = "Cancel";
+"save_action" = "Save";
+"edit_action" = "Edit";
+
 /* Sidebar / Navigation Menu */
-"menu_dashboard" = "Dashboard";
-"menu_cleanup" = "Cleanup";
-"menu_startup_services" = "Startup Services";
 "menu_startup_vendors" = "Startup Vendors";
-"menu_uninstaller" = "Uninstaller";
-"menu_settings" = "Settings";
-"menu_disk_space" = "Disk Analyzer";
+
+/* Duplicate Finder Screen */
+"menu_duplicates" = "Duplicate Finder";
+"duplicate_title" = "Duplicate File Finder";
+"duplicates_subtitle" = "Find and remove identical files to free up space.";
+"duplicate_start_scan" = "Scan for Duplicates";
+"duplicate_folder_home" = "Home Directory";
+"duplicate_folder_downloads" = "Downloads";
+"duplicate_folder_documents" = "Documents";
+"duplicate_folder_custom" = "Choose Folder...";
+"duplicate_search_placeholder" = "Filter duplicates...";
+"duplicate_smart_select" = "Smart Select";
+"duplicate_select_keep_oldest" = "Keep Oldest Copies";
+"duplicate_select_keep_newest" = "Keep Newest Copies";
+"duplicate_select_all" = "Select All";
+"duplicate_deselect_all" = "Deselect All";
+"duplicate_scanning_start" = "Initializing duplicate scanner...";
+"duplicate_scan_completed" = "Scan finished: found %ld duplicate groups";
+"duplicate_scan_cancelled" = "Scan cancelled";
+"duplicate_scan_failed" = "Scan failed: %@";
+"duplicate_stage_collecting" = "Collecting files (%ld scanned)...";
+"duplicate_stage_size_filtering" = "Filtering candidate files by size...";
+"duplicate_stage_header_hashing" = "Hashing file headers (%ld of %ld)...";
+"duplicate_stage_full_hashing" = "Calculating SHA-256 signatures (%ld of %ld)...";
+"duplicate_stage_completed" = "Duplicate analysis completed";
+"duplicate_empty_title" = "No Duplicate Files Found";
+"duplicate_empty_subtitle" = "Select a folder to scan for identical files and reclaim disk space.";
+"duplicate_group_title" = "%ld Identical Files (%@ each)";
+"duplicate_group_wasted" = "%@ reclaimable";
+"duplicate_reveal_in_finder" = "Reveal in Finder";
+"duplicate_selected_summary" = "%ld files selected for removal";
+"duplicate_selected_reclaim" = "%@ total space to reclaim";
+"duplicate_move_to_trash" = "Move to Trash";
+"duplicate_trash_confirm_title" = "Trash Selected Duplicates?";
+"duplicate_trash_confirm_action" = "Move to Trash";
+"duplicate_trash_confirm_message" = "Are you sure you want to move %ld selected duplicate files (%@) to Trash?";
+"duplicate_trash_completed" = "Successfully moved %ld files (%@) to Trash";
+"duplicate_trash_failed" = "Failed to move files to Trash: %@";
 
 /* Disk Analyzer Screen */
+"menu_disk_space" = "Disk Analyzer";
 "disk_analyzer_title" = "Disk Space Analyzer";
+"disk_space_subtitle" = "Analyze disk space distribution and find large files.";
 "disk_analyzer_scan" = "Scan Folder";
 "disk_analyzer_scanning" = "Scanning...";
 "disk_analyzer_back" = "Back";
@@ -54,10 +115,14 @@
 "about_problem_link" = "If you have a problem with the app, let me know here";
 "about_linkedin" = "LinkedIn Profile";
 "about_website" = "Website";
+"about_star_github" = "Star on GitHub ⭐";
+"settings_about_star_github" = "Star on GitHub ⭐";
 "about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
 
 /* Dashboard View */
+"menu_dashboard" = "Dashboard";
 "dashboard_title" = "Dashboard";
+"dashboard_subtitle" = "Overview of system and storage status.";
 "dashboard_system_info" = "System Information";
 "dashboard_model" = "Model";
 "dashboard_os_version" = "OS Version";
@@ -87,8 +152,15 @@
 "language.russian" = "Russian";
 "language.ukrainian" = "Ukrainian";
 "language.spanish" = "Spanish";
+"language.german" = "German";
+"language.japanese" = "Japanese";
+"language.french" = "French";
+"language.chinese_simplified" = "Chinese (Simplified)";
+"language.italian" = "Italian";
+"language.portuguese_brazil" = "Portuguese (Brazil)";
 
 /* Settings View */
+"menu_settings" = "Settings";
 "settings_title" = "Settings";
 "settings_subtitle" = "Configure app preferences";
 "settings_general" = "General";
@@ -166,6 +238,7 @@
 "settings_trash_warning" = "These settings make deletion irreversible. Files bypassing or immediately emptied from the Trash cannot be recovered.";
 
 /* Startup Services View */
+"menu_startup_services" = "Startup Services";
 "startup_title" = "Startup Services";
 "startup_subtitle" = "Manage agents that start automatically.";
 "startup_refresh" = "Refresh list";
@@ -205,6 +278,9 @@
 "startup_vendors_error_duplicate" = "This prefix already exists";
 
 /* Cleanup View */
+"menu_cleanup" = "Cleanup";
+"cleanup_title" = "Cleanup";
+"cleanup_subtitle" = "Safely clean caches, logs, and system junk.";
 "cleanup_scanning" = "Scanning System...";
 "cleanup_clean" = "System is Clean";
 "cleanup_clean_sub" = "No unnecessary files were found during the scan.";
@@ -236,7 +312,8 @@
 "cleanup_failed" = "Cleanup Failed";
 "cleanup_failed_default" = "An error occurred during the cleanup process.";
 "cleanup_script_logs" = "Script Logs:";
-"cleanup_complete" = "Cleanup Complete";"cleanup_complete_sub" = "Successfully freed %@ of disk space.";
+"cleanup_complete" = "Cleanup Complete";
+"cleanup_complete_sub" = "Successfully freed %@ of disk space.";
 "cleanup_summary" = "Deleted Items Summary";
 "cleanup_skipped" = "Could Not Clean";
 "cleanup_selected" = "Selected: %@";
@@ -268,7 +345,9 @@
 "trash_access_prompt_button" = "Grant Access";
 
 /* Uninstaller View */
+"menu_uninstaller" = "Uninstaller";
 "uninstaller_title" = "Uninstaller";
+"uninstaller_subtitle" = "Complete uninstallation of applications and their leftover files.";
 "uninstaller_search" = "Search Apps";
 "uninstaller_reload" = "Reload Applications";
 "uninstaller_confirm_perm_delete" = "Permanently Delete?";
@@ -450,6 +529,8 @@
 "category.imovie_final_cut" = "iMovie / Final Cut";
 "category.garmin_fitbit" = "Garmin / Fitbit";
 "category.old_backups" = "Old Backups";
+"category.ai_models" = "AI Models & LLM Data";
+"category.installer_packages" = "Installer Packages";
 "category.dns_flush" = "DNS Cache";
 "category.font_cache" = "Font Cache";
 "category.sleep_image" = "Sleep Image";
@@ -582,6 +663,15 @@
 "uninstaller.developer_artifacts" = "Developer Artifacts";
 "uninstaller.progress.developer_components" = "Checking developer components...";
 "uninstaller.footer.summary" = "%lld file(s) selected across %@ tiers";
+"uninstaller.metadata.difficulty" = "Uninstall difficulty";
+"uninstaller.metadata.difficulty.critical" = "Critical";
+"uninstaller.metadata.difficulty.high" = "High";
+"uninstaller.metadata.difficulty.medium" = "Medium";
+"uninstaller.metadata.difficulty.low" = "Low";
+"uninstaller.metadata.parent_suite" = "Suite";
+"uninstaller.metadata.known_issues" = "Known Issues";
+"uninstaller.shared_component" = "Shared";
+"uninstaller.shared_component.help" = "Shared with other apps — not selected for removal.";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld B";
@@ -628,3 +718,160 @@
 "uninstaller_explain_with_ai" = "Explain with AI";
 "uninstaller_ai_explaining" = "Generating explanation...";
 "uninstaller_ai_failed" = "AI is not available or failed to generate description.";
+
+"cleanup_option_tm_snapshots" = "Time Machine Snapshots";
+"cleanup_option_tm_snapshots_sub" = "Safely deletes local APFS snapshots to free up purgeable space (Requires password).";
+
+/* New Settings Redesign */
+"settings_category_overview" = "Overview";
+"settings_category_general" = "General";
+"settings_category_permissions" = "Permissions";
+"settings_category_cleanup" = "Cleanup";
+"settings_category_automation" = "Siri & AI";
+"settings_category_ai" = "Apple Intelligence";
+"settings_category_processes" = "Processes";
+"settings_category_advanced" = "Advanced";
+"settings_category_about" = "About";
+"settings_category_danger_zone" = "Danger Zone";
+
+"settings_overview_subtitle" = "Native macOS Cleaner & Optimizer";
+"settings_overview_auto_scan" = "Auto Scan";
+"settings_overview_scan_at_launch" = "Scan at launch";
+"settings_quick_actions" = "Quick Actions";
+"settings_quick_actions_sub" = "Common administrative tasks";
+"settings_quick_action_check_updates" = "Check Updates";
+"settings_quick_action_check_updates_sub" = "Check GitHub releases";
+"settings_quick_action_update_available" = "Update Available!";
+"settings_quick_action_permissions_sub" = "Manage Disk Access & Trash";
+"settings_quick_action_shortcuts_siri" = "Shortcuts & Siri";
+"settings_quick_action_shortcuts_siri_sub" = "Configure automations";
+"settings_quick_action_advanced_sub" = "Debug & Diagnostics";
+"settings_system_status" = "System Status";
+"settings_system_status_sub" = "App health and metrics";
+"settings_system_status_db" = "App Database";
+
+"settings_appearance_language" = "Appearance & Language";
+"settings_appearance_language_sub" = "Personalize app interface";
+"settings_language_sub" = "Interface display language";
+"settings_theme_sub" = "Color scheme appearance";
+"settings_tooltips_sub" = "Helpful popovers on hover";
+"settings_software_updates" = "Software Updates";
+"settings_software_updates_sub" = "Version checks";
+"settings_current_version" = "Current Version";
+
+"settings_permissions_sub" = "System access rights";
+"settings_permissions_overall" = "Overall Permission Status";
+"settings_permissions_overall_sub" = "Required for scanning system caches and app residuals";
+"settings_fda_title" = "Full Disk Access (FDA)";
+"settings_fda_body" = "Full Disk Access allows MacOSCleaner to find orphaned system files, Xcode derived data, and app logs safely.";
+"settings_open_privacy_settings" = "Open Privacy Settings";
+"settings_check_status" = "Check Status";
+"settings_permission_guide" = "Guide";
+"settings_notifications_enable" = "Enable Notifications";
+"settings_notifications_enable_sub" = "Get alerts when cleanup finishes or large junk accumulates";
+"settings_notifications_denied_body" = "Notifications denied in System Settings";
+"status_granted" = "Granted";
+"status_attention" = "Attention Needed";
+"status_required" = "Required";
+"status_disabled" = "Disabled";
+
+"settings_scan_config" = "Scan Configuration";
+"settings_scan_config_sub" = "Uninstaller & Junk Search options";
+"settings_scan_mode_sub" = "Depth of scanning for orphaned files";
+"settings_auto_scan_sub" = "Start scanning junk automatically when launching app";
+"settings_show_related_sub" = "Include configuration and cache files in uninstaller";
+"settings_deletion_behavior" = "Deletion & Trash Behavior";
+"settings_deletion_behavior_sub" = "Safe trash handling rules";
+"settings_trash_safety_note" = "Trash safety settings affect permanent file removal.";
+"settings_empty_trash_cleanup_sub" = "Purge System Trash automatically after cleaning junk";
+"settings_bypass_trash_sub" = "Permanently delete uninstalled app leftovers without moving to Trash";
+"settings_empty_trash_immediately_sub" = "Skip Trash buffer for all operations";
+
+"settings_automation_title" = "Siri & Shortcuts";
+"settings_automation_sub" = "System voice and workflow automation";
+"settings_enable_siri_sub" = "Trigger cleanup tasks using Siri phrases";
+"settings_enable_shortcuts_sub" = "Allow MacOSCleaner AppIntents in macOS Shortcuts";
+"settings_open_shortcuts_title" = "Open macOS Shortcuts";
+"settings_open_shortcuts_sub" = "Manage workflows in system Shortcuts app";
+"settings_launch_shortcuts_button" = "Launch Shortcuts App";
+"settings_custom_siri_commands" = "Custom Siri Commands";
+"settings_custom_siri_commands_sub" = "Voice phrase triggers";
+"settings_no_custom_commands" = "No custom Siri commands configured.";
+
+"settings_ai_sub" = "Local AI model for smart cleanup recommendations";
+"settings_enable_ai_sub" = "Analyze system files locally using FoundationModels";
+"settings_ai_readiness" = "Model Readiness Status";
+"settings_ai_readiness_sub" = "On-device AI engine availability";
+"settings_ai_capabilities" = "Available Capabilities";
+"settings_ai_capabilities_sub" = "Smart features and full on-device privacy";
+"settings_ai_feat_smart_cleanup" = "Smart Cleanup";
+"settings_ai_feat_smart_cleanup_sub" = "Risk-based cache categorization and ranking";
+"settings_ai_feat_recs" = "Intelligent Recommendations";
+"settings_ai_feat_recs_sub" = "Activity-based residual removal suggestions";
+"settings_ai_feat_duplicates" = "Duplicate Finder";
+"settings_ai_feat_duplicates_sub" = "Semantic grouping of identical files";
+"settings_ai_feat_privacy" = "Privacy Protection";
+"settings_ai_feat_privacy_sub" = "All AI processing runs locally on Apple Silicon NPU";
+"settings_ai_feat_voice" = "Siri Voice Control";
+"settings_ai_feat_voice_sub" = "Trigger system maintenance tasks with voice commands";
+"settings_ai_feat_shortcuts" = "Automation Scripts";
+"settings_ai_feat_shortcuts_sub" = "Deep integration with macOS Shortcuts";
+
+"settings_processes_title" = "Process Monitor Settings";
+"settings_processes_sub" = "CPU & Memory background scanner configuration";
+"settings_refresh_interval_sub" = "Frequency of process polling";
+"settings_sort_option_title" = "Default Sort Option";
+"settings_sort_option_sub" = "Sort active background processes by resource consumption";
+
+"settings_advanced_dev_title" = "Developer & Advanced";
+"settings_advanced_dev_sub" = "Extended diagnostics and scanning parameters";
+"settings_show_related_app_files" = "Show Related Application Files";
+"settings_show_related_app_files_sub" = "Include hidden plist and container folders in search results";
+"settings_startup_vendors_sub" = "Manage known startup background item vendors";
+
+"settings_about_tagline" = "Designed for macOS 26+. Built with Swift 6, SwiftUI, and Liquid Glass.";
+"settings_about_resources" = "Resources & Support";
+"settings_about_resources_sub" = "Official links and release documentation";
+"settings_about_github" = "GitHub Repository (Source Code)";
+"settings_about_github_releases" = "GitHub Repository (Releases)";
+"settings_about_wiki" = "Documentation & Wiki";
+"settings_about_wiki_sub" = "Detailed guides on how to use the app";
+"settings_about_report_issue" = "Report an Issue";
+"settings_about_report_issue_sub" = "Bug reports & feature requests";
+"settings_about_website" = "Website";
+
+/* Privacy & Safety (About) */
+"settings_privacy_safety_title" = "Privacy & Safety 🛡️";
+"settings_privacy_safety_sub" = "Core system protection and data privacy guarantees";
+"settings_privacy_item_1_title" = "100% Private";
+"settings_privacy_item_1_desc" = "No telemetry, no analytics, no usage tracking, and no remote logging. All operations run fully offline on your device.";
+"settings_privacy_item_2_title" = "Minimal Networking";
+"settings_privacy_item_2_desc" = "The only network connection is a startup update check using the GitHub Releases API (can be disabled in Settings).";
+"settings_privacy_item_3_title" = "Safe Trash Recovery";
+"settings_privacy_item_3_desc" = "Disk Space and App Uninstaller move files to Trash via trashItem(at:) — recoverable by default.";
+"settings_privacy_item_4_title" = "Smart Cleanup Confirmation";
+"settings_privacy_item_4_desc" = "Removes selected cache and temporary data after explicit confirmation.";
+"settings_privacy_item_5_title" = "SafetyManager Protection";
+"settings_privacy_item_5_desc" = "Blocks access to /System, /usr, /bin, ~/.ssh, and other critical paths.";
+"settings_privacy_item_6_title" = "ProcessSafetyPolicy";
+"settings_privacy_item_6_desc" = "Protects system-critical processes from accidental termination.";
+"settings_privacy_item_7_title" = "Opt-in Permanent Deletion";
+"settings_privacy_item_7_desc" = "Permanent deletion and automatic Trash emptying are opt-in and clearly marked in the UI.";
+"settings_privacy_item_8_title" = "Graceful App Closure";
+"settings_privacy_item_8_desc" = "Apps are closed before cleanup (graceful terminate → force-kill after 3s).";
+"settings_privacy_item_9_title" = "Full Disk Access";
+"settings_privacy_item_9_desc" = "Full Disk Access is requested at startup for complete scanning capability.";
+"settings_about_privacy_policy_sub" = "100% local, zero telemetry guarantee";
+"settings_about_acknowledgements" = "Acknowledgements";
+"settings_about_acknowledgements_sub" = "Open Source Libraries & Frameworks";
+
+"settings_danger_zone_title" = "Danger Zone";
+"settings_danger_zone_sub" = "Irreversible application actions";
+"settings_reset_all_title" = "Reset All Application Settings";
+"settings_reset_all_sub" = "Resets all preferences, custom Siri commands, and caches back to factory defaults.";
+"settings_reset_action_button" = "Reset Data & Preferences";
+
+"settings_search_prompt" = "Search settings...";
+"settings_search_results_title" = "Search Results for «%@»";
+"settings_search_no_results" = "No Settings Found";
+"settings_search_no_results_sub" = "Try searching for terms like 'trash', 'FDA', 'AI', or 'theme'";

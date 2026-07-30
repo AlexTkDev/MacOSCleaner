@@ -5,10 +5,11 @@ public enum DeveloperComponentsDetector {
         appName: String,
         bundleID: String?,
         fileManager: FileManager = .default,
-        homeDirectory: URL? = nil
+        homeDirectory: URL? = nil,
+        fileSystemContext: FileSystemContext? = nil
     ) async -> [UninstallerService.RelatedCleanupComponent] {
         let fm = fileManager
-        let home = (homeDirectory ?? fm.homeDirectoryForCurrentUser).path
+        let home = (fileSystemContext?.homeDirectory ?? homeDirectory ?? fm.homeDirectoryForCurrentUser).path
         var components: [UninstallerService.RelatedCleanupComponent] = []
         let lowerName = appName.lowercased()
         let lowerID = bundleID?.lowercased() ?? ""
@@ -20,8 +21,10 @@ public enum DeveloperComponentsDetector {
                 if sdkSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.android_sdk".localized,
-                        category: .androidSDK, sizeBytes: sdkSize,
-                        url: sdkURL
+                        category: .androidSDK,
+                        sizeBytes: sdkSize,
+                        url: sdkURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -31,8 +34,10 @@ public enum DeveloperComponentsDetector {
                 if gradleSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.gradle_cache".localized,
-                        category: .gradleMaven, sizeBytes: gradleSize,
-                        url: gradleURL
+                        category: .gradleMaven,
+                        sizeBytes: gradleSize,
+                        url: gradleURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -58,8 +63,10 @@ public enum DeveloperComponentsDetector {
                 if derivedSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.xcode_derived_data".localized,
-                        category: .xcode, sizeBytes: derivedSize,
-                        url: derivedURL
+                        category: .xcode,
+                        sizeBytes: derivedSize,
+                        url: derivedURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -69,8 +76,10 @@ public enum DeveloperComponentsDetector {
                 if simSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.ios_simulators".localized,
-                        category: .iosSimulators, sizeBytes: simSize,
-                        url: simURL
+                        category: .iosSimulators,
+                        sizeBytes: simSize,
+                        url: simURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -84,7 +93,8 @@ public enum DeveloperComponentsDetector {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.flutter_cache".localized,
                         category: .flutterDart, sizeBytes: flutterSize,
-                        url: flutterURL
+                        url: flutterURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -98,7 +108,8 @@ public enum DeveloperComponentsDetector {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.docker".localized,
                         category: .docker, sizeBytes: dockerSize,
-                        url: dockerURL
+                        url: dockerURL,
+                        isSelected: false
                     ))
                 }
             }
@@ -112,7 +123,8 @@ public enum DeveloperComponentsDetector {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.homebrew".localized,
                         category: .packageManagers, sizeBytes: brewSize,
-                        url: brewURL
+                        url: brewURL,
+                        isSelected: false
                     ))
                 }
             }

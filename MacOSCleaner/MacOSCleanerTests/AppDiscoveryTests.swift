@@ -7,6 +7,44 @@ final class AppDiscoveryTests: XCTestCase {
         let urls = await discovery.findAll()
         XCTAssertFalse(urls.isEmpty)
         XCTAssertTrue(urls.contains { $0.pathExtension == "app" })
+        // SIP / Cryptex apps (e.g. Safari) must not appear.
+        XCTAssertFalse(urls.contains { $0.lastPathComponent == "Safari.app" })
+        XCTAssertFalse(urls.contains { AppDiscovery.isUndeletableSystemApp($0) })
+    }
+
+    func test_isUndeletableSystemApp_rejectsSystemAndCryptex() {
+        XCTAssertTrue(
+            AppDiscovery.isUndeletableSystemApp(
+                URL(fileURLWithPath: "/System/Applications/Calculator.app")
+            )
+        )
+        let safari = URL(fileURLWithPath: "/Applications/Safari.app")
+        if FileManager.default.fileExists(atPath: safari.path) {
+            XCTAssertTrue(AppDiscovery.isUndeletableSystemApp(safari))
+        }
+        XCTAssertFalse(
+            AppDiscovery.isUndeletableSystemApp(
+                URL(fileURLWithPath: "/Applications/Google Chrome.app")
+            )
+        )
+    }
+
+    func test_applicationBundles_includesNestedLevel() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AppDiscoveryNested-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let top = root.appendingPathComponent("Top.app", isDirectory: true)
+        let utilities = root.appendingPathComponent("Utilities", isDirectory: true)
+        let nested = utilities.appendingPathComponent("Nested.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: top, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+
+        let found = AppDiscovery.applicationBundles(in: root)
+        XCTAssertEqual(
+            Set(found.map(\.lastPathComponent)),
+            Set(["Top.app", "Nested.app"])
+        )
     }
 
     func test_homebrewApplications_findsOnlyTopLevelAppsInReceiptedKegs() throws {

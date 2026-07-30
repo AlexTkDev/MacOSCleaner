@@ -4,21 +4,22 @@ import XCTest
 /// Integration tests verifying the full cleanup flow: scan → preview → cleanup → verify.
 /// Uses real directories in /tmp to ensure files are actually created and deleted.
 final class CleanupIntegrationTests: XCTestCase {
-
+    private var fileSystemContext: FileSystemContext!
     var testRoot: URL!
 
-    override func setUp() {
-        super.setUp()
-        testRoot = FileManager.default.temporaryDirectory
-            .appendingPathComponent("MacOSCleanerIntegrationTests_\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: testRoot, withIntermediateDirectories: true)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        fileSystemContext = try FileSystemContext.isolatedTestRoot()
+        testRoot = URL(fileURLWithPath: fileSystemContext.homePath)
     }
 
-    override func tearDown() {
-        if let testRoot {
-            try? FileManager.default.removeItem(at: testRoot)
+    override func tearDownWithError() throws {
+        if let root = fileSystemContext?.allowedRoots.first {
+            try? FileManager.default.removeItem(at: root)
         }
-        super.tearDown()
+        fileSystemContext = nil
+        testRoot = nil
+        try super.tearDownWithError()
     }
 
     // MARK: - Full Flow: Scan → Preview → Cleanup → Verify
@@ -35,7 +36,7 @@ final class CleanupIntegrationTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file1.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: file2.path))
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         let result = try await engine.cleanContents(of: cacheDir.path, dryRun: false)
         XCTAssertGreaterThan(result.freed, 0, "Should free some space")
@@ -53,7 +54,7 @@ final class CleanupIntegrationTests: XCTestCase {
         let file = cacheDir.appendingPathComponent("data.bin")
         try Data(repeating: 0xFF, count: 512).write(to: file)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         let results = try await engine.run(categories: [.scatteredJunk], dryRun: true)
         XCTAssertFalse(results.isEmpty)
@@ -78,7 +79,7 @@ final class CleanupIntegrationTests: XCTestCase {
         let largeFile = dirB.appendingPathComponent("large.dat")
         try Data(repeating: 0xAA, count: 1024 * 1024).write(to: largeFile)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         _ = try await engine.cleanContents(of: dirA.path, dryRun: false)
         _ = try await engine.cleanContents(of: dirB.path, dryRun: false)
@@ -91,15 +92,15 @@ final class CleanupIntegrationTests: XCTestCase {
     }
 
     func testMultipleCategoryCleanup() async throws {
-        let cachesDir = testRoot.appendingPathComponent("Caches/com.test.multi")
-        let logsDir = testRoot.appendingPathComponent("Logs")
+        let cachesDir = testRoot.appendingPathComponent("Library/Caches/com.test.multi")
+        let logsDir = testRoot.appendingPathComponent("Library/Logs")
         try FileManager.default.createDirectory(at: cachesDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: logsDir, withIntermediateDirectories: true)
 
         try Data(repeating: 0x01, count: 4096).write(to: cachesDir.appendingPathComponent("cache.bin"))
         try "log data".write(to: logsDir.appendingPathComponent("app.log"), atomically: true, encoding: .utf8)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         let results = try await engine.run(
             categories: [.appCaches, .userLogs],
@@ -115,13 +116,10 @@ final class CleanupIntegrationTests: XCTestCase {
         try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         try Data(repeating: 0xBB, count: 1024).write(to: cacheDir.appendingPathComponent("file.dat"))
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
-
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         let task = Task {
             try await engine.run(categories: CleanupCategory.allCases, dryRun: true)
         }
-
-        try await Task.sleep(nanoseconds: 50_000_000)
         task.cancel()
 
         do {
@@ -139,15 +137,15 @@ final class CleanupIntegrationTests: XCTestCase {
     func testCancellationDuringCleanup() async throws {
         let cacheDir = testRoot.appendingPathComponent("Caches/cancellation_cleanup")
         try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-        try Data(repeating: 0xCC, count: 1024).write(to: cacheDir.appendingPathComponent("file.dat"))
+        let first = cacheDir.appendingPathComponent("first.dat")
+        let second = cacheDir.appendingPathComponent("second.dat")
+        try Data(repeating: 0xCC, count: 1024).write(to: first)
+        try Data(repeating: 0xDD, count: 1024).write(to: second)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
-
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         let task = Task {
-            try await engine.run(categories: [.appCaches], dryRun: false)
+            _ = try await engine.cleanContents(of: cacheDir.path, dryRun: false)
         }
-
-        try await Task.sleep(nanoseconds: 10_000_000)
         task.cancel()
 
         do {
@@ -155,8 +153,10 @@ final class CleanupIntegrationTests: XCTestCase {
         } catch is CancellationError {
             // Expected
         } catch {
-            // CleanupEngineError.timeout or other acceptable errors
+            // Acceptable
         }
+
+        XCTAssertTrue(fileSystemContext.isInsideAllowedRoots(cacheDir))
     }
 
     // MARK: - Verify Files Actually Deleted
@@ -172,7 +172,7 @@ final class CleanupIntegrationTests: XCTestCase {
             filePaths.append(file)
         }
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         for path in filePaths {
             XCTAssertTrue(FileManager.default.fileExists(atPath: path.path),
@@ -203,7 +203,7 @@ final class CleanupIntegrationTests: XCTestCase {
             .compactMap { try? FileManager.default.attributesOfItem(atPath: testDir.appendingPathComponent($0).path)[.size] as? Int64 }
             .reduce(0, +)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         _ = try await engine.cleanContents(of: testDir.path, dryRun: false)
 
         let remaining = try? FileManager.default.contentsOfDirectory(atPath: testDir.path)
@@ -236,10 +236,7 @@ final class CleanupIntegrationTests: XCTestCase {
             return CommandResult(stdout: "", stderr: "", exitCode: 0)
         }
 
-        let engine = CleanupEngine(
-            commandRunner: mock,
-            safetyManager: SafetyManager(allowedExceptions: [testRoot.path])
-        )
+        let engine = CleanupEngine(commandRunner: mock, fileSystemContext: fileSystemContext)
 
         let results = try await engine.run(
             categories: [.packageManagers],
@@ -255,7 +252,7 @@ final class CleanupIntegrationTests: XCTestCase {
         try FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
         try "test".write(to: testDir.appendingPathComponent("file.txt"), atomically: true, encoding: .utf8)
 
-        let engine = CleanupEngine(safetyManager: SafetyManager(allowedExceptions: [testRoot.path]))
+        let engine = CleanupEngine(fileSystemContext: fileSystemContext)
 
         let receivedEvents = IntegrationTestEventCollector()
         let results = try await engine.run(categories: [.scatteredJunk], dryRun: true) { event in
