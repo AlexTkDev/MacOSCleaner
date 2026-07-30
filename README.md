@@ -172,4 +172,6 @@ Dual-licensed under:
 - **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** (Custom Non-Commercial) for open-source use, personal study, and non-commercial distribution. Direct sale, re-licensing, or commercialization of the software/binaries is strictly prohibited.
 - **Commercial License** for proprietary, enterprise, or commercial distribution. [Contact the author](https://github.com/AlexTkDev) for commercial licensing inquiries.
 
+> **Trademark & Branding Notice**: This license does not grant permission to use the project name ("MacOSCleaner"), logos, app icons, or branding in derivative works or redistributions. Modified versions or redistributions must remove or replace all official project branding.
+
 
