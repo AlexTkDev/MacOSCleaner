@@ -3,17 +3,20 @@ import XCTest
 
 final class UIMetadataProviderTests: XCTestCase {
     private var provider: UIMetadataProvider {
+        // Prefer private catalog via the app host bundle when available.
         UIMetadataProvider(bundle: .main)
     }
 
-    func test_metadata_exactBundleIDLookup() async {
+    func test_metadata_exactBundleIDLookup() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let metadata = await provider.metadata(forBundleID: "com.google.Chrome")
         XCTAssertEqual(metadata?.registryKey, "com.google.Chrome")
         XCTAssertEqual(metadata?.difficulty, .high)
         XCTAssertFalse(metadata?.knownIssues.isEmpty ?? true)
     }
 
-    func test_metadata_prefixFallback() async {
+    func test_metadata_prefixFallback() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let metadata = await provider.metadata(forBundleID: "com.jetbrains.intellij")
         XCTAssertNotNil(metadata)
         let hasContent = !(metadata?.knownIssues.isEmpty ?? true) || metadata?.parentSuite != nil
@@ -56,7 +59,8 @@ final class UIMetadataProviderTests: XCTestCase {
         XCTAssertEqual(metadata?.name, "Specific")
     }
 
-    func test_metadata_parentSuite() async {
+    func test_metadata_parentSuite() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let metadata = await provider.metadata(forBundleID: "com.google.Chrome.canary")
         XCTAssertEqual(metadata?.parentSuite, "Google Chrome")
     }

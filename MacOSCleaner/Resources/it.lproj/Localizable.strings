@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "Ottieni stato spazio di archiviazione";
 "settings_cmd_clean_category" = "Pulisci categoria specifica (Cache, Log, ecc.)";
 "settings_cmd_scheduled_cleanup" = "Esegui pulizia pianificata (Automator)";
+"siri_phrase_developer_caches" = "Pulisci cache sviluppatore";
+"siri_phrase_storage_status" = "Quanto spazio libero";
+"siri_phrase_clean_category" = "Pulisci cache di sistema";
+"siri_phrase_scheduled_cleanup" = "Avvia pulizia programmata";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Aggiungi comando";

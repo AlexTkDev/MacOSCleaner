@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "ストレージ状態の取得";
 "settings_cmd_clean_category" = "特定のカテゴリの消去 (キャッシュ、ログなど)";
 "settings_cmd_scheduled_cleanup" = "スケジュールされたクリーンアップの実行 (Automator)";
+"siri_phrase_developer_caches" = "開発者キャッシュをクリーンアップ";
+"siri_phrase_storage_status" = "空き容量はどれくらい";
+"siri_phrase_clean_category" = "システムキャッシュをクリーンアップ";
+"siri_phrase_scheduled_cleanup" = "スケジュール済みクリーンアップを実行";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "コマンドを追加";

@@ -26,11 +26,15 @@ struct RootView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Recreate screen content so every `.localized` string / glass layer
+                    // matches the selected language (prevents stale RU labels in EN/FR/…).
+                    .id(appSettings.language)
             }
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
         .frame(minWidth: 1024, minHeight: 680)
+        .environment(\.locale, appSettings.language.locale)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }
@@ -64,20 +68,20 @@ struct RootView: View {
 
                 if groupIndex < navGroups.count - 1 {
                     Divider()
-                        .frame(height: 16)
+                        .frame(height: 18)
                         .opacity(0.4)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
                 }
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 5)
-        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 14))
+        .padding(.horizontal, 4)
+        .padding(.vertical, 3)
+        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
         .id(appSettings.language)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 14)
+        .padding(.horizontal, 12)
+        .padding(.top, 4)
+        .padding(.bottom, 6)
     }
 
     @ViewBuilder
@@ -88,15 +92,22 @@ struct RootView: View {
                 selectedItem = item
             }
         } label: {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 Image(systemName: item.systemImage)
-                    .font(.system(size: 13, weight: .regular))
-                Text(item.localizedTitle)
-                    .font(.system(size: 12, weight: .medium))
-                    .fixedSize()
+                    .font(.system(size: 15, weight: .medium))
+                    .frame(width: 22, height: 22)
+                // Compact on all locales: label only for the selected item.
+                if isSelected {
+                    Text(item.localizedTitle)
+                        .font(.system(size: 12, weight: .medium))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, isSelected ? 10 : 9)
+            .padding(.vertical, 6)
+            .frame(minWidth: isSelected ? nil : 40, minHeight: 32)
+            .contentShape(Rectangle())
             .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
             .background {
                 if isSelected {

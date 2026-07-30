@@ -79,19 +79,48 @@ public actor UIMetadataProvider {
     private func loadIfNeeded() {
         guard entries == nil else { return }
 
-        let url: URL?
+        // Tests may inject a local JSON fixture.
         if let fileURL {
-            url = fileURL
-        } else {
-            url = bundle.url(forResource: resourceName, withExtension: "json")
-        }
-
-        guard let url else {
-            Logger.uiMetadata.debug("ui_metadata.json not found in bundle — metadata disabled")
-            // Do not cache failure — Bundle.main may become ready later in tests/host.
+            loadFromJSONFile(fileURL)
             return
         }
 
+        // Production host only: shared private catalog snapshot (optional).
+        // Custom bundles (unit tests) must not silently pick up the app catalog.
+        if bundle == .main {
+            let snapshot = PrivateCatalogStore.snapshot
+            if snapshot.isPrivate, !snapshot.uiEntries.isEmpty {
+                var mapped: [String: UIMetadata] = [:]
+                for (key, entry) in snapshot.uiEntries {
+                    guard let difficulty = UninstallDifficulty(rawValue: entry.difficulty) else { continue }
+                    mapped[key] = UIMetadata(
+                        registryKey: entry.key,
+                        name: entry.name,
+                        difficulty: difficulty,
+                        knownIssues: entry.knownIssues,
+                        parentSuite: entry.parentSuite
+                    )
+                }
+                entries = mapped
+                bundleIDToKey = snapshot.uiBundleIDToKey
+                prefixIndex = snapshot.uiPrefixIndex
+                return
+            }
+        }
+
+        // Legacy bundle JSON (should be excluded from Resources; kept for resilience).
+        if let url = bundle.url(forResource: resourceName, withExtension: "json") {
+            loadFromJSONFile(url)
+            return
+        }
+
+        Logger.uiMetadata.debug("UI metadata unavailable — metadata disabled")
+        entries = [:]
+        bundleIDToKey = [:]
+        prefixIndex = []
+    }
+
+    private func loadFromJSONFile(_ url: URL) {
         do {
             let data = try Data(contentsOf: url)
             let file = try JSONDecoder().decode(UIMetadataFile.self, from: data)

@@ -19,11 +19,14 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Validate engine paths
-        run: python3 scripts/validate_engine_paths.py
-
-      - name: Check generated cleanup paths
-        run: swift scripts/generate_cleanup_paths.swift --check
+      - name: Optional private catalog check
+        run: |
+          if [[ -f MacOSCleaner/Resources/engine_paths.json && -f MacOSCleaner/Resources/ui_metadata.json ]]; then
+            python3 scripts/validate_engine_paths.py
+            swift scripts/generate_cleanup_paths.swift --check
+          else
+            echo "Private catalog SoT absent — public fallback CI"
+          fi
 
       - name: Check XcodeGen drift
         working-directory: MacOSCleaner

@@ -14,12 +14,12 @@ struct SettingsView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             sidebarContent
-                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 240)
+                .navigationSplitViewColumnWidth(min: 160, ideal: 200, max: 320)
         } detail: {
             detailView
         }
         .searchable(text: $searchText, prompt: Text("settings_search_prompt".localized))
-        .frame(minWidth: 700, minHeight: 520)
+        .frame(minWidth: 780, minHeight: 520)
     }
 
     // MARK: - Custom Sidebar
@@ -54,6 +54,9 @@ struct SettingsView: View {
                 Text(category.displayName)
                     .font(.body.weight(isSelected ? .semibold : .regular))
                     .foregroundStyle(isSelected ? Color.white : Color.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Spacer()
             }

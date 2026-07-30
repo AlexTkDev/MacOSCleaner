@@ -84,6 +84,7 @@ struct StatusPill: View {
                 Image(systemName: iconName)
             }
             Text(title)
+                .lineLimit(1)
         }
         .font(size.font)
         .padding(.horizontal, size.paddingHorizontal)
@@ -91,6 +92,71 @@ struct StatusPill: View {
         .background(style.backgroundColor)
         .foregroundStyle(style.foregroundColor)
         .clipShape(Capsule())
+        .fixedSize(horizontal: true, vertical: false)
+    }
+}
+
+// MARK: - Labeled Control Row (localization-safe)
+
+/// Label on the left, control on the right. Falls back to stacked layout when
+/// localized strings make a single horizontal row too wide.
+struct SettingsLabeledControl<Control: View>: View {
+    let title: String
+    let subtitle: String?
+    let iconName: String?
+    let iconColor: Color
+    let control: Control
+
+    init(
+        _ title: String,
+        subtitle: String? = nil,
+        iconName: String? = nil,
+        iconColor: Color = .secondary,
+        @ViewBuilder control: () -> Control
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.iconName = iconName
+        self.iconColor = iconColor
+        self.control = control()
+    }
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                labelBlock
+                Spacer(minLength: 8)
+                control
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                labelBlock
+                control
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var labelBlock: some View {
+        HStack(alignment: .top, spacing: 12) {
+            if let iconName {
+                Image(systemName: iconName)
+                    .foregroundStyle(iconColor)
+                    .frame(width: 20)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.body)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
     }
 }
 
@@ -127,6 +193,7 @@ struct GlassCard<Header: View, Content: View, Footer: View>: View {
             }
         }
         .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(isDestructive ? Color.red.opacity(0.08) : Color.primary.opacity(0.03))
@@ -258,24 +325,10 @@ struct SettingsToggleRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            if let iconName {
-                Image(systemName: iconName)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 20)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
+        SettingsLabeledControl(title, subtitle: subtitle, iconName: iconName) {
             Toggle("", isOn: $isOn)
                 .labelsHidden()
+                .toggleStyle(.switch)
         }
     }
 }
@@ -308,22 +361,12 @@ struct SettingsActionRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            if let iconName {
-                Image(systemName: iconName)
-                    .foregroundStyle(isDestructive ? .red : .secondary)
-                    .frame(width: 20)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
+        SettingsLabeledControl(
+            title,
+            subtitle: subtitle,
+            iconName: iconName,
+            iconColor: isDestructive ? .red : .secondary
+        ) {
             Button(role: isDestructive ? .destructive : nil, action: action) {
                 HStack(spacing: 4) {
                     if let buttonIcon {
@@ -351,15 +394,7 @@ struct SettingsInfoRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            if let iconName {
-                Image(systemName: iconName)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 20)
-            }
-            Text(title)
-                .font(.body)
-            Spacer()
+        SettingsLabeledControl(title, iconName: iconName) {
             Text(value)
                 .font(.callout)
                 .foregroundStyle(.secondary)

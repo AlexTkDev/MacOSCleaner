@@ -8,7 +8,6 @@ public enum LaunchServiceError: Error {
 
 public actor LaunchServiceManager {
     private let commandRunner: CommandRunner
-    private let safetyManager: SafetyManager
     private let fileManager: FileManager
     private let searchPaths: [String]
 
@@ -26,12 +25,10 @@ public actor LaunchServiceManager {
 
     public init(
         commandRunner: CommandRunner = CommandRunner(),
-        safetyManager: SafetyManager = SafetyManager(),
         fileManager: FileManager = .default,
         searchPaths: [String]? = nil
     ) {
         self.commandRunner = commandRunner
-        self.safetyManager = safetyManager
         self.fileManager = fileManager
 
         if let searchPaths = searchPaths {
@@ -55,12 +52,8 @@ public actor LaunchServiceManager {
         for path in searchPaths {
             let url = URL(fileURLWithPath: path)
 
-            do {
-                try safetyManager.validate(url: url)
-            } catch {
-                continue
-            }
-
+            // Scan is read-only. Do not run deletion validate() on these roots —
+            // SafetyManager exact-refuses LaunchAgents/LaunchDaemons directories themselves.
             guard fileManager.fileExists(atPath: url.path) else {
                 continue
             }

@@ -105,9 +105,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories execute concurrently across all available cores. File scanning uses bounded, stack-based iteration with cancellation checks, inode deduplication, batching, and cached size calculations.
 
-Cleanup definitions live in `Resources/engine_paths.json` and are validated and compiled into `GeneratedCleanupPaths.swift` at build time. Runtime lookup uses an O(1) bundle registry and tokenized path templates — no runtime JSON parsing. Bundled `ui_metadata.json` supplies localized names, difficulty, known issues, bundle families, and suite relationships.
-
-Every path has a purpose: regenerable `cache`, uninstall-only `app_data`, non-automatic `shared`, or opt-in `user_content`. Scheduled cleanup is restricted to safe caches and logs. Orphan detection requires at least two independent ownership signals before suggesting a leftover.
+Cleanup and residual discovery use tokenized path templates with an O(1) bundle registry. Public source builds include an embedded baseline path set plus filesystem heuristics. Every path has a purpose: regenerable `cache`, uninstall-only `app_data`, non-automatic `shared`, or opt-in `user_content`. Scheduled cleanup is restricted to safe caches and logs. Orphan detection requires at least two independent ownership signals before suggesting a leftover.
 
 ---
 

@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "获取磁盘存储状态";
 "settings_cmd_clean_category" = "清理指定分类 (缓存、日志等)";
 "settings_cmd_scheduled_cleanup" = "运行计划清理 (Automator)";
+"siri_phrase_developer_caches" = "清理开发者缓存";
+"siri_phrase_storage_status" = "还有多少可用空间";
+"siri_phrase_clean_category" = "清理系统缓存";
+"siri_phrase_scheduled_cleanup" = "运行计划清理";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "添加指令";

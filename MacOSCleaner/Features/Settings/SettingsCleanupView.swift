@@ -21,15 +21,10 @@ struct SettingsCleanupView: View {
             },
             content: {
                 VStack(alignment: .leading, spacing: 14) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("scan_mode".localized)
-                                .font(.body.weight(.medium))
-                            Text("settings_scan_mode_sub".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    SettingsLabeledControl(
+                        "scan_mode".localized,
+                        subtitle: "settings_scan_mode_sub".localized
+                    ) {
                         GlassPillPicker(
                             items: ScanMode.allCases,
                             selection: $settings.uninstallerScanMode,

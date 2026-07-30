@@ -74,7 +74,8 @@ final class RegistryPathsTests: XCTestCase {
 
     // MARK: - Registry lookup (migrated from KnownResidualCatalogTests)
 
-    func test_chromeHasRegistryTemplates() {
+    func test_chromeHasRegistryTemplates() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = RegistryPathTemplates.uninstallTemplates(forBundleID: "com.google.Chrome")
         XCTAssertFalse(templates.isEmpty)
         XCTAssertTrue(templates.contains { $0.contains("Application Support/Google/Chrome") })
@@ -83,7 +84,8 @@ final class RegistryPathsTests: XCTestCase {
         XCTAssertFalse(templates.contains { $0.lowercased().contains("googlesoftwareupdate") })
     }
 
-    func test_dockerHasRegistryTemplates() {
+    func test_dockerHasRegistryTemplates() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = RegistryPathTemplates.uninstallTemplates(forBundleID: "com.docker.docker")
         XCTAssertFalse(templates.isEmpty)
         XCTAssertTrue(templates.contains { $0.contains("group.com.docker") })
@@ -92,20 +94,23 @@ final class RegistryPathsTests: XCTestCase {
                       "Admin paths must not appear in uninstall templates")
     }
 
-    func test_jetbrainsPrefixMatchesFamily() {
+    func test_jetbrainsPrefixMatchesFamily() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = RegistryPathTemplates.uninstallTemplates(forBundleID: "com.jetbrains.intellij")
         XCTAssertFalse(templates.isEmpty)
         XCTAssertTrue(templates.contains { $0.contains("JetBrains") })
     }
 
-    func test_antigravityIncludesVerifiedDotDirectories() {
+    func test_antigravityIncludesVerifiedDotDirectories() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = Set(RegistryPathTemplates.uninstallTemplates(forBundleID: "com.google.antigravity-ide"))
         XCTAssertTrue(templates.contains("~/.antigravity"))
         XCTAssertTrue(templates.contains("~/.antigravity-ide"))
         XCTAssertTrue(templates.contains("~/Library/Application Support/com.google.antigravity-ide"))
     }
 
-    func test_openCodeIncludesAppSpecificDataButNotSharedCLIConfig() {
+    func test_openCodeIncludesAppSpecificDataButNotSharedCLIConfig() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = RegistryPathTemplates.uninstallTemplates(forBundleID: "ai.opencode.desktop")
         XCTAssertTrue(templates.contains("~/Library/Application Support/ai.opencode.desktop"))
         XCTAssertTrue(templates.contains("~/Library/Caches/ai.opencode.desktop.ShipIt"))
@@ -135,6 +140,7 @@ final class RegistryPathsTests: XCTestCase {
     }
 
     func test_collectorIncludesCatalogPath() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let cachePath = "\(home)/Library/Caches/com.google.Chrome"
         let created: Bool
         if FileManager.default.fileExists(atPath: cachePath) {
@@ -159,6 +165,7 @@ final class RegistryPathsTests: XCTestCase {
     }
 
     func test_registryOwnershipIsBundleSpecific() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let chromeCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.google.Chrome")
         let googleUpdater = URL(fileURLWithPath: home).appendingPathComponent("Library/Google/GoogleSoftwareUpdate")
         try FileManager.default.createDirectory(at: chromeCache, withIntermediateDirectories: true)
@@ -203,7 +210,8 @@ final class RegistryPathsTests: XCTestCase {
         XCTAssertTrue(paths.contains { $0.contains("com.operasoftware.Opera") || $0.contains("Opera") })
     }
 
-    func test_generatedCleanupPathsMerged() {
+    func test_generatedCleanupPathsMerged() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let paths = EmbeddedCleanupPaths.paths(for: .browserCaches).map(\.path)
         let generated = GeneratedCleanupPaths.cachePaths(for: .browserCaches).map(\.path)
         XCTAssertFalse(generated.isEmpty)
@@ -274,8 +282,11 @@ final class RegistryPathsTests: XCTestCase {
     }
 
     func test_generatedSourceHashMatchesSoTIfAvailable() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         guard let url = Self.testResourceURL(name: "engine_paths", extension: "json") else {
-            throw XCTSkip("engine_paths.json missing from bundle")
+            // Asset present but JSON may be absent in some hosts — verify non-empty hash instead.
+            XCTAssertFalse(GeneratedCleanupPaths.sourceHash.isEmpty)
+            return
         }
         let digest = SHA256.hash(data: try Data(contentsOf: url))
             .map { String(format: "%02x", $0) }
@@ -286,6 +297,7 @@ final class RegistryPathsTests: XCTestCase {
     // MARK: - Superset coverage (legacy KnownResidualCatalog snapshot)
 
     func test_registryCoversLegacyCatalogPathsPerBundle() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let url = try XCTUnwrap(
             Self.testResourceURL(name: "known_residual_catalog_snapshot", extension: "json"),
             "known_residual_catalog_snapshot.json missing from test bundle"
@@ -312,6 +324,35 @@ final class RegistryPathsTests: XCTestCase {
             "Registry missing \(missing.count) bundle-owned path(s): " +
             missing.prefix(10).map { "\($0.entry) [\($0.bundleID)]: \($0.path)" }.joined(separator: "; ")
         )
+    }
+
+    func test_publicFallbackAPISurvivesEmptyCatalog() {
+        PrivateCatalogStore.setOverrideForTesting(.empty)
+        defer { PrivateCatalogStore.resetForTesting() }
+
+        XCTAssertEqual(GeneratedCleanupPaths.catalogSource, .publicFallback)
+        XCTAssertTrue(GeneratedCleanupPaths.registry.isEmpty)
+        XCTAssertNil(GeneratedCleanupPaths.appPaths(forBundleID: "com.google.Chrome"))
+        XCTAssertTrue(GeneratedCleanupPaths.cachePaths(for: .browserCaches).isEmpty)
+        XCTAssertFalse(EmbeddedCleanupPaths.paths(for: .browserCaches).isEmpty)
+        XCTAssertTrue(RegistryPathTemplates.uninstallTemplates(forBundleID: "com.google.Chrome").isEmpty)
+    }
+
+    func test_watermarksNeverBecomeCleanupPaths() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
+        let marks = GeneratedCleanupPaths.watermarks
+        XCTAssertGreaterThanOrEqual(marks.count, 10)
+        for mark in marks {
+            XCTAssertNil(GeneratedCleanupPaths.appPaths(forBundleID: mark))
+            XCTAssertFalse(GeneratedCleanupPaths.registry.keys.contains(mark))
+            for category in [
+                CleanupCategory.browserCaches, .ideCaches, .appCaches, .dotfileCaches,
+                .messagingMedia, .languageCaches, .systemCaches,
+            ] {
+                let paths = GeneratedCleanupPaths.cachePaths(for: category).map(\.path)
+                XCTAssertFalse(paths.contains { $0.localizedCaseInsensitiveContains(mark) })
+            }
+        }
     }
 
     private static func testResourceURL(name: String, extension ext: String) -> URL? {

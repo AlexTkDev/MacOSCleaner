@@ -3,12 +3,20 @@ import XCTest
 
 final class AIUserContentCleanupTests: XCTestCase {
 
-    func test_aiUserContentTemplatesIncludeKnownModelStores() {
+    func test_aiUserContentTemplatesIncludeKnownModelStores() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let templates = GeneratedCleanupPaths.aiUserContentTemplates()
         XCTAssertTrue(templates.contains { $0.contains("ollama") })
         XCTAssertTrue(templates.contains { $0.lowercased().contains("huggingface") })
         XCTAssertTrue(templates.contains { $0.lowercased().contains("lm-studio") || $0.contains("LM Studio") })
         XCTAssertFalse(templates.isEmpty)
+    }
+
+    func test_aiUserContentTemplatesPublicFallbackKeepsHardcodedOllama() {
+        PrivateCatalogStore.setOverrideForTesting(.empty)
+        defer { PrivateCatalogStore.resetForTesting() }
+        let templates = GeneratedCleanupPaths.aiUserContentTemplates()
+        XCTAssertTrue(templates.contains("<HOME>/.local/share/ollama/models"))
     }
 
     func test_aiModelsExcludedFromAutoCleanCategories() {

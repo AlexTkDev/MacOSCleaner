@@ -152,9 +152,12 @@ public final class AppSettings {
     // MARK: - General
 
     public var language: AppLanguage {
+        willSet {
+            // Bundle must switch before Observation notifies views that call `.localized`.
+            LanguageManager.shared.setLanguage(newValue)
+        }
         didSet {
             UserDefaults.standard.set(language.rawValue, forKey: Keys.language)
-            LanguageManager.shared.setLanguage(language)
         }
     }
 
@@ -290,7 +293,7 @@ public final class AppSettings {
            let decoded = try? JSONDecoder().decode([CustomSiriCommand].self, from: data) {
             self.customSiriCommands = decoded
         } else {
-            self.customSiriCommands = CustomSiriCommand.defaultCommands
+            self.customSiriCommands = CustomSiriCommand.makeDefaultCommands()
         }
 
         LanguageManager.shared.setLanguage(lang)
@@ -337,7 +340,7 @@ public final class AppSettings {
         enableStorageStatusCommand = true
         enableCleanCategoryCommand = true
         enableScheduledCleanupCommand = true
-        customSiriCommands = CustomSiriCommand.defaultCommands
+        customSiriCommands = CustomSiriCommand.makeDefaultCommands()
 
         LanguageManager.shared.setLanguage(.english)
     }

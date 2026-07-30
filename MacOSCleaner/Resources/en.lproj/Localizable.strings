@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "Get Disk Storage Status";
 "settings_cmd_clean_category" = "Clean Specific Category (Caches, Logs, etc.)";
 "settings_cmd_scheduled_cleanup" = "Run Scheduled Cleanup (Automator)";
+"siri_phrase_developer_caches" = "Clean developer caches";
+"siri_phrase_storage_status" = "How much free space";
+"siri_phrase_clean_category" = "Clean system caches";
+"siri_phrase_scheduled_cleanup" = "Run scheduled cleanup";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Add Command";

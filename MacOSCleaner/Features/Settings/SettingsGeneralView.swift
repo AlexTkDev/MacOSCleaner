@@ -23,6 +23,7 @@ struct SettingsGeneralView: View {
                 resetCard
             }
             .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onAppear { updateNotificationStatus() }
         .sheet(isPresented: $showInstructionSheet) {
@@ -50,35 +51,24 @@ struct SettingsGeneralView: View {
             },
             content: {
                 VStack(spacing: 12) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("settings_language".localized)
-                                .font(.body)
-                            Text("settings_language_sub".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    SettingsLabeledControl(
+                        "settings_language".localized,
+                        subtitle: "settings_language_sub".localized
+                    ) {
                         Picker("", selection: $settings.language) {
                             ForEach(AppLanguage.allCases) { lang in
                                 Text(lang.displayName).tag(lang)
                             }
                         }
                         .labelsHidden()
-                        .frame(width: 140)
                     }
 
                     SettingsDivider()
 
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("settings_theme".localized)
-                                .font(.body)
-                            Text("settings_theme_sub".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    SettingsLabeledControl(
+                        "settings_theme".localized,
+                        subtitle: "settings_theme_sub".localized
+                    ) {
                         GlassPillPicker(
                             items: AppTheme.allCases,
                             selection: $settings.theme,
@@ -105,23 +95,18 @@ struct SettingsGeneralView: View {
                 SettingsSectionHeader("settings_software_updates".localized, subtitle: "settings_software_updates_sub".localized, iconName: "arrow.clockwise.circle.fill", iconColor: .blue)
             },
             content: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("settings_current_version".localized)
-                            .font(.body)
-                        Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.1.0")")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-
+                SettingsLabeledControl(
+                    "settings_current_version".localized,
+                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.1.0")"
+                ) {
                     if isCheckingForUpdates {
                         ProgressView().controlSize(.small)
                     } else if let version = availableUpdate {
                         Button(String(format: "update.available".localized, version)) {
                             NSWorkspace.shared.open(UpdateChecker.releasesURL)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
+                        .tint(.orange)
                         .controlSize(.small)
                     } else {
                         Button(hasCheckedForUpdates ? "update.up_to_date".localized : "update.check".localized) {
@@ -133,6 +118,7 @@ struct SettingsGeneralView: View {
                             }
                         }
                         .buttonStyle(.bordered)
+                        .tint(hasCheckedForUpdates ? .green : .accentColor)
                         .controlSize(.small)
                     }
                 }
@@ -168,56 +154,71 @@ struct SettingsGeneralView: View {
             },
             content: {
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("permissions.full_disk_access".localized)
-                                .font(.headline)
-                            Text("settings_fda_body".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    SettingsLabeledControl(
+                        "permissions.full_disk_access".localized,
+                        subtitle: "settings_fda_body".localized
+                    ) {
                         StatusPill(
                             permissionsManager.hasFullDiskAccess ? "status_granted".localized : "status_required".localized,
                             style: permissionsManager.hasFullDiskAccess ? .success : .error
                         )
                     }
 
-                    HStack(spacing: 10) {
-                        Button("settings_open_privacy_settings".localized) {
-                            permissionsManager.openFullDiskAccessSettings()
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 10) {
+                            fdaButtons
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-
-                        Button("settings_check_status".localized) {
-                            permissionsManager.refresh()
+                        VStack(alignment: .leading, spacing: 8) {
+                            fdaButtons
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-
-                        Button("settings_permission_guide".localized) {
-                            showInstructionSheet = true
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
                     }
                 }
             }
         )
     }
 
+    @ViewBuilder
+    private var fdaButtons: some View {
+        Button("settings_open_privacy_settings".localized) {
+            permissionsManager.openFullDiskAccessSettings()
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.small)
+
+        Button("settings_check_status".localized) {
+            permissionsManager.refresh()
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+
+        Button("settings_permission_guide".localized) {
+            showInstructionSheet = true
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+    }
+
     private var notificationsCard: some View {
         GlassCard(
             header: {
-                HStack {
-                    Text("settings_notifications".localized)
-                        .font(.headline)
-                    Spacer()
-                    StatusPill(
-                        notificationStatus == .authorized ? "status_granted".localized : "status_disabled".localized,
-                        style: notificationStatus == .authorized ? .success : .neutral
-                    )
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text("settings_notifications".localized)
+                            .font(.headline)
+                        Spacer(minLength: 8)
+                        StatusPill(
+                            notificationStatus == .authorized ? "status_granted".localized : "status_disabled".localized,
+                            style: notificationStatus == .authorized ? .success : .neutral
+                        )
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("settings_notifications".localized)
+                            .font(.headline)
+                        StatusPill(
+                            notificationStatus == .authorized ? "status_granted".localized : "status_disabled".localized,
+                            style: notificationStatus == .authorized ? .success : .neutral
+                        )
+                    }
                 }
             },
             content: {
@@ -230,16 +231,30 @@ struct SettingsGeneralView: View {
 
                     if notificationStatus == .denied {
                         SettingsDivider()
-                        HStack {
-                            Text("settings_notifications_denied_body".localized)
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                            Spacer()
-                            Button("settings_open_settings".localized) {
-                                NotificationManager.shared.openNotificationSettings()
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .center, spacing: 12) {
+                                Text("settings_notifications_denied_body".localized)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                                Button("settings_open_settings".localized) {
+                                    NotificationManager.shared.openNotificationSettings()
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .fixedSize()
+                                .layoutPriority(1)
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("settings_notifications_denied_body".localized)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                Button("settings_open_settings".localized) {
+                                    NotificationManager.shared.openNotificationSettings()
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
                         }
                     }
                 }

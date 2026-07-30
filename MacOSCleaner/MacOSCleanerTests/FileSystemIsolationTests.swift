@@ -79,7 +79,8 @@ final class FileSystemIsolationTests: XCTestCase {
         XCTAssertFalse(withLink.contains(link.path), "Symlink directories must not expand as glob bases")
     }
 
-    func test_registryLookupPerformanceBudget() {
+    func test_registryLookupPerformanceBudget() throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let ids = Array(GeneratedCleanupPaths.registry.keys.prefix(50))
         XCTAssertFalse(ids.isEmpty)
 

@@ -55,16 +55,10 @@ struct SettingsAutomationView: View {
 
                     if settings.enableSiri || settings.enableShortcutsAndAutomator {
                         SettingsDivider()
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("settings_open_shortcuts_title".localized)
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                Text("settings_open_shortcuts_sub".localized)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
+                        SettingsLabeledControl(
+                            "settings_open_shortcuts_title".localized,
+                            subtitle: "settings_open_shortcuts_sub".localized
+                        ) {
                             Button("settings_launch_shortcuts_button".localized) {
                                 if let url = URL(string: "shortcuts://") {
                                     NSWorkspace.shared.open(url)
@@ -82,14 +76,26 @@ struct SettingsAutomationView: View {
     private var siriCommandsCard: some View {
         GlassCard(
             header: {
-                HStack {
-                    SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                    Spacer()
-                    Button("siri_add_command_button".localized) {
-                        isAddCommandSheetPresented = true
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top) {
+                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
+                        Spacer(minLength: 8)
+                        Button("siri_add_command_button".localized) {
+                            isAddCommandSheetPresented = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .fixedSize()
+                        .layoutPriority(1)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    VStack(alignment: .leading, spacing: 8) {
+                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
+                        Button("siri_add_command_button".localized) {
+                            isAddCommandSheetPresented = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                    }
                 }
             },
             content: {
@@ -161,15 +167,10 @@ struct SettingsAutomationView: View {
 
                     SettingsDivider()
 
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("settings_ai_readiness".localized)
-                                .font(.body)
-                            Text("settings_ai_readiness_sub".localized)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    SettingsLabeledControl(
+                        "settings_ai_readiness".localized,
+                        subtitle: "settings_ai_readiness_sub".localized
+                    ) {
                         aiStatusLabel
                     }
                 }

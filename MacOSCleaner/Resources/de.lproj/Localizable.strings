@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "Speicherplatz-Status abrufen";
 "settings_cmd_clean_category" = "Bestimmte Kategorie bereinigen (Caches, Logs usw.)";
 "settings_cmd_scheduled_cleanup" = "Geplante Bereinigung ausführen (Automator)";
+"siri_phrase_developer_caches" = "Entwicklercaches bereinigen";
+"siri_phrase_storage_status" = "Wie viel freier Speicher";
+"siri_phrase_clean_category" = "Systemcaches bereinigen";
+"siri_phrase_scheduled_cleanup" = "Geplante Bereinigung starten";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Befehl hinzufügen";

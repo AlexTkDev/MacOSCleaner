@@ -17,18 +17,43 @@ targets:
       - path: Resources
         excludes:
           - engine_paths.json
+          - ui_metadata.json
       - SharedViews
     preBuildScripts:
-      - name: Verify Generated Cleanup Paths
+      - name: Pack Private Cleanup Catalog
         script: |
-          swift "$PROJECT_DIR/../scripts/generate_cleanup_paths.swift" --check && touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
+          set -euo pipefail
+          ENGINE="$SRCROOT/Resources/engine_paths.json"
+          UI="$SRCROOT/Resources/ui_metadata.json"
+          MARKER="$SRCROOT/.require-private-catalog"
+          if [[ -f "$MARKER" ]]; then
+            export REQUIRE_PRIVATE_CATALOG=YES
+          fi
+          if [[ ! -f "$ENGINE" && ! -f "$UI" ]]; then
+            if [[ "${REQUIRE_PRIVATE_CATALOG:-}" == "YES" ]]; then
+              echo "error: official local build requires engine_paths.json + ui_metadata.json" >&2
+              echo "error: place SoT under MacOSCleaner/Resources/ (gitignored) or remove $MARKER" >&2
+              exit 1
+            fi
+            echo "Private catalog SoT absent — public fallback build"
+            touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
+            exit 0
+          fi
+          if [[ -f "$ENGINE" && ! -f "$UI" ]] || [[ ! -f "$ENGINE" && -f "$UI" ]]; then
+            echo "error: both engine_paths.json and ui_metadata.json are required together" >&2
+            exit 1
+          fi
+          # Local maintainer machine: always repack full catalog into Assets.car before compile.
+          swift "$PROJECT_DIR/../scripts/generate_cleanup_paths.swift" --write
+          touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
         inputFiles:
           - $(SRCROOT)/Resources/engine_paths.json
-          - $(SRCROOT)/Domains/Cleanup/GeneratedCleanupPaths.swift
+          - $(SRCROOT)/Resources/ui_metadata.json
           - $(SRCROOT)/../scripts/generate_cleanup_paths.swift
           - $(SRCROOT)/../scripts/validate_engine_paths.py
         outputFiles:
           - $(DERIVED_FILE_DIR)/cleanup_paths_verified.stamp
+          - $(SRCROOT)/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/catalog.bin
         basedOnDependencyAnalysis: true
     entitlements:
       path: MacOSCleaner.entitlements

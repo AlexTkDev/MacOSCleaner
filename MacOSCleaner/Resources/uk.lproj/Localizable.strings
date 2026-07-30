@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "Статус вільного місця на диску";
 "settings_cmd_clean_category" = "Очистити конкретну категорію (кеші, логи тощо)";
 "settings_cmd_scheduled_cleanup" = "Заплановане фонове очищення (Automator)";
+"siri_phrase_developer_caches" = "Очисти кеші розробника";
+"siri_phrase_storage_status" = "Скільки вільного місця";
+"siri_phrase_clean_category" = "Очисти системні кеші";
+"siri_phrase_scheduled_cleanup" = "Запусти заплановане очищення";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Додати команду";

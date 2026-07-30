@@ -29,6 +29,10 @@
 "settings_cmd_storage_status" = "Obter status do armazenamento";
 "settings_cmd_clean_category" = "Limpar categoria específica (Caches, Logs, etc.)";
 "settings_cmd_scheduled_cleanup" = "Executar limpeza agendada (Automator)";
+"siri_phrase_developer_caches" = "Limpar caches de desenvolvedor";
+"siri_phrase_storage_status" = "Quanto espaço livre";
+"siri_phrase_clean_category" = "Limpar caches do sistema";
+"siri_phrase_scheduled_cleanup" = "Executar limpeza agendada";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Adicionar comando";

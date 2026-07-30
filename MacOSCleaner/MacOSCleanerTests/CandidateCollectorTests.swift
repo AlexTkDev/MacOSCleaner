@@ -338,6 +338,7 @@ final class CandidateCollectorTests: XCTestCase {
     }
 
     func test_collect_registrySeparatesSharedAndAdminPaths() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let chromeCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.google.Chrome")
         let googleUpdater = URL(fileURLWithPath: home).appendingPathComponent("Library/Google/GoogleSoftwareUpdate")
         try FileManager.default.createDirectory(at: chromeCache, withIntermediateDirectories: true)
@@ -393,6 +394,7 @@ final class CandidateCollectorTests: XCTestCase {
     }
 
     func test_collect_catalogPathsExcludeAppData() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let appSupport = "\(home)/Library/Application Support/Google/Chrome"
         try FileManager.default.createDirectory(atPath: appSupport, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(atPath: "\(home)/Library") }
@@ -421,6 +423,7 @@ final class CandidateCollectorTests: XCTestCase {
     }
 
     func test_collect_doesNotCrossSelectSiblingOfficeAndAdobeApps() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
         let microsoft = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Microsoft Office")
         let wordCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.microsoft.word")
         let excelCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.microsoft.excel")
