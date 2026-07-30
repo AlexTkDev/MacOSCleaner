@@ -169,7 +169,7 @@ For detailed documentation, user guides, and FAQs, visit the 📖 [MacOSCleaner 
 ## License
 
 Dual-licensed under:
-- **[GNU General Public License v3.0 (GPLv3)](LICENSE)** for open-source use, personal study, and distribution. Any redistribution or resale of binaries under GPLv3 must include or provide free access to the complete source code under GPLv3.
-- **Commercial License** for proprietary, enterprise, or closed-source integration. [Contact the author](https://github.com/AlexTkDev) for commercial licensing inquiries.
+- **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** (Custom Non-Commercial) for open-source use, personal study, and non-commercial distribution. Direct sale, re-licensing, or commercialization of the software/binaries is strictly prohibited.
+- **Commercial License** for proprietary, enterprise, or commercial distribution. [Contact the author](https://github.com/AlexTkDev) for commercial licensing inquiries.
 
 
