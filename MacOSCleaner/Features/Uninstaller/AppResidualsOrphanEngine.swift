@@ -318,7 +318,7 @@ public actor AppResidualsOrphanEngine {
             for entry in entries {
                 try Task.checkCancellation()
                 index.append(IndexedEntry(
-                    url: URL(fileURLWithPath: "\(scanDir)/\(entry)"),
+                    url: NormalizedPath.url(NormalizedPath.join(scanDir, entry)),
                     category: category
                 ))
             }

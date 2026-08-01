@@ -82,7 +82,7 @@ public final class CleanupItemManager {
         guard let parent = items.first(where: { $0.label == label }) else { return [] }
         return parent.children.compactMap { child in
             guard child.isSelected, let path = child.path else { return nil }
-            return URL(fileURLWithPath: path)
+            return NormalizedPath.url(path)
         }
     }
 

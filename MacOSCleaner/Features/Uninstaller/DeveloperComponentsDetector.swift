@@ -15,20 +15,21 @@ public enum DeveloperComponentsDetector {
         let lowerID = bundleID?.lowercased() ?? ""
 
         if lowerName.contains("android studio") || lowerID.contains("android.studio") {
-            let sdkURL = URL(fileURLWithPath: "\(home)/Library/Android/sdk")
-            if fm.fileExists(atPath: sdkURL.path) {
-                let sdkSize = getDirectorySize(url: sdkURL)
-                if sdkSize > 0 {
+            // Whole ~/Library/Android (SDK + NDK + extras), not only …/sdk.
+            let androidRootURL = NormalizedPath.url(NormalizedPath.joinHome(home, "Library/Android"), isDirectory: true)
+            if fm.fileExists(atPath: androidRootURL.path) {
+                let androidSize = getDirectorySize(url: androidRootURL)
+                if androidSize > 0 {
                     components.append(UninstallerService.RelatedCleanupComponent(
                         title: "developer.android_sdk".localized,
                         category: .androidSDK,
-                        sizeBytes: sdkSize,
-                        url: sdkURL,
+                        sizeBytes: androidSize,
+                        url: androidRootURL,
                         isSelected: false
                     ))
                 }
             }
-            let gradleURL = URL(fileURLWithPath: "\(home)/.gradle")
+            let gradleURL = NormalizedPath.url(NormalizedPath.joinHome(home, ".gradle"), isDirectory: true)
             if fm.fileExists(atPath: gradleURL.path) {
                 let gradleSize = getDirectorySize(url: gradleURL)
                 if gradleSize > 0 {
@@ -37,11 +38,11 @@ public enum DeveloperComponentsDetector {
                         category: .gradleMaven,
                         sizeBytes: gradleSize,
                         url: gradleURL,
-                        isSelected: false
+                        isSelected: true
                     ))
                 }
             }
-            let androidDataURL = URL(fileURLWithPath: "\(home)/.android")
+            let androidDataURL = NormalizedPath.url(NormalizedPath.joinHome(home, ".android"), isDirectory: true)
             if fm.fileExists(atPath: androidDataURL.path) {
                 let androidDataSize = getDirectorySize(url: androidDataURL)
                 if androidDataSize > 0 {
@@ -50,14 +51,17 @@ public enum DeveloperComponentsDetector {
                         category: .androidCaches,
                         sizeBytes: androidDataSize,
                         url: androidDataURL,
-                        isSelected: false
+                        isSelected: true
                     ))
                 }
             }
         }
 
         if lowerID == "com.apple.dt.xcode" || (lowerName == "xcode" && lowerID.hasPrefix("com.apple.dt")) {
-            let derivedURL = URL(fileURLWithPath: "\(home)/Library/Developer/Xcode/DerivedData")
+            let derivedURL = NormalizedPath.url(
+                NormalizedPath.joinHome(home, "Library/Developer/Xcode/DerivedData"),
+                isDirectory: true
+            )
             if fm.fileExists(atPath: derivedURL.path) {
                 let derivedSize = getDirectorySize(url: derivedURL)
                 if derivedSize > 0 {
@@ -66,11 +70,14 @@ public enum DeveloperComponentsDetector {
                         category: .xcode,
                         sizeBytes: derivedSize,
                         url: derivedURL,
-                        isSelected: false
+                        isSelected: true
                     ))
                 }
             }
-            let simURL = URL(fileURLWithPath: "\(home)/Library/Developer/CoreSimulator")
+            let simURL = NormalizedPath.url(
+                NormalizedPath.joinHome(home, "Library/Developer/CoreSimulator"),
+                isDirectory: true
+            )
             if fm.fileExists(atPath: simURL.path) {
                 let simSize = getDirectorySize(url: simURL)
                 if simSize > 0 {
@@ -79,14 +86,14 @@ public enum DeveloperComponentsDetector {
                         category: .iosSimulators,
                         sizeBytes: simSize,
                         url: simURL,
-                        isSelected: false
+                        isSelected: true
                     ))
                 }
             }
         }
 
         if lowerName == "flutter" || lowerID.contains("flutter") {
-            let flutterURL = URL(fileURLWithPath: "\(home)/.pub-cache")
+            let flutterURL = NormalizedPath.url(NormalizedPath.joinHome(home, ".pub-cache"), isDirectory: true)
             if fm.fileExists(atPath: flutterURL.path) {
                 let flutterSize = getDirectorySize(url: flutterURL)
                 if flutterSize > 0 {
@@ -101,7 +108,10 @@ public enum DeveloperComponentsDetector {
         }
 
         if lowerName.contains("orbstack") || lowerID == "dev.orbstack" || lowerName.contains("docker") || lowerID == "com.docker.docker" {
-            let dockerURL = URL(fileURLWithPath: "\(home)/Library/Containers/com.docker.docker")
+            let dockerURL = NormalizedPath.url(
+                NormalizedPath.joinHome(home, "Library/Containers/com.docker.docker"),
+                isDirectory: true
+            )
             if fm.fileExists(atPath: dockerURL.path) {
                 let dockerSize = getDirectorySize(url: dockerURL)
                 if dockerSize > 0 {
@@ -116,7 +126,7 @@ public enum DeveloperComponentsDetector {
         }
 
         if lowerName == "homebrew" || lowerID == "com.homebrew" {
-            let brewURL = URL(fileURLWithPath: "/opt/homebrew")
+            let brewURL = NormalizedPath.url("/opt/homebrew", isDirectory: true)
             if fm.fileExists(atPath: brewURL.path) {
                 let brewSize = getDirectorySize(url: brewURL)
                 if brewSize > 0 {

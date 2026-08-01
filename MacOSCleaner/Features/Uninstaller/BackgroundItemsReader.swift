@@ -9,13 +9,13 @@ public actor BackgroundItemsReader {
 
     public func readLaunchAgents() async -> Set<URL> {
         let paths = [
-            "\(NSHomeDirectory())/Library/LaunchAgents",
+            NormalizedPath.joinHome(NSHomeDirectory(), "Library/LaunchAgents"),
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
         ]
         var urls = Set<URL>()
         for path in paths {
-            let dir = URL(fileURLWithPath: path)
+            let dir = NormalizedPath.url(path, isDirectory: true)
             guard let contents = try? FileManager.default.contentsOfDirectory(
                 at: dir, includingPropertiesForKeys: nil
             ) else { continue }
@@ -36,7 +36,7 @@ public actor BackgroundItemsReader {
             for line in output.components(separatedBy: ",") where !line.isEmpty {
                 let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !trimmed.isEmpty {
-                    urls.insert(URL(fileURLWithPath: trimmed))
+                    urls.insert(NormalizedPath.url(trimmed))
                 }
             }
         }

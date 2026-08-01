@@ -604,6 +604,10 @@ struct RelatedFileRow: View {
         }
     }
 
+        private var displayPath: String {
+        NormalizedPath.displayString(file.url)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -632,7 +636,7 @@ struct RelatedFileRow: View {
                                 .background(Capsule().fill(riskColor.opacity(0.12)))
                         }
                     }
-                    Text(file.url.path)
+                    Text(displayPath)
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.secondary)
                         .lineLimit(1)

@@ -7,10 +7,10 @@ public struct EvidenceGraphNode: Sendable, Hashable {
     public var children: Set<URL>
 
     public init(url: URL, evidence: Set<Evidence> = [], parents: Set<URL> = [], children: Set<URL> = []) {
-        self.url = url
+        self.url = NormalizedPath.canonicalize(url)
         self.evidence = evidence
-        self.parents = parents
-        self.children = children
+        self.parents = Set(parents.map(NormalizedPath.canonicalize))
+        self.children = Set(children.map(NormalizedPath.canonicalize))
     }
 
     public func hash(into hasher: inout Hasher) { hasher.combine(url) }
@@ -29,37 +29,41 @@ public actor EvidenceGraph {
 
     public init(identity: AppIdentity) {
         self.identity = identity
-        let seed = EvidenceGraphNode(url: identity.bundleURL, evidence: [.bundleIDExact])
-        nodes[identity.bundleURL] = seed
+        let seedURL = NormalizedPath.canonicalize(identity.bundleURL)
+        let seed = EvidenceGraphNode(url: seedURL, evidence: [.bundleIDExact])
+        nodes[seedURL] = seed
     }
 
     public func record(_ evidence: Evidence, for url: URL) {
-        var node = nodes[url] ?? EvidenceGraphNode(url: url)
+        let u = NormalizedPath.canonicalize(url)
+        var node = nodes[u] ?? EvidenceGraphNode(url: u)
         node.evidence.insert(evidence)
-        nodes[url] = node
+        nodes[u] = node
     }
 
     public func record(_ evidences: Set<Evidence>, for url: URL) {
-        var node = nodes[url] ?? EvidenceGraphNode(url: url)
+        let u = NormalizedPath.canonicalize(url)
+        var node = nodes[u] ?? EvidenceGraphNode(url: u)
         node.evidence.formUnion(evidences)
-        nodes[url] = node
+        nodes[u] = node
     }
 
     public func attach(_ url: URL, to parent: URL, via: Evidence) {
-        var child = nodes[url] ?? EvidenceGraphNode(url: url)
-        child.parents.insert(parent)
-        nodes[url] = child
+        let childURL = NormalizedPath.canonicalize(url)
+        let parentURL = NormalizedPath.canonicalize(parent)
 
-        var parentNode = nodes[parent] ?? EvidenceGraphNode(url: parent)
-        parentNode.children.insert(url)
-        nodes[parent] = parentNode
-
+        var child = nodes[childURL] ?? EvidenceGraphNode(url: childURL)
+        child.parents.insert(parentURL)
         child.evidence.insert(via)
-        nodes[url] = child
+        nodes[childURL] = child
+
+        var parentNode = nodes[parentURL] ?? EvidenceGraphNode(url: parentURL)
+        parentNode.children.insert(childURL)
+        nodes[parentURL] = parentNode
     }
 
     public func node(for url: URL) -> EvidenceGraphNode? {
-        nodes[url]
+        nodes[NormalizedPath.canonicalize(url)]
     }
 
     public func allNodes() -> [EvidenceGraphNode] {
@@ -83,18 +87,20 @@ public actor EvidenceGraph {
 
     private func propagate(from url: URL, depth: Int, maxDepth: Int) {
         guard depth < maxDepth else { return }
-        guard let node = nodes[url] else { return }
+        let u = NormalizedPath.canonicalize(url)
+        guard let node = nodes[u] else { return }
 
-        let isBoundary = EvidenceGraph.boundaryRoots.contains(url.lastPathComponent)
+        let isBoundary = EvidenceGraph.boundaryRoots.contains(u.lastPathComponent)
         if depth > 0 && isBoundary { return }
 
         for child in node.children {
-            if var childNode = nodes[child] {
+            let childKey = NormalizedPath.canonicalize(child)
+            if var childNode = nodes[childKey] {
                 if !childNode.evidence.contains(.parentDirectory) {
                     childNode.evidence.insert(.parentDirectory)
-                    nodes[child] = childNode
+                    nodes[childKey] = childNode
                 }
-                propagate(from: child, depth: depth + 1, maxDepth: maxDepth)
+                propagate(from: childKey, depth: depth + 1, maxDepth: maxDepth)
             }
         }
     }

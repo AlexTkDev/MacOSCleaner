@@ -50,22 +50,24 @@ public enum PathToken: String, Sendable, CaseIterable {
         for (token, value) in replacements {
             result = result.replacingOccurrences(of: token.rawValue, with: value)
         }
-        return result
+        // Catalogs sometimes write `/<HOME>/…` while home is already absolute → `//Users/…`.
+        return NormalizedPath.string(result)
     }
 
     private func basePath(home: String) -> String {
+        let h = home.hasSuffix("/") ? String(home.dropLast()) : home
         switch self {
-        case .appSupport: return "\(home)/Library/Application Support"
-        case .caches: return "\(home)/Library/Caches"
-        case .prefs: return "\(home)/Library/Preferences"
-        case .containers: return "\(home)/Library/Containers"
-        case .groupContainers: return "\(home)/Library/Group Containers"
-        case .logs: return "\(home)/Library/Logs"
-        case .home: return home
-        case .savedState: return "\(home)/Library/Saved Application State"
-        case .userLib: return "\(home)/Library"
-        case .userConfig: return "\(home)/.config"
-        case .userCache: return "\(home)/.cache"
+        case .appSupport: return NormalizedPath.join(h, "Library/Application Support")
+        case .caches: return NormalizedPath.join(h, "Library/Caches")
+        case .prefs: return NormalizedPath.join(h, "Library/Preferences")
+        case .containers: return NormalizedPath.join(h, "Library/Containers")
+        case .groupContainers: return NormalizedPath.join(h, "Library/Group Containers")
+        case .logs: return NormalizedPath.join(h, "Library/Logs")
+        case .home: return h
+        case .savedState: return NormalizedPath.join(h, "Library/Saved Application State")
+        case .userLib: return NormalizedPath.join(h, "Library")
+        case .userConfig: return NormalizedPath.join(h, ".config")
+        case .userCache: return NormalizedPath.join(h, ".cache")
         case .varFolders: return "/private/var/folders"
         case .sysLib: return "/Library"
         case .sysAppSupport: return "/Library/Application Support"

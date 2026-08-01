@@ -509,4 +509,35 @@ final class CandidateCollectorTests: XCTestCase {
         XCTAssertTrue(collection.catalogPaths.isEmpty)
         XCTAssertTrue(collection.sharedPaths.isEmpty)
     }
+
+    func test_collect_androidStudioAddsHomeToolingPaths() async throws {
+        let gradle = URL(fileURLWithPath: home).appendingPathComponent(".gradle")
+        let androidHome = URL(fileURLWithPath: home).appendingPathComponent(".android")
+        let androidLib = URL(fileURLWithPath: home).appendingPathComponent("Library/Android")
+        try FileManager.default.createDirectory(at: gradle, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: androidHome, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: androidLib, withIntermediateDirectories: true)
+
+        let collector = makeCollector()
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await collector.collect(identity: identity)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(gradle.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(androidHome.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(androidLib.resolvingSymlinksInPath().path))
+    }
 }

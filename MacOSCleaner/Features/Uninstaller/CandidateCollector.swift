@@ -48,23 +48,23 @@ public actor CandidateCollector {
 
         // 1. Fixed popular paths
         let basePaths = [
-            "\(home)/Library/Application Support",
-            "\(home)/Library/Caches",
-            "\(home)/Library/Containers",
-            "\(home)/Library/Group Containers",
-            "\(home)/Library/Preferences",
-            "\(home)/Library/Preferences/ByHost",
-            "\(home)/Library/HTTPStorages",
-            "\(home)/Library/WebKit",
-            "\(home)/Library/Saved Application State",
-            "\(home)/Library/Application Scripts",
-            "\(home)/Library/Logs",
-            "\(home)/Library/Logs/DiagnosticReports",
-            "\(home)/Library/Cookies",
-            "\(home)/Library/Internet Plug-Ins",
-            "\(home)/Library/QuickLook",
-            "\(home)/Library/Application Support/CrashReporter",
-            "\(home)/Library/LaunchAgents",
+            NormalizedPath.joinHome(home, "Library/Application Support"),
+            NormalizedPath.joinHome(home, "Library/Caches"),
+            NormalizedPath.joinHome(home, "Library/Containers"),
+            NormalizedPath.joinHome(home, "Library/Group Containers"),
+            NormalizedPath.joinHome(home, "Library/Preferences"),
+            NormalizedPath.joinHome(home, "Library/Preferences/ByHost"),
+            NormalizedPath.joinHome(home, "Library/HTTPStorages"),
+            NormalizedPath.joinHome(home, "Library/WebKit"),
+            NormalizedPath.joinHome(home, "Library/Saved Application State"),
+            NormalizedPath.joinHome(home, "Library/Application Scripts"),
+            NormalizedPath.joinHome(home, "Library/Logs"),
+            NormalizedPath.joinHome(home, "Library/Logs/DiagnosticReports"),
+            NormalizedPath.joinHome(home, "Library/Cookies"),
+            NormalizedPath.joinHome(home, "Library/Internet Plug-Ins"),
+            NormalizedPath.joinHome(home, "Library/QuickLook"),
+            NormalizedPath.joinHome(home, "Library/Application Support/CrashReporter"),
+            NormalizedPath.joinHome(home, "Library/LaunchAgents"),
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
             "/Library/Preferences",
@@ -80,11 +80,11 @@ public actor CandidateCollector {
             "/Library/Audio/Plug-Ins/Components",
             "/Library/Audio/Plug-Ins/VST",
             "/Library/Audio/Plug-Ins/VST3",
-            "\(home)/Library/Developer",
+            NormalizedPath.joinHome(home, "Library/Developer"),
         ]
 
         for base in basePaths {
-            let url = URL(fileURLWithPath: base)
+            let url = NormalizedPath.url(base, isDirectory: true)
             candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
         }
 
@@ -95,17 +95,17 @@ public actor CandidateCollector {
 
         // 2. Deep scan critical folders
         let deepFolders = [
-            "\(home)/Library/Application Support",
-            "\(home)/Library/Caches",
-            "\(home)/Library/Containers",
-            "\(home)/Library/Group Containers",
-            "\(home)/Library/HTTPStorages",
-            "\(home)/Library/WebKit",
-            "\(home)/Library/Preferences",
-            "\(home)/Library/Application Scripts",
+            NormalizedPath.joinHome(home, "Library/Application Support"),
+            NormalizedPath.joinHome(home, "Library/Caches"),
+            NormalizedPath.joinHome(home, "Library/Containers"),
+            NormalizedPath.joinHome(home, "Library/Group Containers"),
+            NormalizedPath.joinHome(home, "Library/HTTPStorages"),
+            NormalizedPath.joinHome(home, "Library/WebKit"),
+            NormalizedPath.joinHome(home, "Library/Preferences"),
+            NormalizedPath.joinHome(home, "Library/Application Scripts"),
         ]
         for dir in deepFolders {
-            let url = URL(fileURLWithPath: dir)
+            let url = NormalizedPath.url(dir, isDirectory: true)
             candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
         }
 
@@ -127,62 +127,63 @@ public actor CandidateCollector {
 
         // 5. App-specific Electron paths
         if identity.isElectron {
-            let electronPath = "\(home)/Library/Application Support/\(identity.appName)"
+            let electronPath = NormalizedPath.joinHome(home, "Library/Application Support/\(identity.appName)")
             if fileManager.fileExists(atPath: electronPath) {
-                candidates.insert(URL(fileURLWithPath: electronPath))
+                candidates.insert(NormalizedPath.url(electronPath, isDirectory: true))
             }
         }
 
         // 6. JetBrains-specific (balanced only)
         if mode == .balanced, identity.isJetBrains {
-            let jbPath = "\(home)/Library/Application Support/JetBrains"
+            let jbPath = NormalizedPath.joinHome(home, "Library/Application Support/JetBrains")
             if fileManager.fileExists(atPath: jbPath) {
-                candidates.formUnion(await shallowScan(URL(fileURLWithPath: jbPath), identity: identity, mode: mode))
-                candidates.formUnion(await deepScan(URL(fileURLWithPath: jbPath), identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
+                let jbURL = NormalizedPath.url(jbPath, isDirectory: true)
+                candidates.formUnion(await shallowScan(jbURL, identity: identity, mode: mode))
+                candidates.formUnion(await deepScan(jbURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
             }
         }
 
         // 7. Docker-specific
         if identity.isDocker {
             let dockerPaths = [
-                "\(home)/Library/Containers/com.docker.docker",
-                "\(home)/Library/Group Containers/group.com.docker",
+                NormalizedPath.joinHome(home, "Library/Containers/com.docker.docker"),
+                NormalizedPath.joinHome(home, "Library/Group Containers/group.com.docker"),
             ]
             for p in dockerPaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
+                candidates.insert(NormalizedPath.url(p, isDirectory: true))
             }
         }
 
         // 8. Steam-specific
         if identity.bundleID == "com.valvesoftware.steam" || identity.appName == "Steam" {
             let steamPaths = [
-                "\(home)/Library/Application Support/Steam",
+                NormalizedPath.joinHome(home, "Library/Application Support/Steam"),
             ]
             for p in steamPaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
+                candidates.insert(NormalizedPath.url(p, isDirectory: true))
             }
         }
 
         // 9. Epic Games-specific
         if identity.bundleID == "com.epicgames.EpicGamesLauncher" || identity.appName.lowercased().contains("epic") {
             let epicPaths = [
-                "\(home)/Library/Application Support/Epic",
-                "\(home)/Library/Application Support/Epic Games Launcher",
+                NormalizedPath.joinHome(home, "Library/Application Support/Epic"),
+                NormalizedPath.joinHome(home, "Library/Application Support/Epic Games Launcher"),
             ]
             for p in epicPaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
+                candidates.insert(NormalizedPath.url(p, isDirectory: true))
             }
         }
 
         // 10. Unity-specific
         if identity.bundleID.lowercased().hasPrefix("com.unity3d.") || identity.appName == "Unity Hub" {
             let unityPaths = [
-                "\(home)/Library/Application Support/Unity",
-                "\(home)/Library/Application Support/Unity Hub",
-                "\(home)/.local/share/unity3d",
+                NormalizedPath.joinHome(home, "Library/Application Support/Unity"),
+                NormalizedPath.joinHome(home, "Library/Application Support/Unity Hub"),
+                NormalizedPath.joinHome(home, ".local/share/unity3d"),
             ]
             for p in unityPaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
+                candidates.insert(NormalizedPath.url(p, isDirectory: true))
             }
         }
 
@@ -196,11 +197,11 @@ public actor CandidateCollector {
             let nePaths = [
                 "/Library/SystemExtensions",
                 "/Library/StagedExtensions",
-                "\(home)/Library/Application Support/Little Snitch",
-                "\(home)/Library/Application Support/NordVPN",
+                NormalizedPath.joinHome(home, "Library/Application Support/Little Snitch"),
+                NormalizedPath.joinHome(home, "Library/Application Support/NordVPN"),
             ]
             for p in nePaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(URL(fileURLWithPath: p))
+                candidates.insert(NormalizedPath.url(p, isDirectory: true))
             }
         }
 
@@ -219,12 +220,28 @@ public actor CandidateCollector {
         candidates.subtract(registry.sharedPaths)
         candidates.subtract(registry.informationalPaths)
 
+        // 15. Android Studio home tooling — after shared subtract so catalog
+        // purpose:shared cannot drop ~/.gradle / ~/.android / Library/Android.
+        let androidID = identity.bundleID.lowercased()
+        if androidID.contains("android.studio") || identity.appName.lowercased().contains("android studio") {
+            for relative in [".gradle", ".android", "Library/Android"] {
+                let url = NormalizedPath.url(NormalizedPath.joinHome(home, relative))
+                if fileManager.fileExists(atPath: url.path) {
+                    candidates.insert(url)
+                }
+            }
+        }
+
+        candidates = NormalizedPath.urls(
+            Set(candidates.filter { !Self.isForeignDeveloperTree($0, identity: identity) })
+        )
+
         return CandidateCollection(
             candidates: candidates,
-            receiptPaths: receiptPaths,
-            catalogPaths: registry.catalogPaths,
-            sharedPaths: registry.sharedPaths,
-            informationalPaths: registry.informationalPaths
+            receiptPaths: NormalizedPath.urls(Set(receiptPaths)),
+            catalogPaths: NormalizedPath.urls(registry.catalogPaths),
+            sharedPaths: NormalizedPath.urls(registry.sharedPaths),
+            informationalPaths: NormalizedPath.urls(registry.informationalPaths)
         )
     }
 
@@ -270,7 +287,7 @@ public actor CandidateCollector {
 
         for entry in appPaths.paths {
             for path in expandRegistryPath(entry, home: home) {
-                let url = URL(fileURLWithPath: path)
+                let url = NormalizedPath.url(path)
                 switch entry.purpose {
                 case .shared:
                     result.sharedPaths.insert(url)
@@ -367,9 +384,9 @@ public actor CandidateCollector {
             guard let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--files", packageID]),
                   result.exitCode == 0 else { continue }
             for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
-                let path = "/\(line)"
+                let path = NormalizedPath.join("/", line)
                 guard !path.hasPrefix(bundlePrefix), fileManager.fileExists(atPath: path) else { continue }
-                found.insert(URL(fileURLWithPath: path))
+                found.insert(NormalizedPath.url(path))
             }
         }
         return found
@@ -408,6 +425,9 @@ public actor CandidateCollector {
     }
 
     private func matchCandidate(_ url: URL, identity: AppIdentity, mode: ScanMode = .balanced) -> Bool {
+        if Self.isForeignDeveloperTree(url, identity: identity) {
+            return false
+        }
         let name = url.lastPathComponent
         let lowerName = name.lowercased()
         let lowerBundleID = identity.bundleID.lowercased()
@@ -477,6 +497,29 @@ public actor CandidateCollector {
         return false
     }
 
+    /// Cross-IDE trees that share generic names (e.g. Xcode.rst inside Android SDK).
+    static func isForeignDeveloperTree(_ url: URL, identity: AppIdentity) -> Bool {
+        let path = url.standardizedFileURL.path.lowercased()
+        let bid = identity.bundleID.lowercased()
+        let name = identity.appName.lowercased()
+
+        let isXcode = bid == "com.apple.dt.xcode" || (name == "xcode" && bid.hasPrefix("com.apple.dt"))
+        if isXcode {
+            if path.contains("/library/android") { return true }
+            if path.contains("/.gradle") || path.hasSuffix("/.gradle") { return true }
+            if path.contains("/.android") || path.hasSuffix("/.android") { return true }
+            return false
+        }
+
+        let isAndroidStudio = bid.contains("android.studio") || name.contains("android studio")
+        if isAndroidStudio {
+            if path.contains("/library/developer/xcode") { return true }
+            if path.contains("/library/developer/coresimulator") { return true }
+            return false
+        }
+        return false
+    }
+
     // MARK: - Browser vendor paths
 
     /// Google Chrome lives under ~/Library/.../Google/Chrome, not a top-level "Google Chrome" folder.
@@ -514,10 +557,14 @@ public actor CandidateCollector {
         }
 
         var found = Set<URL>()
-        let bases = ["\(home)/Library/Application Support", "\(home)/Library/Caches", "\(home)/Library/Logs"]
+        let bases = [
+            NormalizedPath.joinHome(home, "Library/Application Support"),
+            NormalizedPath.joinHome(home, "Library/Caches"),
+            NormalizedPath.joinHome(home, "Library/Logs"),
+        ]
         for (vendor, product) in vendorRoots {
             for base in bases {
-                let vendorURL = URL(fileURLWithPath: base).appendingPathComponent(vendor)
+                let vendorURL = NormalizedPath.url(base, isDirectory: true).appendingPathComponent(vendor)
                 guard fileManager.fileExists(atPath: vendorURL.path) else { continue }
                 if let product {
                     let productURL = vendorURL.appendingPathComponent(product)
@@ -575,7 +622,7 @@ public actor CandidateCollector {
         var found = Set<URL>()
         let roots = ["/Users/Shared"]
         for root in roots {
-            let url = URL(fileURLWithPath: root)
+            let url = NormalizedPath.url(root, isDirectory: true)
             found.formUnion(await scanVMDataDir(url, tokens: tokens, depth: 0, maxDepth: 5))
         }
         return found
@@ -614,7 +661,7 @@ public actor CandidateCollector {
         let home = fileSystemContext.homePath
         let names = Set([identity.appName, identity.executableName].filter { !$0.isEmpty })
         for name in names {
-            queries.append(("kMDItemFSName == '\(mdfindEscape(name))*'cd", "\(home)/Library"))
+            queries.append(("kMDItemFSName == '\(mdfindEscape(name))*'cd", NormalizedPath.joinHome(home, "Library")))
         }
 
         var urls = Set<URL>()
@@ -624,7 +671,7 @@ public actor CandidateCollector {
             arguments.append(query)
             if let result = try? await commandRunner.run(command: "/usr/bin/mdfind", arguments: arguments) {
                 for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
-                    urls.insert(URL(fileURLWithPath: line))
+                    urls.insert(NormalizedPath.url(line))
                 }
             }
         }

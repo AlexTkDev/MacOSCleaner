@@ -29,6 +29,31 @@ final class AppDiscoveryTests: XCTestCase {
         )
     }
 
+    func test_isUndeletableSystemApp_rejectsNestedAppleAndDTSatellites() {
+        let nested = URL(fileURLWithPath:
+            "/Applications/Xcode.app/Contents/Applications/com.apple.dt.ExternalViewService.app")
+        // No real bundle on disk — still treat path+ID pattern via top-level check:
+        // nested .app count > 1 → not top-level; without bundle ID only nested apple via dt needs Bundle.
+        XCTAssertFalse(AppDiscovery.isTopLevelUserApplication(nested.path))
+
+        let xcode = URL(fileURLWithPath: "/Applications/Xcode.app")
+        XCTAssertTrue(AppDiscovery.isTopLevelUserApplication(xcode.path))
+        XCTAssertTrue(AppDiscovery.isTopLevelUserApplication("/Applications/Utilities/Terminal.app"))
+        XCTAssertFalse(AppDiscovery.isTopLevelUserApplication(
+            "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Helper.app"
+        ))
+    }
+
+    func test_isListableApplication_requiresAppExtensionAndBundleID() {
+        XCTAssertFalse(AppDiscovery.isListableApplication(
+            URL(fileURLWithPath: "/usr/local/bin/node")
+        ))
+        // Synthetic path without Info.plist → no bundle ID → not listable.
+        XCTAssertFalse(AppDiscovery.isListableApplication(
+            URL(fileURLWithPath: "/tmp/FakeMissingBundle.app")
+        ))
+    }
+
     func test_applicationBundles_includesNestedLevel() throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("AppDiscoveryNested-\(UUID().uuidString)", isDirectory: true)

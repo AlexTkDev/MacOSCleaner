@@ -53,8 +53,8 @@ public actor LSRegisterCache {
         guard cache.isEmpty else { return }
         Logger.lsCache.info("Warming up LSRegisterCache")
         let appDirs = [
-            URL(fileURLWithPath: "/Applications"),
-            URL(fileURLWithPath: "\(NSHomeDirectory())/Applications"),
+            NormalizedPath.url("/Applications", isDirectory: true),
+            NormalizedPath.url(NormalizedPath.joinHome(NSHomeDirectory(), "Applications"), isDirectory: true),
         ]
         var entries: [String: Entry] = [:]
         for dir in appDirs {

@@ -676,7 +676,7 @@
 "uninstaller.metadata.parent_suite" = "Сюита";
 "uninstaller.metadata.known_issues" = "Известные особенности";
 "uninstaller.shared_component" = "Общий";
-"uninstaller.shared_component.help" = "Общий компонент с другими приложениями — не выбран для удаления.";
+"uninstaller.shared_component.help" = "Общий компонент (другие приложения тоже используют) — не удаляется автоматически.";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";

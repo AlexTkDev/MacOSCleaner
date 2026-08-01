@@ -86,7 +86,8 @@ public enum CleanupPathExpander {
         fileManager: FileManager = .default,
         maxMatches: Int = CleanupPathExpander.defaultMaxMatches
     ) -> [String] {
-        let absolute = template.hasPrefix("~") ? home + template.dropFirst() : template
+        let raw = template.hasPrefix("~") ? home + template.dropFirst() : template
+        let absolute = NormalizedPath.string(raw)
         guard absolute.contains("*") || absolute.contains("?") else {
             return fileManager.fileExists(atPath: absolute) ? [absolute] : []
         }
@@ -96,12 +97,12 @@ public enum CleanupPathExpander {
             if component.contains("*") || component.contains("?") {
                 for base in matches {
                     let dir = base.isEmpty ? "/" : base
-                    let dirURL = URL(fileURLWithPath: dir, isDirectory: true)
+                    let dirURL = NormalizedPath.url(dir, isDirectory: true)
                     if Self.isSymlinkDirectory(dirURL, fileManager: fileManager) { continue }
                     guard let children = try? fileManager.contentsOfDirectory(atPath: dir) else { continue }
                     for child in children where Self.fnmatch(pattern: component, string: child) {
-                        let childPath = base + "/" + child
-                        if Self.isSymlinkDirectory(URL(fileURLWithPath: childPath), fileManager: fileManager) {
+                        let childPath = NormalizedPath.join(base, child)
+                        if Self.isSymlinkDirectory(NormalizedPath.url(childPath), fileManager: fileManager) {
                             continue
                         }
                         next.append(childPath)
@@ -110,7 +111,7 @@ public enum CleanupPathExpander {
                 }
             } else {
                 for base in matches {
-                    let candidate = base + "/" + component
+                    let candidate = NormalizedPath.join(base, component)
                     if fileManager.fileExists(atPath: candidate) { next.append(candidate) }
                     if next.count >= maxMatches { return Array(next.prefix(maxMatches)) }
                 }
@@ -121,7 +122,7 @@ public enum CleanupPathExpander {
                 return Array(matches.prefix(maxMatches))
             }
         }
-        return matches
+        return matches.map { NormalizedPath.string($0) }
     }
 
     private static func isSymlinkDirectory(_ url: URL, fileManager: FileManager) -> Bool {
