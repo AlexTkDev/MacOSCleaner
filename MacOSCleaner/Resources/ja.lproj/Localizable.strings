@@ -575,7 +575,7 @@
 "uninstaller.metadata.parent_suite" = "スイート";
 "uninstaller.metadata.known_issues" = "既知の問題";
 "uninstaller.shared_component" = "共有";
-"uninstaller.shared_component.help" = "他アプリと共有中 — 削除されません。";
+"uninstaller.shared_component.help" = "他アプリと共有 — デフォルトで選択。不要なら解除してください。";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

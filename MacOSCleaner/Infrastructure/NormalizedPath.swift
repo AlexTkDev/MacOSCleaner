@@ -63,6 +63,18 @@ public enum NormalizedPath {
         return Set(byKey.values)
     }
 
+    /// Order-preserving unique by path key (file/dir/`//` variants collapse).
+    public static func unique(_ urls: [URL]) -> [URL] {
+        var seen = Set<String>()
+        var result: [URL] = []
+        for url in urls {
+            let canonical = canonicalize(url)
+            guard seen.insert(key(canonical)).inserted else { continue }
+            result.append(canonical)
+        }
+        return result
+    }
+
     /// Display string for UI (always collapsed, standardized).
     public static func displayString(_ url: URL) -> String {
         key(url)

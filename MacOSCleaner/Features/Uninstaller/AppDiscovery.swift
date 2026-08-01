@@ -79,7 +79,7 @@ public actor AppDiscovery {
             }
         }
 
-        return Array(Set(urls)).filter { !Self.isUndeletableSystemApp($0) }
+        return NormalizedPath.unique(urls).filter { !Self.isUndeletableSystemApp($0) }
     }
 
     /// Top-level `.app` plus one nested level (e.g. `/Applications/Utilities/*.app`).

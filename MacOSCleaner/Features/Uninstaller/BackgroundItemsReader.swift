@@ -20,10 +20,10 @@ public actor BackgroundItemsReader {
                 at: dir, includingPropertiesForKeys: nil
             ) else { continue }
             for url in contents where url.pathExtension == "plist" {
-                urls.insert(url)
+                urls.insert(NormalizedPath.canonicalize(url))
             }
         }
-        return urls
+        return NormalizedPath.urls(urls)
     }
 
     public func readLoginItems() async -> Set<URL> {
@@ -40,6 +40,6 @@ public actor BackgroundItemsReader {
                 }
             }
         }
-        return urls
+        return NormalizedPath.urls(urls)
     }
 }

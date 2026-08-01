@@ -10,6 +10,6 @@ public actor MdfindCache {
     }
 
     public func set(query: String, results: Set<URL>) {
-        cache[query] = results
+        cache[query] = NormalizedPath.urls(results)
     }
 }

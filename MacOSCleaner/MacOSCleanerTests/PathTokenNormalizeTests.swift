@@ -166,6 +166,54 @@ final class PathTokenNormalizeTests: XCTestCase {
         XCTAssertEqual(NormalizedPath.urls([catalog, scan]).count, 1)
     }
 
+    func test_unique_preservesOrderAndCollapsesSlashVariants() {
+        let a = NormalizedPath.url("/Users/alex/Library/Caches/foo", isDirectory: false)
+        let b = NormalizedPath.url("/Users/alex/Library/Caches/foo", isDirectory: true)
+        let c = NormalizedPath.url("/Users/alex/Library/Caches/bar")
+        let unique = NormalizedPath.unique([a, b, c, a])
+        XCTAssertEqual(unique.count, 2)
+        XCTAssertEqual(NormalizedPath.key(unique[0]), "/Users/alex/Library/Caches/foo")
+        XCTAssertEqual(NormalizedPath.key(unique[1]), "/Users/alex/Library/Caches/bar")
+    }
+
+    func test_cleanupItemManager_rejectsDuplicatePathVariants() {
+        let manager = CleanupItemManager()
+        manager.appendFileItem(
+            path: "/Users/alex/Library/Caches/com.example",
+            sizeBytes: 100,
+            modificationDate: nil,
+            isDirectory: true,
+            category: "Caches",
+            parentName: nil
+        )
+        manager.appendFileItem(
+            path: "//Users/alex/Library/Caches/com.example",
+            sizeBytes: 100,
+            modificationDate: nil,
+            isDirectory: true,
+            category: "Caches",
+            parentName: nil
+        )
+        let children = manager.items.first(where: { $0.label == "Caches" })?.children ?? []
+        XCTAssertEqual(children.count, 1)
+        XCTAssertEqual(children[0].path, "/Users/alex/Library/Caches/com.example")
+    }
+
+    func test_relatedFiles_dedupAndSort_mergesSlashVariantsViaRelatedFileInit() {
+        // RelatedFile init canonicalizes; two forms with same path must share NormalizedPath.key.
+        let fileForm = UninstallerService.RelatedFile(
+            url: URL(fileURLWithPath: "/Users/alex/Library/Application Support/Cursor", isDirectory: false),
+            confidence: .veryLikely
+        )
+        let dirForm = UninstallerService.RelatedFile(
+            url: URL(fileURLWithPath: "/Users/alex/Library/Application Support/Cursor", isDirectory: true),
+            evidence: [.knownCatalog],
+            confidence: .guaranteed
+        )
+        XCTAssertEqual(NormalizedPath.key(fileForm.url), NormalizedPath.key(dirForm.url))
+        XCTAssertEqual(fileForm.url, dirForm.url)
+    }
+
     func test_parentLinker_collapsesDoubleSlashFromPathComponents() {
         let identity = AppIdentity(
             bundleID: "ru.keepcoder.Telegram",

@@ -23,29 +23,30 @@ public enum HelperAppCollapser {
                 kept.append(app)
                 continue
             }
-            let key = parent.url.standardizedFileURL.path
+            let key = NormalizedPath.key(parent.url)
             var urls = absorbed[key] ?? []
-            urls.append(app.url.standardizedFileURL)
+            urls.append(NormalizedPath.canonicalize(app.url))
             if let bundleID = app.bundleID, !bundleID.isEmpty {
                 urls.append(contentsOf: darwinCacheURLs(forBundleID: bundleID))
             }
-            absorbed[key] = urls
+            absorbed[key] = NormalizedPath.unique(urls)
         }
 
         var mergedAbsorbed = absorbed
         let updated = kept.map { app -> UninstallerService.AppInfo in
-            let key = app.url.standardizedFileURL.path
+            let key = NormalizedPath.key(app.url)
             guard let helperURLs = mergedAbsorbed.removeValue(forKey: key), !helperURLs.isEmpty else {
                 return app
             }
             var copy = app
-            var existing = Set(copy.absorbedHelperURLs.map { $0.standardizedFileURL.path })
+            var existing = Set(copy.absorbedHelperURLs.map(NormalizedPath.key))
             for url in helperURLs {
-                let path = url.standardizedFileURL.path
+                let canonical = NormalizedPath.canonicalize(url)
+                let path = NormalizedPath.key(canonical)
                 guard existing.insert(path).inserted else { continue }
                 // Skip helper .app nested inside the parent bundle — deleting the parent covers it.
                 if path.hasPrefix(key + "/") { continue }
-                copy.absorbedHelperURLs.append(url.standardizedFileURL)
+                copy.absorbedHelperURLs.append(canonical)
             }
             return copy
         }

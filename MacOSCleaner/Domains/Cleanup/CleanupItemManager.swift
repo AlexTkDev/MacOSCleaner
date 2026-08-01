@@ -39,17 +39,18 @@ public final class CleanupItemManager {
     // MARK: - File Item Append (new hierarchical flow)
 
     public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true) {
+        let normalizedPath = Self.normalizePath(path)
         let sizeMB = max(1, Int(sizeBytes / (1024 * 1024)))
-        let risk = Self.determineRisk(for: path)
+        let risk = Self.determineRisk(for: normalizedPath)
 
         let newItem = CleanupPreviewItem(
-            label: Self.shortLabel(from: path),
+            label: Self.shortLabel(from: normalizedPath),
             sizeMB: sizeMB,
             sizeBytes: sizeBytes,
             risk: risk,
             isSelected: isSelected,
             isDeletable: true,
-            path: path,
+            path: normalizedPath,
             modificationDate: modificationDate,
             category: category
         )
@@ -57,7 +58,10 @@ public final class CleanupItemManager {
         let targetParent = parentName ?? category
 
         if let idx = items.firstIndex(where: { $0.label == targetParent }) {
-            if !items[idx].children.contains(where: { $0.path == path }) {
+            if !items[idx].children.contains(where: {
+                guard let childPath = $0.path else { return false }
+                return Self.normalizePath(childPath) == normalizedPath
+            }) {
                 items[idx].children.append(newItem)
                 items[idx].sizeMB = items[idx].children.reduce(0) { $0 + $1.sizeMB }
                 items[idx].sizeBytes = items[idx].children.reduce(0) { $0 + $1.sizeBytes }
@@ -82,7 +86,7 @@ public final class CleanupItemManager {
         guard let parent = items.first(where: { $0.label == label }) else { return [] }
         return parent.children.compactMap { child in
             guard child.isSelected, let path = child.path else { return nil }
-            return NormalizedPath.url(path)
+            return NormalizedPath.url((path as NSString).expandingTildeInPath)
         }
     }
 
@@ -244,8 +248,7 @@ public final class CleanupItemManager {
     }
 
     private static func normalizePath(_ path: String) -> String {
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return (path as NSString).standardizingPath.replacingOccurrences(of: home, with: "~")
+        NormalizedPath.key(NormalizedPath.url((path as NSString).expandingTildeInPath))
     }
 
     private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {

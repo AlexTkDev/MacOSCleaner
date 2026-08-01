@@ -24,7 +24,7 @@ public struct OrphanItem: Identifiable, Sendable, Hashable {
         modificationDate: Date? = nil
     ) {
         self.id = id
-        self.url = url
+        self.url = NormalizedPath.canonicalize(url)
         self.name = name
         self.bundleID = bundleID
         self.sizeBytes = sizeBytes
@@ -33,11 +33,11 @@ public struct OrphanItem: Identifiable, Sendable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(url.path)
+        hasher.combine(NormalizedPath.key(url))
     }
 
     public static func == (lhs: OrphanItem, rhs: OrphanItem) -> Bool {
-        lhs.url.path == rhs.url.path
+        NormalizedPath.key(lhs.url) == NormalizedPath.key(rhs.url)
     }
 }
 
@@ -186,7 +186,11 @@ public actor AppResidualsOrphanEngine {
             Logger.orphanEngine.debug("Found orphan: \(entry.url.lastPathComponent, privacy: .public) (\(size, privacy: .public) bytes) in \(entry.category, privacy: .public)")
         }
 
-        return orphans.sorted { $0.sizeBytes > $1.sizeBytes }
+        var uniqueByPath: [String: OrphanItem] = [:]
+        for orphan in orphans {
+            uniqueByPath[NormalizedPath.key(orphan.url)] = orphan
+        }
+        return Array(uniqueByPath.values).sorted { $0.sizeBytes > $1.sizeBytes }
     }
 
     // MARK: - Removal (Trash or Permanent based on AppSettings)
@@ -273,8 +277,8 @@ public actor AppResidualsOrphanEngine {
 
         for appURL in appURLs {
             try Task.checkCancellation()
-            let standardized = appURL.standardizedFileURL
-            guard seenPaths.insert(standardized.path).inserted else { continue }
+            let standardized = NormalizedPath.canonicalize(appURL)
+            guard seenPaths.insert(NormalizedPath.key(standardized)).inserted else { continue }
 
             let identity = await AppIdentity.resolve(from: standardized, commandRunner: commandRunner)
             records.append(InstalledAppRecord(

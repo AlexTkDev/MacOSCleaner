@@ -575,7 +575,7 @@
 "uninstaller.metadata.parent_suite" = "套件归属";
 "uninstaller.metadata.known_issues" = "已知注意事项";
 "uninstaller.shared_component" = "共享组件";
-"uninstaller.shared_component.help" = "与其他应用共享中 — 默认取消勾选。";
+"uninstaller.shared_component.help" = "与其他应用共享 — 默认勾选；如仍需要请取消。";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

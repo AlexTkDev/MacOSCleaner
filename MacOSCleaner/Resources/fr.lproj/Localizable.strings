@@ -583,7 +583,7 @@
 "uninstaller.metadata.parent_suite" = "Suite";
 "uninstaller.metadata.known_issues" = "Problèmes connus";
 "uninstaller.shared_component" = "Partagé";
-"uninstaller.shared_component.help" = "Partagé avec d'autres applications — non sélectionné pour la suppression.";
+"uninstaller.shared_component.help" = "Partagé avec d'autres applications — sélectionné par défaut ; décochez si encore nécessaire.";
 
 "format_bytes_b" = "%lld o";
 "format_bytes_kb" = "%.1f Ko";

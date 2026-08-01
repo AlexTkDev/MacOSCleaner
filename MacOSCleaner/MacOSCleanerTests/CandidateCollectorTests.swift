@@ -278,7 +278,7 @@ final class CandidateCollectorTests: XCTestCase {
         let expectedPaths = Set([oldApps[0], currentApps[0]].map {
             $0.resolvingSymlinksInPath().path
         })
-        // Sibling Homebrew versions are candidates for review, not receipt-backed auto-select.
+        // Sibling Homebrew versions are candidates (deep scan preselects for uninstall).
         XCTAssertTrue(collection.receiptPaths.isEmpty)
         XCTAssertTrue(expectedPaths.isSubset(of: Set(
             collection.candidates.map { $0.resolvingSymlinksInPath().path }

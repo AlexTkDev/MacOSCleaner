@@ -18,10 +18,14 @@ struct UninstallerView: View {
     @State private var isTargeted = false
     @State private var showingConfirmation = false
     @State private var isLoading = false
-    @State private var deepScanCache: [URL: UninstallerService.AppInfo] = [:]
+    @State private var deepScanCache: [String: UninstallerService.AppInfo] = [:]
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
+
+    private func sameAppURL(_ lhs: URL, _ rhs: URL) -> Bool {
+        NormalizedPath.key(lhs) == NormalizedPath.key(rhs)
+    }
     
     private var formatter: ByteCountFormatter {
         let f = ByteCountFormatter.makeLocalized(countStyle: .file)
@@ -79,7 +83,7 @@ struct UninstallerView: View {
                                         selectedApp = app
                                     }
                                     .listRowBackground(
-                                        selectedApp?.url == app.url
+                                        (selectedApp.map { sameAppURL($0.url, app.url) } ?? false)
                                             ? Color.accentColor.opacity(0.1)
                                             : Color.clear
                                     )
@@ -143,7 +147,7 @@ struct UninstallerView: View {
         .onAppear(perform: loadApps)
         .onChange(of: selectedApp?.url) { oldURL, newURL in
             guard let url = newURL else { return }
-            guard let app = allApps.first(where: { $0.url == url }) else { return }
+            guard let app = allApps.first(where: { sameAppURL($0.url, url) }) else { return }
             if app.scanState != .deepScanned {
                 selectedApp = nil
             }
@@ -195,13 +199,13 @@ struct UninstallerView: View {
             for app in fresh {
                 if let result = try? await service.deepScan(app, mode: settings.uninstallerScanMode) {
                     deepScanCompleted += 1
-                    if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
+                    if let idx = allApps.firstIndex(where: { sameAppURL($0.url, result.url) }) {
                         allApps[idx] = result
                     }
-                    if selectedApp?.url == result.url {
+                    if let selected = selectedApp, sameAppURL(selected.url, result.url) {
                         selectedApp = result
                     }
-                    deepScanCache[result.url] = result
+                    deepScanCache[NormalizedPath.key(result.url)] = result
                 } else {
                     deepScanCompleted += 1
                 }
@@ -502,7 +506,6 @@ struct UninstallerView: View {
     }
 
     private func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
-        guard file.deletionRisk != .shared else { return }
         if let appIndex = allApps.firstIndex(where: { $0.id == app.id }),
            let fileIndex = allApps[appIndex].relatedFiles.firstIndex(where: { $0.id == file.id }) {
             allApps[appIndex].relatedFiles[fileIndex].isSelected.toggle()
@@ -613,7 +616,6 @@ struct RelatedFileRow: View {
             HStack {
                 Toggle("", isOn: Binding(get: { file.isSelected }, set: { _ in onToggle() }))
                     .toggleStyle(.checkbox)
-                    .disabled(file.deletionRisk == .shared)
                     .help(file.deletionRisk == .shared
                           ? "uninstaller.shared_component.help".localized
                           : "")

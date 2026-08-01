@@ -673,7 +673,7 @@
 "uninstaller.metadata.parent_suite" = "Сюїта";
 "uninstaller.metadata.known_issues" = "Відомі особливості";
 "uninstaller.shared_component" = "Спільний";
-"uninstaller.shared_component.help" = "Спільний компонент з іншими програмами — не вибрано для видалення.";
+"uninstaller.shared_component.help" = "Спільний компонент з іншими програмами — вибрано за замовчуванням; зніміть позначку, якщо ще потрібен.";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";

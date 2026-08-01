@@ -46,7 +46,7 @@ public actor UninstallerService {
     public enum DeletionRisk: String, Sendable, CaseIterable {
         case safe
         case normal
-        /// Shared updater / SIP component — shown for info, never auto-selected.
+        /// Shared updater / suite component — preselected; user can deselect.
         case shared
     }
 
@@ -133,7 +133,7 @@ public actor UninstallerService {
 
         public var totalSize: Int64 {
             let relatedSize = relatedFiles
-                .filter { $0.isSelected && $0.deletionRisk != .shared }
+                .filter(\.isSelected)
                 .reduce(0) { $0 + $1.size }
             let devSize = developerComponents.filter(\.isSelected).reduce(0) { $0 + $1.sizeBytes }
             return size + relatedSize + devSize
@@ -210,14 +210,7 @@ public actor UninstallerService {
 
     /// Keep one entry per physical app bundle path.
     private func uniqueApplicationURLs(_ urls: [URL]) -> [URL] {
-        var seen = Set<String>()
-        var unique: [URL] = []
-        for url in urls {
-            let standardized = url.standardizedFileURL.path
-            guard seen.insert(standardized).inserted else { continue }
-            unique.append(url)
-        }
-        return unique.sorted { $0.path.localizedCompare($1.path) == .orderedAscending }
+        NormalizedPath.unique(urls).sorted { $0.path.localizedCompare($1.path) == .orderedAscending }
     }
 
     private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
@@ -234,7 +227,7 @@ public actor UninstallerService {
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
 
         return AppInfo(
-            url: url,
+            url: NormalizedPath.canonicalize(url),
             bundleID: identity.bundleID,
             name: identity.appName,
             relatedFiles: [],
@@ -272,14 +265,14 @@ public actor UninstallerService {
 
         let (related, developer) = await (relatedTask, developerTask)
         // Developer components are SSOT for IDE tooling paths (gradle/android/sdk, …).
-        let developerRoots = developer.map { $0.url.standardizedFileURL.path }
+        let developerRoots = developer.map { NormalizedPath.key($0.url) }
         var filteredRelated = related.filter { file in
-            !Self.overlapsDeveloperRoot(file.url.standardizedFileURL.path, roots: developerRoots)
+            !Self.overlapsDeveloperRoot(NormalizedPath.key(file.url), roots: developerRoots)
         }
         filteredRelated = await attachAbsorbedHelpers(
             filteredRelated,
             helperURLs: app.absorbedHelperURLs,
-            parentBundlePath: identity.bundleURL.standardizedFileURL.path
+            parentBundlePath: NormalizedPath.key(identity.bundleURL)
         )
         updated.relatedFiles = filteredRelated
         updated.developerComponents = developer
@@ -291,8 +284,10 @@ public actor UninstallerService {
 
     /// Paths that belong to developer-components SSOT must not also appear as related (or locked Shared).
     static func overlapsDeveloperRoot(_ path: String, roots: [String]) -> Bool {
-        roots.contains { root in
-            path == root || path.hasPrefix(root + "/") || root.hasPrefix(path + "/")
+        let pathKey = NormalizedPath.key(NormalizedPath.url(path))
+        return roots.contains { root in
+            let rootKey = NormalizedPath.key(NormalizedPath.url(root))
+            return pathKey == rootKey || pathKey.hasPrefix(rootKey + "/") || rootKey.hasPrefix(pathKey + "/")
         }
     }
 
@@ -302,11 +297,11 @@ public actor UninstallerService {
         parentBundlePath: String
     ) async -> [RelatedFile] {
         guard !helperURLs.isEmpty else { return related }
-        var existing = Set(related.map { $0.url.standardizedFileURL.path })
+        var existing = Set(related.map { NormalizedPath.key($0.url) })
         var result = related
         for url in helperURLs {
-            let standardized = url.standardizedFileURL
-            let path = standardized.path
+            let standardized = NormalizedPath.canonicalize(url)
+            let path = NormalizedPath.key(standardized)
             if path.hasPrefix(parentBundlePath + "/") { continue }
             guard existing.insert(path).inserted else { continue }
             var isDir: ObjCBool = false
@@ -379,14 +374,10 @@ public actor UninstallerService {
             let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
                 ? .normal : .safe
 
-            // Other .app bundles (Homebrew siblings, copies) — show, never preselect.
-            let isOtherAppBundle = node.url.pathExtension.lowercased() == "app"
-                && node.url.standardizedFileURL.path != identity.bundleURL.standardizedFileURL.path
-
             let file = RelatedFile(
                 url: node.url,
-                // Weak matches are shown but never pre-selected for deletion
-                isSelected: !isOtherAppBundle && assessment.tier >= .veryLikely,
+                // possible: review-only; veryLikely+ (incl. Homebrew sibling .apps): preselected
+                isSelected: assessment.tier >= .veryLikely,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,
@@ -420,7 +411,7 @@ public actor UninstallerService {
                 }
                 return RelatedFile(
                     url: file.url,
-                    isSelected: false,
+                    isSelected: true,
                     size: file.size,
                     deletionRisk: .shared,
                     evidence: file.evidence,
@@ -440,7 +431,7 @@ public actor UninstallerService {
             return file
         }
 
-        // Shared components (Keystone, MAU, …): informational only, never selected.
+        // Shared components (Keystone, MAU, …): preselected; user may deselect.
         var existing = Set(result.map { NormalizedPath.key($0.url) })
         for url in collection.sharedPaths {
             let standardized = NormalizedPath.canonicalize(url)
@@ -453,7 +444,7 @@ public actor UninstallerService {
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
-                isSelected: false,
+                isSelected: true,
                 size: fileSize,
                 deletionRisk: .shared,
                 evidence: [],
@@ -534,7 +525,7 @@ public actor UninstallerService {
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
 
         let relatedTargets = app.relatedFiles
-            .filter { $0.isSelected && $0.deletionRisk != .shared }
+            .filter(\.isSelected)
             .map(\.url)
         let devTargets = app.developerComponents.filter(\.isSelected).map(\.url)
         let deletionTargets = relatedTargets + devTargets
@@ -555,7 +546,6 @@ public actor UninstallerService {
         }
 
         for file in app.relatedFiles where file.isSelected {
-            guard file.deletionRisk != .shared else { continue }
             let path = file.url.path
             if (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") {
                 // bootout is the modern reliable unload; fall back to legacy unload
@@ -691,7 +681,7 @@ public actor UninstallerService {
     private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
         var merged: [String: AppInfo] = [:]
         for app in apps {
-            let key = app.url.standardizedFileURL.path
+            let key = NormalizedPath.key(app.url)
             if let existing = merged[key] {
                 merged[key] = preferredApp(existing, app)
             } else {

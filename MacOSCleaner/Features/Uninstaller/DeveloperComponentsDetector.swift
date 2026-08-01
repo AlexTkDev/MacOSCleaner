@@ -140,10 +140,23 @@ public enum DeveloperComponentsDetector {
             }
         }
 
-        return components
+        return components.uniquedByPath()
     }
 
     private static func getDirectorySize(url: URL) -> Int64 {
         FileManager.default.getPhysicalDirectorySize(url: url, excludedPaths: [])
+    }
+}
+
+private extension Array where Element == UninstallerService.RelatedCleanupComponent {
+    func uniquedByPath() -> [UninstallerService.RelatedCleanupComponent] {
+        var seen = Set<String>()
+        var result: [UninstallerService.RelatedCleanupComponent] = []
+        for component in self {
+            let pathKey = NormalizedPath.key(component.url)
+            guard seen.insert(pathKey).inserted else { continue }
+            result.append(component)
+        }
+        return result
     }
 }

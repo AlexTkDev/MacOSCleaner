@@ -370,7 +370,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         var seen = Set<String>()
         for label in category.previewLabels {
             for url in itemManager.selectedLeafURLs(underParentLabel: label) {
-                if seen.insert(url.path).inserted {
+                if seen.insert(NormalizedPath.key(url)).inserted {
                     urls.append(url)
                 }
             }

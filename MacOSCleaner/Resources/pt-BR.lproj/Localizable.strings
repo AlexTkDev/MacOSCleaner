@@ -575,7 +575,7 @@
 "uninstaller.metadata.parent_suite" = "Suíte";
 "uninstaller.metadata.known_issues" = "Problemas conhecidos";
 "uninstaller.shared_component" = "Compartilhado";
-"uninstaller.shared_component.help" = "Compartilhado com outros apps — não selecionado para remoção.";
+"uninstaller.shared_component.help" = "Compartilhado com outros apps — selecionado por padrão; desmarque se ainda precisar.";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

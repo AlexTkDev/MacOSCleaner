@@ -115,7 +115,7 @@ public actor CandidateCollector {
         candidates.formUnion(receiptPaths)
 
         // Homebrew sibling kegs: discover as candidates, never elevate to receiptPaths
-        // (other versions must stay unselected for delete).
+        // (siblings stay candidates — deep scan preselects them for uninstall).
         let homebrewSiblings = collectHomebrewSiblingApps(identity: identity)
         candidates.formUnion(homebrewSiblings)
 
@@ -217,8 +217,10 @@ public actor CandidateCollector {
         let registry = collectRegistryPaths(identity: identity, home: home)
         candidates.formUnion(registry.candidates)
         // Shared / user_content must never compete as selectable delete candidates.
-        candidates.subtract(registry.sharedPaths)
-        candidates.subtract(registry.informationalPaths)
+        // Path-key subtract so file/dir URL forms of the same path both match.
+        candidates = NormalizedPath.urls(candidates)
+        candidates.subtract(NormalizedPath.urls(registry.sharedPaths))
+        candidates.subtract(NormalizedPath.urls(registry.informationalPaths))
 
         // 15. Android Studio home tooling — after shared subtract so catalog
         // purpose:shared cannot drop ~/.gradle / ~/.android / Library/Android.
@@ -257,10 +259,10 @@ public actor CandidateCollector {
             return []
         }
 
-        return Set(contents.filter {
+        return NormalizedPath.urls(Set(contents.filter {
             let name = $0.lastPathComponent.lowercased()
             return name == bundleID || name.hasPrefix(bundleID + ".")
-        })
+        }))
     }
 
     /// Bundle IDs excluded from registry lookup (SIP system apps).
@@ -314,11 +316,12 @@ public actor CandidateCollector {
 
     /// Drops catalog paths that are strict ancestors of another catalog path.
     private static func excludingAncestorPaths(_ paths: Set<URL>) -> Set<URL> {
-        let normalized = paths.map { $0.standardizedFileURL }
+        let normalized = Array(NormalizedPath.urls(paths))
         return Set(normalized.filter { candidate in
-            let path = candidate.path
+            let path = NormalizedPath.key(candidate)
             return !normalized.contains { other in
-                other.path != path && other.path.hasPrefix(path + "/")
+                let otherPath = NormalizedPath.key(other)
+                return otherPath != path && otherPath.hasPrefix(path + "/")
             }
         })
     }
@@ -399,7 +402,7 @@ public actor CandidateCollector {
         }
         for item in contents {
             if matchCandidate(item, identity: identity, mode: mode) {
-                found.insert(item)
+                found.insert(NormalizedPath.canonicalize(item))
             }
         }
         return found
@@ -413,7 +416,7 @@ public actor CandidateCollector {
         }
         for item in contents {
             if matchCandidate(item, identity: identity, mode: mode) {
-                found.insert(item)
+                found.insert(NormalizedPath.canonicalize(item))
             }
             var isDir: ObjCBool = false
             if fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue {

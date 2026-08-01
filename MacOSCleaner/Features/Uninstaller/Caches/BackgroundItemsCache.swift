@@ -9,8 +9,8 @@ public actor BackgroundItemsCache {
     public func getLaunchAgents() -> Set<URL> { launchAgents }
     public func getLoginItems() -> Set<URL> { loginItems }
 
-    public func setLaunchAgents(_ urls: Set<URL>) { launchAgents = urls }
-    public func setLoginItems(_ urls: Set<URL>) { loginItems = urls }
+    public func setLaunchAgents(_ urls: Set<URL>) { launchAgents = NormalizedPath.urls(urls) }
+    public func setLoginItems(_ urls: Set<URL>) { loginItems = NormalizedPath.urls(urls) }
 
     public func warmup() async {
         let reader = BackgroundItemsReader()
