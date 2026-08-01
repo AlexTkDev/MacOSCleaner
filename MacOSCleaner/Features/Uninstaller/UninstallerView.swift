@@ -22,6 +22,7 @@ struct UninstallerView: View {
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
+    @State private var expandedConfidenceTiers: Set<ConfidenceTier> = [.guaranteed, .veryLikely, .possible]
 
     private func sameAppURL(_ lhs: URL, _ rhs: URL) -> Bool {
         NormalizedPath.key(lhs) == NormalizedPath.key(rhs)
@@ -394,24 +395,35 @@ struct UninstallerView: View {
             ForEach(visibleTiers, id: \.self) { tier in
                 let files = grouped[tier] ?? []
                 if !files.isEmpty {
-                    VStack(alignment: .leading, spacing: 2) {
+                    DisclosureGroup(
+                        isExpanded: Binding(
+                            get: { expandedConfidenceTiers.contains(tier) },
+                            set: { expanded in
+                                if expanded {
+                                    expandedConfidenceTiers.insert(tier)
+                                } else {
+                                    expandedConfidenceTiers.remove(tier)
+                                }
+                            }
+                        )
+                    ) {
+                        VStack(spacing: 1) {
+                            ForEach(files) { file in
+                                RelatedFileRow(
+                                    file: file,
+                                    appName: app.name,
+                                    settings: settings,
+                                    formatter: formatter,
+                                    onToggle: { toggleSelection(file, in: app) }
+                                )
+                            }
+                        }
+                        .glassCard(cornerRadius: 10)
+                    } label: {
                         Label(tier.displayKey.localized, systemImage: tierIcon(tier))
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(tierColor(tier))
-
-                        VStack(spacing: 1) {
-                            ForEach(files) { file in
-                                    RelatedFileRow(
-                                        file: file,
-                                        appName: app.name,
-                                        settings: settings,
-                                        formatter: formatter,
-                                        onToggle: { toggleSelection(file, in: app) }
-                                    )
-                            }
-                        }
-                        .glassCard(cornerRadius: 10)
                     }
                 }
             }
