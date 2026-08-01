@@ -20,7 +20,7 @@ targets:
           - ui_metadata.json
       - SharedViews
     preBuildScripts:
-      - name: Pack Private Cleanup Catalog
+      - name: Pack Cleanup Catalog
         script: |
           set -euo pipefail
           ENGINE="$SRCROOT/Resources/engine_paths.json"
@@ -31,11 +31,11 @@ targets:
           fi
           if [[ ! -f "$ENGINE" && ! -f "$UI" ]]; then
             if [[ "${REQUIRE_PRIVATE_CATALOG:-}" == "YES" ]]; then
-              echo "error: official local build requires engine_paths.json + ui_metadata.json" >&2
-              echo "error: place SoT under MacOSCleaner/Resources/ (gitignored) or remove $MARKER" >&2
+              echo "error: build requires engine_paths.json + ui_metadata.json" >&2
+              echo "error: place SoT under MacOSCleaner/Resources/ or remove $MARKER" >&2
               exit 1
             fi
-            echo "Private catalog SoT absent — public fallback build"
+            echo "Optional catalog SoT not present — continuing"
             touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
             exit 0
           fi
@@ -43,7 +43,7 @@ targets:
             echo "error: both engine_paths.json and ui_metadata.json are required together" >&2
             exit 1
           fi
-          # Local maintainer machine: always repack full catalog into Assets.car before compile.
+          # Maintainer machine: refresh catalog asset before compile when SoT is present.
           swift "$PROJECT_DIR/../scripts/generate_cleanup_paths.swift" --write
           touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
         inputFiles:

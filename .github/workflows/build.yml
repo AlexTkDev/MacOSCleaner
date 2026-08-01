@@ -19,13 +19,13 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Optional private catalog check
+      - name: Optional path catalog check
         run: |
           if [[ -f MacOSCleaner/Resources/engine_paths.json && -f MacOSCleaner/Resources/ui_metadata.json ]]; then
             python3 scripts/validate_engine_paths.py
             swift scripts/generate_cleanup_paths.swift --check
           else
-            echo "Private catalog SoT absent — public fallback CI"
+            echo "Optional catalog SoT not present — skipping pack check"
           fi
 
       - name: Check XcodeGen drift

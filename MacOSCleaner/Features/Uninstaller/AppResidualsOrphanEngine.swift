@@ -303,6 +303,7 @@ public actor AppResidualsOrphanEngine {
             ("\(home)/Library/Group Containers", "Group Containers"),
             ("\(home)/Library/Caches", "Caches"),
             ("\(home)/Library/Preferences", "Preferences"),
+            ("\(home)/Library/Preferences/ByHost", "Preferences ByHost"),
             ("\(home)/Library/Saved Application State", "Saved App State"),
             ("\(home)/Library/HTTPStorages", "HTTPStorages"),
             ("\(home)/Library/Cookies", "Cookies"),
@@ -310,6 +311,10 @@ public actor AppResidualsOrphanEngine {
             ("\(home)/Library/Logs", "Logs"),
             ("\(home)/Library/Application Scripts", "Application Scripts"),
             ("\(home)/Library/Internet Plug-Ins", "Internet Plug-Ins"),
+            (
+                "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments",
+                "SharedFileList"
+            ),
         ]
 
         var index: [IndexedEntry] = []

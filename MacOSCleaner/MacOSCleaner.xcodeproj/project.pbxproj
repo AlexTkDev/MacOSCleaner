@@ -983,7 +983,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B76AFA25D33224DB81EFE4D6 /* Build configuration list for PBXNativeTarget "MacOSCleaner" */;
 			buildPhases = (
-				495A9C87AABE9B38CCC10A35 /* Pack Private Cleanup Catalog */,
+				315DD6B5D149FD818315D5AF /* Pack Cleanup Catalog */,
 				8333A01F00CAA61AF1BB8C5D /* Sources */,
 				14EBC735AE008641D80EE305 /* Resources */,
 			);
@@ -1078,7 +1078,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		495A9C87AABE9B38CCC10A35 /* Pack Private Cleanup Catalog */ = {
+		315DD6B5D149FD818315D5AF /* Pack Cleanup Catalog */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1091,7 +1091,7 @@
 				"$(SRCROOT)/../scripts/generate_cleanup_paths.swift",
 				"$(SRCROOT)/../scripts/validate_engine_paths.py",
 			);
-			name = "Pack Private Cleanup Catalog";
+			name = "Pack Cleanup Catalog";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -1100,7 +1100,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\nENGINE=\"$SRCROOT/Resources/engine_paths.json\"\nUI=\"$SRCROOT/Resources/ui_metadata.json\"\nMARKER=\"$SRCROOT/.require-private-catalog\"\nif [[ -f \"$MARKER\" ]]; then\n  export REQUIRE_PRIVATE_CATALOG=YES\nfi\nif [[ ! -f \"$ENGINE\" && ! -f \"$UI\" ]]; then\n  if [[ \"${REQUIRE_PRIVATE_CATALOG:-}\" == \"YES\" ]]; then\n    echo \"error: official local build requires engine_paths.json + ui_metadata.json\" >&2\n    echo \"error: place SoT under MacOSCleaner/Resources/ (gitignored) or remove $MARKER\" >&2\n    exit 1\n  fi\n  echo \"Private catalog SoT absent — public fallback build\"\n  touch \"$DERIVED_FILE_DIR/cleanup_paths_verified.stamp\"\n  exit 0\nfi\nif [[ -f \"$ENGINE\" && ! -f \"$UI\" ]] || [[ ! -f \"$ENGINE\" && -f \"$UI\" ]]; then\n  echo \"error: both engine_paths.json and ui_metadata.json are required together\" >&2\n  exit 1\nfi\n# Local maintainer machine: always repack full catalog into Assets.car before compile.\nswift \"$PROJECT_DIR/../scripts/generate_cleanup_paths.swift\" --write\ntouch \"$DERIVED_FILE_DIR/cleanup_paths_verified.stamp\"\n";
+			shellScript = "set -euo pipefail\nENGINE=\"$SRCROOT/Resources/engine_paths.json\"\nUI=\"$SRCROOT/Resources/ui_metadata.json\"\nMARKER=\"$SRCROOT/.require-private-catalog\"\nif [[ -f \"$MARKER\" ]]; then\n  export REQUIRE_PRIVATE_CATALOG=YES\nfi\nif [[ ! -f \"$ENGINE\" && ! -f \"$UI\" ]]; then\n  if [[ \"${REQUIRE_PRIVATE_CATALOG:-}\" == \"YES\" ]]; then\n    echo \"error: build requires engine_paths.json + ui_metadata.json\" >&2\n    echo \"error: place SoT under MacOSCleaner/Resources/ or remove $MARKER\" >&2\n    exit 1\n  fi\n  echo \"Optional catalog SoT not present — continuing\"\n  touch \"$DERIVED_FILE_DIR/cleanup_paths_verified.stamp\"\n  exit 0\nfi\nif [[ -f \"$ENGINE\" && ! -f \"$UI\" ]] || [[ ! -f \"$ENGINE\" && -f \"$UI\" ]]; then\n  echo \"error: both engine_paths.json and ui_metadata.json are required together\" >&2\n  exit 1\nfi\n# Maintainer machine: refresh catalog asset before compile when SoT is present.\nswift \"$PROJECT_DIR/../scripts/generate_cleanup_paths.swift\" --write\ntouch \"$DERIVED_FILE_DIR/cleanup_paths_verified.stamp\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

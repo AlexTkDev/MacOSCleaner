@@ -376,8 +376,8 @@ public actor UninstallerService {
 
             let file = RelatedFile(
                 url: node.url,
-                // possible: review-only; veryLikely+ (incl. Homebrew sibling .apps): preselected
-                isSelected: assessment.tier >= .veryLikely,
+                // Shown tiers (possible+) are preselected so uninstall does not leave residuals.
+                isSelected: assessment.tier >= .possible,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,

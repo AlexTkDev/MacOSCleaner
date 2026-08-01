@@ -16,25 +16,47 @@ public actor CandidateCollector {
     private let fileManager: FileManager
     private let commandRunner: any CommandRunning
     private let homebrewCellarDirectories: [URL]
-    private let darwinCacheDirectory: URL
+    /// Current-user Darwin dirs (`…/C`, `…/T`, `…/X`). Tests may inject a single root.
+    private let darwinUserDirectories: [URL]
+    private let receiptsDirectory: URL
+    private let tmpScanDirectory: URL
     private let fileSystemContext: FileSystemContext
+
+    private static let homeResidualDenyList: Set<String> = [
+        ".ssh", ".gnupg", ".Trash", ".trash", ".CFUserTextEncoding",
+        ".DS_Store", ".localized", "Library", "Documents", "Desktop",
+        "Downloads", "Movies", "Music", "Pictures", "Public", "Applications",
+    ]
 
     public init(
         fileManager: FileManager = .default,
         commandRunner: any CommandRunning = CommandRunner(),
         homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories,
         darwinCacheDirectory: URL? = nil,
+        receiptsDirectory: URL? = nil,
+        tmpScanDirectory: URL? = nil,
         fileSystemContext: FileSystemContext = .production
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
         self.homebrewCellarDirectories = homebrewCellarDirectories
         self.fileSystemContext = fileSystemContext
-        let cacheDirectory = darwinCacheDirectory
-            ?? fileManager.temporaryDirectory
+        if let darwinCacheDirectory {
+            self.darwinUserDirectories = [darwinCacheDirectory.resolvingSymlinksInPath()]
+        } else {
+            let parent = fileManager.temporaryDirectory
                 .deletingLastPathComponent()
-                .appendingPathComponent("C", isDirectory: true)
-        self.darwinCacheDirectory = cacheDirectory.resolvingSymlinksInPath()
+                .resolvingSymlinksInPath()
+            self.darwinUserDirectories = ["C", "T", "X"].map {
+                parent.appendingPathComponent($0, isDirectory: true)
+            }
+        }
+        self.receiptsDirectory = (receiptsDirectory
+            ?? URL(fileURLWithPath: "/private/var/db/receipts", isDirectory: true))
+            .resolvingSymlinksInPath()
+        self.tmpScanDirectory = (tmpScanDirectory
+            ?? URL(fileURLWithPath: "/private/tmp", isDirectory: true))
+            .resolvingSymlinksInPath()
     }
 
     public func collect(identity: AppIdentity, mode: ScanMode = .balanced) async -> Set<URL> {
@@ -69,6 +91,8 @@ public actor CandidateCollector {
             "/Library/LaunchDaemons",
             "/Library/Preferences",
             "/Library/Application Support",
+            "/Library/Caches",
+            "/Library/Logs",
             "/Library/PrivilegedHelperTools",
             "/Library/Internet Plug-Ins",
             "/Library/QuickLook",
@@ -81,6 +105,10 @@ public actor CandidateCollector {
             "/Library/Audio/Plug-Ins/VST",
             "/Library/Audio/Plug-Ins/VST3",
             NormalizedPath.joinHome(home, "Library/Developer"),
+            NormalizedPath.joinHome(
+                home,
+                "Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments"
+            ),
         ]
 
         for base in basePaths {
@@ -88,10 +116,11 @@ public actor CandidateCollector {
             candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
         }
 
-        // Current user's Darwin cache root (/private/var/folders/.../C).
-        // Exact bundle-ID prefixes find helper caches without scanning other users,
-        // temp files, or generic vendor names.
-        candidates.formUnion(collectDarwinCachePaths(identity: identity))
+        // Current user's Darwin dirs (/private/var/folders/.../{C,T,X}).
+        candidates.formUnion(collectDarwinUserDirs(identity: identity))
+
+        // Installer receipt metadata on disk (.plist / .bom), in addition to pkgutil.
+        candidates.formUnion(collectReceiptFiles(identity: identity))
 
         // 2. Deep scan critical folders
         let deepFolders = [
@@ -123,6 +152,8 @@ public actor CandidateCollector {
         if mode == .balanced {
             let mdfindCandidates = await runMdfind(identity: identity)
             candidates.formUnion(mdfindCandidates)
+            candidates.formUnion(collectHomeResiduals(identity: identity, home: home))
+            candidates.formUnion(await collectTmpAppBundles(identity: identity))
         }
 
         // 5. App-specific Electron paths
@@ -143,7 +174,18 @@ public actor CandidateCollector {
             }
         }
 
-        // 7. Docker-specific
+        // 7. Docker / OrbStack home dirs (heuristic; catalog may also list these officially)
+        if identity.isDocker
+            || identity.bundleID.lowercased().contains("orbstack")
+            || identity.appName.lowercased().contains("orbstack") {
+            for relative in [".docker", ".orbstack"] {
+                let path = NormalizedPath.joinHome(home, relative)
+                if fileManager.fileExists(atPath: path) {
+                    candidates.insert(NormalizedPath.url(path, isDirectory: true))
+                }
+            }
+        }
+
         if identity.isDocker {
             let dockerPaths = [
                 NormalizedPath.joinHome(home, "Library/Containers/com.docker.docker"),
@@ -247,22 +289,162 @@ public actor CandidateCollector {
         )
     }
 
-    private func collectDarwinCachePaths(identity: AppIdentity) -> Set<URL> {
-        let bundleID = identity.bundleID.lowercased()
-        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown."),
-              let contents = try? fileManager.contentsOfDirectory(
-                at: darwinCacheDirectory,
+    private func collectDarwinUserDirs(identity: AppIdentity) -> Set<URL> {
+        var found = Set<URL>()
+        for directory in darwinUserDirectories {
+            guard let contents = try? fileManager.contentsOfDirectory(
+                at: directory,
                 includingPropertiesForKeys: nil,
                 options: [.skipsHiddenFiles]
-              )
-        else {
-            return []
+            ) else { continue }
+            for item in contents where matchesDarwinEntry(item.lastPathComponent, identity: identity) {
+                found.insert(NormalizedPath.canonicalize(item))
+            }
+        }
+        return NormalizedPath.urls(found)
+    }
+
+    /// Bundle-ID / helper / savedState matching for Darwin C/T/X entries.
+    private func matchesDarwinEntry(_ name: String, identity: AppIdentity) -> Bool {
+        let lower = name.lowercased()
+        let bundleID = identity.bundleID.lowercased()
+        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown.") else { return false }
+
+        if lower == bundleID || lower.hasPrefix(bundleID + ".") { return true }
+        if lower.hasSuffix(".savedstate"), lower.hasPrefix(bundleID) { return true }
+
+        for helper in identity.helperNames {
+            let helperLower = helper.lowercased()
+            guard helperLower.count >= 3 else { continue }
+            if lower == helperLower || lower.hasPrefix(helperLower + ".") { return true }
+            if lower == bundleID + ".helper" || lower.hasPrefix(bundleID + ".helper.") { return true }
         }
 
-        return NormalizedPath.urls(Set(contents.filter {
-            let name = $0.lastPathComponent.lowercased()
-            return name == bundleID || name.hasPrefix(bundleID + ".")
-        }))
+        // Prefix-only app name (e.g. "cursor-…" temps), never bare contains.
+        let appName = identity.appName.lowercased()
+        if appName.count >= 4,
+           lower.hasPrefix(appName + "-") || lower.hasPrefix(appName + ".") || lower.hasPrefix(appName + "_") {
+            return true
+        }
+        return false
+    }
+
+    /// On-disk pkg receipts (.plist / .bom) matched by bundle ID or sanitized app name.
+    private func collectReceiptFiles(identity: AppIdentity) -> Set<URL> {
+        let bundleID = identity.bundleID.lowercased()
+        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown.") else { return [] }
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: receiptsDirectory,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else { return [] }
+
+        let sanitizedApp = identity.appName
+            .replacingOccurrences(of: " ", with: "_")
+            .lowercased()
+        var found = Set<URL>()
+        for item in contents {
+            let lower = item.lastPathComponent.lowercased()
+            let stem = (lower as NSString).deletingPathExtension
+            guard lower.hasSuffix(".plist") || lower.hasSuffix(".bom") else { continue }
+            if stem == bundleID || stem.hasPrefix(bundleID + ".") || lower.contains(bundleID) {
+                found.insert(NormalizedPath.canonicalize(item))
+                continue
+            }
+            if sanitizedApp.count >= 4, stem.contains(sanitizedApp) || lower.contains(sanitizedApp) {
+                found.insert(NormalizedPath.canonicalize(item))
+            }
+        }
+        return NormalizedPath.urls(found)
+    }
+
+    /// Shallow home entries (dotdirs / top-level app folders). No curated private path list.
+    private func collectHomeResiduals(identity: AppIdentity, home: String) -> Set<URL> {
+        let homeURL = NormalizedPath.url(home, isDirectory: true)
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: homeURL,
+            includingPropertiesForKeys: nil,
+            options: []
+        ) else { return [] }
+
+        let lowerApp = identity.appName.lowercased()
+        let lowerBundle = identity.bundleName?.lowercased() ?? ""
+        let lowerExec = identity.executableName.lowercased()
+        var tokens = Set([lowerApp, lowerExec].filter { $0.count >= 3 })
+        if lowerBundle.count >= 3 { tokens.insert(lowerBundle) }
+        // Compact form: "Google Chrome" → "googlechrome" rarely used; keep spaced name.
+
+        var found = Set<URL>()
+        for item in contents {
+            let name = item.lastPathComponent
+            if Self.homeResidualDenyList.contains(name) { continue }
+            let lower = name.lowercased()
+            let bare = lower.hasPrefix(".") ? String(lower.dropFirst()) : lower
+            guard bare.count >= 3 else { continue }
+
+            let matched = tokens.contains { token in
+                bare == token
+                    || lower == ".\(token)"
+                    || bare.hasPrefix(token + "-")
+                    || bare.hasPrefix(token + "_")
+                    || lower.hasPrefix(".\(token)-")
+                    || lower.hasPrefix(".\(token)_")
+            }
+            if matched {
+                found.insert(NormalizedPath.canonicalize(item))
+            }
+        }
+        return NormalizedPath.urls(found)
+    }
+
+    /// Debug / CI `.app` bundles under /private/tmp (balanced only).
+    private func collectTmpAppBundles(identity: AppIdentity) async -> Set<URL> {
+        let targetApp = identity.bundleURL.lastPathComponent.lowercased()
+        let appName = identity.appName.lowercased()
+        guard targetApp.hasSuffix(".app") || appName.count >= 3 else { return [] }
+        return await scanTmpDir(tmpScanDirectory, targetApp: targetApp, appName: appName, depth: 0, maxDepth: 5)
+    }
+
+    private func scanTmpDir(
+        _ url: URL,
+        targetApp: String,
+        appName: String,
+        depth: Int,
+        maxDepth: Int
+    ) async -> Set<URL> {
+        guard depth <= maxDepth else { return [] }
+        var found = Set<URL>()
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return found }
+
+        for item in contents {
+            let lower = item.lastPathComponent.lowercased()
+            if lower == targetApp {
+                found.insert(NormalizedPath.canonicalize(item))
+                continue
+            }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue else {
+                continue
+            }
+            if appName.count >= 4, lower.contains(appName) {
+                // Descend into name-matching project folders (e.g. MacOSCleaner-Polish/…).
+                found.formUnion(
+                    await scanTmpDir(item, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
+                )
+            } else if depth < maxDepth {
+                // Shallow walk only a couple levels for Build/Products/Debug layouts.
+                if lower == "build" || lower == "products" || lower == "debug" || lower == "release" {
+                    found.formUnion(
+                        await scanTmpDir(item, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
+                    )
+                }
+            }
+        }
+        return found
     }
 
     /// Bundle IDs excluded from registry lookup (SIP system apps).
@@ -463,6 +645,14 @@ public actor CandidateCollector {
         if identity.appGroups.contains(name) {
             return true
         }
+        // Embedded helper / framework names (Electron Helper, privhelper binaries).
+        for helper in identity.helperNames {
+            let helperLower = helper.lowercased()
+            guard helperLower.count >= 3 else { continue }
+            if lowerName == helperLower || lowerName.hasPrefix(helperLower + ".") {
+                return true
+            }
+        }
         // Bundle ID tail inside a vendor folder: Google/Chrome from com.google.Chrome.
         // Without the vendor-parent guard a generic tail ("desktop" from
         // ai.opencode.desktop) matches Data/Desktop in every sandbox container.
@@ -560,25 +750,34 @@ public actor CandidateCollector {
         }
 
         var found = Set<URL>()
-        let bases = [
+        let nestedBases = [
             NormalizedPath.joinHome(home, "Library/Application Support"),
             NormalizedPath.joinHome(home, "Library/Caches"),
             NormalizedPath.joinHome(home, "Library/Logs"),
         ]
         for (vendor, product) in vendorRoots {
-            for base in bases {
+            for base in nestedBases {
                 let vendorURL = NormalizedPath.url(base, isDirectory: true).appendingPathComponent(vendor)
                 guard fileManager.fileExists(atPath: vendorURL.path) else { continue }
                 if let product {
                     let productURL = vendorURL.appendingPathComponent(product)
                     if fileManager.fileExists(atPath: productURL.path) {
-                        found.insert(productURL)
+                        found.insert(NormalizedPath.canonicalize(productURL))
                         found.formUnion(await deepScan(productURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
                     }
                 } else {
-                    found.insert(vendorURL)
+                    found.insert(NormalizedPath.canonicalize(vendorURL))
                     found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
                 }
+            }
+            // ~/Library/{Vendor} — e.g. GoogleSoftwareUpdate / Keystone beside Application Support.
+            let libraryVendor = NormalizedPath.url(NormalizedPath.joinHome(home, "Library"), isDirectory: true)
+                .appendingPathComponent(vendor)
+            if fileManager.fileExists(atPath: libraryVendor.path) {
+                found.insert(NormalizedPath.canonicalize(libraryVendor))
+                found.formUnion(
+                    await deepScan(libraryVendor, identity: identity, depth: 0, maxDepth: min(maxDepth, 3), mode: .balanced)
+                )
             }
         }
         return found
