@@ -28,6 +28,9 @@ jobs:
             echo "Optional catalog SoT not present — skipping pack check"
           fi
 
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
       - name: Check XcodeGen drift
         working-directory: MacOSCleaner
         run: |
