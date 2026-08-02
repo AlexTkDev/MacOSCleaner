@@ -383,6 +383,15 @@
 "uninstaller.analyzing" = "Анализ...";
 "uninstaller_complete_title" = "Удаление завершено";
 "uninstaller_complete_body" = "Приложение %@ было успешно удалено.";
+"uninstaller_versions_badge" = "%d верс.";
+"uninstaller_multiple_versions_found" = "Найдено %d версий этого приложения";
+"uninstaller_version_title" = "Версия %@";
+"uninstaller_delete_this_version" = "Удалить эту версию";
+"uninstaller_all_versions_tab" = "Все версии (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Это переместит версию %@ приложения %@ и ее связанные файлы (%lld) в Корзину.";
+"uninstaller_uninstall_version_warning_perm" = "Это приведет к безвозвратному удалению версии %@ приложения %@ и ее связанных файлов (%lld).";
+"uninstaller_version_deleted_body" = "Версия %@ приложения %@ успешно удалена.";
+"uninstaller_versions" = "Версии";
 "shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
 
 /* Processes View */
@@ -676,7 +685,13 @@
 "uninstaller.metadata.parent_suite" = "Сюита";
 "uninstaller.metadata.known_issues" = "Известные особенности";
 "uninstaller.shared_component" = "Общий";
-"uninstaller.shared_component.help" = "Общий компонент (другие приложения тоже используют) — выбран по умолчанию; снимите галочку, если ещё нужен.";
+"uninstaller.shared_component.help" = "Общий компонент (другие приложения тоже используют) — по умолчанию не выбран; включите только если хотите удалить общее.";
+"uninstaller.shared_help.microsoft" = "Общий компонент пакета Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Общий компонент службы обновлений Google (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Общий компонент пакета Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Общий компонент среды JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Общие данные разработки Android (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Общие средства разработки Apple (Xcode, Command Line Tools, Simulator)";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";

@@ -109,11 +109,36 @@ public actor CandidateCollector {
                 home,
                 "Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments"
             ),
+            // User Library plugins/extensions
+            NormalizedPath.joinHome(home, "Library/Screen Savers"),
+            NormalizedPath.joinHome(home, "Library/Services"),
+            NormalizedPath.joinHome(home, "Library/Frameworks"),
+            NormalizedPath.joinHome(home, "Library/ColorPickers"),
+            NormalizedPath.joinHome(home, "Library/Address Book Plug-Ins"),
+            NormalizedPath.joinHome(home, "Library/Mail/Bundles"),
+            NormalizedPath.joinHome(home, "Library/Keyboard Layouts"),
+            NormalizedPath.joinHome(home, "Library/Dictionaries"),
+            NormalizedPath.joinHome(home, "Library/PreferencePanes"),
+            // System heuristic directories
+            "/Library/Frameworks",
+            "/Library/Screen Savers",
+            "/Library/ColorPickers",
+            "/Library/Extensions",
+            "/Library/Services",
         ]
 
         for base in basePaths {
             let url = NormalizedPath.url(base, isDirectory: true)
             candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
+        }
+
+        // XDG dirs — CLI/Electron app configs (heuristic — public fallback)
+        for relative in [".config", ".cache", ".local/share"] {
+            let xdgPath = NormalizedPath.joinHome(home, relative)
+            if fileManager.fileExists(atPath: xdgPath) {
+                let xdgURL = NormalizedPath.url(xdgPath, isDirectory: true)
+                candidates.formUnion(await shallowScan(xdgURL, identity: identity, mode: mode))
+            }
         }
 
         // Current user's Darwin dirs (/private/var/folders/.../{C,T,X}).
@@ -148,12 +173,15 @@ public actor CandidateCollector {
         let homebrewSiblings = collectHomebrewSiblingApps(identity: identity)
         candidates.formUnion(homebrewSiblings)
 
-        // 4. mdfind (balanced only)
+        // 4. Home residuals (dotdirs in ~) — always collected
+        candidates.formUnion(collectHomeResiduals(identity: identity, home: home))
+
+        // 5. mdfind (balanced only)
         if mode == .balanced {
             let mdfindCandidates = await runMdfind(identity: identity)
             candidates.formUnion(mdfindCandidates)
-            candidates.formUnion(collectHomeResiduals(identity: identity, home: home))
             candidates.formUnion(await collectTmpAppBundles(identity: identity))
+            candidates.formUnion(await collectFromLSRegister(identity: identity))
         }
 
         // 5. App-specific Electron paths
@@ -320,11 +348,15 @@ public actor CandidateCollector {
             if lower == bundleID + ".helper" || lower.hasPrefix(bundleID + ".helper.") { return true }
         }
 
-        // Prefix-only app name (e.g. "cursor-…" temps), never bare contains.
+        // Prefix-only app name or username-prefixed (<username>-<appName>-*), never bare contains.
         let appName = identity.appName.lowercased()
-        if appName.count >= 4,
-           lower.hasPrefix(appName + "-") || lower.hasPrefix(appName + ".") || lower.hasPrefix(appName + "_") {
-            return true
+        if appName.count >= 4 {
+            if lower.hasPrefix(appName + "-") || lower.hasPrefix(appName + ".") || lower.hasPrefix(appName + "_") {
+                return true
+            }
+            if lower.contains("-" + appName + "-") || lower.contains("-" + appName + ".") || lower.contains("-" + appName + "_") || lower.hasSuffix("-" + appName) {
+                return true
+            }
         }
         return false
     }
@@ -367,13 +399,6 @@ public actor CandidateCollector {
             options: []
         ) else { return [] }
 
-        let lowerApp = identity.appName.lowercased()
-        let lowerBundle = identity.bundleName?.lowercased() ?? ""
-        let lowerExec = identity.executableName.lowercased()
-        var tokens = Set([lowerApp, lowerExec].filter { $0.count >= 3 })
-        if lowerBundle.count >= 3 { tokens.insert(lowerBundle) }
-        // Compact form: "Google Chrome" → "googlechrome" rarely used; keep spaced name.
-
         var found = Set<URL>()
         for item in contents {
             let name = item.lastPathComponent
@@ -382,13 +407,20 @@ public actor CandidateCollector {
             let bare = lower.hasPrefix(".") ? String(lower.dropFirst()) : lower
             guard bare.count >= 3 else { continue }
 
-            let matched = tokens.contains { token in
-                bare == token
-                    || lower == ".\(token)"
-                    || bare.hasPrefix(token + "-")
-                    || bare.hasPrefix(token + "_")
-                    || lower.hasPrefix(".\(token)-")
-                    || lower.hasPrefix(".\(token)_")
+            let appHit = EvidenceProbe.appNameMatchesFileName(name, appName: identity.appName)
+            var matched = appHit.exact || appHit.prefix
+            if !matched, let bundleName = identity.bundleName, !bundleName.isEmpty {
+                let bundleHit = EvidenceProbe.appNameMatchesFileName(name, appName: bundleName)
+                matched = bundleHit.exact || bundleHit.prefix
+            }
+            if !matched {
+                let exec = identity.executableName.lowercased()
+                if exec.count >= 3 {
+                    matched = bare == exec
+                        || lower == ".\(exec)"
+                        || bare.hasPrefix(exec + "-")
+                        || bare.hasPrefix(exec + "_")
+                }
             }
             if matched {
                 found.insert(NormalizedPath.canonicalize(item))
@@ -508,6 +540,23 @@ public actor CandidateCollector {
         })
     }
 
+    private func collectFromLSRegister(identity: AppIdentity) async -> Set<URL> {
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        guard fileManager.fileExists(atPath: lsregister),
+              let result = try? await commandRunner.run(command: lsregister, arguments: ["-dump"]) else { return [] }
+
+        let bundleIDLower = identity.bundleID.lowercased()
+        var found = Set<URL>()
+        for line in result.stdout.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix("path:") else { continue }
+            let path = String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+            guard path.lowercased().contains(bundleIDLower) else { continue }
+            found.insert(NormalizedPath.url(path))
+        }
+        return found
+    }
+
     /// Sibling `.app` bundles in configured Homebrew Cellar directories that share
     /// the same bundle name. Returned as candidates only — never receiptPaths.
     private func collectHomebrewSiblingApps(identity: AppIdentity) -> Set<URL> {
@@ -590,27 +639,59 @@ public actor CandidateCollector {
         return found
     }
 
-    private func deepScan(_ url: URL, identity: AppIdentity, depth: Int, maxDepth: Int, mode: ScanMode) async -> Set<URL> {
+    private func deepScan(
+        _ url: URL,
+        identity: AppIdentity,
+        depth: Int,
+        maxDepth: Int,
+        mode: ScanMode,
+        insideMatch: Bool = false
+    ) async -> Set<URL> {
         guard depth <= maxDepth else { return [] }
         var found = Set<URL>()
         guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil) else {
             return found
         }
         for item in contents {
-            if matchCandidate(item, identity: identity, mode: mode) {
+            let matched = matchCandidate(item, identity: identity, mode: mode)
+            if matched {
                 found.insert(NormalizedPath.canonicalize(item))
             }
             var isDir: ObjCBool = false
             if fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue {
-                let sub = await deepScan(item, identity: identity, depth: depth + 1, maxDepth: maxDepth, mode: mode)
+                // Walk matched trees fully; for unmatched siblings only descend vendor hubs
+                // (Google/) so we don't traverse Chrome profiles while scanning Studio.
+                let descend = matched
+                    || insideMatch
+                    || Self.shouldDescendForResidualScan(item, identity: identity)
+                guard descend else { continue }
+                let sub = await deepScan(
+                    item,
+                    identity: identity,
+                    depth: depth + 1,
+                    maxDepth: maxDepth,
+                    mode: mode,
+                    insideMatch: matched || insideMatch
+                )
                 found.formUnion(sub)
             }
         }
         return found
     }
 
+    /// Vendor / mega-vendor folders that host per-product children (Google/AndroidStudio…).
+    private static func shouldDescendForResidualScan(_ url: URL, identity: AppIdentity) -> Bool {
+        let name = url.lastPathComponent
+        if identity.vendorNames.contains(name) { return true }
+        if sharedMegaVendors.contains(name) { return true }
+        return false
+    }
+
     private func matchCandidate(_ url: URL, identity: AppIdentity, mode: ScanMode = .balanced) -> Bool {
         if Self.isForeignDeveloperTree(url, identity: identity) {
+            return false
+        }
+        if Self.isForeignAppLibraryTree(url, identity: identity) {
             return false
         }
         let name = url.lastPathComponent
@@ -625,21 +706,43 @@ public actor CandidateCollector {
         if lowerName == lowerBundleID || lowerName.hasPrefix(lowerBundleID + ".") {
             return true
         }
-        if lowerName == lowerAppName
-            || lowerName.hasPrefix(lowerAppName + " ")
-            || lowerName.hasPrefix(lowerAppName + ".")
-            || lowerName.hasPrefix(lowerAppName + "-") {
+        let appHit = EvidenceProbe.appNameMatchesFileName(name, appName: identity.appName)
+        if appHit.exact {
             return true
         }
-        if let lowerBundleName, !lowerBundleName.isEmpty,
-           (lowerName == lowerBundleName
-            || lowerName.hasPrefix(lowerBundleName + " ")
-            || lowerName.hasPrefix(lowerBundleName + "-")) {
-            return true
+        if appHit.prefix, !Self.looksLikeSourceFile(lowerName) {
+            // Prefer residual suffixes for dotted names; compact IDE dirs OK (AndroidStudio2026).
+            let bare = lowerName.hasPrefix(".") ? String(lowerName.dropFirst()) : lowerName
+            let isDottedResidual = bare.contains(".")
+            if !isDottedResidual || Self.matchesAppNameResidualSuffix(lowerName, appToken: lowerAppName) {
+                return true
+            }
+            // Compact prefix without spaces: AndroidStudio2026.1.2
+            let cFile = EvidenceProbe.compactIdentityToken(bare)
+            let cApp = EvidenceProbe.compactIdentityToken(lowerAppName)
+            if cApp.count >= 5, cFile.hasPrefix(cApp) {
+                return true
+            }
         }
-        // TeamID-prefixed containers (e.g. Group Containers/UBF8T346G9.Office)
+        if let bundleName = identity.bundleName, !bundleName.isEmpty {
+            let bundleHit = EvidenceProbe.appNameMatchesFileName(name, appName: bundleName)
+            if bundleHit.exact { return true }
+            if bundleHit.prefix, !Self.looksLikeSourceFile(lowerName) {
+                let cFile = EvidenceProbe.compactIdentityToken(lowerName)
+                let cBundle = EvidenceProbe.compactIdentityToken(bundleName)
+                if cBundle.count >= 5, cFile.hasPrefix(cBundle) { return true }
+                if Self.matchesAppNameResidualSuffix(lowerName, appToken: bundleName.lowercased()) {
+                    return true
+                }
+            }
+        }
+        // TeamID containers: require declared app group or product-suffix match.
+        // Bare TeamID. prefix alone cross-selects Office siblings (Excel ↔ Word widgets).
         if let teamID = identity.teamID, !teamID.isEmpty, name.hasPrefix(teamID + ".") {
-            return true
+            if identity.appGroups.contains(name) { return true }
+            let suffix = String(name.dropFirst(teamID.count + 1)).lowercased()
+            if EvidenceProbe.bundleIDSuffixMatch(suffix, bundleID: lowerBundleID) { return true }
+            if !lowerAppName.isEmpty, EvidenceProbe.tokenPrefixMatch(suffix, lowerAppName) { return true }
         }
         // App groups declared in the signature entitlements (TC3Q7MAJXF.com.adguard.mac)
         if identity.appGroups.contains(name) {
@@ -664,23 +767,27 @@ public actor CandidateCollector {
                 return true
             }
         }
-        // Token prefix: opencode-desktop_br for OpenCode
-        if EvidenceProbe.tokenPrefixMatch(lowerName, lowerAppName) { return true }
-        if EvidenceProbe.tokenPrefixMatch(lowerName, lowerExecutable) { return true }
-        if let lowerBundleName { if EvidenceProbe.tokenPrefixMatch(lowerName, lowerBundleName) { return true } }
+        // Token prefix: opencode-desktop_br for OpenCode (dirs / residual names only).
+        if !Self.looksLikeSourceFile(lowerName) {
+            if EvidenceProbe.tokenPrefixMatch(lowerName, lowerAppName) { return true }
+            if EvidenceProbe.tokenPrefixMatch(lowerName, lowerExecutable) { return true }
+            if let lowerBundleName, EvidenceProbe.tokenPrefixMatch(lowerName, lowerBundleName) { return true }
+        }
 
         // Safe mode: only exact matches above
         if mode == .safe { return false }
 
-        // Balanced: exact vendor directory name only (e.g. "Adobe").
-        // Do NOT match "Microsoft Excel" via contains("Microsoft") — that cross-selects siblings.
-        if identity.vendorNames.contains(name) {
+        // Balanced: product-specific vendor dirs only — never bare Google/Microsoft/Adobe
+        // roots that host many apps (Chrome + Android Studio + Drive share ~/Library/.../Google).
+        if identity.vendorNames.contains(name), !Self.sharedMegaVendors.contains(name) {
             return true
         }
         if lowerName.contains(lowerBundleID) {
             return true
         }
-        if lowerName.contains(lowerAppName) {
+        // Whole-token app name in directory names; never substring inside Cursor.java etc.
+        if !Self.looksLikeSourceFile(lowerName),
+           EvidenceProbe.wordBoundaryMatch(lowerName, lowerAppName) {
             return true
         }
         if lowerName == lowerExecutable {
@@ -688,6 +795,37 @@ public actor CandidateCollector {
         }
 
         return false
+    }
+
+    /// Shared vendor folder names that must not match as residuals by themselves.
+    private static let sharedMegaVendors: Set<String> = [
+        "Google", "Microsoft", "Adobe", "Oracle", "Apple",
+    ]
+
+    private static let residualNameSuffixes: Set<String> = [
+        "plist", "sfl", "sfl2", "sfl3", "sfl4", "savedstate",
+        "shipit", "helper", "binarycookies", "gpu",
+    ]
+
+    private static let sourceFileExtensions: Set<String> = [
+        "java", "swift", "m", "mm", "h", "hpp", "c", "cpp", "cc",
+        "js", "jsx", "ts", "tsx", "py", "rb", "go", "kt", "kts",
+        "rs", "cs", "scala", "groovy", "dart",
+    ]
+
+    private static func looksLikeSourceFile(_ lowerName: String) -> Bool {
+        guard lowerName.contains("."), !lowerName.hasPrefix(".") else { return false }
+        return sourceFileExtensions.contains((lowerName as NSString).pathExtension)
+    }
+
+    /// `App.plist` / `App.ShipIt` / `App.helper` — not `App.java`.
+    private static func matchesAppNameResidualSuffix(_ lowerName: String, appToken: String) -> Bool {
+        guard !appToken.isEmpty, lowerName.hasPrefix(appToken + ".") else { return false }
+        let rest = String(lowerName.dropFirst(appToken.count + 1))
+        if looksLikeSourceFile(lowerName) { return false }
+        return residualNameSuffixes.contains { suffix in
+            rest == suffix || rest.hasPrefix(suffix + ".") || rest.hasPrefix(suffix + "-")
+        }
     }
 
     /// Cross-IDE trees that share generic names (e.g. Xcode.rst inside Android SDK).
@@ -709,6 +847,47 @@ public actor CandidateCollector {
             if path.contains("/library/developer/xcode") { return true }
             if path.contains("/library/developer/coresimulator") { return true }
             return false
+        }
+
+        // Cursor / IDEs must not claim Android SDK sources (Cursor.java, etc.).
+        if path.contains("/library/android/") || path.contains("/.android/") || path.hasSuffix("/.android") {
+            return true
+        }
+        return false
+    }
+
+    /// Another app's Library subtree (e.g. Nektony updater cache holding OpenCode metadata).
+    static func isForeignAppLibraryTree(_ url: URL, identity: AppIdentity) -> Bool {
+        let path = url.standardizedFileURL.path.lowercased()
+        let bid = identity.bundleID.lowercased()
+        guard !bid.isEmpty, !bid.hasPrefix("unknown.") else { return false }
+
+        let folders = [
+            "/library/caches/",
+            "/library/application support/",
+            "/library/httpstorages/",
+            "/library/preferences/",
+            "/library/containers/",
+            "/library/logs/",
+        ]
+        for folder in folders {
+            guard let range = path.range(of: folder) else { continue }
+            var foreign = String(path[range.upperBound...].prefix(while: { $0 != "/" }))
+            if foreign.hasSuffix(".plist") {
+                foreign = String(foreign.dropLast(6))
+            }
+            // Only reverse-DNS style library buckets.
+            let looksLikeBundle = foreign.contains(".") && (
+                foreign.hasPrefix("com.") || foreign.hasPrefix("org.") || foreign.hasPrefix("net.")
+                    || foreign.hasPrefix("io.") || foreign.hasPrefix("ai.") || foreign.hasPrefix("dev.")
+                    || foreign.hasPrefix("app.") || foreign.hasPrefix("co.")
+            )
+            guard looksLikeBundle else { continue }
+            // System holders that store per-app children by our bundle ID / name.
+            if foreign.hasPrefix("com.apple.") { continue }
+            if foreign == bid || foreign.hasPrefix(bid + ".") { continue }
+            if bid.hasPrefix(foreign + ".") { continue }
+            return true
         }
         return false
     }

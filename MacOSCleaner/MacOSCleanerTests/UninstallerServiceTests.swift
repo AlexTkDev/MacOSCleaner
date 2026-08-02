@@ -104,4 +104,36 @@ final class UninstallerServiceTests: XCTestCase {
         XCTAssertEqual(Evidence.parentDirectory.category, .graph)
         XCTAssertEqual(Evidence.launchServicesRegistered.category, .launchServices)
     }
+
+    func testGroupKey_andMultiVersionAppInfo() {
+        let app1 = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/opt/homebrew/Cellar/python@3.14/3.14.6/IDLE 3.app"),
+            bundleID: "org.python.IDLE",
+            name: "IDLE 3",
+            size: 200,
+            version: "3.14.6"
+        )
+        let app2 = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/opt/homebrew/Cellar/python@3.12/3.12.13/IDLE 3.app"),
+            bundleID: "org.python.IDLE",
+            name: "IDLE 3",
+            size: 150,
+            version: "3.12.13"
+        )
+
+        XCTAssertEqual(UninstallerService.groupKey(for: app1), UninstallerService.groupKey(for: app2))
+
+        let grouped = UninstallerService.AppInfo(
+            url: app1.url,
+            bundleID: app1.bundleID,
+            name: app1.name,
+            size: 350,
+            version: "3.14.6, 3.12.13",
+            versions: [app1, app2]
+        )
+
+        XCTAssertTrue(grouped.isGrouped)
+        XCTAssertEqual(grouped.versions.count, 2)
+        XCTAssertEqual(grouped.totalSize, 350)
+    }
 }

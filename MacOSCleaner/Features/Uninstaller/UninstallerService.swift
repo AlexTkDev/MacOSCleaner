@@ -105,8 +105,8 @@ public actor UninstallerService {
     }
 
     public struct AppInfo: Identifiable, Sendable, Hashable {
-        public let id = UUID()
-        public let url: URL
+        public let id: UUID
+        public var url: URL
         public let bundleID: String?
         public let name: String
         public var relatedFiles: [RelatedFile] = []
@@ -120,6 +120,44 @@ public actor UninstallerService {
         public var version: String = ""
         public var lastUsed: Date? = nil
         public var iconData: Data? = nil
+        /// Multiple versions of the same app grouped together.
+        public var versions: [AppInfo] = []
+
+        public init(
+            id: UUID = UUID(),
+            url: URL,
+            bundleID: String? = nil,
+            name: String,
+            relatedFiles: [RelatedFile] = [],
+            developerComponents: [RelatedCleanupComponent] = [],
+            absorbedHelperURLs: [URL] = [],
+            identity: AppIdentity? = nil,
+            scanState: ScanState = .discovered,
+            size: Int64 = 0,
+            version: String = "",
+            lastUsed: Date? = nil,
+            iconData: Data? = nil,
+            versions: [AppInfo] = []
+        ) {
+            self.id = id
+            self.url = url
+            self.bundleID = bundleID
+            self.name = name
+            self.relatedFiles = relatedFiles
+            self.developerComponents = developerComponents
+            self.absorbedHelperURLs = absorbedHelperURLs
+            self.identity = identity
+            self.scanState = scanState
+            self.size = size
+            self.version = version
+            self.lastUsed = lastUsed
+            self.iconData = iconData
+            self.versions = versions
+        }
+
+        public var isGrouped: Bool {
+            versions.count > 1
+        }
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
         public static func == (lhs: AppInfo, rhs: AppInfo) -> Bool {
@@ -128,10 +166,14 @@ public actor UninstallerService {
             lhs.developerComponents == rhs.developerComponents &&
             lhs.absorbedHelperURLs == rhs.absorbedHelperURLs &&
             lhs.scanState == rhs.scanState &&
-            lhs.size == rhs.size
+            lhs.size == rhs.size &&
+            lhs.versions == rhs.versions
         }
 
         public var totalSize: Int64 {
+            if !versions.isEmpty {
+                return versions.reduce(0) { $0 + $1.totalSize }
+            }
             let relatedSize = relatedFiles
                 .filter(\.isSelected)
                 .reduce(0) { $0 + $1.size }
@@ -244,6 +286,35 @@ public actor UninstallerService {
     // MARK: - Deep Forensics
 
     public func deepScan(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
+        if !app.versions.isEmpty {
+            var scannedVersions: [AppInfo] = []
+            for versionApp in app.versions {
+                let scanned = try await deepScanSingle(versionApp, mode: mode)
+                scannedVersions.append(scanned)
+            }
+            scannedVersions.sort { preferredApp($0, $1) == $0 }
+
+            let primary = scannedVersions[0]
+            let versionStrings = scannedVersions.compactMap { $0.version.isEmpty ? nil : $0.version }
+            let versionSummary = versionStrings.isEmpty ? primary.version : versionStrings.joined(separator: ", ")
+
+            var updated = app
+            updated.versions = scannedVersions
+            updated.url = primary.url
+            updated.version = versionSummary
+            updated.lastUsed = scannedVersions.compactMap(\.lastUsed).max()
+            updated.iconData = primary.iconData ?? app.iconData
+            updated.relatedFiles = aggregateRelatedFiles(from: scannedVersions)
+            updated.developerComponents = aggregateDeveloperComponents(from: scannedVersions)
+            updated.absorbedHelperURLs = NormalizedPath.unique(scannedVersions.flatMap(\.absorbedHelperURLs))
+            updated.scanState = .deepScanned
+            return updated
+        } else {
+            return try await deepScanSingle(app, mode: mode)
+        }
+    }
+
+    private func deepScanSingle(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
         let identity: AppIdentity
         if let existing = app.identity {
             identity = existing
@@ -376,8 +447,8 @@ public actor UninstallerService {
 
             let file = RelatedFile(
                 url: node.url,
-                // Shown tiers (possible+) are preselected so uninstall does not leave residuals.
-                isSelected: assessment.tier >= .possible,
+                // possible = review-only; veryLikely+ preselected
+                isSelected: assessment.tier >= .veryLikely,
                 size: fileSize,
                 deletionRisk: risk,
                 evidence: assessment.evidence,
@@ -411,7 +482,7 @@ public actor UninstallerService {
                 }
                 return RelatedFile(
                     url: file.url,
-                    isSelected: true,
+                    isSelected: false,
                     size: file.size,
                     deletionRisk: .shared,
                     evidence: file.evidence,
@@ -431,7 +502,8 @@ public actor UninstallerService {
             return file
         }
 
-        // Shared components (Keystone, MAU, …): preselected; user may deselect.
+        // Shared components (Keystone, MAU, …): preselected for Google Chrome; user may deselect.
+        let isChrome = identity.bundleID.lowercased() == "com.google.chrome" || identity.appName.lowercased().contains("chrome")
         var existing = Set(result.map { NormalizedPath.key($0.url) })
         for url in collection.sharedPaths {
             let standardized = NormalizedPath.canonicalize(url)
@@ -444,7 +516,7 @@ public actor UninstallerService {
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
-                isSelected: true,
+                isSelected: isChrome,
                 size: fileSize,
                 deletionRisk: .shared,
                 evidence: [],
@@ -502,26 +574,45 @@ public actor UninstallerService {
     // MARK: - Orphaned App Residuals
 
     public func scanOrphanedResiduals() async throws -> [OrphanItem] {
-        let orphanEngine = AppResidualsOrphanEngine(
+        let scanner = OrphanScanner(
             safetyManager: safetyManager,
-            trashManager: trashManager,
-            commandRunner: commandRunner
+            commandRunner: commandRunner,
+            codesignCache: codesignCache,
+            plistCache: plistCache,
+            ruleRegistry: ruleRegistry
         )
-        return try await orphanEngine.scanOrphans()
+        return try await scanner.scanOrphans()
     }
 
     public func removeOrphanedResiduals(_ items: [OrphanItem], bypassTrash: Bool = false) async throws -> Int64 {
-        let orphanEngine = AppResidualsOrphanEngine(
-            safetyManager: safetyManager,
-            trashManager: trashManager,
-            commandRunner: commandRunner
-        )
-        return try await orphanEngine.trashOrphans(items, bypassTrash: bypassTrash)
+        let shouldBypass = bypassTrash
+        var freed: Int64 = 0
+        for item in items {
+            do {
+                if shouldBypass {
+                    try safetyManager.validate(url: item.url, policy: .uninstall)
+                    try FileManager.default.removeItem(at: item.url)
+                } else {
+                    try await trashManager.trashItem(at: item.url)
+                }
+                freed += item.sizeBytes
+            } catch {
+                Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
+            }
+        }
+        return freed
     }
 
     // MARK: - Uninstall
 
     public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
+        if !app.versions.isEmpty {
+            for versionApp in app.versions {
+                try await uninstall(app: versionApp, bypassTrash: bypassTrash, emptyTrashImmediately: emptyTrashImmediately)
+            }
+            return
+        }
+
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
 
         let relatedTargets = app.relatedFiles
@@ -678,17 +769,83 @@ public actor UninstallerService {
         fileManager.getPhysicalDirectorySize(url: url, excludedPaths: [])
     }
 
-    private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
-        var merged: [String: AppInfo] = [:]
-        for app in apps {
-            let key = NormalizedPath.key(app.url)
-            if let existing = merged[key] {
-                merged[key] = preferredApp(existing, app)
-            } else {
-                merged[key] = app
+    public static func groupKey(for app: AppInfo) -> String {
+        if let bundleID = app.bundleID?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !bundleID.isEmpty,
+           !bundleID.lowercased().hasPrefix("unknown.") {
+            return "bundleid:" + bundleID.lowercased()
+        }
+        return "name:" + app.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func aggregateRelatedFiles(from versions: [AppInfo]) -> [RelatedFile] {
+        let allRelated = versions.flatMap(\.relatedFiles)
+        return dedupAndSort(allRelated.map { ($0, $0.confidence) })
+    }
+
+    private func aggregateDeveloperComponents(from versions: [AppInfo]) -> [RelatedCleanupComponent] {
+        var seen = Set<String>()
+        var result: [RelatedCleanupComponent] = []
+        for v in versions {
+            for comp in v.developerComponents {
+                let key = NormalizedPath.key(comp.url)
+                if seen.insert(key).inserted {
+                    result.append(comp)
+                }
             }
         }
-        return Array(merged.values)
+        return result
+    }
+
+    private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
+        var urlMap: [String: AppInfo] = [:]
+        for app in apps {
+            let key = NormalizedPath.key(app.url)
+            if let existing = urlMap[key] {
+                urlMap[key] = preferredApp(existing, app)
+            } else {
+                urlMap[key] = app
+            }
+        }
+        let uniquePathApps = Array(urlMap.values)
+
+        var groups: [String: [AppInfo]] = [:]
+        for app in uniquePathApps {
+            let key = Self.groupKey(for: app)
+            groups[key, default: []].append(app)
+        }
+
+        var result: [AppInfo] = []
+        for (_, groupApps) in groups {
+            if groupApps.count == 1 {
+                result.append(groupApps[0])
+            } else {
+                let sortedVersions = groupApps.sorted { preferredApp($0, $1) == $0 }
+                let primary = sortedVersions[0]
+
+                let versionStrings = sortedVersions.compactMap { $0.version.isEmpty ? nil : $0.version }
+                let versionSummary = versionStrings.isEmpty ? primary.version : versionStrings.joined(separator: ", ")
+                let latestLastUsed = sortedVersions.compactMap(\.lastUsed).max()
+
+                let parent = AppInfo(
+                    url: primary.url,
+                    bundleID: primary.bundleID,
+                    name: primary.name,
+                    relatedFiles: aggregateRelatedFiles(from: sortedVersions),
+                    developerComponents: aggregateDeveloperComponents(from: sortedVersions),
+                    absorbedHelperURLs: NormalizedPath.unique(sortedVersions.flatMap(\.absorbedHelperURLs)),
+                    identity: primary.identity,
+                    scanState: sortedVersions.allSatisfy { $0.scanState == .deepScanned } ? .deepScanned : .discovered,
+                    size: sortedVersions.reduce(0) { $0 + $1.size },
+                    version: versionSummary,
+                    lastUsed: latestLastUsed,
+                    iconData: sortedVersions.compactMap(\.iconData).first,
+                    versions: sortedVersions
+                )
+                result.append(parent)
+            }
+        }
+        return result
     }
 
     private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {

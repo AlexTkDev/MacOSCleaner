@@ -12,6 +12,7 @@ public enum PathToken: String, Sendable, CaseIterable {
     case userLib = "<USER_LIB>"
     case userConfig = "<USER_CONFIG>"
     case userCache = "<USER_CACHE>"
+    case userLocalShare = "<USER_LOCAL_SHARE>"
     case varFolders = "<VAR_FOLDERS>"
     case sysLib = "<SYS_LIB>"
     case sysAppSupport = "<SYS_APP_SUPPORT>"
@@ -68,6 +69,7 @@ public enum PathToken: String, Sendable, CaseIterable {
         case .userLib: return NormalizedPath.join(h, "Library")
         case .userConfig: return NormalizedPath.join(h, ".config")
         case .userCache: return NormalizedPath.join(h, ".cache")
+        case .userLocalShare: return NormalizedPath.join(h, ".local/share")
         case .varFolders: return "/private/var/folders"
         case .sysLib: return "/Library"
         case .sysAppSupport: return "/Library/Application Support"

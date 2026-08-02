@@ -369,6 +369,15 @@
 "uninstaller.analyzing" = "分析中...";
 "uninstaller_complete_title" = "アンインストール完了";
 "uninstaller_complete_body" = "アプリ %@ が正常に削除されました。";
+"uninstaller_versions_badge" = "%dバージョン";
+"uninstaller_multiple_versions_found" = "このアプリケーションのバージョンが %d 個見つかりました";
+"uninstaller_version_title" = "バージョン %@";
+"uninstaller_delete_this_version" = "このバージョンを削除";
+"uninstaller_all_versions_tab" = "すべてのバージョン (%d)";
+"uninstaller_uninstall_version_warning_trash" = "%2$@ のバージョン %1$@ とその関連ファイル (%3$lld) がゴミ箱に移動されます。";
+"uninstaller_uninstall_version_warning_perm" = "%2$@ のバージョン %1$@ とその関連ファイル (%3$lld) が永久に削除されます。";
+"uninstaller_version_deleted_body" = "%2$@ のバージョン %1$@ が正常に削除されました。";
+"uninstaller_versions" = "バージョン";
 "shared_data_warning" = "このデータは他のアプリと共有されています。";
 
 /* Processes View */
@@ -575,7 +584,13 @@
 "uninstaller.metadata.parent_suite" = "スイート";
 "uninstaller.metadata.known_issues" = "既知の問題";
 "uninstaller.shared_component" = "共有";
-"uninstaller.shared_component.help" = "他アプリと共有 — デフォルトで選択。不要なら解除してください。";
+"uninstaller.shared_component.help" = "他アプリと共有 — デフォルトでは未選択。共有データを削除する場合のみオンにしてください。";
+"uninstaller.shared_help.microsoft" = "Microsoft Office スイート (Word, Excel, PowerPoint, Outlook) の共有コンポーネント";
+"uninstaller.shared_help.google" = "Google アップデートサービス (Chrome, Google Drive, Earth) の共有コンポーネント";
+"uninstaller.shared_help.adobe" = "Adobe Creative Cloud スイートの共有コンポーネント";
+"uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) の共有コンポーネント";
+"uninstaller.shared_help.android" = "共有 Android 開発データ (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "共有 Apple 開発ツール (Xcode, Command Line Tools, Simulator)";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

@@ -369,6 +369,15 @@
 "uninstaller.analyzing" = "正在分析...";
 "uninstaller_complete_title" = "卸载完成";
 "uninstaller_complete_body" = "应用 %@ 已成功卸载。";
+"uninstaller_versions_badge" = "%d个版本";
+"uninstaller_multiple_versions_found" = "找到此应用程序的 %d 个版本";
+"uninstaller_version_title" = "版本 %@";
+"uninstaller_delete_this_version" = "删除此版本";
+"uninstaller_all_versions_tab" = "所有版本 (%d)";
+"uninstaller_uninstall_version_warning_trash" = "这将把 %2$@ 的版本 %1$@ 及其相关文件 (%3$lld) 移至废纸篓。";
+"uninstaller_uninstall_version_warning_perm" = "这将永久删除 %2$@ 的版本 %1$@ 及其相关文件 (%3$lld)。";
+"uninstaller_version_deleted_body" = "%2$@ 的版本 %1$@ 已成功移除。";
+"uninstaller_versions" = "版本";
 "shared_data_warning" = "此数据与其他应用共享，删除可能影响其他开发环境。";
 
 /* Processes View */
@@ -575,7 +584,13 @@
 "uninstaller.metadata.parent_suite" = "套件归属";
 "uninstaller.metadata.known_issues" = "已知注意事项";
 "uninstaller.shared_component" = "共享组件";
-"uninstaller.shared_component.help" = "与其他应用共享 — 默认勾选；如仍需要请取消。";
+"uninstaller.shared_component.help" = "与其他应用共享 — 默认不勾选；仅在要删除共享数据时启用。";
+"uninstaller.shared_help.microsoft" = "Microsoft Office 套件 (Word, Excel, PowerPoint, Outlook) 的共享组件";
+"uninstaller.shared_help.google" = "Google 更新服务 (Chrome, Google Drive, Earth) 的共享组件";
+"uninstaller.shared_help.adobe" = "Adobe Creative Cloud 套件的共享组件";
+"uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) 的共享组件";
+"uninstaller.shared_help.android" = "共享的 Android 开发数据 (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "共享的 Apple 开发者工具 (Xcode, Command Line Tools, Simulator)";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

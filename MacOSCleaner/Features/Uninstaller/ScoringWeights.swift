@@ -3,7 +3,7 @@ import Foundation
 public struct ScoringWeights: Sendable, Equatable {
     public var bundleIDExact: Int = 100
     public var bundleIDPrefix: Int = 90
-    public var appNameExact: Int = 60
+    public var appNameExact: Int = 80
     public var appNamePrefix: Int = 50
     public var executableName: Int = 70
     public var frameworkName: Int = 60
@@ -26,12 +26,12 @@ public struct ScoringWeights: Sendable, Equatable {
     public var knownCatalog: Int = 100
     public var plistContent: Int = 80
 
-    public var spotlight: Int = 5
+    public var spotlight: Int = 15
     public var spotlightBundleAttr: Int = 100
     public var spotlightCreator: Int = 50
 
     public var fileContent: Int = 60
-    public var electronCache: Int = 40
+    public var electronCache: Int = 60
     public var jetBrainsConfig: Int = 60
     public var flutterBuild: Int = 50
 

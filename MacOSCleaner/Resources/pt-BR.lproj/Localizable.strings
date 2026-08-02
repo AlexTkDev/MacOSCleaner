@@ -369,6 +369,15 @@
 "uninstaller.analyzing" = "Analisando...";
 "uninstaller_complete_title" = "Desinstalação Concluída";
 "uninstaller_complete_body" = "O aplicativo %@ foi removido com sucesso.";
+"uninstaller_versions_badge" = "%d vers.";
+"uninstaller_multiple_versions_found" = "Encontradas %d versões deste aplicativo";
+"uninstaller_version_title" = "Versão %@";
+"uninstaller_delete_this_version" = "Excluir esta versão";
+"uninstaller_all_versions_tab" = "Todas as versões (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Isso moverá a versão %1$@ do %2$@ e seus arquivos relacionados (%3$lld) para a Lixeira.";
+"uninstaller_uninstall_version_warning_perm" = "Isso excluirá permanentemente a versão %1$@ do %2$@ e seus arquivos relacionados (%3$lld).";
+"uninstaller_version_deleted_body" = "A versão %1$@ do %2$@ foi removida com sucesso.";
+"uninstaller_versions" = "Versões";
 "shared_data_warning" = "Estes dados são compartilhados com outros aplicativos.";
 
 /* Processes View */
@@ -575,7 +584,13 @@
 "uninstaller.metadata.parent_suite" = "Suíte";
 "uninstaller.metadata.known_issues" = "Problemas conhecidos";
 "uninstaller.shared_component" = "Compartilhado";
-"uninstaller.shared_component.help" = "Compartilhado com outros apps — selecionado por padrão; desmarque se ainda precisar.";
+"uninstaller.shared_component.help" = "Compartilhado com outros apps — não selecionado por padrão; ative só se quiser remover dados compartilhados.";
+"uninstaller.shared_help.microsoft" = "Componente compartilhado do pacote Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Componente compartilhado do serviço Google Update (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Componente compartilhado do pacote Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Componente compartilhado dos IDEs da JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Dados compartilhados de desenvolvimento Android (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Ferramentas de desenvolvimento Apple compartilhadas (Xcode, Command Line Tools, Simulator)";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

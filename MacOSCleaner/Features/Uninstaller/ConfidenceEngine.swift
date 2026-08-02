@@ -39,6 +39,35 @@ public enum ConfidenceEngine {
             }
         }
 
+        // Mega-vendors (Google/Microsoft/Adobe): vendor-only evidence is shared-suite noise.
+        // Product identity (appNamePrefix / executableName) under a vendor hub is enough —
+        // e.g. Google/AndroidStudio* must not demote to possible.
+        let bid = identity.bundleID.lowercased()
+        let isMegaVendorApp = bid.contains("google") || bid.contains("microsoft") || bid.contains("adobe")
+        if isMegaVendorApp && evidence.contains(.vendorName)
+            && !evidence.contains(.appNameExact) && !evidence.contains(.appNamePrefix)
+            && !evidence.contains(.executableName)
+            && !evidence.contains(.bundleIDExact) && !evidence.contains(.bundleIDPrefix)
+            && !evidence.contains(.knownCatalog)
+            && !evidence.contains(.appGroup) && !evidence.contains(.container) {
+            let strong = evidence.filter {
+                $0 != .vendorName && $0 != .parentDirectory && $0 != .spotlight
+            }.count
+            if strong < 2 {
+                if tier == .guaranteed || tier == .veryLikely { tier = .possible }
+                else { tier = .ignore }
+            }
+        }
+
+        // App-matching diagnostic reports and updaters (e.g. Chrome Helper diag, xcodebuild diag, OpenCode updater)
+        let hasAppOrExecEvidence = evidence.contains(.appNameExact) || evidence.contains(.appNamePrefix)
+            || evidence.contains(.executableName) || evidence.contains(.bundleIDExact) || evidence.contains(.bundleIDPrefix)
+        if hasAppOrExecEvidence && score >= 30 {
+            if tier == .possible {
+                tier = .veryLikely
+            }
+        }
+
         return ConfidenceAssessment(evidence: evidence, score: score, tier: tier, missingCritical: Array(missing))
     }
 

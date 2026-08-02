@@ -382,6 +382,15 @@
 "uninstaller.analyzing" = "Analyzing...";
 "uninstaller_complete_title" = "Uninstallation Complete";
 "uninstaller_complete_body" = "Application %@ was successfully removed.";
+"uninstaller_versions_badge" = "%d vers.";
+"uninstaller_multiple_versions_found" = "Found %d versions of this application";
+"uninstaller_version_title" = "Version %@";
+"uninstaller_delete_this_version" = "Delete This Version";
+"uninstaller_all_versions_tab" = "All Versions (%d)";
+"uninstaller_uninstall_version_warning_trash" = "This will move version %@ of %@ and its related files (%lld) to the Trash.";
+"uninstaller_uninstall_version_warning_perm" = "This will permanently delete version %@ of %@ and its related files (%lld).";
+"uninstaller_version_deleted_body" = "Version %@ of %@ was successfully removed.";
+"uninstaller_versions" = "Versions";
 "shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
 
 /* Processes View */
@@ -675,7 +684,13 @@
 "uninstaller.metadata.parent_suite" = "Suite";
 "uninstaller.metadata.known_issues" = "Known Issues";
 "uninstaller.shared_component" = "Shared";
-"uninstaller.shared_component.help" = "Shared with other apps — selected by default; deselect if you still need it.";
+"uninstaller.shared_component.help" = "Shared with other apps — not selected by default; enable only if you intend to remove shared data.";
+"uninstaller.shared_help.microsoft" = "Shared component of Microsoft Office Suite (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Shared component of Google Update service (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Shared component of Adobe Creative Cloud Suite (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Shared component of JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Shared Android development data (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Shared Apple Developer tools (Xcode, Command Line Tools, Simulator)";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld B";

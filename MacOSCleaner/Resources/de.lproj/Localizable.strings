@@ -369,6 +369,15 @@
 "uninstaller.analyzing" = "Wird analysiert...";
 "uninstaller_complete_title" = "Deinstallation abgeschlossen";
 "uninstaller_complete_body" = "Anwendung %@ wurde erfolgreich entfernt.";
+"uninstaller_versions_badge" = "%d Vers.";
+"uninstaller_multiple_versions_found" = "%d Versionen dieser Anwendung gefunden";
+"uninstaller_version_title" = "Version %@";
+"uninstaller_delete_this_version" = "Diese Version löschen";
+"uninstaller_all_versions_tab" = "Alle Versionen (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Dadurch wird Version %1$@ von %2$@ und die zugehörigen Dateien (%3$lld) in den Papierkorb verschoben.";
+"uninstaller_uninstall_version_warning_perm" = "Dadurch wird Version %1$@ von %2$@ und die zugehörigen Dateien (%3$lld) dauerhaft gelöscht.";
+"uninstaller_version_deleted_body" = "Version %1$@ von %2$@ wurde erfolgreich entfernt.";
+"uninstaller_versions" = "Versionen";
 "shared_data_warning" = "Diese Daten werden mit anderen Apps geteilt. Das Löschen kann andere IDEs beeinträchtigen.";
 
 /* Processes View */
@@ -585,7 +594,13 @@
 "uninstaller.metadata.parent_suite" = "Suite";
 "uninstaller.metadata.known_issues" = "Bekannte Probleme";
 "uninstaller.shared_component" = "Freigegeben";
-"uninstaller.shared_component.help" = "Wird von anderen Apps verwendet — standardmäßig ausgewählt; abwählen, falls noch benötigt.";
+"uninstaller.shared_component.help" = "Wird von anderen Apps verwendet — standardmäßig nicht ausgewählt; nur aktivieren, wenn gemeinsame Daten entfernt werden sollen.";
+"uninstaller.shared_help.microsoft" = "Freigegebene Komponente der Microsoft Office-Suite (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Freigegebene Komponente des Google Update-Dienstes (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Freigegebene Komponente der Adobe Creative Cloud-Suite (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Freigegebene Komponente der JetBrains-IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Freigegebene Android-Entwicklungsdaten (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Freigegebene Apple-Entwickler-Tools (Xcode, Command Line Tools, Simulator)";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

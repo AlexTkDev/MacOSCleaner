@@ -369,6 +369,15 @@
 "uninstaller.analyzing" = "Analisi in corso...";
 "uninstaller_complete_title" = "Disinstallazione completata";
 "uninstaller_complete_body" = "L'applicazione %@ è stata rimossa con successo.";
+"uninstaller_versions_badge" = "%d vers.";
+"uninstaller_multiple_versions_found" = "Trovate %d versioni di questa applicazione";
+"uninstaller_version_title" = "Versione %@";
+"uninstaller_delete_this_version" = "Elimina questa versione";
+"uninstaller_all_versions_tab" = "Tutte le versioni (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Questo sposterà la versione %1$@ di %2$@ e i relativi file (%3$lld) nel Cestino.";
+"uninstaller_uninstall_version_warning_perm" = "Questo eliminerà definitivamente la versione %1$@ di %2$@ e i relativi file (%3$lld).";
+"uninstaller_version_deleted_body" = "La versione %1$@ di %2$@ è stata rimossa con successo.";
+"uninstaller_versions" = "Versioni";
 "shared_data_warning" = "Questi dati sono condivisi con altre app.";
 
 /* Processes View */
@@ -575,7 +584,13 @@
 "uninstaller.metadata.parent_suite" = "Suite";
 "uninstaller.metadata.known_issues" = "Problemi noti";
 "uninstaller.shared_component" = "Condiviso";
-"uninstaller.shared_component.help" = "Condiviso con altre app — selezionato di default; deseleziona se ancora necessario.";
+"uninstaller.shared_component.help" = "Condiviso con altre app — non selezionato di default; attiva solo se vuoi rimuovere dati condivisi.";
+"uninstaller.shared_help.microsoft" = "Componente condiviso della suite Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Componente condiviso del servizio Google Update (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Componente condiviso della suite Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Componente condiviso degli IDE JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Dati di sviluppo Android condivisi (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Strumenti di sviluppo Apple condivisi (Xcode, Command Line Tools, Simulator)";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";

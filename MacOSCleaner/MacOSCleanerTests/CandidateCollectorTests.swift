@@ -97,14 +97,15 @@ final class CandidateCollectorTests: XCTestCase {
 
     func test_collect_findsNestedCacheByTokenPrefix() async throws {
         let appName = "OpenCode"
+        // Under the app's own cache tree — not another product's com.* bucket.
         let nested = URL(fileURLWithPath: home)
-            .appendingPathComponent("Library/Caches/com.other.updater/UpdaterCache/opencode-desktop_br")
+            .appendingPathComponent("Library/Caches/ai.opencode.desktop/UpdaterCache/opencode-desktop_br")
         try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.other.updater")) }
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/ai.opencode.desktop")) }
 
         let collector = makeCollector()
         let identity = AppIdentity(
-            bundleID: "dev.opencode.desktop",
+            bundleID: "ai.opencode.desktop",
             appName: appName,
             bundleName: nil,
             bundleVersion: nil,
@@ -120,6 +121,31 @@ final class CandidateCollectorTests: XCTestCase {
         )
         let candidates = await collector.collect(identity: identity)
         XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == nested.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_skipsTokenPrefixInsideForeignAppCache() async throws {
+        let nested = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Caches/com.nektony.App-Cleaner-SIII/UpdaterCache/opencode-desktop_br")
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.nektony.App-Cleaner-SIII")) }
+
+        let identity = AppIdentity(
+            bundleID: "ai.opencode.desktop",
+            appName: "OpenCode",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "OpenCode",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["opencode"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertFalse(candidates.contains { $0.resolvingSymlinksInPath().path == nested.resolvingSymlinksInPath().path })
     }
 
     func test_collect_skipsGenericBundleTailOutsideVendorContext() async throws {
@@ -731,5 +757,227 @@ final class CandidateCollectorTests: XCTestCase {
         )
         let candidates = await makeCollector().collect(identity: identity, mode: .safe)
         XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == plist.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_findsHomeDotdirAnyDeskStyle() async throws {
+        let dot = URL(fileURLWithPath: home).appendingPathComponent(".anydesk")
+        try FileManager.default.createDirectory(at: dot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dot) }
+
+        let identity = AppIdentity(
+            bundleID: "com.philandro.anydesk",
+            appName: "AnyDesk",
+            bundleName: "AnyDesk",
+            bundleVersion: nil,
+            executableName: "AnyDesk",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/AnyDesk.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["philandro"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == dot.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_findsCompactAndroidStudioUnderGoogle() async throws {
+        let studio = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/AndroidStudio2026.1.2")
+        try FileManager.default.createDirectory(at: studio, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == studio.resolvingSymlinksInPath().path })
+        // Bare Google root still rejected
+        let google = studio.deletingLastPathComponent()
+        XCTAssertFalse(candidates.contains { $0.resolvingSymlinksInPath().path == google.resolvingSymlinksInPath().path })
+    }
+
+    func test_appNameMatches_dotdirAndCompact() {
+        let anydesk = EvidenceProbe.appNameMatchesFileName(".anydesk", appName: "AnyDesk")
+        XCTAssertTrue(anydesk.exact)
+
+        let studio = EvidenceProbe.appNameMatchesFileName("AndroidStudio2026.1.2", appName: "Android Studio")
+        XCTAssertTrue(studio.prefix || studio.exact)
+
+        let antigravity = EvidenceProbe.appNameMatchesFileName(".antigravity", appName: "Antigravity IDE")
+        XCTAssertTrue(antigravity.exact)
+
+        let androidDot = EvidenceProbe.appNameMatchesFileName(".android", appName: "Android Studio")
+        XCTAssertTrue(androidDot.exact)
+
+        // Mega-vendor head must not claim bare Google for Chrome.
+        let google = EvidenceProbe.appNameMatchesFileName("Google", appName: "Google Chrome")
+        XCTAssertFalse(google.exact)
+        XCTAssertFalse(google.prefix)
+
+        let cursorJava = EvidenceProbe.appNameMatchesFileName("Cursor.java", appName: "Cursor")
+        XCTAssertTrue(cursorJava.prefix) // dotted — collector must reject via source-file guard
+        XCTAssertTrue(EvidenceProbe.looksLikeSourceFileName("cursor.java"))
+    }
+
+    func test_deepScan_skipsUnrelatedSiblingUnderVendor() async throws {
+        let studio = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/AndroidStudio2026.1.2")
+        let chrome = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/Chrome")
+        let chromeDeep = chrome.appendingPathComponent("Default/Cache")
+        try FileManager.default.createDirectory(at: studio, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: chromeDeep, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == studio.resolvingSymlinksInPath().path })
+        XCTAssertFalse(candidates.contains { $0.path.contains("/Chrome") })
+    }
+
+    func test_collect_findsShortHomeDotdirForMultiWordApp() async throws {
+        let dot = URL(fileURLWithPath: home).appendingPathComponent(".antigravity")
+        try FileManager.default.createDirectory(at: dot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dot) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.antigravity-ide",
+            appName: "Antigravity IDE",
+            bundleName: "Antigravity IDE",
+            bundleVersion: nil,
+            executableName: "Antigravity IDE",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Antigravity IDE.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == dot.resolvingSymlinksInPath().path })
+    }
+
+    func test_matchCandidate_rejectsCursorJavaInAndroidSDK() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Android/sdk/sources/android-36/android/database/Cursor.java")
+        let identity = AppIdentity(
+            bundleID: "com.todesktop.230313mzl4w4u92",
+            appName: "Cursor",
+            bundleName: "Cursor",
+            bundleVersion: nil,
+            executableName: "Cursor",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Cursor.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["todesktop", "Cursor"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertTrue(CandidateCollector.isForeignDeveloperTree(url, identity: identity))
+    }
+
+    func test_matchCandidate_rejectsBareGoogleVendorForAndroidStudio() async throws {
+        let google = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Google")
+        try FileManager.default.createDirectory(at: google, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        let googlePath = google.resolvingSymlinksInPath().path
+        XCTAssertFalse(
+            candidates.contains { $0.resolvingSymlinksInPath().path == googlePath },
+            "Bare Google App Support must not be claimed by Android Studio"
+        )
+    }
+
+    func test_matchCandidate_rejectsForeignNektonyUpdaterCache() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Caches/com.nektony.App-Cleaner-SIII/UpdaterCache/opencode-desktop_br")
+        let identity = AppIdentity(
+            bundleID: "ai.opencode.desktop",
+            appName: "OpenCode",
+            bundleName: "OpenCode",
+            bundleVersion: nil,
+            executableName: "OpenCode",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["opencode"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertTrue(CandidateCollector.isForeignAppLibraryTree(url, identity: identity))
+    }
+
+    func test_matchCandidate_rejectsOfficeWordWidgetForExcel() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Group Containers/UBF8T346G9.OfficeWordWidget")
+        let identity = AppIdentity(
+            bundleID: "com.microsoft.Excel",
+            appName: "Microsoft Excel",
+            bundleName: "Excel",
+            bundleVersion: nil,
+            executableName: "Microsoft Excel",
+            teamID: "UBF8T346G9",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Microsoft Excel.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Microsoft", "Office"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            appGroups: ["UBF8T346G9.Office"],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        // Not an exact app group for Excel and suffix is Word — foreign sibling.
+        XCTAssertFalse(identity.appGroups.contains(url.lastPathComponent))
+        XCTAssertFalse(
+            EvidenceProbe.bundleIDSuffixMatch("OfficeWordWidget", bundleID: "com.microsoft.excel")
+        )
     }
 }

@@ -433,7 +433,7 @@ public struct CleanupView: View {
     
     private var previewListView: some View {
         return VStack(spacing: 0) {
-            HStack {
+            HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("cleanup_scan_results".localized)
                         .font(.title2)
@@ -448,19 +448,11 @@ public struct CleanupView: View {
                     Label("cleanup_rescan".localized, systemImage: "arrow.clockwise")
                         .fontWeight(.medium)
                 }
-                .buttonStyle(.bordered)
+                .glassButtonStyle()
                 .controlSize(.regular)
-
-                Button(action: { viewModel.executeCleanup() }) {
-                    Text("cleanup_now".localized)
-                        .fontWeight(.bold)
-                        .frame(width: 100)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(viewModel.selectedSizeBytes == 0)
             }
-            .padding()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
             .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
 
             Divider()
@@ -706,11 +698,26 @@ public struct CleanupView: View {
     }
     
     private var footer: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             if viewModel.state == .preview {
-                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
-                    .fontWeight(.semibold)
-                    .foregroundColor(.accentColor)
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.accentColor)
+                        .font(.system(size: 13, weight: .bold))
+                    Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .foregroundColor(.primary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.accentColor.opacity(0.12))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1)
+                )
             }
             
             if !viewModel.scriptLogs.isEmpty {
@@ -763,15 +770,22 @@ public struct CleanupView: View {
                 .glassButtonStyle()
                 .keyboardShortcut(.cancelAction)
                 
-                Button("cleanup_now".localized) {
-                    viewModel.executeCleanup()
+                Button(action: { viewModel.executeCleanup() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                        Text("cleanup_now".localized)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.horizontal, 8)
                 }
-                .glassButtonStyle()
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
                 .disabled(viewModel.selectedSizeBytes == 0)
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
         .glassEffect()
     }
 }

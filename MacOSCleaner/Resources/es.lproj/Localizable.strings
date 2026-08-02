@@ -384,6 +384,15 @@
 "uninstaller.analyzing" = "Analizando...";
 "uninstaller_complete_title" = "Desinstalación completa";
 "uninstaller_complete_body" = "La aplicación %@ se eliminó correctamente.";
+"uninstaller_versions_badge" = "%d vers.";
+"uninstaller_multiple_versions_found" = "Se encontraron %d versiones de esta aplicación";
+"uninstaller_version_title" = "Versión %@";
+"uninstaller_delete_this_version" = "Eliminar esta versión";
+"uninstaller_all_versions_tab" = "Todas las versiones (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Esto moverá la versión %1$@ de %2$@ y sus archivos relacionados (%3$lld) a la Papelera.";
+"uninstaller_uninstall_version_warning_perm" = "Esto eliminará permanentemente la versión %1$@ de %2$@ y sus archivos relacionados (%3$lld).";
+"uninstaller_version_deleted_body" = "La versión %1$@ de %2$@ se eliminó con éxito.";
+"uninstaller_versions" = "Versiones";
 "shared_data_warning" = "Estos datos se comparten con otras aplicaciones (ej. Android SDK, AVD). Eliminarlos puede afectar a otros IDEs.";
 
 // Processes View
@@ -677,7 +686,13 @@
 "uninstaller.metadata.parent_suite" = "Suite";
 "uninstaller.metadata.known_issues" = "Problemas conocidos";
 "uninstaller.shared_component" = "Compartido";
-"uninstaller.shared_component.help" = "Compartido con otras apps — seleccionado por defecto; desmarca si aún lo necesitas.";
+"uninstaller.shared_component.help" = "Compartido con otras apps — no seleccionado por defecto; actívalo solo si quieres eliminar datos compartidos.";
+"uninstaller.shared_help.microsoft" = "Componente compartido del paquete Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Componente compartido del servicio Google Update (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Componente compartido del paquete Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Componente compartido de IDEs de JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Datos compartidos de desarrollo Android (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Herramientas de desarrollo de Apple compartidas (Xcode, Command Line Tools, Simulator)";
 
 // Format Helpers
 "format_bytes_b" = "%lld B";

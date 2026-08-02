@@ -12,11 +12,14 @@ struct SettingsView: View {
     @State private var searchText: String = ""
 
     var body: some View {
-        NavigationSplitView(columnVisibility: .constant(.all)) {
+        HStack(spacing: 0) {
             sidebarContent
-                .navigationSplitViewColumnWidth(min: 160, ideal: 200, max: 320)
-        } detail: {
+                .frame(width: 220)
+                
+            Divider()
+            
             detailView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .searchable(text: $searchText, prompt: Text("settings_search_prompt".localized))
         .frame(minWidth: 780, minHeight: 520)

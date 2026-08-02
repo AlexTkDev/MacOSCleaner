@@ -380,6 +380,15 @@
 "uninstaller.analyzing" = "Аналіз...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
+"uninstaller_versions_badge" = "%d верс.";
+"uninstaller_multiple_versions_found" = "Знайдено %d версій цієї програми";
+"uninstaller_version_title" = "Версія %@";
+"uninstaller_delete_this_version" = "Видалити цю версію";
+"uninstaller_all_versions_tab" = "Усі версії (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Це перемістить версію %1$@ програми %2$@ та її пов'язані файли (%3$lld) до Смітника.";
+"uninstaller_uninstall_version_warning_perm" = "Це призведе до безповоротного видалення версії %1$@ програми %2$@ та її пов'язаних файлів (%3$lld).";
+"uninstaller_version_deleted_body" = "Версію %1$@ програми %2$@ успішно видалено.";
+"uninstaller_versions" = "Версії";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
 
 /* Processes View */
@@ -673,7 +682,13 @@
 "uninstaller.metadata.parent_suite" = "Сюїта";
 "uninstaller.metadata.known_issues" = "Відомі особливості";
 "uninstaller.shared_component" = "Спільний";
-"uninstaller.shared_component.help" = "Спільний компонент з іншими програмами — вибрано за замовчуванням; зніміть позначку, якщо ще потрібен.";
+"uninstaller.shared_component.help" = "Спільний компонент з іншими програмами — за замовчуванням не вибрано; увімкніть лише якщо хочете видалити спільне.";
+"uninstaller.shared_help.microsoft" = "Спільний компонент пакета Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Спільний компонент служби оновлень Google (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Спільний компонент пакета Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Спільний компонент середовища JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Спільні дані розробки Android (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Спільні засоби розробки Apple (Xcode, Command Line Tools, Simulator)";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";

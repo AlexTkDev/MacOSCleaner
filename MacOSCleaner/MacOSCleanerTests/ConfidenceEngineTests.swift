@@ -154,4 +154,42 @@ final class ConfidenceEngineTests: XCTestCase {
         let result = ConfidenceEngine.assess([], identity: identity)
         XCTAssertEqual(result.tier, .ignore)
     }
+
+    private func googleStudioIdentity() -> AppIdentity {
+        AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+    }
+
+    func test_megaVendor_demotesVendorOnly() {
+        let identity = googleStudioIdentity()
+        // vendorName alone → possible, then demote to ignore (strong < 2)
+        let result = ConfidenceEngine.assess([.vendorName], identity: identity)
+        XCTAssertEqual(result.tier, .ignore)
+    }
+
+    func test_megaVendor_keepsProductPrefixUnderVendor() {
+        let identity = googleStudioIdentity()
+        // Google/AndroidStudio*: appNamePrefix + vendorName must stay veryLikely (not demoted).
+        let result = ConfidenceEngine.assess([.appNamePrefix, .vendorName], identity: identity)
+        XCTAssertEqual(result.tier, .veryLikely)
+    }
+
+    func test_megaVendor_keepsAppNameExactUnderVendor() {
+        let identity = googleStudioIdentity()
+        let result = ConfidenceEngine.assess([.appNameExact, .vendorName], identity: identity)
+        XCTAssertEqual(result.tier, .veryLikely)
+    }
 }
