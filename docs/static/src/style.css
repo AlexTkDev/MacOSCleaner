@@ -534,6 +534,36 @@ section {
   z-index: 1;
 }
 
+@media (min-width: 900px) {
+  #features .cells {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .bento-span-4 {
+    grid-column: span 4;
+  }
+
+  .bento-span-3 {
+    grid-column: span 3;
+  }
+
+  .bento-span-2 {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+  #features .cells {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-span-4,
+  .bento-span-3,
+  .bento-span-2 {
+    grid-column: span 1;
+  }
+}
+
 .cell-icon {
   display: inline-flex;
   flex-shrink: 0;
