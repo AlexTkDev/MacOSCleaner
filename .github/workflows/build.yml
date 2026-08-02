@@ -42,7 +42,7 @@ jobs:
           xcodebuild \
             -project MacOSCleaner/MacOSCleaner.xcodeproj \
             -scheme MacOSCleaner \
-            -destination 'platform=macOS,arch=arm64' \
+            -destination 'platform=macOS' \
             -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Test-1" \
             test
 
@@ -51,7 +51,7 @@ jobs:
           xcodebuild \
             -project MacOSCleaner/MacOSCleaner.xcodeproj \
             -scheme MacOSCleaner \
-            -destination 'platform=macOS,arch=arm64' \
+            -destination 'platform=macOS' \
             -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Test-2" \
             test
 
@@ -61,6 +61,5 @@ jobs:
             -project MacOSCleaner/MacOSCleaner.xcodeproj \
             -scheme MacOSCleaner \
             -configuration Release \
-            -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Release" \
             build
