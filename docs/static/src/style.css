@@ -670,6 +670,22 @@ section {
   cursor: default;
 }
 
+.carousel-slide--compact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.carousel-slide--compact img {
+  width: auto;
+  max-width: min(520px, 85%);
+  max-height: 640px;
+  margin: 0 auto;
+  border-radius: var(--radius-sm, 10px);
+}
+
 .carousel-slide img {
   width: 100%;
   height: auto;

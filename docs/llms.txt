@@ -3,7 +3,7 @@
 > Free source-available macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry. Personal use only.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
-Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.0.0.
+Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.1.0.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 
 
@@ -19,7 +19,7 @@ License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commerc
 
 - [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
 - [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / release notes
-- [v2.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0): Liquid Glass UI, on-device AI, Disk Analyzer, forensic Uninstaller
+- [v2.1.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0): AppIntents & Siri support, Duplicate File Finder, Apple Watch-style disk visualization, 10 localizations
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
 - [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Dual-licensed under GNU GPLv3 + Commons Clause v1.0 / Commercial
 

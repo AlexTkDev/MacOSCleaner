@@ -6,12 +6,20 @@ const viewport = document.querySelector('.shot-viewport');
 
 function syncViewportHeight() {
   if (!viewport) return;
-  const img = slides[slideIndex]?.querySelector('img');
+  const currentSlide = slides[slideIndex];
+  if (!currentSlide) return;
+  const img = currentSlide.querySelector('img');
   if (!img) return;
 
   const apply = () => {
     if (!img.naturalWidth) return;
-    const height = viewport.clientWidth * (img.naturalHeight / img.naturalWidth);
+    let height;
+    if (currentSlide.classList.contains('carousel-slide--compact')) {
+      const rendered = img.offsetHeight;
+      height = rendered > 0 ? rendered + 24 : Math.min(640, viewport.clientWidth * 0.75);
+    } else {
+      height = viewport.clientWidth * (img.naturalHeight / img.naturalWidth);
+    }
     viewport.style.height = `${Math.round(height)}px`;
   };
 

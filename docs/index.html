@@ -74,18 +74,23 @@
     },
     "description": "Free open-source macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
 
-    "softwareVersion": "2.0.0",
+    "softwareVersion": "2.1.0",
     "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
     "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
     "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
     "featureList": [
-      "Apple Intelligence local explanations",
+      "AppIntents & Siri voice automation",
+      "Cryptographic Duplicate File Finder",
+      "Apple Watch-style disk ring dashboard",
+      "1,770 path rules for 251 apps and 66 CLI toolchains",
+      "On-device Apple Intelligence explanations",
       "Smart Cleanup for 54 categories",
-      "App Uninstaller with forensic leftover scan",
+      "App Uninstaller with 5-level forensic leftover scan",
       "Disk Space Analyzer",
       "Startup Services Manager",
       "Process Manager",
-      "No telemetry"
+      "Full localization for 10 languages",
+      "100% Offline with zero telemetry"
     ],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
     "image": "https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png",
@@ -200,9 +205,9 @@
 <header class="hero">
   <div class="container">
     <div class="hero-copy">
-      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0">
+      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0">
         <span class="dot" aria-hidden="true"></span>
-        v2.0.0 — Liquid Glass + on-device AI
+        v2.1.0 — AppIntents &amp; Siri + Duplicate Finder
         <span aria-hidden="true">→</span>
       </a>
       <h1>Free macOS Cleaner &amp; App Uninstaller</h1>
@@ -230,7 +235,7 @@
         <div class="stat-label">cleanup categories</div>
       </div>
       <div class="stat">
-        <div class="stat-num" data-count="450" data-suffix="+">0+</div>
+        <div class="stat-num" data-count="1770" data-suffix="+">0+</div>
         <div class="stat-label">built-in paths</div>
       </div>
       <div class="stat">
@@ -354,15 +359,15 @@
       <button type="button" class="shot-tab" data-index="2">Cleanup</button>
       <button type="button" class="shot-tab" data-index="3">Scan</button>
       <button type="button" class="shot-tab" data-index="4">Results</button>
-      <button type="button" class="shot-tab" data-index="5">Analyzer</button>
-      <button type="button" class="shot-tab" data-index="6">Uninstaller</button>
-      <button type="button" class="shot-tab" data-index="7">Uninstall&nbsp;Scan</button>
-      <button type="button" class="shot-tab" data-index="8">Processes</button>
-      <button type="button" class="shot-tab" data-index="9">Startup</button>
-      <button type="button" class="shot-tab" data-index="10">Permissions</button>
-      <button type="button" class="shot-tab" data-index="11">About</button>
-      <button type="button" class="shot-tab" data-index="12">Settings</button>
-      <button type="button" class="shot-tab" data-index="13">Settings·2</button>
+      <button type="button" class="shot-tab" data-index="5">Duplicates</button>
+      <button type="button" class="shot-tab" data-index="6">Analyzer</button>
+      <button type="button" class="shot-tab" data-index="7">Uninstaller</button>
+      <button type="button" class="shot-tab" data-index="8">Uninstall&nbsp;Scan</button>
+      <button type="button" class="shot-tab" data-index="9">Processes</button>
+      <button type="button" class="shot-tab" data-index="10">Startup</button>
+      <button type="button" class="shot-tab" data-index="11">Permissions</button>
+      <button type="button" class="shot-tab" data-index="12">About</button>
+      <button type="button" class="shot-tab" data-index="13">Settings</button>
     </div>
     <div class="shot-stage reveal">
       <button class="shot-nav prev" id="shot-prev" type="button" aria-label="Previous screenshot">&#10094;</button>
@@ -371,19 +376,19 @@
           <div class="carousel-slide carousel-slide--video">
             <video src="static/assets/screenshots/demo_video.mp4" loop muted playsinline controls id="demo-video" style="width:100%;height:auto;display:block;"></video>
           </div>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="static/assets/screenshots/Dashboard_v2.webp" width="2358" height="1706" alt="Dashboard" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="static/assets/screenshots/Cleanup_page_v2.webp" width="2358" height="1706" alt="Cleanup Page" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan screenshot"><img src="static/assets/screenshots/Cleanup_Scan_v2.webp" width="2358" height="1706" alt="Cleanup Scan" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan Results screenshot"><img src="static/assets/screenshots/Cleanup_Scan_Results_v2.webp" width="2358" height="1706" alt="Cleanup Scan Results" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Disk Space Analyzer screenshot"><img src="static/assets/screenshots/Disk_analyzer_v2.webp" width="2358" height="1706" alt="Disk Space Analyzer" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller screenshot"><img src="static/assets/screenshots/Uninstaller_v2.webp" width="2358" height="1706" alt="Uninstaller" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Scan screenshot"><img src="static/assets/screenshots/Uninstaller_scan_v2.webp" width="2358" height="1706" alt="Uninstaller Scan" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="static/assets/screenshots/Processes_v2.webp" width="2358" height="1706" alt="Processes" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="static/assets/screenshots/Startup_Services_v2.webp" width="2358" height="1706" alt="Startup Services" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="static/assets/screenshots/Permission_screen_v2.webp" width="2358" height="1706" alt="Permission Screen" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2.webp" width="2358" height="1706" alt="About" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Settings General screenshot"><img src="static/assets/screenshots/Settings_1_v2.webp" width="2358" height="1706" alt="Settings General" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Settings Uninstaller screenshot"><img src="static/assets/screenshots/Settings_2_v2.webp" width="2358" height="1706" alt="Settings Uninstaller" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="static/assets/screenshots/Dashboard_v2_1.webp" width="2272" height="1688" alt="Dashboard" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="static/assets/screenshots/Cleanup_page_v2_1.webp" width="2272" height="1712" alt="Cleanup Page" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan screenshot"><img src="static/assets/screenshots/Cleanup_Scan_v2_1.webp" width="2272" height="1688" alt="Cleanup Scan" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan Results screenshot"><img src="static/assets/screenshots/Cleanup_Scan_Results_v2_1.webp" width="2272" height="1688" alt="Cleanup Scan Results" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Duplicate Finder screenshot"><img src="static/assets/screenshots/Duplicate_Finder_v2_1.webp" width="2272" height="1712" alt="Duplicate Finder" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Disk Space Analyzer screenshot"><img src="static/assets/screenshots/Disk_analyzer_v2_1.webp" width="2272" height="1712" alt="Disk Space Analyzer" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller screenshot"><img src="static/assets/screenshots/Uninstaller_v2_1.webp" width="2272" height="1712" alt="Uninstaller" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Scan screenshot"><img src="static/assets/screenshots/Uninstaller_scan_v2_1.webp" width="2272" height="1712" alt="Uninstaller Scan" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="static/assets/screenshots/Processes_v2_1.webp" width="2272" height="1712" alt="Processes" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="static/assets/screenshots/Startup_Services_v2_1.webp" width="2272" height="1712" alt="Startup Services" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="static/assets/screenshots/Permission_screen_v2_1.webp" width="2272" height="1688" alt="Permission Screen" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide carousel-slide--compact" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2_1.webp" width="984" height="1302" alt="About" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Settings screenshot"><img src="static/assets/screenshots/Settings_General_v2_1.webp" width="2272" height="1856" alt="Settings General" loading="lazy" decoding="async"></button>
         </div>
       </div>
       <button class="shot-nav next" id="shot-next" type="button" aria-label="Next screenshot">&#10095;</button>
@@ -467,47 +472,52 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">04 · Changelog</p>
-      <h2>What's new in v2.0.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0" target="_blank" rel="noopener" class="changelog-link" title="View v2.0.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
-      <p>On-device AI, Liquid Glass, Disk Analyzer, forensic Uninstaller</p>
+      <h2>What's new in v2.1.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0" target="_blank" rel="noopener" class="changelog-link" title="View v2.1.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
+      <p>Siri &amp; Shortcuts automation, cryptographic Duplicate Finder, Apple Watch-style disk rings, 1,770 rule paths &amp; 10 localizations</p>
     </div>
     
     <!-- Active Latest Release Details -->
     <div class="release-list reveal">
       <article>
-        <h3>On-Device Apple Intelligence</h3>
+        <h3>Siri &amp; Shortcuts Automation (AppIntents)</h3>
         <ul>
-          <li><strong>Native Foundation Models</strong> — offline analysis of processes, agents, files, and leftovers</li>
-          <li><strong>Smart Explanations</strong> — tap the sparkles icon in Uninstaller, Startup, Processes, Cleanup, or Disk Analyzer</li>
+          <li><strong>Hands-Free Voice Control</strong> — clean Mac storage or run diagnostics by asking Siri (<em>"Hey Siri, Quick Clean"</em>) or building custom Shortcuts</li>
+          <li><strong>Zero Background Drain</strong> — 100% native AppIntents framework; runs instantly without background daemons, agent processes, or battery usage</li>
         </ul>
       </article>
       <article>
-        <h3>Liquid Glass Redesign (macOS 27+)</h3>
+        <h3>Cryptographic Duplicate File Finder</h3>
         <ul>
-          <li><strong>Adaptive glass</strong> — <code>GlassEffectContainer</code>, <code>.glassEffect()</code>, <code>.glassButtonStyle()</code></li>
-          <li><strong>Micro-animations</strong> — card morphing with <code>matchedGeometryEffect</code> and hover highlights</li>
+          <li><strong>Staged Hashing Pipeline</strong> — ultra-fast file size filtering → 4&nbsp;KB initial hash → full SHA-256 validation powered by Swift 6 Actor parallelism</li>
+          <li><strong>Smart Safe Selection</strong> — automatically protects master original files while isolating byte-for-byte exact copies for review</li>
         </ul>
       </article>
       <article>
-        <h3>Disk Space Analyzer</h3>
+        <h3>Apple Watch-Style Disk Ring Dashboard</h3>
         <ul>
-          <li><strong>Folder breakdown</strong> — subdirectories and files sorted by size, with type categories</li>
-          <li><strong>Quick actions</strong> — Reveal in Finder or Trash via <code>trashItem(at:)</code></li>
-          <li><strong>Background scanning</strong> — continues when the window is inactive</li>
+          <li><strong>Multi-Ring Storage Visualizer</strong> — interactive activity-style progress rings displaying realtime disk usage breakdown by category</li>
+          <li><strong>Deep Size Analysis</strong> — instant visual clarity across dev build outputs, browser caches, app containers, and media archives</li>
         </ul>
       </article>
       <article>
-        <h3>Advanced Uninstaller &amp; Safer Cleaning</h3>
+        <h3>1,770 Path Rules &amp; Hybrid Parallel Engine</h3>
         <ul>
-          <li><strong>Evidence forensics</strong> — up to 5 levels, 30 evidence types, confidence tiers</li>
-          <li><strong>Drag &amp; drop</strong> — drop any <code>.app</code> for an instant deep scan</li>
-          <li><strong>SafetyManager</strong> — hardened path rules; Maven / Go / Flutter cleanup toggles; sizes under 1&nbsp;MB shown in KB</li>
+          <li><strong>Unmatched Cleanup Coverage</strong> — 1,770 path definitions covering 251 applications and 66 CLI developer toolchains (Xcode, Docker, Homebrew, Rust, Go, Flutter, Android)</li>
+          <li><strong>All-Core Concurrency</strong> — hybrid parallel scanner utilizes every Apple Silicon CPU core for lightning-fast disk traversal</li>
+        </ul>
+      </article>
+      <article>
+        <h3>Native 10-Language Experience</h3>
+        <ul>
+          <li><strong>100% Key Parity</strong> — full native localizations in English, Deutsch, 日本語, Français, 简体中文, Italiano, Português, Español, Русский, and Українська</li>
+          <li><strong>Locale-Aware Formatting</strong> — dynamic date, byte count, path token, and system error message translations</li>
         </ul>
       </article>
     </div>
 
     <div class="release-current-cta reveal" style="margin-top: 24px;">
-      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-        View v2.0.0 release notes on GitHub →
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+        View v2.1.0 release notes on GitHub →
       </a>
     </div>
 
@@ -517,6 +527,27 @@
       <h3 class="changelog-subhead">Previous Releases</h3>
       
       <div class="changelog-timeline">
+        <!-- v2.0.0 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v2.0.0</span>
+            <span class="changelog-title">Liquid Glass UI, On-Device AI &amp; Forensic Uninstaller</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.0.0" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>On-Device Apple Intelligence</strong> — offline analysis of processes, agents, and leftover files via FoundationModels.</li>
+              <li><strong>Liquid Glass Redesign</strong> — native macOS 27 adaptive glass material and micro-animations.</li>
+              <li><strong>Disk Space Analyzer</strong> — interactive folder size breakdown and category filters.</li>
+              <li><strong>Forensic Uninstaller</strong> — 5-level candidate discovery with 30 evidence scoring types.</li>
+            </ul>
+          </div>
+        </details>
         <!-- v1.1.1 -->
         <details class="changelog-item">
           <summary class="changelog-summary">
@@ -657,7 +688,7 @@
     <div class="download-panel reveal">
       <div>
         <h2>Download</h2>
-        <p class="dl-meta">v2.0.0 · macOS 26.0+ · Apple Silicon M1 and newer</p>
+        <p class="dl-meta">v2.1.0 · macOS 26.0+ · Apple Silicon M1 and newer</p>
         <div class="actions">
           <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.0/MacOSCleaner.dmg">
             Download DMG <span class="arrow">→</span>
