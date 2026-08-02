@@ -22,12 +22,12 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard_v2.png" width="45%">
-  <img src="assets/screenshots/Uninstaller_v2.png" width="45%">
+  <img src="assets/screenshots/Dashboard_v2_1.png" width="45%">
+  <img src="assets/screenshots/Uninstaller_v2_1.png" width="45%">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2.png" width="45%">
-  <img src="assets/screenshots/Processes_v2.png" width="45%">
+  <img src="assets/screenshots/Cleanup_Scan_v2_1.png" width="45%">
+  <img src="assets/screenshots/Processes_v2_1.png" width="45%">
 </p>
 
 <p align="center">
