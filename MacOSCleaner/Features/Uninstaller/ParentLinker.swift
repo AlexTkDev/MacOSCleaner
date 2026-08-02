@@ -1,11 +1,15 @@
 import Foundation
 
 public enum ParentLinker {
-    public static func link(url: URL, identity: AppIdentity) -> [(parent: URL, via: Evidence)] {
+    public static func link(
+        url: URL,
+        identity: AppIdentity,
+        homeDirectory: String = NSHomeDirectory()
+    ) -> [(parent: URL, via: Evidence)] {
         var links: [(URL, Evidence)] = []
         let path = url.standardizedFileURL.path
         let bundlePath = identity.bundleURL.standardizedFileURL.path
-        let home = NSHomeDirectory()
+        let home = homeDirectory
 
         guard path.hasPrefix(home + "/Library") || path.hasPrefix("/Library") || path.hasPrefix("/private/var/folders") else {
             return links

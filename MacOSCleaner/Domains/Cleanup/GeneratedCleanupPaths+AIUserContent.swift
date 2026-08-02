@@ -21,6 +21,7 @@ extension GeneratedCleanupPaths {
         }
         // Extra well-known model roots not always present as user_content in SoT.
         templates.insert("<HOME>/.local/share/ollama/models")
+        templates.insert("<HOME>/.ollama/models") // macOS default via Ollama.app installer
         return templates.sorted()
     }
 

@@ -721,9 +721,13 @@ struct CleanupEngineTests {
 
     @Test("All new categories included in CleanupOptions")
     func allNewCategoriesIncludedInCleanupOptions() {
+        // Default options: timeMachineSnapshots is opt-in (off by default for safety).
         let options = CleanupOptions()
         let categories = options.categories()
-        #expect(categories.contains(.timeMachineSnapshots))
+        // Verify opt-in categories exist in CleanupCategory.allCases but NOT in default categories().
+        #expect(CleanupCategory.allCases.contains(.timeMachineSnapshots))
+        #expect(!categories.contains(.timeMachineSnapshots))
+        // Verify these are all in default categories:
         #expect(categories.contains(.iosBackups))
         #expect(categories.contains(.mailDownloads))
         #expect(categories.contains(.savedAppState))
@@ -736,6 +740,9 @@ struct CleanupEngineTests {
         #expect(categories.contains(.teamsCache))
         #expect(categories.contains(.adobeCaches))
         #expect(categories.contains(.chromeExtraCaches))
+        // Verify opt-in becomes active when enabled:
+        let optIn = CleanupOptions(cleanTimeMachineSnapshots: true)
+        #expect(optIn.categories().contains(.timeMachineSnapshots))
     }
 
     // MARK: - CleanupItemManager selection totals

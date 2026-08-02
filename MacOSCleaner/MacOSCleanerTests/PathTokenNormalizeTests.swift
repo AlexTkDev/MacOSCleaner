@@ -241,8 +241,10 @@ final class PathTokenNormalizeTests: XCTestCase {
             isDocker: false
         )
         // pathComponents join yields leading "//" for absolute paths — helper must collapse.
-        let child = NormalizedPath.url("/Users/alex/Library/Containers/ru.keepcoder.Telegram")
-        let links = ParentLinker.link(url: child, identity: identity)
+        // Pass explicit home so test is runner-agnostic (CI home may differ from /Users/alex).
+        let home = "/Users/alex"
+        let child = NormalizedPath.url("\(home)/Library/Containers/ru.keepcoder.Telegram")
+        let links = ParentLinker.link(url: child, identity: identity, homeDirectory: home)
         XCTAssertFalse(links.isEmpty)
         for (parent, _) in links {
             XCTAssertFalse(parent.path.contains("//"), parent.path)

@@ -173,11 +173,13 @@ public actor DuplicateFinderEngine {
             let pathExt = fileURL.pathExtension.lowercased()
             if Self.excludedExtensions.contains(pathExt) { continue }
 
-            // Double-check path components for asset containers or project bundles
+            // Double-check path components for asset containers or project bundles only.
+            // Do NOT re-check directory names here — that would block files under system temp
+            // paths like /var/folders which contain valid user duplicate candidates.
             let pathComponents = fileURL.pathComponents
             if pathComponents.contains(where: { comp in
                 let ext = (comp as NSString).pathExtension.lowercased()
-                return Self.excludedDirectoryNames.contains(comp) || Self.excludedDirectoryExtensions.contains(ext)
+                return Self.excludedDirectoryExtensions.contains(ext)
             }) {
                 continue
             }
