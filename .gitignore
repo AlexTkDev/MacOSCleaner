@@ -39,7 +39,7 @@ Package.resolved
 # ============================================================
 # IDE
 # ============================================================
-
+.cursor/
 .idea/
 .vscode/
 .agent/
@@ -119,3 +119,11 @@ xcuserdata/
 *.xcuserstate
 opencode.json
 .agents
+problematic_apps/
+implementation_plan.md
+
+# Protected Engine Catalogs (Local only)
+engine_paths.json
+ui_metadata.json
+MacOSCleaner/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/
+MacOSCleaner/.require-private-catalog
