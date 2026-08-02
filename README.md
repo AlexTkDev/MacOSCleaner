@@ -47,13 +47,13 @@ Download the latest signed release directly from **[GitHub Releases](https://git
 
 🧠 **Apple Intelligence** — Native local AI explanations powered by `FoundationModels` (requires macOS 26.0+). Operates fully offline on supported Apple Silicon Macs. Explains files, caches, running processes, and startup agents to help you decide what is safe to remove. Prompts are optimized in English for higher model reasoning, with explanations output in your preferred UI language (English, Русский, Українська, Español). Fully toggleable in settings, with real-time model status tracking.
 
-🌍 **Fully Localized** — English, Русский, Українська, Español. All UI, errors, logs, and system info translated dynamically. Dates and byte counts format automatically for your language.
+🌍 **Fully Localized** — English, Deutsch, 日本語, Français, 简体中文, Italiano, Português (Brasil), Español, Русский, Українська (10 languages with 100% key parity). All UI, errors, logs, and system info translated dynamically. Dates and byte counts format automatically for your language.
 
 🎙️ **Siri, Shortcuts & Automator** — native App Intents can clean developer caches, clean a specific category, report storage and Trash status, or run a scheduled cleanup. App Shortcuts support voice commands through Siri. Automation integrations can be enabled individually and managed from Settings.
 
 **Dashboard** 📊 — native Liquid Glass design for macOS 27 with interactive Apple Watch-style activity rings. Shows total and available disk capacity, storage categories, system info (model, CPU, RAM, macOS version), cleanup history and stats.
 
-**Smart Cleanup** 🔍 — scans 54 categories using 1,710 path definitions covering 251 apps and 66 CLI toolchains:
+**Smart Cleanup** 🔍 — scans 54 categories using 1,770 path definitions covering 251 apps and 66 CLI toolchains:
 
 - **Caches & Containers** — Browsers (Safari, Chrome, Firefox, Arc, etc.), Messengers, App Containers, System & WebKit caches, dynamic Electron discovery.
 - **Dev Tools & IDEs** — Xcode DerivedData and Simulators, Android SDK/Studio, package managers (Homebrew, npm, Cargo, Go, SwiftPM), JetBrains, VS Code, Cursor, Docker, and local project build artifacts.
@@ -97,7 +97,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
 
-**Settings** — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About. Manage Full Disk Access and notifications through direct System Settings links, configure Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
+**Settings** — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About. Manage Full Disk Access and notifications through direct System Settings links, configure Debug Mode (hiding/showing detailed execution logs), Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
 
 ---
 
