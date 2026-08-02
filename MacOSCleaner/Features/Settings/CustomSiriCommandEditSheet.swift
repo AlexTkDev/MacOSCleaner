@@ -10,16 +10,18 @@ public struct CustomSiriCommandEditSheet: View {
     @State private var phrase: String = ""
     @State private var selectedCategory: String = "userLogs"
 
-    let availableCategories: [(key: String, label: String)] = [
-        ("userLogs", "settings_cmd_clean_category".localized + " (Logs)"),
-        ("appCaches", "Application Caches"),
-        ("systemCaches", "System Caches"),
-        ("xcode", "settings_cmd_developer_caches".localized),
-        ("browserCaches", "Browser Caches"),
-        ("orphanedRemnants", "Orphaned Remnants"),
-        ("storage_status", "settings_cmd_storage_status".localized),
-        ("scheduled_cleanup", "settings_cmd_scheduled_cleanup".localized)
-    ]
+    var availableCategories: [(key: String, label: String)] {
+        [
+            ("userLogs", "settings_cmd_category_user_logs".localized),
+            ("appCaches", "settings_cmd_category_app_caches".localized),
+            ("systemCaches", "settings_cmd_category_system_caches".localized),
+            ("xcode", "settings_cmd_developer_caches".localized),
+            ("browserCaches", "settings_cmd_category_browser_caches".localized),
+            ("orphanedRemnants", "settings_cmd_category_orphaned_remnants".localized),
+            ("storage_status", "settings_cmd_storage_status".localized),
+            ("scheduled_cleanup", "settings_cmd_scheduled_cleanup".localized)
+        ]
+    }
 
     public init(
         commandToEdit: CustomSiriCommand? = nil,
@@ -27,8 +29,8 @@ public struct CustomSiriCommandEditSheet: View {
     ) {
         self.commandToEdit = commandToEdit
         self.onSave = onSave
-        _title = State(initialValue: commandToEdit?.title ?? "")
-        _phrase = State(initialValue: commandToEdit?.phrase ?? "")
+        _title = State(initialValue: commandToEdit?.displayTitle ?? "")
+        _phrase = State(initialValue: commandToEdit?.displayPhrase ?? "")
         _selectedCategory = State(initialValue: commandToEdit?.categoryRawValue ?? "userLogs")
     }
 
@@ -60,7 +62,7 @@ public struct CustomSiriCommandEditSheet: View {
                 Button("save_action".localized) {
                     let cmd = CustomSiriCommand(
                         id: commandToEdit?.id ?? UUID(),
-                        title: title.isEmpty ? "New Command" : title,
+                        title: title.isEmpty ? "siri_new_command_default".localized : title,
                         phrase: phrase,
                         categoryRawValue: selectedCategory,
                         isEnabled: commandToEdit?.isEnabled ?? true

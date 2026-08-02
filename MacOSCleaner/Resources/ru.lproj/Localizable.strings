@@ -42,6 +42,12 @@
 "siri_command_phrase_label" = "Голосовая фраза Siri";
 "siri_command_category_label" = "Действие / Категория";
 "siri_no_commands_empty" = "Пользовательские команды не добавлены";
+"siri_new_command_default" = "Новая команда Siri";
+"settings_cmd_category_user_logs" = "Логи пользователя";
+"settings_cmd_category_app_caches" = "Кэши приложений";
+"settings_cmd_category_system_caches" = "Системные кэши";
+"settings_cmd_category_browser_caches" = "Кэши браузеров";
+"settings_cmd_category_orphaned_remnants" = "Остатки удаленных программ";
 "cancel_action" = "Отмена";
 "save_action" = "Сохранить";
 "edit_action" = "Редактировать";

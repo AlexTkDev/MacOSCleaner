@@ -119,9 +119,9 @@ struct SettingsAutomationView: View {
                                 .labelsHidden()
 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(cmd.title)
+                                    Text(cmd.displayTitle)
                                         .font(.body.weight(.medium))
-                                    Text("«\(cmd.phrase)»")
+                                    Text("«\(cmd.displayPhrase)»")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

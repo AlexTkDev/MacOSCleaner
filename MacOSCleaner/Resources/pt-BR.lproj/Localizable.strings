@@ -42,6 +42,12 @@
 "siri_command_phrase_label" = "Frase de voz da Siri";
 "siri_command_category_label" = "Ação / Categoria";
 "siri_no_commands_empty" = "Nenhum comando personalizado adicionado";
+"siri_new_command_default" = "Novo Comando da Siri";
+"settings_cmd_category_user_logs" = "Logs do Usuário";
+"settings_cmd_category_app_caches" = "Caches de Aplicativos";
+"settings_cmd_category_system_caches" = "Caches do Sistema";
+"settings_cmd_category_browser_caches" = "Caches dos Navegadores";
+"settings_cmd_category_orphaned_remnants" = "Sobras Órfãs";
 "cancel_action" = "Cancelar";
 "save_action" = "Salvar";
 "edit_action" = "Editar";

@@ -42,6 +42,12 @@
 "siri_command_phrase_label" = "Голосова фраза Siri";
 "siri_command_category_label" = "Дія / Категорія";
 "siri_no_commands_empty" = "Покористувацькі команди не додано";
+"siri_new_command_default" = "Нова команда Siri";
+"settings_cmd_category_user_logs" = "Логи користувача";
+"settings_cmd_category_app_caches" = "Кеші додатків";
+"settings_cmd_category_system_caches" = "Системні кеші";
+"settings_cmd_category_browser_caches" = "Кеші браузерів";
+"settings_cmd_category_orphaned_remnants" = "Залишки видалених програм";
 "cancel_action" = "Скасувати";
 "save_action" = "Зберегти";
 "edit_action" = "Редагувати";

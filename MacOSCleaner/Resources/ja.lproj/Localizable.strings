@@ -42,6 +42,12 @@
 "siri_command_phrase_label" = "Siri 音声フレーズ";
 "siri_command_category_label" = "アクション / カテゴリ";
 "siri_no_commands_empty" = "カスタムコマンドはありません";
+"siri_new_command_default" = "新しいSiriコマンド";
+"settings_cmd_category_user_logs" = "ユーザーログ";
+"settings_cmd_category_app_caches" = "アプリケーションキャッシュ";
+"settings_cmd_category_system_caches" = "システムキャッシュ";
+"settings_cmd_category_browser_caches" = "ブラウザキャッシュ";
+"settings_cmd_category_orphaned_remnants" = "孤立した残存ファイル";
 "cancel_action" = "キャンセル";
 "save_action" = "保存";
 "edit_action" = "編集";

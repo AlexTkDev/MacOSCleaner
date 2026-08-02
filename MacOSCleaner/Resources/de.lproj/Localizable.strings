@@ -42,6 +42,12 @@
 "siri_command_phrase_label" = "Siri-Sprachsatz";
 "siri_command_category_label" = "Aktion / Kategorie";
 "siri_no_commands_empty" = "Keine benutzerdefinierten Befehle hinzugefügt";
+"siri_new_command_default" = "Neuer Siri-Befehl";
+"settings_cmd_category_user_logs" = "Benutzer-Logs";
+"settings_cmd_category_app_caches" = "Anwendungs-Caches";
+"settings_cmd_category_system_caches" = "System-Caches";
+"settings_cmd_category_browser_caches" = "Browser-Caches";
+"settings_cmd_category_orphaned_remnants" = "Waise Reste";
 "cancel_action" = "Abbrechen";
 "save_action" = "Speichern";
 "edit_action" = "Bearbeiten";
