@@ -14,7 +14,7 @@ public struct CleanupView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                if showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
+                if viewModel.settings.isDebugMode && showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
                     VSplitView {
                         content
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -247,7 +247,7 @@ public struct CleanupView: View {
                 }
             }
             
-            if !viewModel.scriptLogs.isEmpty {
+            if viewModel.settings.isDebugMode && !viewModel.scriptLogs.isEmpty {
                 VStack(alignment: .leading) {
                     Text("cleanup_script_logs".localized)
                         .font(.headline)
@@ -720,7 +720,7 @@ public struct CleanupView: View {
                 )
             }
             
-            if !viewModel.scriptLogs.isEmpty {
+            if viewModel.settings.isDebugMode && !viewModel.scriptLogs.isEmpty {
                 HStack(spacing: 16) {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.25)) {

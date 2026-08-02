@@ -846,6 +846,8 @@
 "settings_advanced_dev_sub" = "Extended diagnostics and scanning parameters";
 "settings_show_related_app_files" = "Show Related Application Files";
 "settings_show_related_app_files_sub" = "Include hidden plist and container folders in search results";
+"settings_debug_mode" = "Debug Mode";
+"settings_debug_mode_sub" = "Show detailed logs during cleanup";
 "settings_startup_vendors_sub" = "Manage known startup background item vendors";
 
 "settings_about_tagline" = "Designed for macOS 26+. Built with Swift 6, SwiftUI, and Liquid Glass.";

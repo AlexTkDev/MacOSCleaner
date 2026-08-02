@@ -843,6 +843,8 @@
 "settings_advanced_dev_sub" = "Расширенные параметры диагностики и сканирования";
 "settings_show_related_app_files" = "Показывать связанные файлы приложений";
 "settings_show_related_app_files_sub" = "Включать скрытые plist и контейнеры в результаты поиска";
+"settings_debug_mode" = "Дебаг режим";
+"settings_debug_mode_sub" = "Отображать подробные логи во время очистки";
 "settings_startup_vendors_sub" = "Управление известными системными вендорами автозапуска";
 
 "settings_about_tagline" = "Разработано для macOS 26+. Создано на Swift 6, SwiftUI и Liquid Glass.";

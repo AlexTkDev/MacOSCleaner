@@ -15,7 +15,7 @@ final class AppSettingsTests: XCTestCase {
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_enableAI"
+            "settings_enableAI", "settings_isDebugMode"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -26,7 +26,7 @@ final class AppSettingsTests: XCTestCase {
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_enableAI"
+            "settings_enableAI", "settings_isDebugMode"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -45,6 +45,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
         XCTAssertTrue(settings.enableAI)
+        XCTAssertFalse(settings.isDebugMode)
     }
 
     // MARK: - Persistence
@@ -71,6 +72,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
         settings.enableAI = false
+        settings.isDebugMode = true
  
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_autoScanOnStartup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashDuringCleanup"))
@@ -78,6 +80,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_showRelatedFiles"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashImmediately"))
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_enableAI"))
+        XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_isDebugMode"))
     }
 
     // MARK: - Reset
@@ -94,6 +97,7 @@ final class AppSettingsTests: XCTestCase {
         settings.showRelatedFiles = false
         settings.emptyTrashImmediately = true
         settings.enableAI = false
+        settings.isDebugMode = true
  
         settings.resetAll()
  
@@ -107,5 +111,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(settings.showRelatedFiles)
         XCTAssertFalse(settings.emptyTrashImmediately)
         XCTAssertTrue(settings.enableAI)
+        XCTAssertFalse(settings.isDebugMode)
     }
 }

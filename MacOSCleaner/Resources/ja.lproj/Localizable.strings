@@ -738,6 +738,8 @@
 "settings_advanced_dev_sub" = "拡張診断とスキャンパラメータ";
 "settings_show_related_app_files" = "関連アプリケーションファイルを表示";
 "settings_show_related_app_files_sub" = "隠し plist やコンテナを含める";
+"settings_debug_mode" = "デバッグモード";
+"settings_debug_mode_sub" = "クリーンアップ中に詳細なログを表示";
 "settings_startup_vendors_sub" = "システムベンダーの管理";
 
 "settings_about_tagline" = "macOS 26+ 向け設計。Swift 6、SwiftUI、Liquid Glass で開発。";

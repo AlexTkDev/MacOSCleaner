@@ -147,6 +147,7 @@ public final class AppSettings {
         static let enableCleanCategoryCommand = "settings_cmd_clean_category"
         static let enableScheduledCleanupCommand = "settings_cmd_scheduled_cleanup"
         static let customSiriCommands = "settings_custom_siri_commands"
+        static let isDebugMode = "settings_isDebugMode"
     }
 
     // MARK: - General
@@ -249,6 +250,10 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(emptyTrashImmediately, forKey: Keys.emptyTrashImmediately) }
     }
 
+    public var isDebugMode: Bool {
+        didSet { UserDefaults.standard.set(isDebugMode, forKey: Keys.isDebugMode) }
+    }
+
     // MARK: - Process Management
 
     public var processRefreshInterval: RefreshInterval {
@@ -288,6 +293,7 @@ public final class AppSettings {
         self.enableStorageStatusCommand = defaults.object(forKey: Keys.enableStorageStatusCommand) as? Bool ?? true
         self.enableCleanCategoryCommand = defaults.object(forKey: Keys.enableCleanCategoryCommand) as? Bool ?? true
         self.enableScheduledCleanupCommand = defaults.object(forKey: Keys.enableScheduledCleanupCommand) as? Bool ?? true
+        self.isDebugMode = defaults.bool(forKey: Keys.isDebugMode)
 
         if let data = defaults.data(forKey: Keys.customSiriCommands),
            let decoded = try? JSONDecoder().decode([CustomSiriCommand].self, from: data) {
@@ -310,7 +316,7 @@ public final class AppSettings {
         let allKeys = [
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
-            Keys.showRelatedFiles, Keys.emptyTrashImmediately,
+            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.isDebugMode,
             Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
             Keys.enableAI, Keys.enableSiri, Keys.enableShortcutsAndAutomator,
             Keys.enableDeveloperCachesCommand, Keys.enableStorageStatusCommand,
@@ -330,6 +336,7 @@ public final class AppSettings {
         bypassTrashOnUninstall = false
         showRelatedFiles = true
         emptyTrashImmediately = false
+        isDebugMode = false
         processRefreshInterval = .manual
         processSortOption = .cpu
         uninstallerScanMode = .balanced

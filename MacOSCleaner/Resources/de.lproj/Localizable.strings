@@ -748,6 +748,8 @@
 "settings_advanced_dev_sub" = "Erweiterte Diagnose- und Scanparameter";
 "settings_show_related_app_files" = "Zugehörige Anwendungsdateien anzeigen";
 "settings_show_related_app_files_sub" = "Versteckte Plist- und Containerordner einschließen";
+"settings_debug_mode" = "Debug-Modus";
+"settings_debug_mode_sub" = "Detaillierte Protokolle während der Reinigung anzeigen";
 "settings_startup_vendors_sub" = "Bekannte Autostart-Anbieter verwalten";
 
 "settings_about_tagline" = "Entwickelt für macOS 26+. Erstellt mit Swift 6, SwiftUI und Liquid Glass.";

@@ -738,6 +738,8 @@
 "settings_advanced_dev_sub" = "扩展诊断与扫描参数";
 "settings_show_related_app_files" = "显示相关应用文件";
 "settings_show_related_app_files_sub" = "搜索结果包含隐藏 plist 和容器目录";
+"settings_debug_mode" = "调试模式";
+"settings_debug_mode_sub" = "在清理期间显示详细日志";
 "settings_startup_vendors_sub" = "管理已知开机启动开发商";
 
 "settings_about_tagline" = "专为 macOS 26+ 设计。使用 Swift 6、SwiftUI 及 Liquid Glass 打造。";

@@ -95,7 +95,8 @@ struct SettingsSearchRegistry {
         SettingsItem(id: "sortBy", category: .processes, title: "Process Sorting", subtitle: "Sort by CPU or Memory", keywords: ["sort", "cpu", "memory", "сортировка"], iconName: "arrow.up.arrow.down"),
 
         // Advanced
-        SettingsItem(id: "relatedFiles", category: .advanced, title: "Show Related Files", subtitle: "Advanced uninstaller finding", keywords: ["related", "advanced", "файлы"], iconName: "doc.on.doc")
+        SettingsItem(id: "relatedFiles", category: .advanced, title: "Show Related Files", subtitle: "Advanced uninstaller finding", keywords: ["related", "advanced", "файлы"], iconName: "doc.on.doc"),
+        SettingsItem(id: "debugMode", category: .advanced, title: "Debug Mode", subtitle: "Show detailed logs during cleanup", keywords: ["debug", "log", "logs", "дебаг", "логи", "отладка"], iconName: "terminal")
     ]
 
     static func search(_ query: String) -> [SettingsItem] {

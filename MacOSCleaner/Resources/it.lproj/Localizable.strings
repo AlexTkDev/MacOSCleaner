@@ -738,6 +738,8 @@
 "settings_advanced_dev_sub" = "Parametri di diagnostica e scansione avanzati";
 "settings_show_related_app_files" = "Mostra file applicazione associati";
 "settings_show_related_app_files_sub" = "Includi cartelle di configurazione nascoste e container";
+"settings_debug_mode" = "Modalità debug";
+"settings_debug_mode_sub" = "Mostra log dettagliati durante la pulizia";
 "settings_startup_vendors_sub" = "Gestisci produttori di avvio noti";
 
 "settings_about_tagline" = "Progettato per macOS 26+. Sviluppato con Swift 6, SwiftUI e Liquid Glass.";
