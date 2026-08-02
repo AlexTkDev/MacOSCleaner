@@ -6,6 +6,12 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
     case russian = "ru"
     case ukrainian = "uk"
     case spanish = "es"
+    case german = "de"
+    case japanese = "ja"
+    case french = "fr"
+    case chineseSimplified = "zh-Hans"
+    case italian = "it"
+    case portugueseBrazil = "pt-BR"
 
     public var id: String { rawValue }
 
@@ -15,6 +21,12 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         case .russian: return "language.russian".localized
         case .ukrainian: return "language.ukrainian".localized
         case .spanish: return "language.spanish".localized
+        case .german: return "language.german".localized
+        case .japanese: return "language.japanese".localized
+        case .french: return "language.french".localized
+        case .chineseSimplified: return "language.chinese_simplified".localized
+        case .italian: return "language.italian".localized
+        case .portugueseBrazil: return "language.portuguese_brazil".localized
         }
     }
 }
@@ -128,14 +140,25 @@ public final class AppSettings {
         static let processSortOption = "settings_processSortOption"
         static let uninstallerScanMode = "settings_uninstallerScanMode"
         static let enableAI = "settings_enableAI"
+        static let enableSiri = "settings_enableSiri"
+        static let enableShortcutsAndAutomator = "settings_enableShortcutsAndAutomator"
+        static let enableDeveloperCachesCommand = "settings_cmd_developer_caches"
+        static let enableStorageStatusCommand = "settings_cmd_storage_status"
+        static let enableCleanCategoryCommand = "settings_cmd_clean_category"
+        static let enableScheduledCleanupCommand = "settings_cmd_scheduled_cleanup"
+        static let customSiriCommands = "settings_custom_siri_commands"
+        static let isDebugMode = "settings_isDebugMode"
     }
 
     // MARK: - General
 
     public var language: AppLanguage {
+        willSet {
+            // Bundle must switch before Observation notifies views that call `.localized`.
+            LanguageManager.shared.setLanguage(newValue)
+        }
         didSet {
             UserDefaults.standard.set(language.rawValue, forKey: Keys.language)
-            LanguageManager.shared.setLanguage(language)
         }
     }
 
@@ -167,6 +190,40 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(enableAI, forKey: Keys.enableAI) }
     }
 
+    // MARK: - Siri & System Integrations
+
+    public var enableSiri: Bool {
+        didSet { UserDefaults.standard.set(enableSiri, forKey: Keys.enableSiri) }
+    }
+
+    public var enableShortcutsAndAutomator: Bool {
+        didSet { UserDefaults.standard.set(enableShortcutsAndAutomator, forKey: Keys.enableShortcutsAndAutomator) }
+    }
+
+    public var enableDeveloperCachesCommand: Bool {
+        didSet { UserDefaults.standard.set(enableDeveloperCachesCommand, forKey: Keys.enableDeveloperCachesCommand) }
+    }
+
+    public var enableStorageStatusCommand: Bool {
+        didSet { UserDefaults.standard.set(enableStorageStatusCommand, forKey: Keys.enableStorageStatusCommand) }
+    }
+
+    public var enableCleanCategoryCommand: Bool {
+        didSet { UserDefaults.standard.set(enableCleanCategoryCommand, forKey: Keys.enableCleanCategoryCommand) }
+    }
+
+    public var enableScheduledCleanupCommand: Bool {
+        didSet { UserDefaults.standard.set(enableScheduledCleanupCommand, forKey: Keys.enableScheduledCleanupCommand) }
+    }
+
+    public var customSiriCommands: [CustomSiriCommand] {
+        didSet {
+            if let data = try? JSONEncoder().encode(customSiriCommands) {
+                UserDefaults.standard.set(data, forKey: Keys.customSiriCommands)
+            }
+        }
+    }
+
     // MARK: - Cleanup
 
     public var emptyTrashDuringCleanup: Bool {
@@ -191,6 +248,10 @@ public final class AppSettings {
 
     public var emptyTrashImmediately: Bool {
         didSet { UserDefaults.standard.set(emptyTrashImmediately, forKey: Keys.emptyTrashImmediately) }
+    }
+
+    public var isDebugMode: Bool {
+        didSet { UserDefaults.standard.set(isDebugMode, forKey: Keys.isDebugMode) }
     }
 
     // MARK: - Process Management
@@ -226,6 +287,20 @@ public final class AppSettings {
         self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
         self.uninstallerScanMode = ScanMode(rawValue: defaults.string(forKey: Keys.uninstallerScanMode) ?? "") ?? .balanced
         self.enableAI = defaults.object(forKey: Keys.enableAI) as? Bool ?? true
+        self.enableSiri = defaults.object(forKey: Keys.enableSiri) as? Bool ?? true
+        self.enableShortcutsAndAutomator = defaults.object(forKey: Keys.enableShortcutsAndAutomator) as? Bool ?? true
+        self.enableDeveloperCachesCommand = defaults.object(forKey: Keys.enableDeveloperCachesCommand) as? Bool ?? true
+        self.enableStorageStatusCommand = defaults.object(forKey: Keys.enableStorageStatusCommand) as? Bool ?? true
+        self.enableCleanCategoryCommand = defaults.object(forKey: Keys.enableCleanCategoryCommand) as? Bool ?? true
+        self.enableScheduledCleanupCommand = defaults.object(forKey: Keys.enableScheduledCleanupCommand) as? Bool ?? true
+        self.isDebugMode = defaults.bool(forKey: Keys.isDebugMode)
+
+        if let data = defaults.data(forKey: Keys.customSiriCommands),
+           let decoded = try? JSONDecoder().decode([CustomSiriCommand].self, from: data) {
+            self.customSiriCommands = decoded
+        } else {
+            self.customSiriCommands = CustomSiriCommand.makeDefaultCommands()
+        }
 
         LanguageManager.shared.setLanguage(lang)
 
@@ -241,9 +316,12 @@ public final class AppSettings {
         let allKeys = [
             Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
-            Keys.showRelatedFiles, Keys.emptyTrashImmediately,
+            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.isDebugMode,
             Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
-            Keys.enableAI
+            Keys.enableAI, Keys.enableSiri, Keys.enableShortcutsAndAutomator,
+            Keys.enableDeveloperCachesCommand, Keys.enableStorageStatusCommand,
+            Keys.enableCleanCategoryCommand, Keys.enableScheduledCleanupCommand,
+            Keys.customSiriCommands
         ]
         for key in allKeys {
             defaults.removeObject(forKey: key)
@@ -258,10 +336,18 @@ public final class AppSettings {
         bypassTrashOnUninstall = false
         showRelatedFiles = true
         emptyTrashImmediately = false
+        isDebugMode = false
         processRefreshInterval = .manual
         processSortOption = .cpu
         uninstallerScanMode = .balanced
         enableAI = true
+        enableSiri = true
+        enableShortcutsAndAutomator = true
+        enableDeveloperCachesCommand = true
+        enableStorageStatusCommand = true
+        enableCleanCategoryCommand = true
+        enableScheduledCleanupCommand = true
+        customSiriCommands = CustomSiriCommand.makeDefaultCommands()
 
         LanguageManager.shared.setLanguage(.english)
     }

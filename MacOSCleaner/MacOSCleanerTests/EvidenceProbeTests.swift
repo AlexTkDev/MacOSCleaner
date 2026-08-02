@@ -275,6 +275,52 @@ final class EvidenceProbeTests: XCTestCase {
         XCTAssertFalse(foreignEvidence.contains(Evidence.appNameExact))
     }
 
+    func test_probe_nestedProductUnderVendor_getsAppNameExact() async {
+        let probe = EvidenceProbe(codesignCache: CodesignCache(), plistCache: PlistContentCache())
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let url = URL(fileURLWithPath: "/Users/test/Library/Application Support/Google/AndroidStudio2026.1.3")
+        let evidence = await probe.probe(url: url, identity: identity)
+        XCTAssertTrue(evidence.contains(Evidence.appNameExact))
+        XCTAssertTrue(evidence.contains(Evidence.vendorName))
+    }
+
+    func test_probe_bareGoogleVendor_notAppNameExactForStudio() async {
+        let probe = EvidenceProbe(codesignCache: CodesignCache(), plistCache: PlistContentCache())
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let url = URL(fileURLWithPath: "/Users/test/Library/Application Support/Google")
+        let evidence = await probe.probe(url: url, identity: identity)
+        XCTAssertFalse(evidence.contains(Evidence.appNameExact))
+        XCTAssertFalse(evidence.contains(Evidence.appNamePrefix))
+    }
+
     func test_probe_cacheFolder_bundleIDExact() async {
         let probe = EvidenceProbe(codesignCache: CodesignCache(), plistCache: PlistContentCache())
         let identity = AppIdentity(

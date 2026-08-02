@@ -12,14 +12,16 @@ struct DashboardView: View {
         GlassEffectContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    HStack(alignment: .top, spacing: 20) {
+                    HStack(spacing: 20) {
                         diskUsageCard
                         rightColumn
                     }
                     
                     recentOperationsSection
                 }
-                .padding(24)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                .padding(.top, 8)
             }
         }
         .task {
@@ -27,12 +29,13 @@ struct DashboardView: View {
         }
     }
     
-    // Right column: Stats + System Info stacked
+    // Right column: Stats + System Info stacked (Compact width to give diskUsageCard maximum space)
     private var rightColumn: some View {
         VStack(alignment: .leading, spacing: 16) {
             statsCard
             systemInfoCard
         }
+        .frame(width: 260)
     }
     
     private var systemInfoCard: some View {
@@ -54,9 +57,6 @@ struct DashboardView: View {
     
     private var diskUsageCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("dashboard_disk_usage".localized, systemImage: "internaldrive")
-                .font(.headline)
-            
             if viewModel.isCategoriesLoading {
                 VStack(spacing: 12) {
                     LiquidGlassLoaderView(size: 48)
@@ -64,25 +64,18 @@ struct DashboardView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                .frame(height: 300)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                DiskDonutChartView(
+                DiskRingsChartView(
                     items: viewModel.diskCategories,
                     totalUsed: viewModel.usedDiskSpace,
                     totalDisk: viewModel.totalDiskSpace
                 )
-            }
-            
-            HStack(spacing: 0) {
-                DiskStatItem(title: "dashboard_used".localized, value: viewModel.usedDiskSpace, color: .accentColor)
-                Spacer()
-                DiskStatItem(title: "dashboard_free".localized, value: viewModel.freeDiskSpace, color: .secondary.opacity(0.4))
-                Spacer()
-                DiskStatItem(title: "dashboard_total".localized, value: viewModel.totalDiskSpace, color: nil, alignment: .trailing)
+                .frame(maxHeight: .infinity)
             }
         }
         .padding()
+        .frame(maxHeight: .infinity)
         .glassCard()
     }
     

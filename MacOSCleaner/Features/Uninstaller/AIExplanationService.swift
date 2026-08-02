@@ -21,6 +21,12 @@ public actor AIExplanationService {
         case .russian: return "Russian"
         case .ukrainian: return "Ukrainian"
         case .spanish: return "Spanish"
+        case .german: return "German"
+        case .japanese: return "Japanese"
+        case .french: return "French"
+        case .chineseSimplified: return "Simplified Chinese"
+        case .italian: return "Italian"
+        case .portugueseBrazil: return "Brazilian Portuguese"
         }
     }
     

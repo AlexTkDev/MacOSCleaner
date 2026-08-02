@@ -6,53 +6,45 @@ struct AboutView: View {
     var availableUpdate: String? = nil
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            content
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                header
+                contentStack
+            }
+            .frame(width: 380)
         }
-        .frame(width: 400)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     private var header: some View {
         VStack(spacing: 12) {
             Image(nsImage: NSApplication.shared.applicationIconImage)
                 .resizable()
-                .frame(width: 96, height: 96)
-                .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+                .frame(width: 88, height: 88)
+                .shadow(color: .accentColor.opacity(0.3), radius: 12, y: 6)
 
-            VStack(spacing: 2) {
+            VStack(spacing: 4) {
                 Text("MacOS Cleaner")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                 Text(String(format: "about_version".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "version_unknown".localized))
-                    .font(.subheadline)
-                    .opacity(0.85)
+                    .font(.callout)
+                    .foregroundColor(.secondary)
             }
         }
-        .foregroundColor(.white)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 30)
+        .padding(.top, 28)
+        .padding(.bottom, 20)
         .background {
-            LinearGradient(
-                colors: [
-                    .accentColor.opacity(colorScheme == .dark ? 0.8 : 0.65),
-                    .accentColor.opacity(colorScheme == .dark ? 0.3 : 0.15),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-    }
-
-    private var content: some View {
-        GlassEffectContainer {
-            contentStack
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(colorScheme == .dark ? 0.25 : 0.15))
+                    .blur(radius: 40)
+                    .offset(y: -20)
+            }
         }
     }
 
     private var contentStack: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             if let update = availableUpdate {
                 updateBanner(version: update)
             }
@@ -61,12 +53,18 @@ struct AboutView: View {
             linksCard
 
             Text("about_copyright".localized)
-                .font(.footnote)
-                .foregroundColor(.secondary)
+                .font(.caption2)
+                .foregroundColor(.secondary.opacity(0.8))
 
-            Button("close".localized) { dismiss() }
-                .keyboardShortcut(.defaultAction)
-                .controlSize(.large)
+            Button(action: { dismiss() }) {
+                Text("close".localized)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 28)
+            }
+            .glassButtonStyle()
+            .controlSize(.large)
+            .keyboardShortcut(.defaultAction)
         }
         .padding(20)
     }
@@ -76,33 +74,28 @@ struct AboutView: View {
             NSWorkspace.shared.open(UpdateChecker.releasesURL)
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "bell.badge.fill")
+                Image(systemName: "sparkles")
                     .font(.title2)
-                    .foregroundStyle(.white)
-                    .symbolRenderingMode(.multicolor)
+                    .foregroundStyle(.purple)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(String(format: "update.available".localized, version))
                         .font(.headline)
-                        .foregroundStyle(.white)
                         .lineLimit(nil)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                     Text("update.download".localized + " →")
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                         .lineLimit(nil)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
-            .padding(14)
-            .background(
-                LinearGradient(colors: [.blue, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .shadow(color: .blue.opacity(0.3), radius: 5, y: 2)
+            .padding(12)
+            .glassEffect(.regular.tint(.purple.opacity(0.2)))
+            .cornerRadius(12)
         }
         .buttonStyle(.plain)
     }
@@ -110,53 +103,58 @@ struct AboutView: View {
     private var developerCard: some View {
         HStack(spacing: 12) {
             Image(systemName: "person.circle.fill")
-                .font(.title2)
+                .font(.title3)
                 .foregroundColor(.accentColor)
             Text("about_developer".localized)
-                .font(.headline)
+                .font(.subheadline)
+                .fontWeight(.medium)
             Spacer()
         }
-        .padding(14)
-        .glassCard(cornerRadius: 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .glassCard(cornerRadius: 12)
     }
 
     private var linksCard: some View {
         VStack(spacing: 0) {
+            Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner")!) {
+                Label("about_star_github".localized, systemImage: "star.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.yellow)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .contentShape(Rectangle())
+            }
+            Divider().padding(.leading, 38)
             Link(destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!) {
                 Label("about_website".localized, systemImage: "globe")
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
+                    .padding(10)
                     .contentShape(Rectangle())
             }
-            Divider().padding(.leading, 44)
+            Divider().padding(.leading, 38)
             Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
                 Label("about_problem_link".localized, systemImage: "exclamationmark.bubble.fill")
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
+                    .padding(10)
                     .contentShape(Rectangle())
             }
-            Divider().padding(.leading, 44)
+            Divider().padding(.leading, 38)
             Link(destination: URL(string: "https://www.linkedin.com/in/aleksandrtk/")!) {
                 Label("about_linkedin".localized, systemImage: "person.crop.circle.badge.plus")
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
+                    .padding(10)
                     .contentShape(Rectangle())
             }
         }
-        .glassCard(cornerRadius: 10)
+        .glassCard(cornerRadius: 12)
         .buttonStyle(.plain)
     }
 }
 
 #Preview {
-    AboutView(availableUpdate: "2.0.0")
+    AboutView(availableUpdate: "2.1.0")
 }

@@ -527,11 +527,12 @@ struct CleanupEngineTests {
 
     @Test("Safety violation on home SSH")
     func safetyViolationOnHomeSSH() async throws {
-        let engine = CleanupEngine()
-        let home = NSHomeDirectory()
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
 
         do {
-            _ = try await engine.cleanContents(of: "\(home)/.ssh", dryRun: false)
+            _ = try await engine.cleanContents(of: "\(ctx.homePath)/.ssh", dryRun: false)
             Issue.record("Expected safety violation error")
         } catch {
             #expect(error is SafetyError)
@@ -720,9 +721,13 @@ struct CleanupEngineTests {
 
     @Test("All new categories included in CleanupOptions")
     func allNewCategoriesIncludedInCleanupOptions() {
+        // Default options: timeMachineSnapshots is opt-in (off by default for safety).
         let options = CleanupOptions()
         let categories = options.categories()
-        #expect(categories.contains(.timeMachineSnapshots))
+        // Verify opt-in categories exist in CleanupCategory.allCases but NOT in default categories().
+        #expect(CleanupCategory.allCases.contains(.timeMachineSnapshots))
+        #expect(!categories.contains(.timeMachineSnapshots))
+        // Verify these are all in default categories:
         #expect(categories.contains(.iosBackups))
         #expect(categories.contains(.mailDownloads))
         #expect(categories.contains(.savedAppState))
@@ -735,6 +740,9 @@ struct CleanupEngineTests {
         #expect(categories.contains(.teamsCache))
         #expect(categories.contains(.adobeCaches))
         #expect(categories.contains(.chromeExtraCaches))
+        // Verify opt-in becomes active when enabled:
+        let optIn = CleanupOptions(cleanTimeMachineSnapshots: true)
+        #expect(optIn.categories().contains(.timeMachineSnapshots))
     }
 
     // MARK: - CleanupItemManager selection totals
@@ -804,8 +812,8 @@ struct CleanupEngineTests {
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {
-        let tempDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Caches/MacOSCleanerTests_\(UUID().uuidString)")
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MacOSCleanerTests_\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         return tempDir
     }

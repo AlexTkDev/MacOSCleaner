@@ -1,186 +1,55 @@
 import Foundation
 
-/// Safe cache/log paths extracted once from the problematic-apps fixture base.
-/// Merged into EmbeddedCleanupPaths; hand-maintained onward.
+/// Public facade over the private catalog asset (or empty public fallback).
+/// Callers keep using the same API as the former generated Swift dump.
 public enum GeneratedCleanupPaths {
+    public static var catalogSource: CatalogSource { PrivateCatalogStore.snapshot.source }
 
-    public static let browserCaches: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Crashpad", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Cache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Code Cache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/GPUCache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/Default/Service Worker", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/GrShaderCache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Application Support/Google/Chrome/ShaderCache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/Apple/com.apple.Safari", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/Arc", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/Firefox", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/Google/Chrome", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.ImageCache", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.SafeBrowsing", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.SearchHelper", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.WebPagePreview", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.WebPageThumbnails", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Safari.WebResourceLoadStatistics", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.SafariTechnologyPreview", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.WebKit.PluginProcess", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.brave.Browser", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.brave.Browser.ShipIt", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.brave.Browser.beta", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.brave.Browser.nightly", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.duckduckgo.macos.browser", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.google.Chrome", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.google.Chrome.ShipIt", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.google.Chrome.canary", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.edgemac", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.edgemac.Beta", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.edgemac.Canary", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.edgemac.Dev", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.edgemac.ShipIt", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.operasoftware.Opera", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.operasoftware.OperaDeveloperEdition", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.operasoftware.OperaGX", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.vivaldi.Vivaldi", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/com.vivaldi.Vivaldi.ShipIt", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/org.chromium.Chromium", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/org.mozilla.firefox", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/org.mozilla.firefox_esr", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/org.mozilla.firefoxdeveloperedition", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/org.torproject.torbrowser", category: .browserCaches),
-        CleanupPath(path: "~/Library/Caches/ru.yandex.desktop.yandex-browser", category: .browserCaches),
-        CleanupPath(path: "~/Library/HTTPStorages/com.apple.Safari.WebPageThumbnails", category: .browserCaches),
-    ]
+    public static var sourceHash: String { PrivateCatalogStore.snapshot.engineHash }
 
-    public static let ideCaches: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Application Support/Code/Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Code/CachedData", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Code/Crashpad", category: .ideCaches),
-        CleanupPath(path: "~/Library/Application Support/Sublime Text*/Cache", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/AndroidStudio*", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/Google/AndroidStudio*", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/JetBrains", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.dt.Xcode", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.dt.XcodePreviews", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.dt.xcodebuild", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.exafunction.windsurf", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.VSCode", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.VSCode.ShipIt", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.sublimetext.4", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/com.torusknot.SourceTreeNotMAS", category: .ideCaches),
-        CleanupPath(path: "~/Library/Caches/dev.zed.Zed", category: .ideCaches),
-    ]
+    public static var uiHash: String { PrivateCatalogStore.snapshot.uiHash }
 
-    public static let appCaches: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Caches/CMake", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/Docker Desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/Homebrew", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/co.zeit.hyper", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.DanPristupov.Fork", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.dt.SourceKitService", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.avast.browser", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.axosoft.GitKraken", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.axosoft.GitKraken.ShipIt", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.barebones.bbedit", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.bitwarden.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.bjango.istatmenus", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.blackpixel.kaleidoscope", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.bohemiancoding.sketch3", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.docker.docker", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.facebook.watchman", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.fenrir-inc.Sleipnir", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.figma.Desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.figma.Desktop.ShipIt", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.fournova.Tower3", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.framer.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.ghostery.browser", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.github.GitHubClient", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.github.GitHubClient.ShipIt", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.googlecode.iterm2", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.hiddenreflex.epic", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.insomnia.app", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.insomnia.app.ShipIt", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.kagi.kagimacOS", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.kapeli.dashdoc", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.luckymarmot.Paw", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.macromates.TextMate", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.maxthon.mac.maxthon", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.azuredatastudio", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.mongodb.compass", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.navicat.NavicatPremium", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.omnigroup.OmniWeb5", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.oracle.java.Java-Updater", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.oracle.mysql.workbench", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.panic.Nova", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.piriform.ccleaner.browser", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.postmanlabs.mac", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.postmanlabs.mac.ShipIt", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.proxyman.NSProxy", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.raycast.macos", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.redis.RedisInsight", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.runningwithcrayons.Alfred", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.sequel-ace.sequel-ace", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.sequelpro.SequelPro", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.sigmaos.sigmaos.macos", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.tableplus.TablePlus", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.todesktop.230313mzl4w4u92", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.usebruno.app", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.utmapp.UTM", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.vagrant.vagrant", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.wiheads.paste", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.xk72.Charles", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/company.thebrowser.Browser", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/dev.orbstack.OrbStack", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/dev.warp.Warp-Stable", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/expo", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/flutter", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/go-build", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.devdocs.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.gitlab.librewolf-community", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.gitpod.gitpod-desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.hoppscotch.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.httpie.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/io.rancher.desktop", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/java", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/jp.lunascape.lunascape", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/net.ablaze.floorp", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/net.mullvad.MullvadBrowser", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/net.waterfox.waterfox", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/ngrok", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.basilisk.basilisk", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.jkiss.dbeaver.core.product", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.keepassx.keepassxc", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.mozilla.nightly", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.mozilla.seamonkey", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.palemoon.PaleMoon", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.pgadmin.pgadmin4", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.ruby-lang.ruby", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.swift.swiftpm", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.tabby", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.wireshark.Wireshark", category: .appCaches),
-    ]
+    public static var watermarks: [String] { PrivateCatalogStore.snapshot.watermarks }
 
-    public static let dotfileCaches: [CleanupPath] = [
-        CleanupPath(path: "~/.aws/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.cargo/registry/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.config/gcloud/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.kube/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.minikube/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.pyenv/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.swiftpm/cache", category: .dotfileCaches),
-    ]
+    public static var registry: [String: AppPaths] { PrivateCatalogStore.snapshot.registry }
 
-    public static let userLogs: [CleanupPath] = [
-    ]
+    public static var toolchains: [String: AppPaths] { PrivateCatalogStore.snapshot.toolchains }
+
+    public static var bundleIDToRegistryKey: [String: String] {
+        PrivateCatalogStore.snapshot.bundleIDToRegistryKey
+    }
+
+    public static var prefixIndex: [(prefix: String, key: String)] {
+        PrivateCatalogStore.snapshot.prefixIndex
+    }
+
+    public static var browserCaches: [CleanupPath] { cachePaths(for: .browserCaches) }
+    public static var ideCaches: [CleanupPath] { cachePaths(for: .ideCaches) }
+    public static var appCaches: [CleanupPath] { cachePaths(for: .appCaches) }
+    public static var dotfileCaches: [CleanupPath] { cachePaths(for: .dotfileCaches) }
+    public static var userLogs: [CleanupPath] { cachePaths(for: .userLogs) }
+    public static var messagingMedia: [CleanupPath] { cachePaths(for: .messagingMedia) }
+    public static var languageCaches: [CleanupPath] { cachePaths(for: .languageCaches) }
+    public static var systemCaches: [CleanupPath] { cachePaths(for: .systemCaches) }
+
+    public static func appPaths(forBundleID bundleID: String) -> AppPaths? {
+        let lower = bundleID.lowercased()
+        guard !lower.isEmpty, !lower.hasPrefix("unknown.") else { return nil }
+        let snapshot = PrivateCatalogStore.snapshot
+        if let key = snapshot.bundleIDToRegistryKey[lower], let paths = snapshot.registry[key] {
+            return paths
+        }
+        for entry in snapshot.prefixIndex where lower.hasPrefix(entry.prefix) {
+            if let paths = snapshot.registry[entry.key] { return paths }
+        }
+        return nil
+    }
+
+    public static func cachePaths(for category: CleanupCategory) -> [CleanupPath] {
+        paths(for: category)
+    }
 
     public static func paths(for category: CleanupCategory) -> [CleanupPath] {
-        switch category {
-        case .browserCaches: return browserCaches
-        case .ideCaches: return ideCaches
-        case .appCaches: return appCaches
-        case .dotfileCaches: return dotfileCaches
-        case .userLogs: return userLogs
-        default: return []
-        }
+        PrivateCatalogStore.snapshot.cachePathsByCategory[category] ?? []
     }
 }

@@ -15,17 +15,88 @@
 "size" = "Розмір";
 "last_used" = "Останній запуск";
 
+/* Siri & Automator Settings */
+"settings_siri_section_title" = "Інтеграція з Siri та Automator";
+"settings_siri_toggle_title" = "Увімкнути інтеграцію з Siri";
+"settings_siri_toggle_description" = "Дозволити керування очищенням через голосові команди Siri та Швидкі команди.";
+"settings_automator_toggle_title" = "Команди та скрипти Automator";
+"settings_automator_toggle_description" = "Дозволити виконання очищення в Automator, Швидких командах та авторозкладах.";
+"settings_siri_instruction_title" = "Як налаштувати в macOS";
+"settings_siri_instruction_body" = "Відкрийте програму Швидкі команди (Shortcuts.app) → У бічній панелі виберіть MacOSCleaner. Там відобразяться всі доступні дії для Siri, Швидких команд та Automator.";
+"settings_open_shortcuts_button" = "Відкрити Швидкі команди";
+"settings_active_commands_header" = "Активні команди Siri та Швидких команд";
+"settings_cmd_developer_caches" = "Очищення кешів розробника (DerivedData, Homebrew, Docker)";
+"settings_cmd_storage_status" = "Статус вільного місця на диску";
+"settings_cmd_clean_category" = "Очистити конкретну категорію (кеші, логи тощо)";
+"settings_cmd_scheduled_cleanup" = "Заплановане фонове очищення (Automator)";
+"siri_phrase_developer_caches" = "Очисти кеші розробника";
+"siri_phrase_storage_status" = "Скільки вільного місця";
+"siri_phrase_clean_category" = "Очисти системні кеші";
+"siri_phrase_scheduled_cleanup" = "Запусти заплановане очищення";
+
+/* Custom Siri Commands Editor */
+"siri_add_command_button" = "Додати команду";
+"siri_add_command_title" = "Нова команда Siri";
+"siri_edit_command_title" = "Редагування команди Siri";
+"siri_command_name_label" = "Назва команди";
+"siri_command_phrase_label" = "Голосова фраза Siri";
+"siri_command_category_label" = "Дія / Категорія";
+"siri_no_commands_empty" = "Покористувацькі команди не додано";
+"siri_new_command_default" = "Нова команда Siri";
+"settings_cmd_category_user_logs" = "Логи користувача";
+"settings_cmd_category_app_caches" = "Кеші додатків";
+"settings_cmd_category_system_caches" = "Системні кеші";
+"settings_cmd_category_browser_caches" = "Кеші браузерів";
+"settings_cmd_category_orphaned_remnants" = "Залишки видалених програм";
+"cancel_action" = "Скасувати";
+"save_action" = "Зберегти";
+"edit_action" = "Редагувати";
+
 /* Sidebar / Navigation Menu */
-"menu_dashboard" = "Огляд";
-"menu_cleanup" = "Очищення";
-"menu_startup_services" = "Автозапуск";
 "menu_startup_vendors" = "Вендори автозапуску";
-"menu_uninstaller" = "Деінсталятор";
-"menu_settings" = "Налаштування";
-"menu_disk_space" = "Аналізатор диска";
+
+/* Duplicate Finder Screen */
+"menu_duplicates" = "Пошук дублікатів";
+"duplicate_title" = "Пошук дублікатів файлів";
+"duplicates_subtitle" = "Пошук та видалення однакових файлів для звільнення місця.";
+"duplicate_start_scan" = "Знайти дублікати";
+"duplicate_folder_home" = "Домашня папка";
+"duplicate_folder_downloads" = "Завантаження";
+"duplicate_folder_documents" = "Документи";
+"duplicate_folder_custom" = "Обрати папку...";
+"duplicate_search_placeholder" = "Фільтр дублікатів...";
+"duplicate_smart_select" = "Розумний вибір";
+"duplicate_select_keep_oldest" = "Залишити старі копії";
+"duplicate_select_keep_newest" = "Залишити нові копії";
+"duplicate_select_all" = "Обрати все";
+"duplicate_deselect_all" = "Зняти виділення";
+"duplicate_scanning_start" = "Ініціалізація сканера дублікатів...";
+"duplicate_scan_completed" = "Сканування завершено: знайдено %ld груп дублікатів";
+"duplicate_scan_cancelled" = "Сканування скасовано";
+"duplicate_scan_failed" = "Помилка сканування: %@";
+"duplicate_stage_collecting" = "Збір файлів (скановано %ld)...";
+"duplicate_stage_size_filtering" = "Фільтрація кандидатів за розміром...";
+"duplicate_stage_header_hashing" = "Хешування заголовків файлів (%ld з %ld)...";
+"duplicate_stage_full_hashing" = "Обчислення підписів SHA-256 (%ld з %ld)...";
+"duplicate_stage_completed" = "Аналіз дублікатів завершено";
+"duplicate_empty_title" = "Дублікати не знайдені";
+"duplicate_empty_subtitle" = "Оберіть папку для пошуку однакових файлів та звільнення місця.";
+"duplicate_group_title" = "%ld однакових файлів (%@ кожен)";
+"duplicate_group_wasted" = "%@ можна звільнити";
+"duplicate_reveal_in_finder" = "Показати в Finder";
+"duplicate_selected_summary" = "%ld файлів обрано для видалення";
+"duplicate_selected_reclaim" = "%@ місця буде звільнено";
+"duplicate_move_to_trash" = "Перемістити до Смітника";
+"duplicate_trash_confirm_title" = "Видалити обрані дублікати?";
+"duplicate_trash_confirm_action" = "Перемістити до Смітника";
+"duplicate_trash_confirm_message" = "Ви впевнені, що бажаєте перемістити %ld обраних дублікатів (%@) до Смітника?";
+"duplicate_trash_completed" = "Успішно переміщено %ld файлів (%@) до Смітника";
+"duplicate_trash_failed" = "Не вдалося перемістити файли до Смітника: %@";
 
 /* Disk Analyzer Screen */
+"menu_disk_space" = "Аналізатор диска";
 "disk_analyzer_title" = "Аналізатор диска";
+"disk_space_subtitle" = "Аналіз розподілу дискового простору та пошук великих файлів.";
 "disk_analyzer_scan" = "Сканувати папку";
 "disk_analyzer_scanning" = "Сканування...";
 "disk_analyzer_back" = "Назад";
@@ -54,10 +125,14 @@
 "about_problem_link" = "Якщо виникла проблема з додатком, повідомте мені тут";
 "about_linkedin" = "Профіль LinkedIn";
 "about_website" = "Веб-сайт";
+"about_star_github" = "Поставити ⭐️ проекту на GitHub";
+"settings_about_star_github" = "Поставити ⭐️ проекту на GitHub";
 "about_copyright" = "© 2026 AlexTkDev. Усі права захищені.";
 
 /* Dashboard View */
+"menu_dashboard" = "Огляд";
 "dashboard_title" = "Огляд";
+"dashboard_subtitle" = "Огляд стану системи та накопичувача.";
 "dashboard_system_info" = "Інформація про систему";
 "dashboard_model" = "Модель";
 "dashboard_os_version" = "Версія ОС";
@@ -87,8 +162,15 @@
 "language.russian" = "Російська";
 "language.ukrainian" = "Українська";
 "language.spanish" = "Іспанська";
+"language.german" = "Німецька";
+"language.japanese" = "Японська";
+"language.french" = "Французька";
+"language.chinese_simplified" = "Китайська (спрощена)";
+"language.italian" = "Італійська";
+"language.portuguese_brazil" = "Португальська (Бразилія)";
 
 /* Settings View */
+"menu_settings" = "Налаштування";
 "settings_title" = "Налаштування";
 "settings_subtitle" = "Налаштування параметрів додатка";
 "settings_general" = "Загальні";
@@ -166,6 +248,7 @@
 "settings_trash_warning" = "Ці налаштування роблять видалення незворотним. Файли, що обходять Смітник або видаляються з нього одразу, відновити неможливо.";
 
 /* Startup Services View */
+"menu_startup_services" = "Автозапуск";
 "startup_title" = "Автозапуск";
 "startup_subtitle" = "Керування агентами автозапуску.";
 "startup_refresh" = "Оновити список";
@@ -187,7 +270,23 @@
 /* Startup Category Help */
 "startup_help_user" = "Служба користувача з ~/Library/. Безпечно вимикати.";
 "startup_help_third_party" = "Стороння служба з /Library/. Безпечно вимикати.";
- 
+
+/* Startup Vendor Settings */
+"settings_startup_vendors" = "Системні вендори";
+"startup_vendors_title" = "Системні вендори";
+"startup_vendors_description" = "Префікси міток, які вважаються системними службами.";
+"startup_vendors_description_sub" = "Служби з цими префіксами позначаються як «Системні», і їх вимкнення не рекомендується.";
+"startup_vendors_current" = "Поточні префікси";
+"startup_vendors_reset" = "Скинути";
+"startup_vendors_empty" = "Префікси не додано";
+"startup_vendors_protected" = "Захищено";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "Префікс повинен містити крапку";
+"startup_vendors_error_duplicate" = "Цей префікс вже існує";
+/* Cleanup View */
+"menu_cleanup" = "Очищення";
+"cleanup_title" = "Очищення";
+"cleanup_subtitle" = "Бережне видалення кешів, логів та системного сміття.";
 "cleanup_scanning" = "Сканування системи...";
 "cleanup_clean" = "Система чиста";
 "cleanup_clean_sub" = "Під час сканування не було знайдено непотрібних файлів.";
@@ -252,7 +351,9 @@
 "trash_access_prompt_button" = "Надати доступ";
 
 /* Uninstaller View */
+"menu_uninstaller" = "Деінсталятор";
 "uninstaller_title" = "Деінсталятор";
+"uninstaller_subtitle" = "Повне видалення програм та їхніх залишкових файлів.";
 "uninstaller_search" = "Пошук додатків";
 "uninstaller_reload" = "Оновити список";
 "uninstaller_confirm_perm_delete" = "Видалити безповоротно?";
@@ -285,6 +386,15 @@
 "uninstaller.analyzing" = "Аналіз...";
 "uninstaller_complete_title" = "Видалення завершено";
 "uninstaller_complete_body" = "Додаток %@ був успішно видалений.";
+"uninstaller_versions_badge" = "%d верс.";
+"uninstaller_multiple_versions_found" = "Знайдено %d версій цієї програми";
+"uninstaller_version_title" = "Версія %@";
+"uninstaller_delete_this_version" = "Видалити цю версію";
+"uninstaller_all_versions_tab" = "Усі версії (%d)";
+"uninstaller_uninstall_version_warning_trash" = "Це перемістить версію %1$@ програми %2$@ та її пов'язані файли (%3$lld) до Смітника.";
+"uninstaller_uninstall_version_warning_perm" = "Це призведе до безповоротного видалення версії %1$@ програми %2$@ та її пов'язаних файлів (%3$lld).";
+"uninstaller_version_deleted_body" = "Версію %1$@ програми %2$@ успішно видалено.";
+"uninstaller_versions" = "Версії";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
 
 /* Processes View */
@@ -436,6 +546,8 @@
 "category.imovie_final_cut" = "iMovie / Final Cut";
 "category.garmin_fitbit" = "Garmin / Fitbit";
 "category.old_backups" = "Старі резервні копії";
+"category.ai_models" = "AI-моделі та LLM-дані";
+"category.installer_packages" = "Інсталяційні пакети";
 "category.dns_flush" = "Кеш DNS";
 "category.font_cache" = "Кеш шрифтів";
 "category.sleep_image" = "Образ сну";
@@ -568,6 +680,21 @@
 "uninstaller.developer_artifacts" = "Артефакти розробника";
 "uninstaller.progress.developer_components" = "Перевірка компонентів розробника...";
 "uninstaller.footer.summary" = "Вибрано %lld файлів у %@ категоріях";
+"uninstaller.metadata.difficulty" = "Складність видалення";
+"uninstaller.metadata.difficulty.critical" = "Критична";
+"uninstaller.metadata.difficulty.high" = "Висока";
+"uninstaller.metadata.difficulty.medium" = "Середня";
+"uninstaller.metadata.difficulty.low" = "Низька";
+"uninstaller.metadata.parent_suite" = "Сюїта";
+"uninstaller.metadata.known_issues" = "Відомі особливості";
+"uninstaller.shared_component" = "Спільний";
+"uninstaller.shared_component.help" = "Спільний компонент з іншими програмами — за замовчуванням не вибрано; увімкніть лише якщо хочете видалити спільне.";
+"uninstaller.shared_help.microsoft" = "Спільний компонент пакета Microsoft Office (Word, Excel, PowerPoint, Outlook)";
+"uninstaller.shared_help.google" = "Спільний компонент служби оновлень Google (Chrome, Google Drive, Earth)";
+"uninstaller.shared_help.adobe" = "Спільний компонент пакета Adobe Creative Cloud (Photoshop, Illustrator, Premiere)";
+"uninstaller.shared_help.jetbrains" = "Спільний компонент середовища JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
+"uninstaller.shared_help.android" = "Спільні дані розробки Android (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "Спільні засоби розробки Apple (Xcode, Command Line Tools, Simulator)";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";
@@ -610,3 +737,164 @@
 "uninstaller_explain_with_ai" = "Пояснити за допомогою ШІ";
 "uninstaller_ai_explaining" = "Генерація пояснення...";
 "uninstaller_ai_failed" = "ШІ недоступний або не вдалося створити опис.";
+
+"cleanup_option_tm_snapshots" = "Знімки Time Machine";
+"cleanup_option_tm_snapshots_sub" = "Безпечне видалення локальних знімків APFS для звільнення місця (потрібен пароль).";
+
+/* New Settings Redesign */
+"settings_category_overview" = "Огляд";
+"settings_category_general" = "Загальні";
+"settings_category_permissions" = "Дозволи";
+"settings_category_cleanup" = "Очищення";
+"settings_category_automation" = "Siri та ШІ";
+"settings_category_ai" = "Apple Intelligence";
+"settings_category_processes" = "Процеси";
+"settings_category_advanced" = "Додатково";
+"settings_category_about" = "Про програму";
+"settings_category_danger_zone" = "Небезпечна зона";
+
+"settings_overview_subtitle" = "Нативний оптимізатор та очищувач для macOS";
+"settings_overview_auto_scan" = "Автосканування";
+"settings_overview_scan_at_launch" = "Сканувати при запуску";
+"settings_quick_actions" = "Швидкі дії";
+"settings_quick_actions_sub" = "Основні адміністративні завдання";
+"settings_quick_action_check_updates" = "Перевірити оновлення";
+"settings_quick_action_check_updates_sub" = "Перевірити релізи на GitHub";
+"settings_quick_action_update_available" = "Доступне оновлення!";
+"settings_quick_action_permissions_sub" = "Керування доступом до диска та Смітника";
+"settings_quick_action_shortcuts_siri" = "Швидкі команди та Siri";
+"settings_quick_action_shortcuts_siri_sub" = "Налаштування автоматизації";
+"settings_quick_action_advanced_sub" = "Налагодження та діагностика";
+"settings_system_status" = "Статус системи";
+"settings_system_status_sub" = "Стан та метрики програми";
+"settings_system_status_db" = "База даних програми";
+
+"settings_appearance_language" = "Оформлення та мова";
+"settings_appearance_language_sub" = "Персоналізація інтерфейсу";
+"settings_language_sub" = "Мова відображення інтерфейсу";
+"settings_theme_sub" = "Колірна схема додатку";
+"settings_tooltips_sub" = "Підказки при наведенні";
+"settings_software_updates" = "Оновлення ПЗ";
+"settings_software_updates_sub" = "Перевірка версій";
+"settings_current_version" = "Поточна версія";
+
+"settings_permissions_sub" = "Права системного доступу";
+"settings_permissions_overall" = "Загальний статус дозволів";
+"settings_permissions_overall_sub" = "Необхідно для сканування системних кешів та залишків";
+"settings_fda_title" = "Повний доступ до диска (FDA)";
+"settings_fda_body" = "Повний доступ дозволяє MacOSCleaner безпечно знаходити залишкові файли, Xcode DerivedData та логи.";
+"settings_open_privacy_settings" = "Відкрити налаштування приватності";
+"settings_check_status" = "Перевірити статус";
+"settings_permission_guide" = "Інструкція";
+"settings_notifications_enable" = "Увімкнути сповіщення";
+"settings_notifications_enable_sub" = "Отримувати сповіщення після закінчення очищення або при накопиченні сміття";
+"settings_notifications_denied_body" = "Сповіщення вимкнено в Системних параметрах";
+"status_granted" = "Надано";
+"status_attention" = "Потрібна увага";
+"status_required" = "Потрібно";
+"status_disabled" = "Вимкнено";
+
+"settings_scan_config" = "Конфігурація сканування";
+"settings_scan_config_sub" = "Опції деінсталятора та пошуку сміття";
+"settings_scan_mode_sub" = "Глибина сканування залишкових файлів";
+"settings_auto_scan_sub" = "Автоматично сканувати сміття при запуску програми";
+"settings_show_related_sub" = "Включати файли налаштувань та кешу в деінсталятор";
+"settings_deletion_behavior" = "Поведінка видалення та Смітника";
+"settings_deletion_behavior_sub" = "Правила безпечного видалення";
+"settings_trash_safety_note" = "Налаштування Смітника впливають на незворотність видалення.";
+"settings_empty_trash_cleanup_sub" = "Автоматично очищати системний Смітник після вилучення сміття";
+"settings_bypass_trash_sub" = "Безповоротно видаляти залишки програм в обхід Смітника";
+"settings_empty_trash_immediately_sub" = "Пропускати буфер Смітника для всіх операцій";
+
+"settings_automation_title" = "Siri та Швидкі команди";
+"settings_automation_sub" = "Голосові команди та сценарії автоматизації";
+"settings_enable_siri_sub" = "Запускати очищення за допомогою голосових фраз Siri";
+"settings_enable_shortcuts_sub" = "Дозволити використати AppIntents у Швидких командах macOS";
+"settings_open_shortcuts_title" = "Відкрити Швидкі команди macOS";
+"settings_open_shortcuts_sub" = "Керування сценаріями у системній програмі Швидкі команди";
+"settings_launch_shortcuts_button" = "Запустити програму Швидкі команди";
+"settings_custom_siri_commands" = "Власні команди Siri";
+"settings_custom_siri_commands_sub" = "Голосові фрази-тригери";
+"settings_no_custom_commands" = "Власні команди Siri не налаштовані.";
+
+"settings_ai_sub" = "Локальна модель ШІ для розумного очищення";
+"settings_enable_ai_sub" = "Аналізувати системні файли локально за допомогою FoundationModels";
+"settings_ai_readiness" = "Статус готовності моделі";
+"settings_ai_readiness_sub" = "Доступність ШІ-движка на пристрої";
+"settings_ai_capabilities" = "Доступні можливості";
+"settings_ai_capabilities_sub" = "Розумні функції та повна приватність на пристрої";
+"settings_ai_feat_smart_cleanup" = "Розумне очищення";
+"settings_ai_feat_smart_cleanup_sub" = "Категоризація та ранжування кешів за рівнем ризику";
+"settings_ai_feat_recs" = "Інтелектуальні рекомендації";
+"settings_ai_feat_recs_sub" = "Пропозиції щодо видалення залишків на основі активності";
+"settings_ai_feat_duplicates" = "Пошук дублікатів";
+"settings_ai_feat_duplicates_sub" = "Семантичне групування однакових файлів";
+"settings_ai_feat_privacy" = "Захист приватності";
+"settings_ai_feat_privacy_sub" = "Усі обчислення ШІ виконуються локально на Apple Silicon NPU";
+"settings_ai_feat_voice" = "Голосове керування Siri";
+"settings_ai_feat_voice_sub" = "Запуск завдань обслуговування системи голосовими командами";
+"settings_ai_feat_shortcuts" = "Сценарії автоматизації";
+"settings_ai_feat_shortcuts_sub" = "Глибока інтеграція зі Швидкими командами macOS";
+
+"settings_processes_title" = "Налаштування монітора процесів";
+"settings_processes_sub" = "Конфігурація фонового сканера CPU та пам'яті";
+"settings_refresh_interval_sub" = "Частота оновлення списку процесів";
+"settings_sort_option_title" = "Сортування за замовчуванням";
+"settings_sort_option_sub" = "Сортування процесів за споживанням ресурсів";
+
+"settings_advanced_dev_title" = "Розробка та додатково";
+"settings_advanced_dev_sub" = "Розширені параметри діагностики та сканування";
+"settings_show_related_app_files" = "Показувати пов'язані файли програм";
+"settings_show_related_app_files_sub" = "Включати приховані plist та контейнери в результати пошуку";
+"settings_debug_mode" = "Дебаг режим";
+"settings_debug_mode_sub" = "Відображати детальні логи під час очищення";
+"settings_startup_vendors_sub" = "Керування відомими системними вендорами автозапуску";
+
+"settings_about_tagline" = "Розроблено для macOS 26+. Створено на Swift 6, SwiftUI та Liquid Glass.";
+"settings_about_resources" = "Ресурси та підтримка";
+"settings_about_resources_sub" = "Офіційні посилання та документація";
+"settings_about_github" = "Репозиторій GitHub (Исходный код)";
+"settings_about_github_releases" = "Репозиторій GitHub (релізи)";
+"settings_about_wiki" = "Документація та Wiki";
+"settings_about_wiki_sub" = "Детальний посібник із використання програми";
+"settings_about_report_issue" = "Повідомити про проблему";
+"settings_about_website" = "Сайт";
+
+/* Privacy & Safety (About) */
+"settings_privacy_safety_title" = "Приватність та безпека 🛡️";
+"settings_privacy_safety_sub" = "Базовий захист системи та гарантії конфіденційності даних";
+"settings_privacy_item_1_title" = "100% приватність";
+"settings_privacy_item_1_desc" = "Ніякої телеметрії, аналітики, відстеження використання та віддаленого логування. Всі операції виконуються локально на вашому пристрої.";
+"settings_privacy_item_2_title" = "Мінімум мережі";
+"settings_privacy_item_2_desc" = "Єдине мережеве підключення — перевірка оновлень при запуску через API релізів GitHub (можна вимкнути в Налаштуваннях).";
+"settings_privacy_item_3_title" = "Безпечне відновлення з Кошика";
+"settings_privacy_item_3_desc" = "Інструменти Аналіз диска та Деінсталятор переміщують файли до Кошика через trashItem(at:) — їх можна відновити.";
+"settings_privacy_item_4_title" = "Підтвердження Розумного очищення";
+"settings_privacy_item_4_desc" = "Видаляє вибрані кеші та тимчасові дані лише після явного підтвердження.";
+"settings_privacy_item_5_title" = "Захист SafetyManager";
+"settings_privacy_item_5_desc" = "Блокує доступ до /System, /usr, /bin, ~/.ssh та інших критично важливих шляхів.";
+"settings_privacy_item_6_title" = "Політика ProcessSafetyPolicy";
+"settings_privacy_item_6_desc" = "Захищає критично важливі системні процеси від випадкового завершення.";
+"settings_privacy_item_7_title" = "Безповоротне видалення за вибором";
+"settings_privacy_item_7_desc" = "Безповоротне видалення та автоматичне очищення Кошика вимкнені за замовчуванням і вимагають явного вибору.";
+"settings_privacy_item_8_title" = "М'яке закриття програм";
+"settings_privacy_item_8_desc" = "Програми закриваються перед очищенням (м'яке завершення → примусове завершення через 3 секунди).";
+"settings_privacy_item_9_title" = "Повний доступ до диска";
+"settings_privacy_item_9_desc" = "Повний доступ до диска запитується під час запуску для повноцінного сканування файлової системи.";
+"settings_about_privacy_policy_sub" = "100% локально, гарантія відсутності телеметрії";
+"settings_about_acknowledgements" = "Подяки";
+"settings_about_acknowledgements_sub" = "Бібліотеки та фреймворки Open Source";
+
+"settings_danger_zone_title" = "Небезпечна зона";
+"settings_danger_zone_sub" = "Незворотні дії програми";
+"settings_reset_all_title" = "Скинути всі налаштування програми";
+"settings_reset_all_sub" = "Скидає всі параметри, команди Siri та кеші до заводських налаштувань.";
+"settings_reset_action_button" = "Скинути дані та налаштування";
+
+"settings_search_prompt" = "Пошук у налаштуваннях...";
+"settings_search_results_title" = "Результати пошуку за запитом «%@»";
+"settings_search_no_results" = "Налаштування не знайдено";
+"settings_search_no_results_sub" = "Спробуйте пошукати 'смітник', 'FDA', 'AI' або 'тема'";
+
+"settings_about_report_issue_sub" = "Звіти про помилки та пропозиції";
+"startup_help_system" = "Системна служба Apple. Вимикати не рекомендується.";

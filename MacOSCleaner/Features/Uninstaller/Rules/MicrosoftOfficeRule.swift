@@ -47,48 +47,54 @@ public struct MicrosoftOfficeRule: ApplicationRule {
 
     public func evidence(for candidate: URL, identity: AppIdentity) -> [ArtifactEvidence] {
         let path = candidate.path.lowercased()
+        let bid = identity.bundleID.lowercased()
         var evidence: [ArtifactEvidence] = []
 
-        if path.contains("/application support/microsoft") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 70))
+        // Suite / updater / OneDrive shared roots — never boost (registry marks shared).
+        let sharedFragments = [
+            "ubf8t346g9.office",
+            "ubf8t346g9.onedrivestandalonesuite",
+            "/application support/microsoft office",
+            "/caches/com.microsoft.autoupdate",
+            "/launchdaemons/com.microsoft.autoupdate",
+            "/privilegedhelpertools/com.microsoft.autoupdate",
+            "/application support/microsoft/mau2.0",
+        ]
+        if sharedFragments.contains(where: { path.contains($0) }) {
+            return []
         }
-        if path.contains("/application support/microsoft office") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 70))
-        }
-        if path.contains("/preferences/com.microsoft.") {
+
+        // Only score paths owned by THIS bundle ID — never broad com.microsoft.*.
+        guard !bid.isEmpty else { return [] }
+
+        if path.contains("/preferences/\(bid)") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
         }
-        if path.contains("/caches/com.microsoft.") {
+        if path.contains("/caches/\(bid)") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
         }
-        if path.contains("/caches/com.microsoft.autoupdate") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
-        }
-        if path.contains("/containers/com.microsoft.") {
+        if path.contains("/containers/\(bid)") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
         }
-        if path.contains("/group containers/ubf8t346g9.office") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
-        }
-        if path.contains("/group containers/ubf8t346g9.onedrivestandalonesuite") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
-        }
-        if path.contains("/logs/microsoft") {
-            evidence.append(ArtifactEvidence(source: .appName, weight: 40))
-        }
-        if path.contains("/launchdaemons/com.microsoft.autoupdate") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
-        }
-        if path.contains("/privilegedhelpertools/com.microsoft.autoupdate") {
-            evidence.append(ArtifactEvidence(source: .bundleID, weight: 70))
-        }
-        if path.contains("/application support/microsoft/mau2.0") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 60))
-        }
-        if path.contains("/saved application state/com.microsoft.") {
+        if path.contains("/saved application state/\(bid)") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 60))
         }
-        if path.contains("/application support/microsoft/teams") {
+        if path.contains("/httpstorages/\(bid)") {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 50))
+        }
+        if path.contains("/logs/\(bid)") {
+            evidence.append(ArtifactEvidence(source: .bundleID, weight: 40))
+        }
+
+        // App-specific Microsoft/<App> support folder (not suite root).
+        let appToken = identity.appName.lowercased()
+            .replacingOccurrences(of: "microsoft ", with: "")
+            .trimmingCharacters(in: .whitespaces)
+        if !appToken.isEmpty,
+           path.contains("/application support/microsoft/\(appToken)") {
+            evidence.append(ArtifactEvidence(source: .appName, weight: 70))
+        }
+        if bid.contains("teams"), path.contains("/application support/microsoft/teams") {
             evidence.append(ArtifactEvidence(source: .rule, weight: 60))
         }
 

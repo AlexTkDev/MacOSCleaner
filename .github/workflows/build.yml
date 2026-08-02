@@ -3,11 +3,11 @@ name: Build macOS App
 on:
   push:
     branches:
-      - relese
+      - release
 
   pull_request:
     branches:
-      - relese
+      - release
 
 jobs:
   build:
@@ -19,10 +19,47 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Build
+      - name: Optional path catalog check
+        run: |
+          if [[ -f MacOSCleaner/Resources/engine_paths.json && -f MacOSCleaner/Resources/ui_metadata.json ]]; then
+            python3 scripts/validate_engine_paths.py
+            swift scripts/generate_cleanup_paths.swift --check
+          else
+            echo "Optional catalog SoT not present — skipping pack check"
+          fi
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Check XcodeGen drift
+        working-directory: MacOSCleaner
+        run: |
+          xcodegen
+          git -C .. diff --exit-code -- MacOSCleaner/MacOSCleaner.xcodeproj
+
+      - name: Isolated test suite (pass 1)
+        run: |
+          xcodebuild \
+            -project MacOSCleaner/MacOSCleaner.xcodeproj \
+            -scheme MacOSCleaner \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Test-1" \
+            test
+
+      - name: Isolated test suite (pass 2)
+        run: |
+          xcodebuild \
+            -project MacOSCleaner/MacOSCleaner.xcodeproj \
+            -scheme MacOSCleaner \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Test-2" \
+            test
+
+      - name: Release build
         run: |
           xcodebuild \
             -project MacOSCleaner/MacOSCleaner.xcodeproj \
             -scheme MacOSCleaner \
             -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/MacOSCleaner-Release" \
             build

@@ -18,10 +18,18 @@ struct UninstallerView: View {
     @State private var isTargeted = false
     @State private var showingConfirmation = false
     @State private var isLoading = false
-    @State private var deepScanCache: [URL: UninstallerService.AppInfo] = [:]
+    @State private var deepScanCache: [String: UninstallerService.AppInfo] = [:]
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
+    @State private var expandedConfidenceTiers: Set<ConfidenceTier> = [.guaranteed, .veryLikely, .possible]
+    @State private var versionToUninstall: UninstallerService.AppInfo?
+    @State private var showingVersionConfirmation = false
+    @State private var selectedVersionID: UUID? = nil
+
+    private func sameAppURL(_ lhs: URL, _ rhs: URL) -> Bool {
+        NormalizedPath.key(lhs) == NormalizedPath.key(rhs)
+    }
     
     private var formatter: ByteCountFormatter {
         let f = ByteCountFormatter.makeLocalized(countStyle: .file)
@@ -76,10 +84,11 @@ struct UninstallerView: View {
                                     .contentShape(Rectangle())
                                     .onTapGesture {
                                         guard app.scanState == .deepScanned else { return }
+                                        selectedVersionID = nil
                                         selectedApp = app
                                     }
                                     .listRowBackground(
-                                        selectedApp?.url == app.url
+                                        (selectedApp?.id == app.id)
                                             ? Color.accentColor.opacity(0.1)
                                             : Color.clear
                                     )
@@ -106,9 +115,9 @@ struct UninstallerView: View {
                     }
                     .layoutPriority(1) // Occupy remaining space
                 }
+                .padding(.top, 4)
             }
         }
-        .navigationTitle("uninstaller_title".localized)
         .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
         .toolbar {
             ToolbarItem(placement: .automatic) {
@@ -141,9 +150,9 @@ struct UninstallerView: View {
             }
         }
         .onAppear(perform: loadApps)
-        .onChange(of: selectedApp?.url) { oldURL, newURL in
-            guard let url = newURL else { return }
-            guard let app = allApps.first(where: { $0.url == url }) else { return }
+        .onChange(of: selectedApp?.id) { _, newID in
+            guard let id = newID else { return }
+            guard let app = allApps.first(where: { $0.id == id }) else { return }
             if app.scanState != .deepScanned {
                 selectedApp = nil
             }
@@ -176,6 +185,34 @@ struct UninstallerView: View {
                 }
             }
         }
+        .confirmationDialog(
+            settings.bypassTrashOnUninstall
+                ? "uninstaller_confirm_perm_delete".localized
+                : "uninstaller_confirm_move_trash".localized,
+            isPresented: $showingVersionConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(
+                settings.bypassTrashOnUninstall
+                    ? "uninstaller_delete_permanently".localized
+                    : "uninstaller_move_trash".localized,
+                role: .destructive
+            ) {
+                if let versionApp = versionToUninstall, let parentApp = selectedApp {
+                    uninstallVersion(versionApp, from: parentApp)
+                }
+            }
+            Button("cancel".localized, role: .cancel) { }
+        } message: {
+            if let versionApp = versionToUninstall, let parentApp = selectedApp {
+                let count = versionApp.relatedFiles.filter(\.isSelected).count + versionApp.developerComponents.filter(\.isSelected).count
+                if settings.bypassTrashOnUninstall {
+                    Text(String(format: "uninstaller_uninstall_version_warning_perm".localized, versionApp.version, parentApp.name, Int64(count)))
+                } else {
+                    Text(String(format: "uninstaller_uninstall_version_warning_trash".localized, versionApp.version, parentApp.name, Int64(count)))
+                }
+            }
+        }
     }
 
     private func loadApps() {
@@ -195,13 +232,13 @@ struct UninstallerView: View {
             for app in fresh {
                 if let result = try? await service.deepScan(app, mode: settings.uninstallerScanMode) {
                     deepScanCompleted += 1
-                    if let idx = allApps.firstIndex(where: { $0.url == result.url }) {
+                    if let idx = allApps.firstIndex(where: { $0.id == result.id || sameAppURL($0.url, result.url) }) {
                         allApps[idx] = result
                     }
-                    if selectedApp?.url == result.url {
+                    if let selected = selectedApp, selected.id == result.id || sameAppURL(selected.url, result.url) {
                         selectedApp = result
                     }
-                    deepScanCache[result.url] = result
+                    deepScanCache[NormalizedPath.key(result.url)] = result
                 } else {
                     deepScanCompleted += 1
                 }
@@ -230,6 +267,48 @@ struct UninstallerView: View {
                 selectedApp = nil
             } catch {
                 Logger.uninstallerView.error("Uninstall failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    private func uninstallVersion(_ versionApp: UninstallerService.AppInfo, from parentApp: UninstallerService.AppInfo) {
+        Task {
+            do {
+                try await service.uninstall(
+                    app: versionApp,
+                    bypassTrash: settings.bypassTrashOnUninstall,
+                    emptyTrashImmediately: settings.emptyTrashImmediately
+                )
+                
+                if settings.showNotifications {
+                    let title = "uninstaller_complete_title".localized
+                    let body = String(format: "uninstaller_version_deleted_body".localized, versionApp.version, parentApp.name)
+                    NotificationManager.shared.sendNotification(title: title, body: body)
+                }
+                
+                let remaining = parentApp.versions.filter { NormalizedPath.key($0.url) != NormalizedPath.key(versionApp.url) }
+                
+                if remaining.isEmpty {
+                    allApps.removeAll { $0.id == parentApp.id }
+                    selectedApp = nil
+                } else if remaining.count == 1 {
+                    var updatedParent = remaining[0]
+                    updatedParent.versions = []
+                    if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
+                        allApps[idx] = updatedParent
+                    }
+                    selectedApp = updatedParent
+                } else {
+                    var updatedParent = parentApp
+                    updatedParent.versions = remaining
+                    updatedParent.size = remaining.reduce(0) { $0 + $1.size }
+                    if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
+                        allApps[idx] = updatedParent
+                    }
+                    selectedApp = updatedParent
+                }
+            } catch {
+                Logger.uninstallerView.error("Uninstall version failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -285,7 +364,7 @@ struct UninstallerView: View {
 
     private func appDetailView(_ app: UninstallerService.AppInfo) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 16) {
                 // Header
                 AppDetailHeaderView(
                     app: app,
@@ -298,8 +377,15 @@ struct UninstallerView: View {
                     }
                 )
                 .id(app.id)
+
+                AppMetadataSection(bundleID: app.bundleID)
                 
                 Divider()
+
+                if app.isGrouped {
+                    multiVersionSection(app)
+                    Divider()
+                }
 
                 if settings.showRelatedFiles {
                     relatedFilesSection(app)
@@ -310,7 +396,7 @@ struct UninstallerView: View {
                 }
                 
                 Spacer()
-                    .frame(height: 20)
+                    .frame(height: 8)
                 
                 // Action Area
                 ViewThatFits(in: .horizontal) {
@@ -319,7 +405,7 @@ struct UninstallerView: View {
                         Spacer()
                         actionButton(for: app)
                     }
-                    VStack(alignment: .trailing, spacing: 16) {
+                    VStack(alignment: .trailing, spacing: 12) {
                         HStack {
                             actionInfo
                             Spacer()
@@ -328,14 +414,129 @@ struct UninstallerView: View {
                     }
                 }
             }
-            .padding(32)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func multiVersionSection(_ app: UninstallerService.AppInfo) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "square.stack.3d.up.fill")
+                        .foregroundColor(.purple)
+                    Text(String(format: "uninstaller_multiple_versions_found".localized, app.versions.count))
+                        .font(.headline)
+                }
+                Spacer()
+                if selectedVersionID != nil {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedVersionID = nil
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark.circle.fill")
+                            Text(String(format: "uninstaller_all_versions_tab".localized, app.versions.count))
+                        }
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            VStack(spacing: 8) {
+                ForEach(app.versions) { versionApp in
+                    let isSelectedVersion = selectedVersionID == versionApp.id
+
+                    HStack(alignment: .center, spacing: 12) {
+                        if let iconData = versionApp.iconData ?? app.iconData, let nsImage = NSImage(data: iconData) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 28, height: 28)
+                                .cornerRadius(6)
+                        } else {
+                            Image(systemName: "square.stack.3d.up")
+                                .font(.system(size: 18))
+                                .foregroundColor(.secondary)
+                                .frame(width: 28, height: 28)
+                        }
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 8) {
+                                Text(String(format: "uninstaller_version_title".localized, versionApp.version))
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+
+                                Text(ByteCountFormatter.localizedString(fromByteCount: versionApp.totalSize, countStyle: .file))
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.secondary)
+
+                                if isSelectedVersion {
+                                    Text("✓")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 1)
+                                        .foregroundColor(.white)
+                                        .background(Capsule().fill(Color.accentColor))
+                                }
+                            }
+
+                            Text(NormalizedPath.displayString(versionApp.url))
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+
+                        Spacer()
+
+                        Button(action: {
+                            versionToUninstall = versionApp
+                            showingVersionConfirmation = true
+                        }) {
+                            Label("uninstaller_delete_this_version".localized, systemImage: "trash")
+                                .font(.caption)
+                        }
+                        .destructiveGlassButtonStyle()
+                        .controlSize(.small)
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isSelectedVersion ? Color.accentColor.opacity(0.12) : Color.clear)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(isSelectedVersion ? Color.accentColor : Color.primary.opacity(0.08), lineWidth: isSelectedVersion ? 1.5 : 1)
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            if selectedVersionID == versionApp.id {
+                                selectedVersionID = nil
+                            } else {
+                                selectedVersionID = versionApp.id
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     @ViewBuilder
     private func badges(for app: UninstallerService.AppInfo) -> some View {
-        DetailBadge(title: "version".localized, value: app.version)
+        if app.isGrouped {
+            DetailBadge(title: "uninstaller_versions".localized, value: String(format: "uninstaller_versions_badge".localized, app.versions.count))
+        } else {
+            DetailBadge(title: "version".localized, value: app.version)
+        }
         DetailBadge(title: "size".localized, value: ByteCountFormatter.localizedString(fromByteCount: settings.showRelatedFiles ? app.totalSize : app.size, countStyle: .file))
         if let lastUsed = app.lastUsed {
             DetailBadge(title: "last_used".localized, value: lastUsed.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
@@ -379,32 +580,133 @@ struct UninstallerView: View {
         }
     }
 
+    private func displayedRelatedFiles(for app: UninstallerService.AppInfo) -> [UninstallerService.RelatedFile] {
+        guard app.isGrouped, let selectedID = selectedVersionID,
+              let selectedVersion = app.versions.first(where: { $0.id == selectedID }) else {
+            return app.relatedFiles
+        }
+
+        let selectedKey = NormalizedPath.key(selectedVersion.url)
+        let otherVersions = app.versions.filter { $0.id != selectedID }
+        let otherKeys = Set(otherVersions.map { NormalizedPath.key($0.url) })
+
+        return app.relatedFiles.filter { file in
+            let fileKey = NormalizedPath.key(file.url)
+
+            // 1. Exclude other versions' main app bundle or files under another version's bundle
+            for otherKey in otherKeys {
+                if fileKey == otherKey || fileKey.hasPrefix(otherKey + "/") {
+                    return false
+                }
+            }
+
+            // 2. Include files under selected version's bundle URL
+            if fileKey == selectedKey || fileKey.hasPrefix(selectedKey + "/") {
+                return true
+            }
+
+            // 3. Include files scanned specifically for selectedVersion
+            return selectedVersion.relatedFiles.contains { NormalizedPath.key($0.url) == fileKey }
+        }
+    }
+
+    private func displayedDeveloperComponents(for app: UninstallerService.AppInfo) -> [UninstallerService.RelatedCleanupComponent] {
+        guard app.isGrouped, let selectedID = selectedVersionID,
+              let selectedVersion = app.versions.first(where: { $0.id == selectedID }) else {
+            return app.developerComponents
+        }
+
+        let selectedKey = NormalizedPath.key(selectedVersion.url)
+        let otherVersions = app.versions.filter { $0.id != selectedID }
+        let otherKeys = Set(otherVersions.map { NormalizedPath.key($0.url) })
+
+        return app.developerComponents.filter { comp in
+            let compKey = NormalizedPath.key(comp.url)
+            for otherKey in otherKeys {
+                if compKey == otherKey || compKey.hasPrefix(otherKey + "/") {
+                    return false
+                }
+            }
+            if compKey == selectedKey || compKey.hasPrefix(selectedKey + "/") {
+                return true
+            }
+            return selectedVersion.developerComponents.contains { NormalizedPath.key($0.url) == compKey }
+        }
+    }
+
+    private func versionBadgeText(for fileURL: URL, in app: UninstallerService.AppInfo) -> String? {
+        guard app.isGrouped, !app.versions.isEmpty else { return nil }
+        let fileKey = NormalizedPath.key(fileURL)
+
+        var matchingVersions: [UninstallerService.AppInfo] = []
+
+        for v in app.versions {
+            let vKey = NormalizedPath.key(v.url)
+            if fileKey == vKey || fileKey.hasPrefix(vKey + "/") {
+                matchingVersions.append(v)
+                continue
+            }
+
+            let isUnderOther = app.versions.contains { other in
+                other.id != v.id && (fileKey == NormalizedPath.key(other.url) || fileKey.hasPrefix(NormalizedPath.key(other.url) + "/"))
+            }
+            if !isUnderOther {
+                let inRelated = v.relatedFiles.contains { NormalizedPath.key($0.url) == fileKey }
+                let inDev = v.developerComponents.contains { NormalizedPath.key($0.url) == fileKey }
+                if inRelated || inDev {
+                    matchingVersions.append(v)
+                }
+            }
+        }
+
+        if matchingVersions.isEmpty || matchingVersions.count == app.versions.count {
+            return nil
+        } else {
+            let versionNames = matchingVersions.map { "v" + ($0.version.isEmpty ? "1.0" : $0.version) }
+            return versionNames.joined(separator: ", ")
+        }
+    }
+
     private func relatedFilesSection(_ app: UninstallerService.AppInfo) -> some View {
-        let grouped = Dictionary(grouping: app.relatedFiles) { $0.confidence }
+        let displayFiles = displayedRelatedFiles(for: app)
+        let grouped = Dictionary(grouping: displayFiles) { $0.confidence }
         let allTiers = ConfidenceTier.allCases.filter { $0 != .ignore }.sorted(by: >)
         let visibleTiers = allTiers
-        let selectedCount = app.relatedFiles.filter(\.isSelected).count
-        return VStack(alignment: .leading, spacing: 12) {
+        let selectedCount = displayFiles.filter(\.isSelected).count
+        return VStack(alignment: .leading, spacing: 8) {
             ForEach(visibleTiers, id: \.self) { tier in
                 let files = grouped[tier] ?? []
                 if !files.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Label(tier.displayKey.localized, systemImage: tierIcon(tier))
-                            .font(.subheadline)
-                            .foregroundColor(tierColor(tier))
-
+                    DisclosureGroup(
+                        isExpanded: Binding(
+                            get: { expandedConfidenceTiers.contains(tier) },
+                            set: { expanded in
+                                if expanded {
+                                    expandedConfidenceTiers.insert(tier)
+                                } else {
+                                    expandedConfidenceTiers.remove(tier)
+                                }
+                            }
+                        )
+                    ) {
                         VStack(spacing: 1) {
                             ForEach(files) { file in
-                                    RelatedFileRow(
-                                        file: file,
-                                        appName: app.name,
-                                        settings: settings,
-                                        formatter: formatter,
-                                        onToggle: { toggleSelection(file, in: app) }
-                                    )
+                                RelatedFileRow(
+                                    file: file,
+                                    appName: app.name,
+                                    settings: settings,
+                                    formatter: formatter,
+                                    versionBadge: versionBadgeText(for: file.url, in: app),
+                                    onToggle: { toggleSelection(file, in: app) }
+                                )
                             }
                         }
-                        .glassCard(cornerRadius: 12)
+                        .glassCard(cornerRadius: 10)
+                    } label: {
+                        Label(tier.displayKey.localized, systemImage: tierIcon(tier))
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(tierColor(tier))
                     }
                 }
             }
@@ -415,9 +717,9 @@ struct UninstallerView: View {
                     return "\(count) \(t.displayKey.localized)"
                 }.joined(separator: ", ")
                 Text(String(format: "uninstaller.footer.summary".localized, Int64(selectedCount), tierLabels))
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
-                    .padding(.top, 8)
+                    .padding(.top, 4)
             }
         }
     }
@@ -441,47 +743,62 @@ struct UninstallerView: View {
     }
 
     private func developerComponentsSection(_ app: UninstallerService.AppInfo) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let displayComps = displayedDeveloperComponents(for: app)
+        return VStack(alignment: .leading, spacing: 6) {
             Label("uninstaller_developer_components".localized, systemImage: "wrench.adjustable")
-                .font(.headline)
+                .font(.caption)
+                .fontWeight(.semibold)
 
-            ForEach(Array(app.developerComponents.enumerated()), id: \.element.id) { index, component in
-                HStack {
-                    Toggle("", isOn: Binding(
-                        get: { component.isSelected },
-                        set: { newValue in
-                            toggleDeveloperComponent(in: app, at: index, value: newValue)
+            VStack(spacing: 1) {
+                ForEach(Array(displayComps.enumerated()), id: \.element.id) { index, component in
+                    HStack {
+                        Toggle("", isOn: Binding(
+                            get: { component.isSelected },
+                            set: { newValue in
+                                toggleDeveloperComponent(in: app, at: index, value: newValue)
+                            }
+                        ))
+                        .toggleStyle(.checkbox)
+
+                        Image(systemName: "shippingbox")
+                            .foregroundColor(.purple)
+                            .font(.caption)
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            HStack(spacing: 4) {
+                                Text(component.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                if let badge = versionBadgeText(for: component.url, in: app) {
+                                    Text(badge)
+                                        .font(.caption2)
+                                        .fontWeight(.semibold)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 1)
+                                        .foregroundStyle(Color.purple)
+                                        .background(Capsule().fill(Color.purple.opacity(0.12)))
+                                }
+                            }
+                            Text(component.category.localizedTitle)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
                         }
-                    ))
-                    .toggleStyle(.checkbox)
 
-                    Image(systemName: "shippingbox")
-                        .foregroundColor(.purple)
-                        .font(.subheadline)
+                        Spacer()
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(component.title)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text(component.category.localizedTitle)
-                            .font(.caption2)
+                        Text(ByteCountFormatter.localizedString(fromByteCount: component.sizeBytes, countStyle: .file))
+                            .font(.caption)
                             .foregroundColor(.secondary)
                     }
-
-                    Spacer()
-
-                    Text(ByteCountFormatter.localizedString(fromByteCount: component.sizeBytes, countStyle: .file))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .glassEffect(.regular.tint(.purple))
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .glassEffect(.regular.tint(.purple))
             }
 
             HStack {
                 Text("uninstaller_developer_components_description".localized)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
                 Spacer()
                 Button("uninstaller_open_cleanup".localized) {
@@ -490,8 +807,9 @@ struct UninstallerView: View {
                 .glassButtonStyle()
                 .controlSize(.small)
             }
+            .padding(.top, 2)
         }
-        .padding(.top, app.relatedFiles.isEmpty ? 0 : 12)
+        .padding(.top, app.relatedFiles.isEmpty ? 0 : 4)
     }
 
     private func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
@@ -533,9 +851,20 @@ struct AppRowView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(app.name)
-                    .font(.body)
-                    .fontWeight(.medium)
+                HStack(spacing: 6) {
+                    Text(app.name)
+                        .font(.body)
+                        .fontWeight(.medium)
+                    if app.isGrouped {
+                        Text(String(format: "uninstaller_versions_badge".localized, app.versions.count))
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .foregroundStyle(Color.purple)
+                            .background(Capsule().fill(Color.purple.opacity(0.15)))
+                    }
+                }
                 if isUnscannable {
                     Text("uninstaller.analyzing".localized)
                         .font(.caption)
@@ -576,6 +905,7 @@ struct RelatedFileRow: View {
     let appName: String
     let settings: AppSettings
     let formatter: ByteCountFormatter
+    var versionBadge: String? = nil
     let onToggle: () -> Void
 
     @State private var isExpanded = false
@@ -584,11 +914,20 @@ struct RelatedFileRow: View {
     @State private var errorMessage: String? = nil
 
     var riskColor: Color {
-        let path = file.url.path
-        if path.contains("Preferences") { return .orange }
-        if path.contains("Application Support") { return .blue }
-        if path.contains("Caches") || path.contains("Logs") { return .green }
-        return .secondary
+        switch file.deletionRisk {
+        case .shared: return .orange
+        case .safe: return .green
+        case .normal:
+            let path = file.url.path
+            if path.contains("Preferences") { return .orange }
+            if path.contains("Application Support") { return .blue }
+            if path.contains("Caches") || path.contains("Logs") { return .green }
+            return .secondary
+        }
+    }
+
+        private var displayPath: String {
+        NormalizedPath.displayString(file.url)
     }
 
     var body: some View {
@@ -596,8 +935,11 @@ struct RelatedFileRow: View {
             HStack {
                 Toggle("", isOn: Binding(get: { file.isSelected }, set: { _ in onToggle() }))
                     .toggleStyle(.checkbox)
+                    .help(file.deletionRisk == .shared
+                          ? SharedBadgeView.sharedComponentHelp(for: file.url)
+                          : "")
 
-                Image(systemName: "folder.fill")
+                Image(systemName: file.deletionRisk == .shared ? "link.circle.fill" : "folder.fill")
                     .foregroundColor(riskColor.opacity(0.8))
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -605,8 +947,20 @@ struct RelatedFileRow: View {
                         Text(file.url.lastPathComponent)
                             .font(.subheadline)
                             .lineLimit(1)
+                        if let versionBadge = versionBadge {
+                            Text(versionBadge)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .foregroundStyle(Color.purple)
+                                .background(Capsule().fill(Color.purple.opacity(0.12)))
+                        }
+                        if file.deletionRisk == .shared {
+                            SharedBadgeView(url: file.url, riskColor: riskColor)
+                        }
                     }
-                    Text(file.url.path)
+                    Text(displayPath)
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -676,8 +1030,8 @@ struct RelatedFileRow: View {
                 .padding(.bottom, 4)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
     }
 
@@ -713,6 +1067,66 @@ struct RelatedFileRow: View {
             }
         }
     }
+
+}
+
+struct SharedBadgeView: View {
+    let url: URL
+    let riskColor: Color
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "link")
+                .font(.system(size: 8, weight: .semibold))
+            Text("uninstaller.shared_component".localized)
+                .font(.caption2)
+                .fontWeight(.semibold)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .foregroundStyle(riskColor)
+        .background(Capsule().fill(riskColor.opacity(isHovered ? 0.25 : 0.12)))
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovered = hovering
+            }
+        }
+        .help(Self.sharedComponentHelp(for: url))
+        .popover(isPresented: $isHovered, arrowEdge: .top) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "info.circle.fill")
+                    .foregroundColor(riskColor)
+                    .font(.body)
+                Text(Self.sharedComponentHelp(for: url))
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(10)
+            .frame(maxWidth: 280)
+        }
+    }
+
+    static func sharedComponentHelp(for url: URL) -> String {
+        let path = url.path.lowercased()
+        if path.contains("microsoft") || path.contains("office") || path.contains("ubf8t346g9") {
+            return "uninstaller.shared_help.microsoft".localized
+        } else if path.contains("google") || path.contains("keystone") {
+            return "uninstaller.shared_help.google".localized
+        } else if path.contains("adobe") {
+            return "uninstaller.shared_help.adobe".localized
+        } else if path.contains("jetbrains") {
+            return "uninstaller.shared_help.jetbrains".localized
+        } else if path.contains("android") || path.contains("gradle") {
+            return "uninstaller.shared_help.android".localized
+        } else if path.contains("developer") || path.contains("coresimulator") {
+            return "uninstaller.shared_help.apple_developer".localized
+        } else {
+            return "uninstaller.shared_component.help".localized
+        }
+    }
 }
 
 struct AppDetailHeaderView<BadgeContent: View>: View {
@@ -726,26 +1140,27 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
     @State private var errorMessage: String? = nil
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 14) {
                 if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
                     Image(nsImage: nsImage)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, height: 80)
+                        .frame(width: 56, height: 56)
                 } else {
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 12)
                         .fill(Color.secondary.opacity(0.2))
-                        .frame(width: 80, height: 80)
+                        .frame(width: 56, height: 56)
                         .overlay(Image(systemName: "app").foregroundColor(.secondary))
                 }
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(app.name)
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 20, weight: .bold))
                             .lineLimit(2)
-                            .minimumScaleFactor(0.8)
+                            .minimumScaleFactor(0.6)
+                            .fixedSize(horizontal: false, vertical: true)
                         
                         if settings.enableAI && AIExplanationService.shared.isAvailable {
                             Button {
@@ -758,7 +1173,7 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                             } label: {
                                 Image(systemName: "sparkles")
                                     .foregroundColor(isExpanded ? .purple : .secondary)
-                                    .font(.title2)
+                                    .font(.title3)
                             }
                             .buttonStyle(.plain)
                             .help("uninstaller_explain_with_ai".localized)
@@ -766,13 +1181,16 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                     }
                     
                     Text(app.bundleID ?? "uninstaller_unknown_bundle".localized)
-                        .font(.subheadline)
+                        .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
-                    
-                    badges
-                        .padding(.top, 4)
+                        .truncationMode(.middle)
                 }
+                
+                Spacer(minLength: 12)
+                
+                badges
+                    .layoutPriority(1)
             }
             
             if isExpanded {
@@ -836,6 +1254,97 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                     self.isGenerating = false
                 }
             }
+        }
+    }
+}
+
+// MARK: - Registry metadata (lazy-loaded, off critical render path)
+
+private struct AppMetadataSection: View {
+    let bundleID: String?
+    @State private var metadata: UIMetadata?
+
+    var body: some View {
+        Group {
+            if let metadata {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 8) {
+                        DifficultyBadge(difficulty: metadata.difficulty)
+                        if let suite = metadata.parentSuite {
+                            DetailBadge(
+                                title: "uninstaller.metadata.parent_suite".localized,
+                                value: suite
+                            )
+                        }
+                    }
+
+                    if !metadata.knownIssues.isEmpty {
+                        Label("uninstaller.metadata.known_issues".localized, systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(Array(metadata.knownIssues.enumerated()), id: \.offset) { _, issue in
+                                Text(issue)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard(cornerRadius: 10)
+            }
+        }
+        .task(id: bundleID) {
+            metadata = nil
+            guard let bundleID, !bundleID.isEmpty else { return }
+            // Fresh provider avoids stale empty cache if Bundle.main resources were not ready yet.
+            metadata = await UIMetadataProvider().metadata(forBundleID: bundleID)
+        }
+    }
+}
+
+private struct DifficultyBadge: View {
+    let difficulty: UninstallDifficulty
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: iconName)
+            Text(difficulty.localizationKey.localized)
+        }
+        .font(.caption)
+        .fontWeight(.semibold)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .foregroundStyle(foregroundColor)
+        .background(
+            Capsule().fill(foregroundColor.opacity(0.12))
+        )
+        .overlay(
+            Capsule().strokeBorder(foregroundColor.opacity(0.25), lineWidth: 1)
+        )
+        .help("uninstaller.metadata.difficulty".localized)
+    }
+
+    private var iconName: String {
+        switch difficulty {
+        case .critical: return "exclamationmark.octagon.fill"
+        case .high: return "exclamationmark.triangle.fill"
+        case .medium: return "info.circle.fill"
+        case .low: return "checkmark.circle.fill"
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch difficulty {
+        case .critical: return .red
+        case .high: return .orange
+        case .medium: return .yellow
+        case .low: return .secondary
         }
     }
 }

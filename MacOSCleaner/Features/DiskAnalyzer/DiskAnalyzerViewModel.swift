@@ -16,15 +16,17 @@ public final class DiskAnalyzerViewModel {
     public var currentURL: URL?
     public var items: [DiskItem] = []
     public var selectedCategory: FileCategory = .all
+    public var searchQuery: String = ""
     
     private var scanTask: Task<Void, Never>?
     
     public init() {}
     
     public var filteredItems: [DiskItem] {
-        guard selectedCategory != .all else { return items }
-        return items.filter { item in
-            return item.fileType == selectedCategory
+        items.filter { item in
+            let matchesCategory = selectedCategory == .all || item.fileType == selectedCategory
+            let matchesSearch = searchQuery.isEmpty || item.name.localizedCaseInsensitiveContains(searchQuery) || item.url.path.localizedCaseInsensitiveContains(searchQuery)
+            return matchesCategory && matchesSearch
         }
     }
     

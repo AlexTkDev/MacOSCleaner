@@ -8,14 +8,20 @@ private extension Logger {
 public actor FileCleanupActor {
     private let safetyManager: SafetyManager
     private let sizeCache: DirectorySizeCache
+    private let fileSystemContext: FileSystemContext
     private let fm = FileManager.default
 
     /// Skip scan preview for items that reclaim nothing meaningful on disk.
     private static let minPreviewBytes: Int64 = 1024
 
-    public init(safetyManager: SafetyManager = SafetyManager(), sizeCache: DirectorySizeCache = DirectorySizeCache()) {
+    public init(
+        safetyManager: SafetyManager = SafetyManager(),
+        sizeCache: DirectorySizeCache = DirectorySizeCache(),
+        fileSystemContext: FileSystemContext = .production
+    ) {
         self.safetyManager = safetyManager
         self.sizeCache = sizeCache
+        self.fileSystemContext = fileSystemContext
     }
 
     func getDirectorySize(_ path: String) async -> Int64 {
@@ -23,11 +29,19 @@ public actor FileCleanupActor {
     }
 
     func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+        try Task.checkCancellation()
         let url = URL(fileURLWithPath: path)
+        try fileSystemContext.assertAllowedForMutation(url)
         try safetyManager.validate(url: url)
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
+            return (0, nil)
+        }
+
+        // Do not traverse into symlink directories — leaf symlink is removed as the link itself.
+        if safetyManager.isSymlinkDirectory(url) {
+            progress?(.log("  \(Self.shortPath(path)) — symlink directory, skipped"))
             return (0, nil)
         }
 
@@ -66,15 +80,30 @@ public actor FileCleanupActor {
         let contents = try fm.contentsOfDirectory(atPath: path)
         var removedCount = 0
         var failedCount = 0
+        let runningBundle = Bundle.main.bundlePath
         for item in contents {
+            try Task.checkCancellation()
             let itemURL = url.appendingPathComponent(item)
+            // Never delete the live app / test host (e.g. DerivedData/.../MacOSCleaner.app).
+            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                progress?(.log("  \(Self.shortPath(itemURL.path)) — running app, skipped"))
+                continue
+            }
+            // Skip symlink directories; leaf symlinks are removed as links (validate allows them).
+            if safetyManager.isSymlinkDirectory(itemURL) {
+                progress?(.log("  \(Self.shortPath(itemURL.path)) — symlink directory, skipped"))
+                continue
+            }
             guard (try? safetyManager.validate(url: itemURL)) != nil else {
                 progress?(.log("  \(Self.shortPath(itemURL.path)) — protected, skipped"))
                 continue
             }
             do {
+                try fileSystemContext.assertAllowedForMutation(itemURL)
                 try fm.removeItem(at: itemURL)
                 removedCount += 1
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 failedCount += 1
                 progress?(.log("  \(Self.shortPath(itemURL.path)) — delete failed: \(error.localizedDescription)"))
@@ -101,6 +130,12 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
+
+        if Self.pathContainsRunningBundle(path, bundlePath: Bundle.main.bundlePath) {
+            progress?(.log("  \(Self.shortPath(path)) — running app, skipped"))
+            return (0, nil)
+        }
+
         let before = await getDirectorySize(path)
 
         if dryRun {
@@ -310,5 +345,13 @@ public actor FileCleanupActor {
     static func shortPath(_ path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return path.replacingOccurrences(of: home, with: "~")
+    }
+
+    /// True when `path` is the running bundle or an ancestor/descendant of it.
+    static func pathContainsRunningBundle(_ path: String, bundlePath: String) -> Bool {
+        let p = URL(fileURLWithPath: path).standardizedFileURL.path
+        let b = URL(fileURLWithPath: bundlePath).standardizedFileURL.path
+        guard !b.isEmpty else { return false }
+        return p == b || b.hasPrefix(p + "/") || p.hasPrefix(b + "/")
     }
 }

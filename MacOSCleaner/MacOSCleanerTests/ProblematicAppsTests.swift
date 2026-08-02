@@ -46,17 +46,21 @@ final class ProblematicAppsTests: XCTestCase {
     func test_adobeRule_evidence_forApplicationSupport() {
         let rule = AdobeRule()
         let identity = makeIdentity(bundleID: "com.adobe.Photoshop", appName: "Adobe Photoshop")
+        // Adobe/<Product> subfolder → .rule evidence
         let url = URL(fileURLWithPath: "/Users/test/Library/Application Support/Adobe/Photoshop")
         let evidence = rule.evidence(for: url, identity: identity)
-        XCTAssertTrue(evidence.contains { $0.source == .appName })
+        XCTAssertTrue(evidence.contains { $0.source == .rule },
+            "Adobe product-specific support path should return .rule evidence, got: \(evidence)")
     }
 
     func test_adobeRule_evidence_forLaunchDaemon() {
         let rule = AdobeRule()
         let identity = makeIdentity(bundleID: "com.adobe.ccx.process", appName: "Adobe Creative Cloud")
-        let url = URL(fileURLWithPath: "/Library/LaunchDaemons/com.adobe.installer.clean.plist")
+        // LaunchDaemon matching the exact bundleID → .bundleID evidence
+        let url = URL(fileURLWithPath: "/Library/LaunchDaemons/com.adobe.ccx.process.plist")
         let evidence = rule.evidence(for: url, identity: identity)
-        XCTAssertTrue(evidence.contains { $0.source == .bundleID })
+        XCTAssertTrue(evidence.contains { $0.source == .bundleID },
+            "LaunchDaemon matching bundleID should return .bundleID evidence, got: \(evidence)")
     }
 
     func test_microsoftOfficeRule_matches_word() {
@@ -101,17 +105,21 @@ final class ProblematicAppsTests: XCTestCase {
     func test_microsoftOfficeRule_evidence_forGroupContainer() {
         let rule = MicrosoftOfficeRule()
         let identity = makeIdentity(bundleID: "com.microsoft.word", appName: "Microsoft Word")
+        // UBF8T346G9.Office is a shared Office suite container — rule intentionally returns [] to avoid over-deletion.
         let url = URL(fileURLWithPath: "/Users/test/Library/Group Containers/UBF8T346G9.Office")
         let evidence = rule.evidence(for: url, identity: identity)
-        XCTAssertTrue(evidence.contains { $0.source == .bundleID })
+        XCTAssertTrue(evidence.isEmpty,
+            "Shared Office suite container should return no evidence (opt-in via registry), got: \(evidence)")
     }
 
     func test_microsoftOfficeRule_evidence_forMAU() {
         let rule = MicrosoftOfficeRule()
         let identity = makeIdentity(bundleID: "com.microsoft.word", appName: "Microsoft Word")
+        // MAU2.0 is a shared updater path — rule intentionally returns [] to avoid over-deletion.
         let url = URL(fileURLWithPath: "/Library/Application Support/Microsoft/MAU2.0")
         let evidence = rule.evidence(for: url, identity: identity)
-        XCTAssertTrue(evidence.contains { $0.source == .rule })
+        XCTAssertTrue(evidence.isEmpty,
+            "Shared MAU2.0 path should return no evidence (opt-in via registry), got: \(evidence)")
     }
 
     func test_steamRule_matches() {
@@ -449,11 +457,37 @@ final class ProblematicAppsTests: XCTestCase {
     }
 
     private func loadFixture(_ name: String) throws -> BaselineFixture {
-        let bundle = Bundle(for: Self.self)
-        guard let url = bundle.url(forResource: name, withExtension: "json") else {
-            throw TestError.fixtureNotFound(name)
-        }
+        let url = try XCTUnwrap(
+            Self.testResourceURL(name: name, extension: "json"),
+            "fixtureNotFound(\(name))"
+        )
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(BaselineFixture.self, from: data)
+    }
+
+    /// Prefer test-bundle Resources; fall back to source-tree Fixtures (stable under xcodebuild).
+    private static func testResourceURL(name: String, extension ext: String) -> URL? {
+        let testBundle = Bundle(for: ProblematicAppsTests.self)
+        if let url = testBundle.url(forResource: name, withExtension: ext) {
+            return url
+        }
+        if let url = Bundle.main.url(forResource: name, withExtension: ext) {
+            return url
+        }
+        let candidates = [
+            testBundle.resourceURL?.appendingPathComponent("\(name).\(ext)"),
+            testBundle.bundleURL.appendingPathComponent("Contents/Resources/\(name).\(ext)"),
+            Bundle.main.resourceURL?.appendingPathComponent("\(name).\(ext)"),
+            // Source tree: MacOSCleanerTests/Fixtures/<name>.json
+            URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent()
+                .appendingPathComponent("Fixtures/\(name).\(ext)"),
+        ]
+        for url in candidates {
+            if let url, FileManager.default.fileExists(atPath: url.path) {
+                return url
+            }
+        }
+        return nil
     }
 }

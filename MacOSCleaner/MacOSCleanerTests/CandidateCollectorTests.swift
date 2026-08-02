@@ -2,14 +2,50 @@ import XCTest
 @testable import MacOSCleaner
 
 final class CandidateCollectorTests: XCTestCase {
+    private var fileSystemContext: FileSystemContext!
+    private var home: String = ""
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        fileSystemContext = try FileSystemContext.isolatedTestRoot()
+        home = fileSystemContext.homePath
+    }
+
+    override func tearDownWithError() throws {
+        if let root = fileSystemContext?.allowedRoots.first {
+            try? FileManager.default.removeItem(at: root)
+        }
+        fileSystemContext = nil
+        home = ""
+        try super.tearDownWithError()
+    }
+
+    private func makeCollector(
+        commandRunner: MockCommandRunner = MockCommandRunner(),
+        homebrewCellarDirectories: [URL] = [],
+        darwinCacheDirectory: URL? = nil,
+        receiptsDirectory: URL? = nil,
+        tmpScanDirectory: URL? = nil
+    ) -> CandidateCollector {
+        commandRunner.runDelay = .zero
+        return CandidateCollector(
+            commandRunner: commandRunner,
+            homebrewCellarDirectories: homebrewCellarDirectories,
+            darwinCacheDirectory: darwinCacheDirectory,
+            receiptsDirectory: receiptsDirectory,
+            tmpScanDirectory: tmpScanDirectory,
+            fileSystemContext: fileSystemContext
+        )
+    }
+
     func test_collect_findsAppSupportDirByExactName() async throws {
         let appName = "CollectorTestApp_\(UUID().uuidString.prefix(8))"
-        let fixture = URL(fileURLWithPath: NSHomeDirectory())
+        let fixture = URL(fileURLWithPath: home)
             .appendingPathComponent("Library/Application Support/\(appName)")
         try FileManager.default.createDirectory(at: fixture, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: fixture) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         let identity = AppIdentity(
             bundleID: "com.test.\(appName)",
             appName: String(appName),
@@ -26,18 +62,19 @@ final class CandidateCollectorTests: XCTestCase {
             isJava: false, isQt: false, isDocker: false
         )
         let candidates = await collector.collect(identity: identity)
-        XCTAssertTrue(candidates.contains { $0.path == fixture.path }, "Collector must find Application Support dir by exact name")
+        let fixturePath = fixture.resolvingSymlinksInPath().path
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == fixturePath }, "Collector must find Application Support dir by exact name")
     }
 
     func test_collect_safeMode_findsExactMatches() async throws {
         let appName = "CollectorSafeApp_\(UUID().uuidString.prefix(8))"
         let bundleID = "com.test.\(appName)"
-        let fixture = URL(fileURLWithPath: NSHomeDirectory())
+        let fixture = URL(fileURLWithPath: home)
             .appendingPathComponent("Library/Caches/\(bundleID)")
         try FileManager.default.createDirectory(at: fixture, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: fixture) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         let identity = AppIdentity(
             bundleID: bundleID,
             appName: String(appName),
@@ -54,20 +91,21 @@ final class CandidateCollectorTests: XCTestCase {
             isJava: false, isQt: false, isDocker: false
         )
         let candidates = await collector.collect(identity: identity, mode: .safe)
-        XCTAssertTrue(candidates.contains { $0.path == fixture.path }, "Safe mode must find cache dir by exact bundle ID")
+        let fixturePath = fixture.resolvingSymlinksInPath().path
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == fixturePath }, "Safe mode must find cache dir by exact bundle ID")
     }
 
     func test_collect_findsNestedCacheByTokenPrefix() async throws {
         let appName = "OpenCode"
-        let home = NSHomeDirectory()
+        // Under the app's own cache tree — not another product's com.* bucket.
         let nested = URL(fileURLWithPath: home)
-            .appendingPathComponent("Library/Caches/com.other.updater/UpdaterCache/opencode-desktop_br")
+            .appendingPathComponent("Library/Caches/ai.opencode.desktop/UpdaterCache/opencode-desktop_br")
         try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.other.updater")) }
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/ai.opencode.desktop")) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         let identity = AppIdentity(
-            bundleID: "dev.opencode.desktop",
+            bundleID: "ai.opencode.desktop",
             appName: appName,
             bundleName: nil,
             bundleVersion: nil,
@@ -82,19 +120,43 @@ final class CandidateCollectorTests: XCTestCase {
             isJava: false, isQt: false, isDocker: false
         )
         let candidates = await collector.collect(identity: identity)
-        XCTAssertTrue(candidates.contains { $0.path == nested.path })
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == nested.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_skipsTokenPrefixInsideForeignAppCache() async throws {
+        let nested = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Caches/com.nektony.App-Cleaner-SIII/UpdaterCache/opencode-desktop_br")
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.nektony.App-Cleaner-SIII")) }
+
+        let identity = AppIdentity(
+            bundleID: "ai.opencode.desktop",
+            appName: "OpenCode",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "OpenCode",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["opencode"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertFalse(candidates.contains { $0.resolvingSymlinksInPath().path == nested.resolvingSymlinksInPath().path })
     }
 
     func test_collect_skipsGenericBundleTailOutsideVendorContext() async throws {
         let marker = "TailFP\(UUID().uuidString.prefix(8))"
-        let home = NSHomeDirectory()
         let root = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/\(marker)")
         // ai.<x>.desktop must not claim a folder named "desktop" outside vendor context
         let trap = root.appendingPathComponent("Data/desktop")
         try FileManager.default.createDirectory(at: trap, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         let identity = AppIdentity(
             bundleID: "ai.\(marker.lowercased()).desktop",
             appName: "\(marker)App",
@@ -118,12 +180,15 @@ final class CandidateCollectorTests: XCTestCase {
     func test_collect_findsGroupContainerFromEntitlements() async throws {
         let marker = "grp\(UUID().uuidString.prefix(8).lowercased())"
         let groupName = "FAKETEAM99.com.\(marker).shared"
-        let home = NSHomeDirectory()
         let fixture = URL(fileURLWithPath: home).appendingPathComponent("Library/Group Containers/\(groupName)")
-        try FileManager.default.createDirectory(at: fixture, withIntermediateDirectories: true)
+        do {
+            try FileManager.default.createDirectory(at: fixture, withIntermediateDirectories: true)
+        } catch {
+            throw XCTSkip("Cannot create Group Containers fixture (TCC/sandbox): \(error.localizedDescription)")
+        }
         defer { try? FileManager.default.removeItem(at: fixture) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         // No teamID, no name relation — only the entitlements declare the group
         var identity = AppIdentity(
             bundleID: "com.other.\(marker)vpn",
@@ -142,18 +207,18 @@ final class CandidateCollectorTests: XCTestCase {
         )
         identity.appGroups = [groupName]
         let candidates = await collector.collect(identity: identity)
-        XCTAssertTrue(candidates.contains { $0.path == fixture.path },
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == fixture.resolvingSymlinksInPath().path },
                       "Group container declared in entitlements must be collected")
     }
 
     func test_collect_findsGoogleChromeVendorPath() async throws {
-        let home = NSHomeDirectory()
-        let chromeDir = URL(fileURLWithPath: home)
-            .appendingPathComponent("Library/Application Support/Google/Chrome")
+        let googleRoot = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google")
+        let chromeDir = googleRoot.appendingPathComponent("Chrome")
         try FileManager.default.createDirectory(at: chromeDir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Google")) }
+        defer { try? FileManager.default.removeItem(at: googleRoot) }
 
-        let collector = CandidateCollector()
+        let collector = makeCollector()
         let identity = AppIdentity(
             bundleID: "com.google.Chrome",
             appName: "Google Chrome",
@@ -207,7 +272,17 @@ final class CandidateCollectorTests: XCTestCase {
 
         let oldApps = try makeKeg(formula: "python@3.12", version: "3.12.13_4")
         let currentApps = try makeKeg(formula: "python@3.14", version: "3.14.6")
-        let unrelatedApps = try makeKeg(formula: "ruby@3.4", version: "3.4.1")
+        // Unrelated formula must not reuse org.python.IDLE — use a distinct helper.
+        let unrelatedRoot = cellar.appendingPathComponent("ruby@3.4/3.4.1/IDLE 3.app/Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: unrelatedRoot, withIntermediateDirectories: true)
+        let unrelatedPlist: [String: Any] = [
+            "CFBundleIdentifier": "org.ruby.IDLE",
+            "CFBundleName": "IDLE 3",
+            "CFBundleExecutable": "IDLE 3",
+        ]
+        try PropertyListSerialization.data(fromPropertyList: unrelatedPlist, format: .xml, options: 0)
+            .write(to: unrelatedRoot.appendingPathComponent("Info.plist"))
+        let unrelatedApps = [unrelatedRoot.deletingLastPathComponent()]
         let identity = AppIdentity(
             bundleID: "org.python.IDLE",
             appName: "IDLE 3",
@@ -225,7 +300,7 @@ final class CandidateCollectorTests: XCTestCase {
         )
         let runner = MockCommandRunner()
         runner.runDelay = .zero
-        let collection = await CandidateCollector(
+        let collection = await makeCollector(
             commandRunner: runner,
             homebrewCellarDirectories: [cellar]
         ).collectDetailed(identity: identity, mode: .safe)
@@ -233,22 +308,20 @@ final class CandidateCollectorTests: XCTestCase {
         let expectedPaths = Set([oldApps[0], currentApps[0]].map {
             $0.resolvingSymlinksInPath().path
         })
-        XCTAssertEqual(
-            Set(collection.receiptPaths.map { $0.resolvingSymlinksInPath().path }),
-            expectedPaths
-        )
+        // Sibling Homebrew versions are candidates (deep scan preselects for uninstall).
+        XCTAssertTrue(collection.receiptPaths.isEmpty)
         XCTAssertTrue(expectedPaths.isSubset(of: Set(
             collection.candidates.map { $0.resolvingSymlinksInPath().path }
         )))
         let unrelatedPaths = Set(unrelatedApps.map { $0.resolvingSymlinksInPath().path })
         XCTAssertTrue(unrelatedPaths.isDisjoint(with: Set(
-            collection.receiptPaths.map { $0.resolvingSymlinksInPath().path }
+            collection.candidates.map { $0.resolvingSymlinksInPath().path }
         )))
         let launcherPaths = Set([oldApps[1], currentApps[1]].map {
             $0.resolvingSymlinksInPath().path
         })
         XCTAssertTrue(launcherPaths.isDisjoint(with: Set(
-            collection.receiptPaths.map { $0.resolvingSymlinksInPath().path }
+            collection.candidates.map { $0.resolvingSymlinksInPath().path }
         )))
     }
 
@@ -282,7 +355,7 @@ final class CandidateCollectorTests: XCTestCase {
         )
         let runner = MockCommandRunner()
         runner.runDelay = .zero
-        let candidates = await CandidateCollector(
+        let candidates = await makeCollector(
             commandRunner: runner,
             homebrewCellarDirectories: [],
             darwinCacheDirectory: cacheRoot
@@ -292,5 +365,619 @@ final class CandidateCollectorTests: XCTestCase {
         let foreignPath = foreignCache.resolvingSymlinksInPath().path
         XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == ownPath })
         XCTAssertFalse(candidates.contains { $0.resolvingSymlinksInPath().path == foreignPath })
+    }
+
+    func test_collect_registrySeparatesSharedAndAdminPaths() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
+        let chromeCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.google.Chrome")
+        let googleUpdater = URL(fileURLWithPath: home).appendingPathComponent("Library/Google/GoogleSoftwareUpdate")
+        try FileManager.default.createDirectory(at: chromeCache, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: googleUpdater, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let collection = await makeCollector().collectDetailed(
+            identity: AppIdentity(
+                bundleID: "com.google.Chrome",
+                appName: "Google Chrome",
+                bundleName: "Chrome",
+                bundleVersion: nil,
+                executableName: "Google Chrome",
+                teamID: nil,
+                signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Google", "Chrome"],
+                helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false,
+                isJava: false, isQt: false, isDocker: false
+            ),
+            mode: .safe
+        )
+
+        XCTAssertTrue(collection.candidates.contains { $0.path == chromeCache.path })
+        XCTAssertTrue(collection.catalogPaths.contains { $0.path == chromeCache.path })
+        XCTAssertTrue(collection.sharedPaths.contains { $0.path == googleUpdater.path })
+
+        for path in collection.catalogPaths {
+            let lower = path.path.lowercased()
+            XCTAssertFalse(lower.contains("googlesoftwareupdate"), "Shared updater must not inflate catalog confidence")
+            XCTAssertFalse(lower.contains("keystone"), "Shared Keystone must not inflate catalog confidence")
+        }
+        XCTAssertTrue(collection.sharedPaths.isDisjoint(with: collection.catalogPaths))
+        for shared in collection.sharedPaths {
+            XCTAssertFalse(
+                collection.catalogPaths.contains(shared),
+                "Shared component \(shared.path) must not appear in catalogPaths"
+            )
+        }
+
+        let chromeRegistry = GeneratedCleanupPaths.appPaths(forBundleID: "com.google.Chrome")
+        XCTAssertNotNil(chromeRegistry)
+        if let chromeRegistry {
+            let adminTemplates = chromeRegistry.paths.filter(\.requiresAdmin)
+            XCTAssertFalse(adminTemplates.isEmpty)
+            for entry in adminTemplates {
+                let resolved = PathToken.home.resolveTemplate(entry.template, home: home)
+                XCTAssertFalse(collection.catalogPaths.contains(URL(fileURLWithPath: resolved).standardizedFileURL))
+            }
+        }
+    }
+
+    func test_collect_catalogPathsExcludeAppData() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
+        let appSupport = "\(home)/Library/Application Support/Google/Chrome"
+        try FileManager.default.createDirectory(atPath: appSupport, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(atPath: "\(home)/Library") }
+
+        let collection = await makeCollector().collectDetailed(
+            identity: AppIdentity(
+                bundleID: "com.google.Chrome",
+                appName: "Google Chrome",
+                bundleName: "Chrome",
+                bundleVersion: nil,
+                executableName: "Google Chrome",
+                teamID: nil,
+                signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Google", "Chrome"],
+                helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false,
+                isJava: false, isQt: false, isDocker: false
+            ),
+            mode: .safe
+        )
+
+        XCTAssertTrue(collection.candidates.contains { $0.path == appSupport })
+        XCTAssertFalse(collection.catalogPaths.contains { $0.path == appSupport })
+    }
+
+    func test_collect_doesNotCrossSelectSiblingOfficeAndAdobeApps() async throws {
+        try CatalogTestSupport.requirePrivateCatalog()
+        let microsoft = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Microsoft Office")
+        let wordCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.microsoft.word")
+        let excelCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.microsoft.excel")
+        let adobeRoot = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Adobe")
+        let photoshopCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.adobe.Photoshop")
+        let illustratorCache = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/com.adobe.Illustrator")
+
+        for path in [microsoft, wordCache, excelCache, adobeRoot, photoshopCache, illustratorCache] {
+            try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true)
+        }
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let collector = makeCollector()
+
+        let wordCollection = await collector.collectDetailed(
+            identity: AppIdentity(
+                bundleID: "com.microsoft.word",
+                appName: "Microsoft Word",
+                bundleName: "Word",
+                bundleVersion: nil,
+                executableName: "Microsoft Word",
+                teamID: "UBF8T346G9",
+                signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Microsoft Word.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Microsoft", "Office"],
+                helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false,
+                isJava: false, isQt: false, isDocker: false
+            ),
+            mode: .safe
+        )
+
+        XCTAssertTrue(wordCollection.candidates.contains { $0.resolvingSymlinksInPath().path == wordCache.resolvingSymlinksInPath().path })
+        XCTAssertTrue(wordCollection.sharedPaths.contains { $0.resolvingSymlinksInPath().path == microsoft.resolvingSymlinksInPath().path })
+        XCTAssertFalse(wordCollection.candidates.contains { $0.resolvingSymlinksInPath().path == microsoft.resolvingSymlinksInPath().path })
+        XCTAssertFalse(wordCollection.candidates.contains { $0.resolvingSymlinksInPath().path == excelCache.resolvingSymlinksInPath().path })
+
+        let photoshopCollection = await collector.collectDetailed(
+            identity: AppIdentity(
+                bundleID: "com.adobe.Photoshop",
+                appName: "Adobe Photoshop",
+                bundleName: "Photoshop",
+                bundleVersion: nil,
+                executableName: "Adobe Photoshop",
+                teamID: "JQ525L2MZD",
+                signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Adobe Photoshop 2026.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Adobe"],
+                helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false,
+                isJava: false, isQt: false, isDocker: false
+            ),
+            mode: .safe
+        )
+
+        // Adobe shared vendor root shown informationally, not as a Photoshop-only sharedPaths claim.
+        XCTAssertTrue(photoshopCollection.candidates.contains { $0.resolvingSymlinksInPath().path == photoshopCache.resolvingSymlinksInPath().path })
+        XCTAssertFalse(photoshopCollection.candidates.contains { $0.resolvingSymlinksInPath().path == adobeRoot.resolvingSymlinksInPath().path })
+        XCTAssertFalse(photoshopCollection.candidates.contains { $0.resolvingSymlinksInPath().path == illustratorCache.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_safariRegistryExcluded() async {
+        let collection = await makeCollector().collectDetailed(
+            identity: AppIdentity(
+                bundleID: "com.apple.Safari",
+                appName: "Safari",
+                bundleName: "Safari",
+                bundleVersion: nil,
+                executableName: "Safari",
+                teamID: nil,
+                signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Safari.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: [],
+                helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false,
+                isJava: false, isQt: false, isDocker: false
+            ),
+            mode: .safe
+        )
+        XCTAssertTrue(collection.catalogPaths.isEmpty)
+        XCTAssertTrue(collection.sharedPaths.isEmpty)
+    }
+
+    func test_collect_androidStudioAddsHomeToolingPaths() async throws {
+        let gradle = URL(fileURLWithPath: home).appendingPathComponent(".gradle")
+        let androidHome = URL(fileURLWithPath: home).appendingPathComponent(".android")
+        let androidLib = URL(fileURLWithPath: home).appendingPathComponent("Library/Android")
+        try FileManager.default.createDirectory(at: gradle, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: androidHome, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: androidLib, withIntermediateDirectories: true)
+
+        let collector = makeCollector()
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await collector.collect(identity: identity)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(gradle.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(androidHome.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(androidLib.resolvingSymlinksInPath().path))
+    }
+
+    func test_collect_darwinHelperAndSavedState() async throws {
+        let root = fileSystemContext.allowedRoots[0]
+            .appendingPathComponent("DarwinCTX-\(UUID().uuidString)", isDirectory: true)
+        let cacheRoot = root.appendingPathComponent("C", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let marker = UUID().uuidString.lowercased()
+        let bundleID = "com.example.\(marker)"
+        let helperDir = cacheRoot.appendingPathComponent("Electron Helper", isDirectory: true)
+        let savedState = cacheRoot.appendingPathComponent("\(bundleID).savedState", isDirectory: true)
+        let foreign = cacheRoot.appendingPathComponent("com.other.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: helperDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: savedState, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: foreign, withIntermediateDirectories: true)
+
+        let identity = AppIdentity(
+            bundleID: bundleID,
+            appName: "HelperApp",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "HelperApp",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/HelperApp.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [],
+            helperNames: ["Electron Helper"], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector(darwinCacheDirectory: cacheRoot)
+            .collect(identity: identity, mode: .safe)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(helperDir.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(savedState.resolvingSymlinksInPath().path))
+        XCTAssertFalse(paths.contains(foreign.resolvingSymlinksInPath().path))
+    }
+
+    func test_collect_sharedFileListAndReceipts() async throws {
+        let marker = UUID().uuidString.lowercased()
+        let bundleID = "com.example.\(marker)"
+        let sflDir = URL(fileURLWithPath: home).appendingPathComponent(
+            "Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments"
+        )
+        let sfl = sflDir.appendingPathComponent("\(bundleID).sfl4")
+        try FileManager.default.createDirectory(at: sflDir, withIntermediateDirectories: true)
+        try Data().write(to: sfl)
+
+        let receiptsRoot = fileSystemContext.allowedRoots[0]
+            .appendingPathComponent("receipts-\(marker)", isDirectory: true)
+        try FileManager.default.createDirectory(at: receiptsRoot, withIntermediateDirectories: true)
+        let receipt = receiptsRoot.appendingPathComponent("com.example.package.\(marker).plist")
+        // Match via sanitized app name embedded in receipt file name.
+        let namedReceipt = receiptsRoot.appendingPathComponent("com.microsoft.package.ReceiptApp_\(marker.prefix(4)).app.plist")
+        try Data().write(to: receipt)
+        try Data().write(to: namedReceipt)
+        defer {
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library"))
+            try? FileManager.default.removeItem(at: receiptsRoot)
+        }
+
+        let identity = AppIdentity(
+            bundleID: bundleID,
+            appName: "ReceiptApp_\(marker.prefix(4))",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "ReceiptApp",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/ReceiptApp.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        // Receipt with full bundle ID prefix in name
+        let bidReceipt = receiptsRoot.appendingPathComponent("\(bundleID).plist")
+        try Data().write(to: bidReceipt)
+
+        let candidates = await makeCollector(receiptsDirectory: receiptsRoot)
+            .collect(identity: identity, mode: .safe)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(sfl.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(bidReceipt.resolvingSymlinksInPath().path))
+    }
+
+    func test_collect_homeResidualsDeniesSSH() async throws {
+        let marker = UUID().uuidString.prefix(8)
+        let appName = "HomeApp\(marker)"
+        let dotDir = URL(fileURLWithPath: home).appendingPathComponent(".\(appName)")
+        let topDir = URL(fileURLWithPath: home).appendingPathComponent(String(appName))
+        let ssh = URL(fileURLWithPath: home).appendingPathComponent(".ssh")
+        try FileManager.default.createDirectory(at: dotDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: topDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: ssh, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: dotDir)
+            try? FileManager.default.removeItem(at: topDir)
+            try? FileManager.default.removeItem(at: ssh)
+        }
+
+        let identity = AppIdentity(
+            bundleID: "com.test.\(appName)",
+            appName: String(appName),
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: String(appName),
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/\(appName).app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(dotDir.resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(topDir.resolvingSymlinksInPath().path))
+        XCTAssertFalse(paths.contains(ssh.resolvingSymlinksInPath().path))
+    }
+
+    func test_collect_libraryVendorAndTmpApp() async throws {
+        let vendor = URL(fileURLWithPath: home).appendingPathComponent("Library/Google/GoogleSoftwareUpdate")
+        try FileManager.default.createDirectory(at: vendor, withIntermediateDirectories: true)
+
+        let tmpRoot = fileSystemContext.allowedRoots[0]
+            .appendingPathComponent("tmp-\(UUID().uuidString)", isDirectory: true)
+        let buildApp = tmpRoot
+            .appendingPathComponent("Google Chrome-Polish/Build/Products/Debug/Google Chrome.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: buildApp, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Google"))
+            try? FileManager.default.removeItem(at: tmpRoot)
+        }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.Chrome",
+            appName: "Google Chrome",
+            bundleName: "Chrome",
+            bundleVersion: nil,
+            executableName: "Google Chrome",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google", "Chrome"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector(tmpScanDirectory: tmpRoot)
+            .collect(identity: identity, mode: .balanced)
+        let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
+        XCTAssertTrue(paths.contains(vendor.resolvingSymlinksInPath().path)
+                      || paths.contains(vendor.deletingLastPathComponent().resolvingSymlinksInPath().path))
+        XCTAssertTrue(paths.contains(buildApp.resolvingSymlinksInPath().path))
+    }
+
+    func test_collect_matchHelperNameInLaunchPath() async throws {
+        let helperName = "com.example.privhelper-\(UUID().uuidString.prefix(6))"
+        let launchDir = URL(fileURLWithPath: home).appendingPathComponent("Library/LaunchAgents")
+        try FileManager.default.createDirectory(at: launchDir, withIntermediateDirectories: true)
+        let plist = launchDir.appendingPathComponent("\(helperName).plist")
+        try Data().write(to: plist)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/LaunchAgents")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.example.app",
+            appName: "Example",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "Example",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Example.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [],
+            helperNames: [helperName], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .safe)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == plist.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_findsHomeDotdirAnyDeskStyle() async throws {
+        let dot = URL(fileURLWithPath: home).appendingPathComponent(".anydesk")
+        try FileManager.default.createDirectory(at: dot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dot) }
+
+        let identity = AppIdentity(
+            bundleID: "com.philandro.anydesk",
+            appName: "AnyDesk",
+            bundleName: "AnyDesk",
+            bundleVersion: nil,
+            executableName: "AnyDesk",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/AnyDesk.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["philandro"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == dot.resolvingSymlinksInPath().path })
+    }
+
+    func test_collect_findsCompactAndroidStudioUnderGoogle() async throws {
+        let studio = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/AndroidStudio2026.1.2")
+        try FileManager.default.createDirectory(at: studio, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == studio.resolvingSymlinksInPath().path })
+        // Bare Google root still rejected
+        let google = studio.deletingLastPathComponent()
+        XCTAssertFalse(candidates.contains { $0.resolvingSymlinksInPath().path == google.resolvingSymlinksInPath().path })
+    }
+
+    func test_appNameMatches_dotdirAndCompact() {
+        let anydesk = EvidenceProbe.appNameMatchesFileName(".anydesk", appName: "AnyDesk")
+        XCTAssertTrue(anydesk.exact)
+
+        let studio = EvidenceProbe.appNameMatchesFileName("AndroidStudio2026.1.2", appName: "Android Studio")
+        XCTAssertTrue(studio.prefix || studio.exact)
+
+        let antigravity = EvidenceProbe.appNameMatchesFileName(".antigravity", appName: "Antigravity IDE")
+        XCTAssertTrue(antigravity.exact)
+
+        let androidDot = EvidenceProbe.appNameMatchesFileName(".android", appName: "Android Studio")
+        XCTAssertTrue(androidDot.exact)
+
+        // Mega-vendor head must not claim bare Google for Chrome.
+        let google = EvidenceProbe.appNameMatchesFileName("Google", appName: "Google Chrome")
+        XCTAssertFalse(google.exact)
+        XCTAssertFalse(google.prefix)
+
+        let cursorJava = EvidenceProbe.appNameMatchesFileName("Cursor.java", appName: "Cursor")
+        XCTAssertTrue(cursorJava.prefix) // dotted — collector must reject via source-file guard
+        XCTAssertTrue(EvidenceProbe.looksLikeSourceFileName("cursor.java"))
+    }
+
+    func test_deepScan_skipsUnrelatedSiblingUnderVendor() async throws {
+        let studio = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/AndroidStudio2026.1.2")
+        let chrome = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/Chrome")
+        let chromeDeep = chrome.appendingPathComponent("Default/Cache")
+        try FileManager.default.createDirectory(at: studio, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: chromeDeep, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == studio.resolvingSymlinksInPath().path })
+        XCTAssertFalse(candidates.contains { $0.path.contains("/Chrome") })
+    }
+
+    func test_collect_findsShortHomeDotdirForMultiWordApp() async throws {
+        let dot = URL(fileURLWithPath: home).appendingPathComponent(".antigravity")
+        try FileManager.default.createDirectory(at: dot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dot) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.antigravity-ide",
+            appName: "Antigravity IDE",
+            bundleName: "Antigravity IDE",
+            bundleVersion: nil,
+            executableName: "Antigravity IDE",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Antigravity IDE.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        XCTAssertTrue(candidates.contains { $0.resolvingSymlinksInPath().path == dot.resolvingSymlinksInPath().path })
+    }
+
+    func test_matchCandidate_rejectsCursorJavaInAndroidSDK() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Android/sdk/sources/android-36/android/database/Cursor.java")
+        let identity = AppIdentity(
+            bundleID: "com.todesktop.230313mzl4w4u92",
+            appName: "Cursor",
+            bundleName: "Cursor",
+            bundleVersion: nil,
+            executableName: "Cursor",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Cursor.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["todesktop", "Cursor"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertTrue(CandidateCollector.isForeignDeveloperTree(url, identity: identity))
+    }
+
+    func test_matchCandidate_rejectsBareGoogleVendorForAndroidStudio() async throws {
+        let google = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/Google")
+        try FileManager.default.createDirectory(at: google, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support")) }
+
+        let identity = AppIdentity(
+            bundleID: "com.google.android.studio",
+            appName: "Android Studio",
+            bundleName: nil,
+            bundleVersion: nil,
+            executableName: "studio",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: true, isQt: false, isDocker: false
+        )
+        let candidates = await makeCollector().collect(identity: identity, mode: .balanced)
+        let googlePath = google.resolvingSymlinksInPath().path
+        XCTAssertFalse(
+            candidates.contains { $0.resolvingSymlinksInPath().path == googlePath },
+            "Bare Google App Support must not be claimed by Android Studio"
+        )
+    }
+
+    func test_matchCandidate_rejectsForeignNektonyUpdaterCache() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Caches/com.nektony.App-Cleaner-SIII/UpdaterCache/opencode-desktop_br")
+        let identity = AppIdentity(
+            bundleID: "ai.opencode.desktop",
+            appName: "OpenCode",
+            bundleName: "OpenCode",
+            bundleVersion: nil,
+            executableName: "OpenCode",
+            teamID: nil,
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["opencode"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: true, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertTrue(CandidateCollector.isForeignAppLibraryTree(url, identity: identity))
+    }
+
+    func test_matchCandidate_rejectsOfficeWordWidgetForExcel() {
+        let url = URL(fileURLWithPath: "\(home)/Library/Group Containers/UBF8T346G9.OfficeWordWidget")
+        let identity = AppIdentity(
+            bundleID: "com.microsoft.Excel",
+            appName: "Microsoft Excel",
+            bundleName: "Excel",
+            bundleVersion: nil,
+            executableName: "Microsoft Excel",
+            teamID: "UBF8T346G9",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Microsoft Excel.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Microsoft", "Office"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            appGroups: ["UBF8T346G9.Office"],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        // Not an exact app group for Excel and suffix is Word — foreign sibling.
+        XCTAssertFalse(identity.appGroups.contains(url.lastPathComponent))
+        XCTAssertFalse(
+            EvidenceProbe.bundleIDSuffixMatch("OfficeWordWidget", bundleID: "com.microsoft.excel")
+        )
     }
 }

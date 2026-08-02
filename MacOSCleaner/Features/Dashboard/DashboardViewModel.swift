@@ -65,7 +65,7 @@ class DashboardViewModel: ObservableObject {
             ("caches", ["\(home)/Library/Caches", "/Library/Caches"]),
             ("logs",   ["\(home)/Library/Logs", "/Library/Logs"]),
             ("dev",    ["\(home)/Library/Developer"]),
-            ("apps",   ["/Applications", "\(home)/Applications"]),
+            ("apps",   ["/Applications", "\(home)/Applications", "/System/Applications"]),
             ("media",  ["\(home)/Music", "\(home)/Pictures", "\(home)/Movies"])
         ]
         
@@ -98,26 +98,58 @@ class DashboardViewModel: ObservableObject {
         
         var items: [DiskCategoryItem] = []
         if cachesSize > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_caches".localized, bytes: cachesSize, color: .blue))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_caches".localized,
+                bytes: cachesSize,
+                color: Color(red: 0.0, green: 0.75, blue: 0.95),
+                gradientColors: [Color(red: 0.0, green: 0.75, blue: 0.95), Color(red: 0.0, green: 0.55, blue: 0.85)],
+                iconName: "archivebox.fill"
+            ))
         }
         if logsSize > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_logs".localized, bytes: logsSize, color: .orange))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_logs".localized,
+                bytes: logsSize,
+                color: Color(red: 1.0, green: 0.6, blue: 0.0),
+                gradientColors: [Color(red: 1.0, green: 0.6, blue: 0.0), Color(red: 0.95, green: 0.45, blue: 0.0)],
+                iconName: "doc.text.fill"
+            ))
         }
         if devSize > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_dev".localized, bytes: devSize, color: .teal))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_dev".localized,
+                bytes: devSize,
+                color: Color(red: 0.15, green: 0.55, blue: 1.0),
+                gradientColors: [Color(red: 0.15, green: 0.55, blue: 1.0), Color(red: 0.35, green: 0.35, blue: 0.95)],
+                iconName: "hammer.fill"
+            ))
         }
         if appsSize > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_apps".localized, bytes: appsSize, color: .purple))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_apps".localized,
+                bytes: appsSize,
+                color: Color(red: 0.65, green: 0.35, blue: 0.95),
+                gradientColors: [Color(red: 0.65, green: 0.35, blue: 0.95), Color(red: 0.45, green: 0.2, blue: 0.85)],
+                iconName: "app.badge.fill"
+            ))
         }
         if mediaSize > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_media".localized, bytes: mediaSize, color: .pink))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_media".localized,
+                bytes: mediaSize,
+                color: Color(red: 0.95, green: 0.3, blue: 0.55),
+                gradientColors: [Color(red: 0.95, green: 0.3, blue: 0.55), Color(red: 0.9, green: 0.2, blue: 0.35)],
+                iconName: "photo.stack.fill"
+            ))
         }
         if otherUsed > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_radar_other".localized, bytes: otherUsed, color: .brown))
-        }
-        // Always show free space explicitly
-        if freeDiskSpace > 0 {
-            items.append(DiskCategoryItem(label: "dashboard_free".localized, bytes: freeDiskSpace, color: Color.secondary.opacity(0.35), isFree: true))
+            items.append(DiskCategoryItem(
+                label: "dashboard_radar_other".localized,
+                bytes: otherUsed,
+                color: Color(red: 0.45, green: 0.5, blue: 0.6),
+                gradientColors: [Color(red: 0.45, green: 0.5, blue: 0.6), Color(red: 0.3, green: 0.35, blue: 0.45)],
+                iconName: "square.grid.2x2.fill"
+            ))
         }
         
         self.diskCategories = items
@@ -139,7 +171,7 @@ class DashboardViewModel: ObservableObject {
         guard let enumerator = fm.enumerator(
             at: url,
             includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+            options: [.skipsHiddenFiles]
         ) else { return 0 }
         
         var totalSize: Int64 = 0

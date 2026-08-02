@@ -1,9 +1,12 @@
 import Foundation
+import AppKit
+import ApplicationServices
+import CoreServices
 
 public actor AppDiscovery {
     public static let defaultHomebrewCellarDirectories = [
-        URL(fileURLWithPath: "/opt/homebrew/Cellar", isDirectory: true),
-        URL(fileURLWithPath: "/usr/local/Cellar", isDirectory: true),
+        NormalizedPath.url("/opt/homebrew/Cellar", isDirectory: true),
+        NormalizedPath.url("/usr/local/Cellar", isDirectory: true),
     ]
 
     private let fileManager: FileManager
@@ -25,15 +28,13 @@ public actor AppDiscovery {
 
         // Standard app directories
         let appDirs = [
-            URL(fileURLWithPath: "/Applications"),
-            fileManager.urls(for: .applicationDirectory, in: .userDomainMask).first,
-            URL(fileURLWithPath: "\(NSHomeDirectory())/Applications"),
+            NormalizedPath.url("/Applications", isDirectory: true),
+            fileManager.urls(for: .applicationDirectory, in: .userDomainMask).first.map { NormalizedPath.url($0) },
+            NormalizedPath.url(NormalizedPath.joinHome(NSHomeDirectory(), "Applications"), isDirectory: true),
         ].compactMap { $0 }
 
         for dir in appDirs {
-            if let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
-                urls.append(contentsOf: contents.filter { $0.pathExtension == "app" })
-            }
+            urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
         }
 
         // Homebrew formulae can expose user-facing apps directly inside a keg
@@ -43,6 +44,9 @@ public actor AppDiscovery {
             in: homebrewCellarDirectories,
             fileManager: fileManager
         ))
+
+        // LaunchServices sees apps registered outside the usual filesystem roots.
+        urls.append(contentsOf: Self.launchServicesApplications())
 
         // Application Support (Google Updater, etc.)
         let appSupportDirs = [
@@ -56,26 +60,93 @@ public actor AppDiscovery {
                 arguments: [appSupport, "-maxdepth", "4", "-name", "*.app", "-type", "d", "-prune"]
             ) {
                 for path in result.stdout.components(separatedBy: .newlines) where !path.isEmpty {
-                    urls.append(URL(fileURLWithPath: path))
+                    urls.append(NormalizedPath.url(path))
                 }
             }
         }
 
         // Dev build products (DerivedData)
-        let derivedData = "\(NSHomeDirectory())/Library/Developer/Xcode/DerivedData"
+        let derivedData = NormalizedPath.joinHome(NSHomeDirectory(), "Library/Developer/Xcode/DerivedData")
         if let result = try? await commandRunner.run(
             command: "/usr/bin/find",
             arguments: [derivedData, "-maxdepth", "5", "-name", "*.app", "-type", "d", "-prune"]
         ) {
             for path in result.stdout.components(separatedBy: .newlines) where !path.isEmpty {
-                let url = URL(fileURLWithPath: path)
+                let url = NormalizedPath.url(path)
                 if !url.path.contains("/Applications/") {
                     urls.append(url)
                 }
             }
         }
 
-        return Array(Set(urls)).filter { !isSystemComponent($0) }
+        return NormalizedPath.unique(urls).filter { !Self.isUndeletableSystemApp($0) }
+    }
+
+    /// Top-level `.app` plus one nested level (e.g. `/Applications/Utilities/*.app`).
+    static func applicationBundles(in directory: URL, fileManager: FileManager = .default) -> [URL] {
+        guard let contents = directoryContents(at: directory, fileManager: fileManager) else { return [] }
+        var apps: [URL] = []
+        for item in contents {
+            if item.pathExtension.lowercased() == "app", isDirectory(item) {
+                apps.append(item)
+                continue
+            }
+            guard isDirectory(item),
+                  let nested = directoryContents(at: item, fileManager: fileManager)
+            else { continue }
+            for child in nested where child.pathExtension.lowercased() == "app" && isDirectory(child) {
+                apps.append(child)
+            }
+        }
+        return apps
+    }
+
+    /// Apps that cannot be uninstalled: `/System` (incl. Cryptex), nested Apple
+    /// components (e.g. inside Xcode.app), and `com.apple.dt.*` satellites except Xcode.
+    static func isUndeletableSystemApp(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+        let resolved = url.resolvingSymlinksInPath().standardizedFileURL.path
+        if path.hasPrefix("/System/") || resolved.hasPrefix("/System/") {
+            return true
+        }
+
+        let bundleID = Bundle(url: url)?.bundleIdentifier
+        if let bundleID {
+            let lower = bundleID.lowercased()
+            // Xcode satellites (ExternalViewService, SourceKit, …) — never list.
+            if lower.hasPrefix("com.apple.dt."), lower != "com.apple.dt.xcode" {
+                return true
+            }
+            if lower.hasPrefix("com.apple.") {
+                return !isTopLevelUserApplication(path)
+            }
+        }
+        return false
+    }
+
+    /// `/Applications/Foo.app`, `/Applications/Utilities/Foo.app`, or `~/Applications/Foo.app`.
+    /// Nested bundles (`Foo.app/Contents/.../Bar.app`) are not top-level.
+    static func isTopLevelUserApplication(_ path: String) -> Bool {
+        let url = NormalizedPath.url(path)
+        guard url.pathExtension.lowercased() == "app" else { return false }
+        let appSegments = url.pathComponents.filter { $0.lowercased().hasSuffix(".app") }
+        guard appSegments.count == 1 else { return false }
+
+        let parent = url.deletingLastPathComponent()
+        if parent.path == "/Applications" { return true }
+        if parent.lastPathComponent == "Utilities",
+           parent.deletingLastPathComponent().path == "/Applications" {
+            return true
+        }
+        return parent.lastPathComponent == "Applications"
+    }
+
+    /// Sidebar-listable: real `.app` with a CFBundleIdentifier (excludes CLI/`unknown.*`).
+    static func isListableApplication(_ url: URL) -> Bool {
+        guard url.pathExtension.lowercased() == "app" else { return false }
+        guard let bundleID = Bundle(url: url)?.bundleIdentifier, !bundleID.isEmpty else { return false }
+        guard !bundleID.lowercased().hasPrefix("unknown.") else { return false }
+        return !isUndeletableSystemApp(url)
     }
 
     static func homebrewApplications(
@@ -162,6 +233,12 @@ public actor AppDiscovery {
         return applications
     }
 
+    private static func launchServicesApplications() -> [URL] {
+        // Public SDK has no LSCopyAllApplicationURLs. Directory scan in findAll() covers
+        // /Applications and ~/Applications; running apps are an extra signal.
+        Array(Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleURL)))
+    }
+
     private static func directoryContents(at url: URL, fileManager: FileManager) -> [URL]? {
         try? fileManager.contentsOfDirectory(
             at: url,
@@ -174,12 +251,4 @@ public actor AppDiscovery {
         (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
     }
 
-    /// Apple's own apps are uninstallable only when installed in /Applications (Xcode, GarageBand, etc.).
-    /// A `com.apple.*` bundle anywhere else (Application Support, DerivedData) is an OS component
-    /// (e.g. Script Editor templates in /Library/Application Support/Script Editor) and must not be listed.
-    private func isSystemComponent(_ url: URL) -> Bool {
-        guard !url.path.hasPrefix("/Applications/") else { return false }
-        guard let bundleID = Bundle(url: url)?.bundleIdentifier else { return false }
-        return bundleID.hasPrefix("com.apple.")
-    }
 }

@@ -62,13 +62,13 @@ final class UninstallerServiceTests: XCTestCase {
     }
 
     func testProtectedMailPaths() {
-        let home = NSHomeDirectory()
-        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail"))
-        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/V10/INBOX.mbox"))
-        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Containers/com.apple.mail/Data"))
+        let home = "/Users/test-fixture-home"
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail", homeDirectory: home))
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/V10/INBOX.mbox", homeDirectory: home))
+        XCTAssertTrue(UninstallerService.isProtectedMailPath("\(home)/Library/Containers/com.apple.mail/Data", homeDirectory: home))
         // Mail plugins are legitimate residuals
-        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/Bundles/SomePlugin.mailbundle"))
-        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Application Support/SomeApp"))
+        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Mail/Bundles/SomePlugin.mailbundle", homeDirectory: home))
+        XCTAssertFalse(UninstallerService.isProtectedMailPath("\(home)/Library/Application Support/SomeApp", homeDirectory: home))
     }
 
     func testPhysicalSize_sparseFile_reportsAllocatedNotLogical() throws {
@@ -103,5 +103,37 @@ final class UninstallerServiceTests: XCTestCase {
         XCTAssertEqual(Evidence.spotlight.category, .content)
         XCTAssertEqual(Evidence.parentDirectory.category, .graph)
         XCTAssertEqual(Evidence.launchServicesRegistered.category, .launchServices)
+    }
+
+    func testGroupKey_andMultiVersionAppInfo() {
+        let app1 = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/opt/homebrew/Cellar/python@3.14/3.14.6/IDLE 3.app"),
+            bundleID: "org.python.IDLE",
+            name: "IDLE 3",
+            size: 200,
+            version: "3.14.6"
+        )
+        let app2 = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/opt/homebrew/Cellar/python@3.12/3.12.13/IDLE 3.app"),
+            bundleID: "org.python.IDLE",
+            name: "IDLE 3",
+            size: 150,
+            version: "3.12.13"
+        )
+
+        XCTAssertEqual(UninstallerService.groupKey(for: app1), UninstallerService.groupKey(for: app2))
+
+        let grouped = UninstallerService.AppInfo(
+            url: app1.url,
+            bundleID: app1.bundleID,
+            name: app1.name,
+            size: 350,
+            version: "3.14.6, 3.12.13",
+            versions: [app1, app2]
+        )
+
+        XCTAssertTrue(grouped.isGrouped)
+        XCTAssertEqual(grouped.versions.count, 2)
+        XCTAssertEqual(grouped.totalSize, 350)
     }
 }

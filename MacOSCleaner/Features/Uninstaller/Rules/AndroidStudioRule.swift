@@ -28,14 +28,17 @@ public struct AndroidStudioRule: ApplicationRule {
         if path.contains("/preferences/com.google.android.studio.plist") {
             evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
         }
-        if path.contains("/android/sdk") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 60))
+        // Whole Android SDK tree + home tooling — uninstall should treat as guaranteed.
+        if path.contains("/library/android") {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 100))
+        } else if path.contains("/android/sdk") {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 100))
         }
         if path.contains("/.gradle") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 50))
+            evidence.append(ArtifactEvidence(source: .rule, weight: 100))
         }
-        if path.contains("/.android/avd") {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 50))
+        if path.contains("/.android") {
+            evidence.append(ArtifactEvidence(source: .rule, weight: 100))
         }
 
         return evidence

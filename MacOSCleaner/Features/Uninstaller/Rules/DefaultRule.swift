@@ -23,11 +23,19 @@ public struct DefaultRule: ApplicationRule {
             evidence.append(ArtifactEvidence(source: .appName, weight: 60))
         }
 
-        if identity.vendorNames.contains(name) || identity.vendorNames.contains(candidate.deletingLastPathComponent().lastPathComponent) {
-            evidence.append(ArtifactEvidence(source: .rule, weight: 30))
-        }
-
         let parent = candidate.deletingLastPathComponent().lastPathComponent
+        if identity.vendorNames.contains(name) || identity.vendorNames.contains(parent) {
+            let mega = Set(["Google", "Microsoft", "Adobe", "Oracle", "Apple"])
+            // Bare mega-vendor roots are shared across suite apps — do not boost.
+            let parentPath = candidate.deletingLastPathComponent().path
+            let isBareMegaRoot = mega.contains(name) && (
+                parent == "Application Support" || parent == "Caches" || parent == "Logs"
+                    || parent == "Library" || parentPath.hasSuffix("/Library")
+            )
+            if !isBareMegaRoot {
+                evidence.append(ArtifactEvidence(source: .rule, weight: 30))
+            }
+        }
         if parent == "Containers" && name == identity.bundleID {
             evidence.append(ArtifactEvidence(source: .rule, weight: 70))
         }

@@ -14,6 +14,7 @@ struct ProcessRow: View {
     @State private var aiExplanation = ""
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
+    @State private var showForceKill = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -148,20 +149,11 @@ struct ProcessRow: View {
                         .lineLimit(2)
                         .frame(maxWidth: 200)
                 } else {
-                    Menu {
-                        Button(action: onTerminate) {
-                            Label("processes_terminate".localized, systemImage: "xmark.circle")
-                        }
-
-                        Button(role: .destructive, action: onForceKill) {
-                            Label("processes_force_kill".localized, systemImage: "exclamationmark.triangle")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 16))
-                    }
-                    .menuStyle(.borderlessButton)
-                    .frame(width: 30)
+                    ProcessSplitButton(
+                        title: "processes_terminate".localized,
+                        onTerminate: onTerminate,
+                        onForceKill: onForceKill
+                    )
                 }
             }
             
@@ -251,5 +243,86 @@ struct ProcessRow: View {
                 }
             }
         }
+    }
+}
+
+struct ProcessSplitButton: View {
+    let title: String
+    let onTerminate: () -> Void
+    let onForceKill: () -> Void
+
+    @State private var isHoveredMain = false
+    @State private var isHoveredChevron = false
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: onTerminate) {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                    Text(title)
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor((isHoveredMain || isHoveredChevron) ? .white : .red.opacity(0.85))
+                .padding(.leading, 10)
+                .padding(.trailing, 8)
+                .padding(.vertical, 5)
+                .background(
+                    isHoveredMain ? Color.red.opacity(0.3) : Color.clear
+                )
+            }
+            .buttonStyle(.plain)
+            .help("processes_terminate".localized)
+            .onHover { hovering in
+                isHoveredMain = hovering
+            }
+
+            Rectangle()
+                .fill(Color.red.opacity(0.25))
+                .frame(width: 1, height: 14)
+
+            Menu {
+                Button(action: onTerminate) {
+                    Label("processes_terminate".localized, systemImage: "xmark")
+                }
+                Button(role: .destructive, action: onForceKill) {
+                    Label("processes_force_kill".localized, systemImage: "exclamationmark.triangle")
+                }
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor((isHoveredMain || isHoveredChevron) ? .white : .red.opacity(0.85))
+                    .frame(width: 22, height: 24)
+                    .background(
+                        isHoveredChevron ? Color.red.opacity(0.3) : Color.clear
+                    )
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .onHover { hovering in
+                isHoveredChevron = hovering
+            }
+        }
+        .background(
+            ZStack {
+                if #available(macOS 26.0, *) {
+                    Color.clear.background(.ultraThinMaterial)
+                } else {
+                    Color(nsColor: .controlBackgroundColor).opacity(0.5)
+                }
+                Color.red.opacity(0.12)
+            }
+        )
+        .clipShape(Capsule())
+        .overlay(
+            Capsule()
+                .strokeBorder(
+                    (isHoveredMain || isHoveredChevron) ? Color.red.opacity(0.5) : Color.red.opacity(0.25),
+                    lineWidth: 1
+                )
+        )
+        .animation(.easeInOut(duration: 0.12), value: isHoveredMain)
+        .animation(.easeInOut(duration: 0.12), value: isHoveredChevron)
     }
 }

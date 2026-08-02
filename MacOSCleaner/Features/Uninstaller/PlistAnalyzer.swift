@@ -13,10 +13,10 @@ public actor PlistAnalyzer {
     }
 
     public static let searchDirectories: [String] = [
-        "\(NSHomeDirectory())/Library/Preferences",
-        "\(NSHomeDirectory())/Library/Preferences/ByHost",
-        "\(NSHomeDirectory())/Library/Containers",
-        "\(NSHomeDirectory())/Library/Group Containers",
+        NormalizedPath.joinHome(NSHomeDirectory(), "Library/Preferences"),
+        NormalizedPath.joinHome(NSHomeDirectory(), "Library/Preferences/ByHost"),
+        NormalizedPath.joinHome(NSHomeDirectory(), "Library/Containers"),
+        NormalizedPath.joinHome(NSHomeDirectory(), "Library/Group Containers"),
         "/Library/Preferences",
         "/Library/Managed Preferences",
     ]
@@ -25,7 +25,7 @@ public actor PlistAnalyzer {
         var results: [(URL, ArtifactEvidence)] = []
 
         for dir in Self.searchDirectories {
-            let url = URL(fileURLWithPath: dir)
+            let url = NormalizedPath.url(dir, isDirectory: true)
             guard fileManager.fileExists(atPath: url.path),
                   let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
             else { continue }

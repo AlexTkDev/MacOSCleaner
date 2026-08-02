@@ -24,8 +24,17 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertTrue(categories.contains(.systemCaches))
         XCTAssertTrue(categories.contains(.appContainers))
         XCTAssertTrue(categories.contains(.dotfileCaches))
-        XCTAssertTrue(categories.contains(.orphanedRemnants))
-        XCTAssertTrue(categories.contains(.orphanedFiles))
+        XCTAssertFalse(categories.contains(.orphanedRemnants))
+        XCTAssertFalse(categories.contains(.orphanedFiles))
+        XCTAssertFalse(categories.contains(.oldBackups))
+        XCTAssertFalse(categories.contains(.aiModels))
+        XCTAssertFalse(categories.contains(.installerPackages))
+        XCTAssertFalse(categories.contains(.launchAgents))
+        XCTAssertFalse(categories.contains(.launchDaemons))
+        XCTAssertFalse(categories.contains(.privilegedHelpers))
+        XCTAssertFalse(categories.contains(.pkgReceipts))
+        XCTAssertFalse(categories.contains(.internetPlugins))
+        XCTAssertTrue(categories.contains(.iosBackups))
         XCTAssertTrue(categories.contains(.iosSimulators))
     }
 
@@ -53,7 +62,7 @@ final class CleanupOptionsTests: XCTestCase {
         let options = CleanupOptions()
         let categories = options.categories()
 
-        XCTAssertEqual(categories.count, 48)
+        XCTAssertEqual(categories.count, 39)
     }
 
     func testDSStoreEnabledAddsScatteredJunk() {

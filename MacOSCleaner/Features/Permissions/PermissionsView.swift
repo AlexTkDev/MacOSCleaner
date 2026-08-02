@@ -3,32 +3,31 @@ import SwiftUI
 struct PermissionsView: View {
     @Bindable var permissionsManager: PermissionsManager
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerSection
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                headerSection
 
-            ScrollView {
-                GlassEffectContainer {
-                    VStack(alignment: .leading, spacing: 20) {
-                        statusCard
-                        instructionsCard
-                        actionButtons
-                    }
-                    .padding(24)
+                VStack(alignment: .leading, spacing: 16) {
+                    statusCard
+                    instructionsCard
+                    actionButtons
                 }
-            }
+                .padding(20)
 
-            dismissBar
+                dismissBar
+            }
+            .frame(width: 480)
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(minWidth: 450, minHeight: 500)
-        .background(Color(NSColor.windowBackgroundColor))
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
             Image(systemName: "lock.shield")
                 .font(.system(size: 40))
                 .foregroundColor(.white)
@@ -41,6 +40,18 @@ struct PermissionsView: View {
                     .font(.subheadline)
                     .opacity(0.85)
             }
+
+            Spacer()
+
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .buttonStyle(.plain)
+            .help("close".localized)
         }
         .foregroundColor(.white)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -65,7 +76,7 @@ struct PermissionsView: View {
                 .font(.title2)
                 .foregroundColor(permissionsManager.hasFullDiskAccess ? .green : .orange)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("permissions.full_disk_access".localized)
                         .font(.headline)
@@ -77,25 +88,25 @@ struct PermissionsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(16)
+        .padding(14)
         .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Instructions Card
 
     private var instructionsCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("permissions_instructions_title".localized)
                 .font(.headline)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 instructionStep(number: 1, text: "permissions_step1".localized)
                 instructionStep(number: 2, text: "permissions_step2".localized)
                 instructionStep(number: 3, text: "permissions_step3".localized)
                 instructionStep(number: 4, text: "permissions_step4".localized)
             }
         }
-        .padding(16)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(cornerRadius: 12)
     }
@@ -103,23 +114,28 @@ struct PermissionsView: View {
     // MARK: - Buttons
 
     private var actionButtons: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Button {
                 permissionsManager.openFullDiskAccessSettings()
             } label: {
                 Label("permissions_open_settings".localized, systemImage: "gear")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                     .frame(maxWidth: .infinity)
+                    .frame(height: 28)
             }
-            .buttonStyle(.borderedProminent)
+            .glassButtonStyle()
             .controlSize(.large)
 
             Button {
                 permissionsManager.refresh()
             } label: {
                 Label("permissions_check_status".localized, systemImage: "arrow.clockwise")
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity)
+                    .frame(height: 28)
             }
-            .buttonStyle(.bordered)
+            .glassButtonStyle()
             .controlSize(.large)
         }
     }
@@ -128,8 +144,10 @@ struct PermissionsView: View {
         HStack {
             Button("permissions_dismiss_temp".localized) {
                 permissionsManager.dismissGuidanceTemporarily()
+                dismiss()
             }
             .buttonStyle(.plain)
+            .font(.caption)
             .foregroundColor(.secondary)
 
             Spacer()
@@ -142,16 +160,16 @@ struct PermissionsView: View {
                     primaryButtonTitle: "permissions_warning_confirm".localized,
                     primaryAction: {
                         permissionsManager.dismissGuidancePermanently()
+                        dismiss()
                     }
                 )
             }
             .buttonStyle(.plain)
-            .foregroundColor(.secondary)
             .font(.caption)
+            .foregroundColor(.secondary)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
     }
 
     // MARK: - Components
@@ -160,7 +178,7 @@ struct PermissionsView: View {
         HStack(spacing: 4) {
             Circle()
                 .fill(isGranted ? Color.green : Color.orange)
-                .frame(width: 8, height: 8)
+                .frame(width: 6, height: 6)
 
             Text(isGranted ? "permissions_status_granted".localized : "permissions_status_required".localized)
                 .font(.caption2)
@@ -168,18 +186,18 @@ struct PermissionsView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(isGranted ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+        .background(isGranted ? Color.green.opacity(0.12) : Color.orange.opacity(0.12))
         .cornerRadius(6)
     }
 
     private func instructionStep(number: Int, text: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             Text("\(number)")
-                .font(.caption)
+                .font(.caption2)
                 .fontWeight(.bold)
-                .foregroundColor(.white)
-                .frame(width: 20, height: 20)
-                .background(Color.accentColor)
+                .foregroundColor(.accentColor)
+                .frame(width: 18, height: 18)
+                .background(Color.accentColor.opacity(0.15))
                 .clipShape(Circle())
 
             Text(text)

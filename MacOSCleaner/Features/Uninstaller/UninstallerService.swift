@@ -46,6 +46,8 @@ public actor UninstallerService {
     public enum DeletionRisk: String, Sendable, CaseIterable {
         case safe
         case normal
+        /// Shared updater / suite component — preselected; user can deselect.
+        case shared
     }
 
     public enum ScanState: Equatable, Sendable {
@@ -62,13 +64,13 @@ public actor UninstallerService {
         public let category: CleanupCategory
         public let sizeBytes: Int64
         public let url: URL
-        public var isSelected: Bool = true
+        public var isSelected: Bool = false
 
-        public init(title: String, category: CleanupCategory, sizeBytes: Int64, url: URL, isSelected: Bool = true) {
+        public init(title: String, category: CleanupCategory, sizeBytes: Int64, url: URL, isSelected: Bool = false) {
             self.title = title
             self.category = category
             self.sizeBytes = sizeBytes
-            self.url = url
+            self.url = NormalizedPath.url(url)
             self.isSelected = isSelected
         }
 
@@ -88,7 +90,7 @@ public actor UninstallerService {
         public let confidence: ConfidenceTier
 
         public init(url: URL, isSelected: Bool = true, size: Int64 = 0, deletionRisk: DeletionRisk = .normal, evidence: Set<Evidence> = [], confidence: ConfidenceTier = .possible) {
-            self.url = url
+            self.url = NormalizedPath.url(url)
             self.isSelected = isSelected
             self.size = size
             self.deletionRisk = deletionRisk
@@ -103,12 +105,14 @@ public actor UninstallerService {
     }
 
     public struct AppInfo: Identifiable, Sendable, Hashable {
-        public let id = UUID()
-        public let url: URL
+        public let id: UUID
+        public var url: URL
         public let bundleID: String?
         public let name: String
         public var relatedFiles: [RelatedFile] = []
         public var developerComponents: [RelatedCleanupComponent] = []
+        /// Helper / Electron Helper URLs folded into this app (attached after deep scan).
+        public var absorbedHelperURLs: [URL] = []
         public var identity: AppIdentity?
         public var scanState: ScanState = .discovered
 
@@ -116,18 +120,63 @@ public actor UninstallerService {
         public var version: String = ""
         public var lastUsed: Date? = nil
         public var iconData: Data? = nil
+        /// Multiple versions of the same app grouped together.
+        public var versions: [AppInfo] = []
+
+        public init(
+            id: UUID = UUID(),
+            url: URL,
+            bundleID: String? = nil,
+            name: String,
+            relatedFiles: [RelatedFile] = [],
+            developerComponents: [RelatedCleanupComponent] = [],
+            absorbedHelperURLs: [URL] = [],
+            identity: AppIdentity? = nil,
+            scanState: ScanState = .discovered,
+            size: Int64 = 0,
+            version: String = "",
+            lastUsed: Date? = nil,
+            iconData: Data? = nil,
+            versions: [AppInfo] = []
+        ) {
+            self.id = id
+            self.url = url
+            self.bundleID = bundleID
+            self.name = name
+            self.relatedFiles = relatedFiles
+            self.developerComponents = developerComponents
+            self.absorbedHelperURLs = absorbedHelperURLs
+            self.identity = identity
+            self.scanState = scanState
+            self.size = size
+            self.version = version
+            self.lastUsed = lastUsed
+            self.iconData = iconData
+            self.versions = versions
+        }
+
+        public var isGrouped: Bool {
+            versions.count > 1
+        }
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
         public static func == (lhs: AppInfo, rhs: AppInfo) -> Bool {
             lhs.id == rhs.id &&
             lhs.relatedFiles == rhs.relatedFiles &&
             lhs.developerComponents == rhs.developerComponents &&
+            lhs.absorbedHelperURLs == rhs.absorbedHelperURLs &&
             lhs.scanState == rhs.scanState &&
-            lhs.size == rhs.size
+            lhs.size == rhs.size &&
+            lhs.versions == rhs.versions
         }
 
         public var totalSize: Int64 {
-            let relatedSize = relatedFiles.filter(\.isSelected).reduce(0) { $0 + $1.size }
+            if !versions.isEmpty {
+                return versions.reduce(0) { $0 + $1.totalSize }
+            }
+            let relatedSize = relatedFiles
+                .filter(\.isSelected)
+                .reduce(0) { $0 + $1.size }
             let devSize = developerComponents.filter(\.isSelected).reduce(0) { $0 + $1.sizeBytes }
             return size + relatedSize + devSize
         }
@@ -137,24 +186,47 @@ public actor UninstallerService {
 
     public func scanAllApplications() async throws -> [AppInfo] {
         let discovery = AppDiscovery(commandRunner: commandRunner)
-        let urls = await discovery.findAll()
+        // Keep distinct bundle URLs separate even when bundle IDs collide.
+        let listable = uniqueApplicationURLs(await discovery.findAll())
+            .filter { AppDiscovery.isListableApplication($0) }
+        // Progress denominator ≈ final sidebar (helpers indexed but not counted).
+        let primaryCount = listable.filter { !HelperAppCollapser.isLikelyHelperURL($0) }.count
 
         await MainActor.run {
             progress.currentStep = 0
-            progress.totalSteps = urls.count
+            progress.totalSteps = max(primaryCount, 1)
             progress.message = "uninstaller.progress.discovering".localized
             progress.percentage = 0.0
         }
 
         return try await withThrowingTaskGroup(of: AppInfo?.self) { group in
-            for url in urls {
+            for url in listable {
                 group.addTask {
-                    let app = try? await self.discoverAndIndex(url)
-                    await MainActor.run {
-                        self.progress.currentStep += 1
-                        self.progress.percentage = Double(self.progress.currentStep) / Double(self.progress.totalSteps)
+                    do {
+                        let app = try await self.discoverAndIndex(url)
+                        let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
+                        await MainActor.run {
+                            if countsTowardProgress {
+                                self.progress.currentStep += 1
+                                self.progress.percentage = Double(self.progress.currentStep)
+                                    / Double(self.progress.totalSteps)
+                            }
+                        }
+                        return app
+                    } catch {
+                        Logger.uninstaller.warning(
+                            "Skip '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)"
+                        )
+                        let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
+                        await MainActor.run {
+                            if countsTowardProgress {
+                                self.progress.currentStep += 1
+                                self.progress.percentage = Double(self.progress.currentStep)
+                                    / Double(self.progress.totalSteps)
+                            }
+                        }
+                        return nil
                     }
-                    return app
                 }
             }
 
@@ -164,14 +236,23 @@ public actor UninstallerService {
             }
 
             let merged = mergeApps(apps)
+            let collapsed = HelperAppCollapser.collapse(merged).apps
 
             await MainActor.run {
+                // Align counter with what the UI actually lists.
+                progress.totalSteps = max(collapsed.count, 1)
+                progress.currentStep = collapsed.count
                 progress.message = "uninstaller.progress.complete".localized
                 progress.percentage = 1.0
             }
 
-            return merged.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            return collapsed.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         }
+    }
+
+    /// Keep one entry per physical app bundle path.
+    private func uniqueApplicationURLs(_ urls: [URL]) -> [URL] {
+        NormalizedPath.unique(urls).sorted { $0.path.localizedCompare($1.path) == .orderedAscending }
     }
 
     private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
@@ -188,7 +269,7 @@ public actor UninstallerService {
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
 
         return AppInfo(
-            url: url,
+            url: NormalizedPath.canonicalize(url),
             bundleID: identity.bundleID,
             name: identity.appName,
             relatedFiles: [],
@@ -205,6 +286,35 @@ public actor UninstallerService {
     // MARK: - Deep Forensics
 
     public func deepScan(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
+        if !app.versions.isEmpty {
+            var scannedVersions: [AppInfo] = []
+            for versionApp in app.versions {
+                let scanned = try await deepScanSingle(versionApp, mode: mode)
+                scannedVersions.append(scanned)
+            }
+            scannedVersions.sort { preferredApp($0, $1) == $0 }
+
+            let primary = scannedVersions[0]
+            let versionStrings = scannedVersions.compactMap { $0.version.isEmpty ? nil : $0.version }
+            let versionSummary = versionStrings.isEmpty ? primary.version : versionStrings.joined(separator: ", ")
+
+            var updated = app
+            updated.versions = scannedVersions
+            updated.url = primary.url
+            updated.version = versionSummary
+            updated.lastUsed = scannedVersions.compactMap(\.lastUsed).max()
+            updated.iconData = primary.iconData ?? app.iconData
+            updated.relatedFiles = aggregateRelatedFiles(from: scannedVersions)
+            updated.developerComponents = aggregateDeveloperComponents(from: scannedVersions)
+            updated.absorbedHelperURLs = NormalizedPath.unique(scannedVersions.flatMap(\.absorbedHelperURLs))
+            updated.scanState = .deepScanned
+            return updated
+        } else {
+            return try await deepScanSingle(app, mode: mode)
+        }
+    }
+
+    private func deepScanSingle(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
         let identity: AppIdentity
         if let existing = app.identity {
             identity = existing
@@ -225,11 +335,59 @@ public actor UninstallerService {
         )
 
         let (related, developer) = await (relatedTask, developerTask)
-        updated.relatedFiles = related
+        // Developer components are SSOT for IDE tooling paths (gradle/android/sdk, …).
+        let developerRoots = developer.map { NormalizedPath.key($0.url) }
+        var filteredRelated = related.filter { file in
+            !Self.overlapsDeveloperRoot(NormalizedPath.key(file.url), roots: developerRoots)
+        }
+        filteredRelated = await attachAbsorbedHelpers(
+            filteredRelated,
+            helperURLs: app.absorbedHelperURLs,
+            parentBundlePath: NormalizedPath.key(identity.bundleURL)
+        )
+        updated.relatedFiles = filteredRelated
         updated.developerComponents = developer
+        updated.absorbedHelperURLs = app.absorbedHelperURLs
         updated.scanState = .deepScanned
 
         return updated
+    }
+
+    /// Paths that belong to developer-components SSOT must not also appear as related (or locked Shared).
+    static func overlapsDeveloperRoot(_ path: String, roots: [String]) -> Bool {
+        let pathKey = NormalizedPath.key(NormalizedPath.url(path))
+        return roots.contains { root in
+            let rootKey = NormalizedPath.key(NormalizedPath.url(root))
+            return pathKey == rootKey || pathKey.hasPrefix(rootKey + "/") || rootKey.hasPrefix(pathKey + "/")
+        }
+    }
+
+    private func attachAbsorbedHelpers(
+        _ related: [RelatedFile],
+        helperURLs: [URL],
+        parentBundlePath: String
+    ) async -> [RelatedFile] {
+        guard !helperURLs.isEmpty else { return related }
+        var existing = Set(related.map { NormalizedPath.key($0.url) })
+        var result = related
+        for url in helperURLs {
+            let standardized = NormalizedPath.canonicalize(url)
+            let path = NormalizedPath.key(standardized)
+            if path.hasPrefix(parentBundlePath + "/") { continue }
+            guard existing.insert(path).inserted else { continue }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: path, isDirectory: &isDir) else { continue }
+            let fileSize = await getDirectorySize(url: standardized)
+            result.append(RelatedFile(
+                url: standardized,
+                isSelected: true,
+                size: fileSize,
+                deletionRisk: .normal,
+                evidence: [.bundleIDExact],
+                confidence: .guaranteed
+            ))
+        }
+        return dedupAndSort(result.map { ($0, $0.confidence) })
     }
 
     private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph, mode: ScanMode = .balanced) async -> [RelatedFile] {
@@ -238,12 +396,15 @@ public actor UninstallerService {
         let probe = EvidenceProbe(commandRunner: commandRunner, codesignCache: codesignCache, plistCache: plistCache)
 
         // Record evidence
+        let receiptKeys = Set(collection.receiptPaths.map(NormalizedPath.key))
+        let catalogKeys = Set(collection.catalogPaths.map(NormalizedPath.key))
         for url in collection.candidates {
             var evidences = await probe.probe(url: url, identity: identity)
-            if collection.receiptPaths.contains(url) {
+            let pathKey = NormalizedPath.key(url)
+            if receiptKeys.contains(pathKey) {
                 evidences.insert(.packageReceipt)
             }
-            if collection.catalogPaths.contains(url) {
+            if catalogKeys.contains(pathKey) {
                 evidences.insert(.knownCatalog)
             }
             await graph.record(evidences, for: url)
@@ -286,7 +447,7 @@ public actor UninstallerService {
 
             let file = RelatedFile(
                 url: node.url,
-                // Weak matches are shown but never pre-selected for deletion
+                // possible = review-only; veryLikely+ preselected
                 isSelected: assessment.tier >= .veryLikely,
                 size: fileSize,
                 deletionRisk: risk,
@@ -297,7 +458,91 @@ public actor UninstallerService {
         }
 
         // Dedup by prefix, sort by tier then path
-        return dedupAndSort(related)
+        var result = dedupAndSort(related)
+
+        let sharedSet = Set(collection.sharedPaths.map(NormalizedPath.key))
+        let informationalSet = Set(collection.informationalPaths.map(NormalizedPath.key))
+
+        // Demote any leftover that matches shared/user_content (belt-and-suspenders).
+        // Android Studio developer tooling paths stay selectable even if catalog marks them shared.
+        let unlockSharedForAndroidStudio = identity.bundleID.lowercased().contains("android.studio")
+            || identity.appName.lowercased().contains("android studio")
+        result = result.map { file in
+            let path = NormalizedPath.key(file.url)
+            if sharedSet.contains(path) {
+                if unlockSharedForAndroidStudio, Self.isAndroidStudioDeveloperPath(path) {
+                    return RelatedFile(
+                        url: file.url,
+                        isSelected: true,
+                        size: file.size,
+                        deletionRisk: .normal,
+                        evidence: file.evidence,
+                        confidence: max(file.confidence, .guaranteed)
+                    )
+                }
+                return RelatedFile(
+                    url: file.url,
+                    isSelected: false,
+                    size: file.size,
+                    deletionRisk: .shared,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
+            }
+            if informationalSet.contains(path) {
+                return RelatedFile(
+                    url: file.url,
+                    isSelected: false,
+                    size: file.size,
+                    deletionRisk: .normal,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
+            }
+            return file
+        }
+
+        // Shared components (Keystone, MAU, …): preselected for Google Chrome; user may deselect.
+        let isChrome = identity.bundleID.lowercased() == "com.google.chrome" || identity.appName.lowercased().contains("chrome")
+        var existing = Set(result.map { NormalizedPath.key($0.url) })
+        for url in collection.sharedPaths {
+            let standardized = NormalizedPath.canonicalize(url)
+            guard existing.insert(NormalizedPath.key(standardized)).inserted else { continue }
+            if unlockSharedForAndroidStudio, Self.isAndroidStudioDeveloperPath(NormalizedPath.key(standardized)) {
+                continue // SSOT is developerComponents / unlocked related above
+            }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            let fileSize = await getDirectorySize(url: standardized)
+            result.append(RelatedFile(
+                url: standardized,
+                isSelected: isChrome,
+                size: fileSize,
+                deletionRisk: .shared,
+                evidence: [],
+                confidence: .guaranteed
+            ))
+        }
+
+        // User content roots: shown for review, never preselected.
+        for url in collection.informationalPaths {
+            let standardized = NormalizedPath.canonicalize(url)
+            guard existing.insert(NormalizedPath.key(standardized)).inserted else { continue }
+            var isDir: ObjCBool = false
+            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            let fileSize = await getDirectorySize(url: standardized)
+            result.append(RelatedFile(
+                url: standardized,
+                isSelected: false,
+                size: fileSize,
+                deletionRisk: .normal,
+                evidence: [],
+                confidence: .guaranteed
+            ))
+        }
+
+        // Final path-key dedupe after shared/informational append.
+        return dedupAndSort(result.map { ($0, $0.confidence) })
     }
 
     // MARK: - Batch Deep Scan
@@ -320,15 +565,59 @@ public actor UninstallerService {
     // MARK: - Backward compatibility
 
     public func scan(appURL: URL) async throws -> AppInfo {
-        try await discoverAndIndex(appURL)
+        guard AppDiscovery.isListableApplication(appURL) else {
+            throw SafetyError.protectedPath(appURL.path)
+        }
+        return try await discoverAndIndex(appURL)
+    }
+
+    // MARK: - Orphaned App Residuals
+
+    public func scanOrphanedResiduals() async throws -> [OrphanItem] {
+        let scanner = OrphanScanner(
+            safetyManager: safetyManager,
+            commandRunner: commandRunner,
+            codesignCache: codesignCache,
+            plistCache: plistCache,
+            ruleRegistry: ruleRegistry
+        )
+        return try await scanner.scanOrphans()
+    }
+
+    public func removeOrphanedResiduals(_ items: [OrphanItem], bypassTrash: Bool = false) async throws -> Int64 {
+        let shouldBypass = bypassTrash
+        var freed: Int64 = 0
+        for item in items {
+            do {
+                if shouldBypass {
+                    try safetyManager.validate(url: item.url, policy: .uninstall)
+                    try FileManager.default.removeItem(at: item.url)
+                } else {
+                    try await trashManager.trashItem(at: item.url)
+                }
+                freed += item.sizeBytes
+            } catch {
+                Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
+            }
+        }
+        return freed
     }
 
     // MARK: - Uninstall
 
     public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
+        if !app.versions.isEmpty {
+            for versionApp in app.versions {
+                try await uninstall(app: versionApp, bypassTrash: bypassTrash, emptyTrashImmediately: emptyTrashImmediately)
+            }
+            return
+        }
+
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
 
-        let relatedTargets = app.relatedFiles.filter(\.isSelected).map(\.url)
+        let relatedTargets = app.relatedFiles
+            .filter(\.isSelected)
+            .map(\.url)
         let devTargets = app.developerComponents.filter(\.isSelected).map(\.url)
         let deletionTargets = relatedTargets + devTargets
         let snapshot = UninstallSnapshot(
@@ -366,6 +655,7 @@ public actor UninstallerService {
             }
         }
 
+        var trashedURLs: [URL] = []
         if bypassTrash {
             try safetyManager.validate(url: app.url, policy: .uninstall)
             do {
@@ -386,7 +676,8 @@ public actor UninstallerService {
             }
         } else {
             do {
-                _ = try await trashManager.trashItem(at: app.url, policy: .uninstall)
+                let trashed = try await trashManager.trashItem(at: app.url, policy: .uninstall)
+                trashedURLs.append(trashed)
                 Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
             } catch {
                 Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -394,7 +685,8 @@ public actor UninstallerService {
             }
             for target in deletionTargets {
                 do {
-                    _ = try await trashManager.trashItem(at: target, policy: .uninstall)
+                    let trashed = try await trashManager.trashItem(at: target, policy: .uninstall)
+                    trashedURLs.append(trashed)
                     Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
                 } catch {
                     Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
@@ -411,12 +703,13 @@ public actor UninstallerService {
             }
         }
 
-        if emptyTrashImmediately {
+        // Only permanently delete items we just moved into Trash — never empty whole ~/.Trash.
+        if emptyTrashImmediately, !bypassTrash, !trashedURLs.isEmpty {
             do {
                 try await trashManager.requestTrashAccess()
-                _ = try await trashManager.emptyTrash()
+                _ = try await trashManager.permanentlyDelete(urls: trashedURLs)
             } catch {
-                Logger.uninstaller.error("emptyTrash failed: \(error.localizedDescription, privacy: .public)")
+                Logger.uninstaller.error("permanent delete of trashed items failed: \(error.localizedDescription, privacy: .public)")
             }
         }
 
@@ -442,8 +735,8 @@ public actor UninstallerService {
 
     /// Mail message storage must never be offered as an app residual.
     /// ~/Library/Mail/Bundles stays allowed — Mail plugins are legitimate residuals.
-    static func isProtectedMailPath(_ path: String) -> Bool {
-        let home = NSHomeDirectory()
+    static func isProtectedMailPath(_ path: String, homeDirectory: String = NSHomeDirectory()) -> Bool {
+        let home = homeDirectory
         let mailRoot = "\(home)/Library/Mail"
         let bundles = "\(home)/Library/Mail/Bundles"
         let mailContainer = "\(home)/Library/Containers/com.apple.mail"
@@ -453,6 +746,14 @@ public actor UninstallerService {
         if path.hasPrefix(mailRoot + "/") {
             return !(path == bundles || path.hasPrefix(bundles + "/"))
         }
+        return false
+    }
+
+    static func isAndroidStudioDeveloperPath(_ path: String) -> Bool {
+        let lower = path.lowercased()
+        if lower.hasSuffix("/.gradle") || lower.contains("/.gradle/") { return true }
+        if lower.hasSuffix("/.android") || lower.contains("/.android/") { return true }
+        if lower.contains("/library/android") { return true }
         return false
     }
 
@@ -468,17 +769,83 @@ public actor UninstallerService {
         fileManager.getPhysicalDirectorySize(url: url, excludedPaths: [])
     }
 
-    private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
-        var merged: [String: AppInfo] = [:]
-        for app in apps {
-            let key = "\(app.bundleID ?? "")-\(app.name)"
-            if let existing = merged[key] {
-                merged[key] = preferredApp(existing, app)
-            } else {
-                merged[key] = app
+    public static func groupKey(for app: AppInfo) -> String {
+        if let bundleID = app.bundleID?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !bundleID.isEmpty,
+           !bundleID.lowercased().hasPrefix("unknown.") {
+            return "bundleid:" + bundleID.lowercased()
+        }
+        return "name:" + app.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func aggregateRelatedFiles(from versions: [AppInfo]) -> [RelatedFile] {
+        let allRelated = versions.flatMap(\.relatedFiles)
+        return dedupAndSort(allRelated.map { ($0, $0.confidence) })
+    }
+
+    private func aggregateDeveloperComponents(from versions: [AppInfo]) -> [RelatedCleanupComponent] {
+        var seen = Set<String>()
+        var result: [RelatedCleanupComponent] = []
+        for v in versions {
+            for comp in v.developerComponents {
+                let key = NormalizedPath.key(comp.url)
+                if seen.insert(key).inserted {
+                    result.append(comp)
+                }
             }
         }
-        return Array(merged.values)
+        return result
+    }
+
+    private func mergeApps(_ apps: [AppInfo]) -> [AppInfo] {
+        var urlMap: [String: AppInfo] = [:]
+        for app in apps {
+            let key = NormalizedPath.key(app.url)
+            if let existing = urlMap[key] {
+                urlMap[key] = preferredApp(existing, app)
+            } else {
+                urlMap[key] = app
+            }
+        }
+        let uniquePathApps = Array(urlMap.values)
+
+        var groups: [String: [AppInfo]] = [:]
+        for app in uniquePathApps {
+            let key = Self.groupKey(for: app)
+            groups[key, default: []].append(app)
+        }
+
+        var result: [AppInfo] = []
+        for (_, groupApps) in groups {
+            if groupApps.count == 1 {
+                result.append(groupApps[0])
+            } else {
+                let sortedVersions = groupApps.sorted { preferredApp($0, $1) == $0 }
+                let primary = sortedVersions[0]
+
+                let versionStrings = sortedVersions.compactMap { $0.version.isEmpty ? nil : $0.version }
+                let versionSummary = versionStrings.isEmpty ? primary.version : versionStrings.joined(separator: ", ")
+                let latestLastUsed = sortedVersions.compactMap(\.lastUsed).max()
+
+                let parent = AppInfo(
+                    url: primary.url,
+                    bundleID: primary.bundleID,
+                    name: primary.name,
+                    relatedFiles: aggregateRelatedFiles(from: sortedVersions),
+                    developerComponents: aggregateDeveloperComponents(from: sortedVersions),
+                    absorbedHelperURLs: NormalizedPath.unique(sortedVersions.flatMap(\.absorbedHelperURLs)),
+                    identity: primary.identity,
+                    scanState: sortedVersions.allSatisfy { $0.scanState == .deepScanned } ? .deepScanned : .discovered,
+                    size: sortedVersions.reduce(0) { $0 + $1.size },
+                    version: versionSummary,
+                    lastUsed: latestLastUsed,
+                    iconData: sortedVersions.compactMap(\.iconData).first,
+                    versions: sortedVersions
+                )
+                result.append(parent)
+            }
+        }
+        return result
     }
 
     private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {
@@ -497,20 +864,41 @@ public actor UninstallerService {
 
     private func dedupAndSort(_ items: [(file: RelatedFile, tier: ConfidenceTier)]) -> [RelatedFile] {
         let sortedByPath = items.map(\.file).sorted { $0.url.path.count < $1.url.path.count }
-        var deduplicated: [URL: RelatedFile] = [:]
+        var deduplicated: [String: RelatedFile] = [:]
         for file in sortedByPath {
+            let pathKey = NormalizedPath.key(file.url)
             // Collapse into parent only when the parent is at least as confident;
             // a guaranteed child must not disappear inside an unselected possible parent.
             let coveredByParent = deduplicated.values.contains {
-                file.url.path.hasPrefix($0.url.path + "/") && $0.confidence >= file.confidence
+                pathKey.hasPrefix(NormalizedPath.key($0.url) + "/") && $0.confidence >= file.confidence
             }
-            if !coveredByParent {
-                deduplicated[file.url] = file
+            if coveredByParent { continue }
+
+            if let existing = deduplicated[pathKey] {
+                deduplicated[pathKey] = RelatedFile(
+                    url: NormalizedPath.canonicalize(file.url),
+                    isSelected: existing.isSelected || file.isSelected,
+                    size: max(existing.size, file.size),
+                    deletionRisk: existing.deletionRisk == .shared || file.deletionRisk == .shared
+                        ? .shared
+                        : (existing.deletionRisk == .normal || file.deletionRisk == .normal ? .normal : existing.deletionRisk),
+                    evidence: existing.evidence.union(file.evidence),
+                    confidence: max(existing.confidence, file.confidence)
+                )
+            } else {
+                deduplicated[pathKey] = RelatedFile(
+                    url: NormalizedPath.canonicalize(file.url),
+                    isSelected: file.isSelected,
+                    size: file.size,
+                    deletionRisk: file.deletionRisk,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
             }
         }
         return Array(deduplicated.values).sorted { lhs, rhs in
             if lhs.confidence != rhs.confidence { return lhs.confidence > rhs.confidence }
-            return lhs.url.path < rhs.url.path
+            return NormalizedPath.key(lhs.url) < NormalizedPath.key(rhs.url)
         }
     }
 }

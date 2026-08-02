@@ -5,6 +5,7 @@ public struct CleanupView: View {
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var scrollTaskBox = ScrollTaskBox()
+    @State private var isExtendedOptionsExpanded = false
     
     public init(viewModel: CleanupViewModel) {
         self.viewModel = viewModel
@@ -13,7 +14,7 @@ public struct CleanupView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                if showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
+                if viewModel.settings.isDebugMode && showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
                     VSplitView {
                         content
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -89,24 +90,24 @@ public struct CleanupView: View {
         ScrollView {
             VStack(spacing: 28) {
                 // Hero
-                VStack(spacing: 16) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 36, weight: .regular))
-                        .foregroundStyle(.tint)
-                    
-                    VStack(spacing: 6) {
+                VStack(spacing: 6) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(.tint)
+                        
                         Text("cleanup_ready".localized)
                             .font(.title2)
                             .fontWeight(.semibold)
-                        
-                        Text("cleanup_ready_sub".localized)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 340)
                     }
+                    
+                    Text("cleanup_ready_sub".localized)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 420)
                 }
-                .padding(.top, 40)
+                .padding(.top, 16)
                 
                 // Options card
                 VStack(alignment: .leading, spacing: 16) {
@@ -119,41 +120,61 @@ public struct CleanupView: View {
                         value: $vm.options.cleanDSStore
                     )
                     
-                    DisclosureGroup("cleanup_extended_title".localized) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            optionToggle(
-                                title: "cleanup_option_cloud_docs".localized,
-                                subtitle: "cleanup_option_cloud_docs_sub".localized,
-                                value: $vm.options.cleanCloudDocs
-                            )
-                            optionToggle(
-                                title: "cleanup_option_voice_memos".localized,
-                                subtitle: "cleanup_option_voice_memos_sub".localized,
-                                value: $vm.options.cleanVoiceMemos
-                            )
-                            optionToggle(
-                                title: "cleanup_option_garageband_logic".localized,
-                                subtitle: "cleanup_option_garageband_logic_sub".localized,
-                                value: $vm.options.cleanGarageBandLogic
-                            )
-                            optionToggle(
-                                title: "cleanup_option_imovie_final_cut".localized,
-                                subtitle: "cleanup_option_imovie_final_cut_sub".localized,
-                                value: $vm.options.cleanIMovieFinalCut
-                            )
-                            optionToggle(
-                                title: "cleanup_option_sleep_image".localized,
-                                subtitle: "cleanup_option_sleep_image_sub".localized,
-                                value: $vm.options.cleanSleepImage
-                            )
+                    optionToggle(
+                        title: "cleanup_option_tm_snapshots".localized,
+                        subtitle: "cleanup_option_tm_snapshots_sub".localized,
+                        value: $vm.options.cleanTimeMachineSnapshots
+                    )
+                    
+                    DisclosureGroup(
+                        isExpanded: $isExtendedOptionsExpanded,
+                        content: {
+                            VStack(alignment: .leading, spacing: 14) {
+                                optionToggle(
+                                    title: "cleanup_option_cloud_docs".localized,
+                                    subtitle: "cleanup_option_cloud_docs_sub".localized,
+                                    value: $vm.options.cleanCloudDocs
+                                )
+                                optionToggle(
+                                    title: "cleanup_option_voice_memos".localized,
+                                    subtitle: "cleanup_option_voice_memos_sub".localized,
+                                    value: $vm.options.cleanVoiceMemos
+                                )
+                                optionToggle(
+                                    title: "cleanup_option_garageband_logic".localized,
+                                    subtitle: "cleanup_option_garageband_logic_sub".localized,
+                                    value: $vm.options.cleanGarageBandLogic
+                                )
+                                optionToggle(
+                                    title: "cleanup_option_imovie_final_cut".localized,
+                                    subtitle: "cleanup_option_imovie_final_cut_sub".localized,
+                                    value: $vm.options.cleanIMovieFinalCut
+                                )
+                                optionToggle(
+                                    title: "cleanup_option_sleep_image".localized,
+                                    subtitle: "cleanup_option_sleep_image_sub".localized,
+                                    value: $vm.options.cleanSleepImage
+                                )
+                            }
+                            .padding(.leading, 20)
+                            .padding(.top, 8)
+                        },
+                        label: {
+                            HStack {
+                                Text("cleanup_extended_title".localized)
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                withAnimation {
+                                    isExtendedOptionsExpanded.toggle()
+                                }
+                            }
                         }
-                        .padding(.leading, 4)
-                        .padding(.top, 8)
-                    }
+                    )
                 }
                 .padding()
                 .glassCard(cornerRadius: 12)
-                .padding(.horizontal, 32)
                 
                 // Start button
                 Button(action: { viewModel.startScan() }) {
@@ -167,6 +188,8 @@ public struct CleanupView: View {
                 
                 Spacer()
             }
+            .frame(maxWidth: 680)
+            .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
         }
     }
@@ -179,6 +202,10 @@ public struct CleanupView: View {
                 Text(subtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                value.wrappedValue.toggle()
             }
             Spacer()
             Toggle(isOn: value) { EmptyView() }
@@ -220,7 +247,7 @@ public struct CleanupView: View {
                 }
             }
             
-            if !viewModel.scriptLogs.isEmpty {
+            if viewModel.settings.isDebugMode && !viewModel.scriptLogs.isEmpty {
                 VStack(alignment: .leading) {
                     Text("cleanup_script_logs".localized)
                         .font(.headline)
@@ -406,7 +433,7 @@ public struct CleanupView: View {
     
     private var previewListView: some View {
         return VStack(spacing: 0) {
-            HStack {
+            HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("cleanup_scan_results".localized)
                         .font(.title2)
@@ -421,19 +448,11 @@ public struct CleanupView: View {
                     Label("cleanup_rescan".localized, systemImage: "arrow.clockwise")
                         .fontWeight(.medium)
                 }
-                .buttonStyle(.bordered)
+                .glassButtonStyle()
                 .controlSize(.regular)
-
-                Button(action: { viewModel.executeCleanup() }) {
-                    Text("cleanup_now".localized)
-                        .fontWeight(.bold)
-                        .frame(width: 100)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(viewModel.selectedSizeBytes == 0)
             }
-            .padding()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
             .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
 
             Divider()
@@ -513,23 +532,29 @@ public struct CleanupView: View {
                     .frame(width: 20, height: 20)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(category.label)
-                        .font(.system(.subheadline, weight: .semibold))
-                        .foregroundColor(.primary)
-                    if isDevCategory(category.category) {
-                        devCacheBadge()
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(category.label)
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundColor(.primary)
+                        if isDevCategory(category.category) {
+                            devCacheBadge()
+                        }
                     }
+                    riskBadge(for: category.risk)
                 }
-                riskBadge(for: category.risk)
+
+                Spacer()
+
+                Text(category.sizeBytes.formattedByteCount())
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundColor(.secondary)
             }
-
-            Spacer()
-
-            Text(category.sizeBytes.formattedByteCount())
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(.secondary)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.toggleCategoryExpansion(category.id)
+            }
         }
         .padding(.vertical, 4)
     }
@@ -673,14 +698,29 @@ public struct CleanupView: View {
     }
     
     private var footer: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             if viewModel.state == .preview {
-                Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
-                    .fontWeight(.semibold)
-                    .foregroundColor(.accentColor)
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.accentColor)
+                        .font(.system(size: 13, weight: .bold))
+                    Text(String(format: "cleanup_selected".localized, viewModel.selectedSizeBytes.formattedByteCount(forceGB: true)))
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .foregroundColor(.primary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.accentColor.opacity(0.12))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1)
+                )
             }
             
-            if !viewModel.scriptLogs.isEmpty {
+            if viewModel.settings.isDebugMode && !viewModel.scriptLogs.isEmpty {
                 HStack(spacing: 16) {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.25)) {
@@ -730,15 +770,22 @@ public struct CleanupView: View {
                 .glassButtonStyle()
                 .keyboardShortcut(.cancelAction)
                 
-                Button("cleanup_now".localized) {
-                    viewModel.executeCleanup()
+                Button(action: { viewModel.executeCleanup() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                        Text("cleanup_now".localized)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.horizontal, 8)
                 }
-                .glassButtonStyle()
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
                 .disabled(viewModel.selectedSizeBytes == 0)
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
         .glassEffect()
     }
 }

@@ -10,6 +10,11 @@ public struct Glass: Sendable, Hashable {
     public func interactive(_ active: Bool = true) -> Glass { self }
 }
 
+public enum GlassEffectTransition: Sendable, Hashable {
+    case matchedGeometry
+    case materialize
+}
+
 public struct GlassEffectContainer<Content: View>: View {
     let spacing: CGFloat?
     let content: () -> Content
@@ -36,6 +41,10 @@ public extension View {
     }
     
     func glassEffectID(_ id: (some Hashable & Sendable)?, in namespace: Namespace.ID) -> some View {
+        self
+    }
+    
+    func glassEffectTransition(_ transition: GlassEffectTransition) -> some View {
         self
     }
     

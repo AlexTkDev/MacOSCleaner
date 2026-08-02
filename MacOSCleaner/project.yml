@@ -14,13 +14,67 @@ targets:
       - Features
       - Infrastructure
       - Models
-      - Resources
+      - path: Resources
+        excludes:
+          - engine_paths.json
+          - ui_metadata.json
+      - SharedViews
+    preBuildScripts:
+      - name: Pack Cleanup Catalog
+        script: |
+          set -euo pipefail
+          ENGINE="$SRCROOT/Resources/engine_paths.json"
+          UI="$SRCROOT/Resources/ui_metadata.json"
+          ASSET="$SRCROOT/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/catalog.bin"
+          MARKER="$SRCROOT/.require-private-catalog"
+          GEN="$PROJECT_DIR/../scripts/generate_cleanup_paths.swift"
+
+          # Maintainer machines: marker and/or local SoT ⇒ production private catalog.
+          if [[ -f "$MARKER" ]] || { [[ -f "$ENGINE" ]] && [[ -f "$UI" ]]; }; then
+            export REQUIRE_PRIVATE_CATALOG=YES
+          fi
+
+          if [[ ! -f "$ENGINE" && ! -f "$UI" ]]; then
+            if [[ "${REQUIRE_PRIVATE_CATALOG:-}" == "YES" ]]; then
+              echo "error: production build requires private catalog SoT" >&2
+              echo "error: place engine_paths.json + ui_metadata.json under MacOSCleaner/Resources/" >&2
+              echo "error: or remove $MARKER for a public fallback build" >&2
+              exit 1
+            fi
+            echo "note: public build — private catalog SoT absent"
+            touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
+            exit 0
+          fi
+
+          if [[ -f "$ENGINE" && ! -f "$UI" ]] || [[ ! -f "$ENGINE" && -f "$UI" ]]; then
+            echo "error: both engine_paths.json and ui_metadata.json are required together" >&2
+            exit 1
+          fi
+
+          # Local/official Xcode: pack from SoT, then verify asset matches SoT.
+          swift "$GEN" --write
+          swift "$GEN" --check
+          if [[ ! -f "$ASSET" ]] || [[ ! -s "$ASSET" ]]; then
+            echo "error: PrivateCleanupCatalog.dataset/catalog.bin missing or empty after pack" >&2
+            exit 1
+          fi
+          echo "note: production private catalog packed ($(wc -c < "$ASSET" | tr -d ' ') bytes)"
+          touch "$DERIVED_FILE_DIR/cleanup_paths_verified.stamp"
+        inputFiles:
+          - $(SRCROOT)/Resources/engine_paths.json
+          - $(SRCROOT)/Resources/ui_metadata.json
+          - $(SRCROOT)/../scripts/generate_cleanup_paths.swift
+          - $(SRCROOT)/../scripts/validate_engine_paths.py
+        outputFiles:
+          - $(DERIVED_FILE_DIR)/cleanup_paths_verified.stamp
+          - $(SRCROOT)/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/catalog.bin
+        basedOnDependencyAnalysis: true
     entitlements:
       path: MacOSCleaner.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 2.0.0
+        MARKETING_VERSION: 2.1.0
         CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: 6.0
