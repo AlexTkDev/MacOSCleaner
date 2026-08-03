@@ -166,7 +166,7 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 ## 🚧 Currently Working On
 
-Track active development, upcoming releases, and share your ideas in **[Discussion #10](https://github.com/AlexTkDev/MacOSCleaner/discussions/10)**.
+Track active development, upcoming releases, and share your ideas in **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**.
 
 ---
 
