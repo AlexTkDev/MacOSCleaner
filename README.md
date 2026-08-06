@@ -5,7 +5,7 @@
 <span align="center">
 
 [![License: GPLv3+CommonsClause](https://img.shields.io/badge/License-GPLv3%2BCommonsClause-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=flat&logo=github&color=gold)](https://github.com/AlexTkDev/MacOSCleaner/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=flat&logo=github&color=gold&cacheSeconds=3600)](https://github.com/AlexTkDev/MacOSCleaner/stargazers)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS-000000.svg?logo=apple&logoColor=white)](https://apple.com)
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/documentation/swiftui/)
@@ -186,7 +186,7 @@ If **MacOS Cleaner** helped you free up disk space or speed up your Mac, please 
 
 <p align="center">
   <a href="https://github.com/AlexTkDev/MacOSCleaner/stargazers">
-    <img src="https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=for-the-badge&logo=github&color=gold" alt="Star MacOS Cleaner on GitHub">
+    <img src="https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=for-the-badge&logo=github&color=gold&cacheSeconds=3600" alt="Star MacOS Cleaner on GitHub">
   </a>
 </p>
 
