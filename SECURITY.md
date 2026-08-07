@@ -1,14 +1,14 @@
 # Security Policy
 
-If you discover a security vulnerability in MacOSCleaner, do not open a public issue.
+## Reporting a Vulnerability
 
-Please report security issues privately through GitHub Security Advisories if enabled for this repository, or contact the repository owner directly.
+Please do not open public issues for security vulnerabilities. Instead, report them privately.
 
-Include:
+If GitHub Security Advisories are enabled for this repository, please use that feature to report vulnerabilities. Otherwise, contact the repository owner privately.
 
-- a short description of the issue
-- affected version(s)
-- steps to reproduce
-- any relevant logs or screenshots
+When reporting an issue, please include:
+- A description of the vulnerability and its impact.
+- Steps to reproduce the issue.
+- Any potential workarounds or solutions.
 
-This policy does not change the terms of the project license. See `LICENSE` for the full license text.
+*Note: This document does not modify the project license. Please refer to the [LICENSE](LICENSE) file for terms regarding warranties and liability.*

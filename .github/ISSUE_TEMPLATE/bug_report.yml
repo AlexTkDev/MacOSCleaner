@@ -1,0 +1,75 @@
+name: Bug Report
+description: Create a report to help us improve MacOSCleaner
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: macos_version
+    attributes:
+      label: macOS version
+      description: What version of macOS are you using? (e.g., 14.2.1)
+    validations:
+      required: true
+  - type: dropdown
+    id: mac_model
+    attributes:
+      label: Mac model
+      description: Are you using an Intel or Apple Silicon Mac?
+      options:
+        - Apple Silicon (M1/M2/M3)
+        - Intel
+    validations:
+      required: true
+  - type: input
+    id: app_version
+    attributes:
+      label: MacOSCleaner version
+      description: What version of MacOSCleaner are you using?
+    validations:
+      required: true
+  - type: input
+    id: install_method
+    attributes:
+      label: Installation method
+      description: How did you install the app? (e.g., Brew, DMG, compiled from source)
+    validations:
+      required: false
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this bug?
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Please provide any relevant crash logs or console output.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Screenshots / additional context
+      description: Add any other context about the problem here, including screenshots if applicable.
+    validations:
+      required: false
