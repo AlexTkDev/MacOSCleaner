@@ -1,14 +1,24 @@
 # Security Policy
 
+## Supported Versions
+
+| Version | Supported |
+| ------- | --------- |
+| Latest release | ✅ |
+
 ## Reporting a Vulnerability
 
-Please do not open public issues for security vulnerabilities. Instead, report them privately.
+Please do not report security vulnerabilities through public GitHub Issues.
 
-If GitHub Security Advisories are enabled for this repository, please use that feature to report vulnerabilities. Otherwise, contact the repository owner privately.
+If GitHub Security Advisories are enabled, please use them to report vulnerabilities privately.
 
-When reporting an issue, please include:
-- A description of the vulnerability and its impact.
-- Steps to reproduce the issue.
-- Any potential workarounds or solutions.
+Otherwise, contact the repository owner directly and include:
 
-*Note: This document does not modify the project license. Please refer to the [LICENSE](LICENSE) file for terms regarding warranties and liability.*
+- affected version
+- description
+- reproduction steps
+- impact
+- logs or screenshots (if applicable)
+
+This document does not modify the project license.
+See LICENSE for licensing terms.
