@@ -119,3 +119,6 @@ xcuserdata/
 *.xcuserstate
 opencode.json
 .agents
+plans/
+.cursor
+MacOSCleaner/
