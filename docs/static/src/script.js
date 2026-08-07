@@ -409,10 +409,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TRON Network (Low Fee)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" alt="USDT TRC20 QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/USDT%20(TRC20).webp" alt="USDT TRC20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
@@ -427,10 +424,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">BNB Smart Chain (Low Fee)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" alt="USDT BEP20 QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/USDT%20(BEP20%20%3A%20BNB%20Smart%20Chain).webp" alt="USDT BEP20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
@@ -445,10 +439,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TON Network (Low Fee)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" alt="USDT TON QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/USDT%20(TON).webp" alt="USDT TON QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
@@ -463,10 +454,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Bitcoin Network (Native SegWit)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" alt="BTC QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F7931A"/><path d="M14.7 10.5C15.1 10.1 15.3 9.5 15.2 8.8C15 7.6 13.9 6.8 12.5 6.8H9V17H13.2C14.7 17 15.8 16.1 16 14.7C16.1 13.7 15.6 12.8 14.7 12.4C15.2 12 15.4 11.2 14.7 10.5ZM11 8.5H12.5C13 8.5 13.5 8.9 13.5 9.4C13.5 9.9 13.1 10.3 12.5 10.3H11V8.5ZM13 15.2H11V12.1H13C13.6 12.1 14.1 12.6 14.1 13.2C14.1 13.8 13.6 15.2 13 15.2Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/Bitcoin%20(BTC).webp" alt="BTC QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
@@ -481,10 +469,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Solana Native Network</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" alt="SOL QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#9945FF"/><path d="M7 15.5L8.5 14H17L15.5 15.5H7ZM7 11.5L8.5 10H17L15.5 11.5H7ZM7 7.5L8.5 9H17L15.5 7.5H7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+          <img src="static/assets/crypto/Solana%20(SOL).webp" alt="SOL QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
@@ -499,10 +484,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Ethereum Network (ERC20)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" alt="ETH QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#627EEA"/><path d="M12 4L6.5 13L12 16.5L17.5 13L12 4Z" fill="white" fill-opacity="0.9"/><path d="M12 17.5L6.5 14L12 20L17.5 14L12 17.5Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/Ethereum%20(ETH%20%3A%20ERC20).webp" alt="ETH QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
@@ -517,10 +499,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">BNB Smart Chain (BEP20)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" alt="BNB QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F3BA2F"/><path d="M12 6L14.2 8.2L12 10.4L9.8 8.2L12 6ZM7.8 10.2L10 12.4L7.8 14.6L5.6 12.4L7.8 10.2ZM16.2 10.2L18.4 12.4L16.2 14.6L14 12.4L16.2 10.2ZM12 14.4L14.2 16.6L12 18.8L9.8 16.6L12 14.4ZM12 11.2L13.2 12.4L12 13.6L10.8 12.4L12 11.2Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/BNB%20(BEP20).webp" alt="BNB QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
@@ -535,10 +514,7 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TRON Network</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" alt="TRX QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#EF0027"/><path d="M6.5 7.5L17.5 6L14.5 18L6.5 7.5ZM8.5 9L13.5 15.5L15.5 8L8.5 9Z" fill="white"/></svg>
-          </div>
+          <img src="static/assets/crypto/TRON%20(TRX).webp" alt="TRX QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
@@ -553,15 +529,12 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Scan with Binance App (0% Fee)</p>
         <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 16px; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=Alex8695" alt="Binance Pay QR" style="width: 100%; height: 100%; display: block;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #ffffff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid #ffffff;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="#F0B90B"><path d="M12 6L14.2 8.2L12 10.4L9.8 8.2L12 6ZM7.8 10.2L10 12.4L7.8 14.6L5.6 12.4L7.8 10.2ZM16.2 10.2L18.4 12.4L16.2 14.6L14 12.4L16.2 10.2ZM12 14.4L14.2 16.6L12 18.8L9.8 16.6L12 14.4ZM12 11.2L13.2 12.4L12 13.6L10.8 12.4L12 11.2Z"/></svg>
-          </div>
+          <img src="static/assets/crypto/binance_pay.webp" alt="Binance Pay QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
         <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: #ffffff; letter-spacing: 0.03em;">Alex8695</div>
       </div>
       <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">Binance Pay Nickname / ID: <strong>Alex8695</strong></p>
-      <a href="https://www.binance.com" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Binance</a>
+      <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">How to pay? (FAQ)</a>
     </div>
   </div>
 </div>
