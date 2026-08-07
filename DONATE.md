@@ -30,4 +30,7 @@ bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk
 ### TRON (TRX)
 TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp
 
-USDT (TRC20), USDT (BEP20) and USDT (TON) are recommended due to their low transaction fees.
+### Binance Pay (0% Fee)
+`Alex8695`
+
+USDT (TRC20), USDT (BEP20), USDT (TON) and Binance Pay are recommended due to low or zero transaction fees.
