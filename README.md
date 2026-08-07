@@ -153,10 +153,11 @@ Use **⌘R** to run, **⌘U** to test, or **Product → Archive** to create a di
 
 ## Troubleshooting
 
-**⚠️ Fix damaged app attributes** (if macOS asks you to move app to trash):
+**⚠️ Fix damaged app attributes** (if macOS asks you to move app to trash 🗑️):
 ```bash
 sudo xattr -r -c /Applications/MacOSCleaner.app
 ```
+> **Note:** This command removes extended security attributes (such as the Gatekeeper quarantine flag) set by macOS for unsigned or locally built applications. It is completely safe: it does not alter system files, grant persistent permissions, or modify the app's contents.
 
 ---
 
@@ -164,7 +165,7 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 ---
 
-## 🚧 Currently Working On
+## 🧑‍💻 Currently Working On
 
 Track active development, upcoming releases, and share your ideas in **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**.
 
