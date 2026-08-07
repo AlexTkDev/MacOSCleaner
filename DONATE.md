@@ -5,17 +5,29 @@ Thank you for supporting my projects.
 ## Recommended
 
 ### USDT (TRC20)
-TV2VkFWEsPaLQaCqybheiTUQYtqYE2KthH
+TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp
+
+### USDT (BEP20 / BNB Smart Chain)
+0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4
 
 ### USDT (TON)
-UQABW0Y2zXjhOgi2WDW8Sq_zqxK2dn9v_nFtCnK5pYOI8IDT
+UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge
 
 ## Other Cryptocurrencies
 
-### Bitcoin (BTC)
-34zAPASqeWjNctP4EbK6pHwFutYvzgddEZ
+### Bitcoin (BTC Segwit)
+bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk
 
 ### Solana (SOL)
-6vvQzBEoDHZV8USqGn7A5pZgQ8hQAaw6ceR35vs9ZN6t
+4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5
 
-USDT (TRC20) and USDT (TON) are recommended due to their low transaction fees.
+### Ethereum (ETH / ERC20)
+0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4
+
+### BNB (BEP20 / BNB Smart Chain)
+0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4
+
+### TRON (TRX)
+TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp
+
+USDT (TRC20), USDT (BEP20) and USDT (TON) are recommended due to their low transaction fees.
