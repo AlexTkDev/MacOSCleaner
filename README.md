@@ -103,7 +103,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 ## How It Works
 
-Runs on Apple Silicon (M1–M5) with full parallelism — cleanup categories execute concurrently across all available cores. File scanning uses bounded, stack-based iteration with cancellation checks, inode deduplication, batching, and cached size calculations.
+Runs on Apple Silicon M1 and newer with full parallelism — cleanup categories execute concurrently across all available cores. File scanning uses bounded, stack-based iteration with cancellation checks, inode deduplication, batching, and cached size calculations.
 
 Cleanup and residual discovery use tokenized path templates, an O(1) bundle registry, and filesystem heuristics (Bundle ID, Team ID, entitlements, Spotlight, and related signals). Every path has a purpose: regenerable `cache`, uninstall-only `app_data`, non-automatic `shared`, or opt-in `user_content`. Scheduled cleanup is restricted to safe caches and logs. Orphan detection requires at least two independent ownership signals before suggesting a leftover.
 
