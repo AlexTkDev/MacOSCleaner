@@ -412,7 +412,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(TRC20).webp" alt="USDT TRC20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
       <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
@@ -427,7 +427,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(BEP20%20%3A%20BNB%20Smart%20Chain).webp" alt="USDT BEP20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
       <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
 
@@ -442,7 +442,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(TON).webp" alt="USDT TON QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
       <a href="ton://transfer/UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
@@ -457,7 +457,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Bitcoin%20(BTC).webp" alt="BTC QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
       <a href="bitcoin:bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
     
@@ -472,7 +472,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Solana%20(SOL).webp" alt="SOL QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
       <a href="solana:4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
 
@@ -487,7 +487,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Ethereum%20(ETH%20%3A%20ERC20).webp" alt="ETH QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
       <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
 
@@ -502,7 +502,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/BNB%20(BEP20).webp" alt="BNB QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
       <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
 
@@ -517,7 +517,7 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/TRON%20(TRX).webp" alt="TRX QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
         </div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
       <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
     </div>
 
@@ -533,12 +533,33 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: #ffffff; letter-spacing: 0.03em;">Alex8695</div>
       </div>
-      <p style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted);">Binance Pay Nickname / ID: <strong>Alex8695</strong></p>
+      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">Binance Pay Nickname/ID: <strong>Alex8695</strong></p>
       <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">How to pay? (FAQ)</a>
     </div>
   </div>
 </div>
 `;
+
+window.copyCryptoText = function(el) {
+  if (el.dataset.copying) return;
+  el.dataset.copying = "true";
+  let text = el.innerText.trim();
+  if (text.includes(':')) text = text.split(':').pop().trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const origHtml = el.innerHTML;
+    const origColor = el.style.color;
+    el.style.color = '#26A17B';
+    el.innerHTML = '<strong>Copied to clipboard!</strong>';
+    setTimeout(() => {
+      el.style.color = origColor;
+      el.innerHTML = origHtml;
+      delete el.dataset.copying;
+    }, 1200);
+  }).catch(err => {
+    console.error('Copy failed', err);
+    delete el.dataset.copying;
+  });
+};
 
 function getOrInjectCryptoModal() {
   let modal = document.getElementById('crypto-modal');
