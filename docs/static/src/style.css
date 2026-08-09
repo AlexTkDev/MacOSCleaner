@@ -1346,6 +1346,154 @@ footer a:hover { color: var(--text); }
 .modal-btn.prev { left: 28px; }
 .modal-btn.next { right: 28px; }
 
+/* ===== Crypto donate modal ===== */
+#crypto-modal {
+  padding: 16px;
+}
+
+.crypto-dialog {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-window);
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(20px, 5vw, 32px);
+  position: relative;
+  text-align: center;
+  transform: scale(0.97);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .crypto-dialog {
+  transform: scale(1);
+}
+
+.crypto-dialog h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+/* Tabs: horizontal scroll on small screens */
+.crypto-tabs-wrap {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 2px; /* prevent clip of box-shadow */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.crypto-tabs-wrap::-webkit-scrollbar { display: none; }
+
+.crypto-tabs-wrap .shot-tab {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* QR card uses theme vars */
+.crypto-qr-card {
+  background: color-mix(in srgb, var(--bg) 60%, var(--bg-elevated));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  max-width: 300px;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.crypto-qr-card-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.crypto-qr-card-subtitle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.crypto-qr-img-wrap {
+  width: clamp(160px, 45vw, 200px);
+  height: clamp(160px, 45vw, 200px);
+  margin: 0 auto;
+  background: #fff;
+  padding: 6px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crypto-qr-img-wrap img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Binance Pay username chip */
+.crypto-pay-id {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 12px;
+}
+
+/* Copyable address */
+.crypto-address {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  word-break: break-all;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  user-select: all;
+  text-align: center;
+  display: block;
+}
+
+.crypto-address:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.crypto-open-btn {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 400px) {
+  .crypto-tabs-wrap {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+}
+
 /* ===== Reveal on scroll ===== */
 .reveal {
   opacity: 0;

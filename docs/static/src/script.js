@@ -356,13 +356,13 @@ if (heroSection) {
 
 // Crypto modal (dynamically injected single component)
 const CRYPTO_MODAL_HTML = `
-<div id="crypto-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" style="align-items: center; justify-content: center;">
-  <div style="background: var(--bg-elevated); padding: 32px; border-radius: var(--radius); border: 1px solid var(--line); max-width: 95%; width: 520px; text-align: center; position: relative; box-shadow: var(--shadow-window);">
-    <span class="modal-close" id="crypto-modal-close" role="button" tabindex="0" aria-label="Close" style="top: 16px; right: 20px; font-size: 28px; color: var(--text-muted); cursor: pointer;">&times;</span>
-    
-    <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em;">Donate Crypto</h3>
-    
-    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 24px; flex-wrap: wrap;" id="crypto-tabs">
+<div id="crypto-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="crypto-dialog">
+    <span class="modal-close" id="crypto-modal-close" role="button" tabindex="0" aria-label="Close">&times;</span>
+
+    <h3>Donate Crypto</h3>
+
+    <div class="crypto-tabs-wrap" id="crypto-tabs">
       <button class="shot-tab active" data-crypto="usdt-trc20" style="display: inline-flex; align-items: center; gap: 5px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
         USDT (TRC20)
@@ -400,141 +400,141 @@ const CRYPTO_MODAL_HTML = `
         Binance Pay
       </button>
     </div>
-    
+
     <div id="crypto-usdt-trc20" class="crypto-panel">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #26A17B; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #26A17B;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
           USDT (TRC20)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TRON Network (Low Fee)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/USDT%20(TRC20).webp" alt="USDT TRC20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">TRON Network (Low Fee)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/USDT%20(TRC20).webp" alt="USDT TRC20 QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
-      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
-    
+
     <div id="crypto-usdt-bep20" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #26A17B; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #26A17B;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
           USDT (BEP20)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">BNB Smart Chain (Low Fee)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/USDT%20(BEP20%20%3A%20BNB%20Smart%20Chain).webp" alt="USDT BEP20 QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">BNB Smart Chain (Low Fee)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/USDT%20(BEP20%20%3A%20BNB%20Smart%20Chain).webp" alt="USDT BEP20 QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
 
     <div id="crypto-usdt-ton" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #26A17B; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #26A17B;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#26A17B"/><path d="M13.5 10.5V8.5H18V6H6V8.5H10.5V10.5C7.5 10.7 5.5 11.5 5.5 12.5C5.5 13.5 7.5 14.3 10.5 14.5V18H13.5V14.5C16.5 14.3 18.5 13.5 18.5 12.5C18.5 11.5 16.5 10.7 13.5 10.5ZM12 13.3C9.3 13.3 7.8 12.7 7.8 12.5C7.8 12.3 9.3 11.7 12 11.7C14.7 11.7 16.2 12.3 16.2 12.5C16.2 12.7 14.7 13.3 12 13.3Z" fill="white"/></svg>
           USDT (TON)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TON Network (Low Fee)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/USDT%20(TON).webp" alt="USDT TON QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">TON Network (Low Fee)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/USDT%20(TON).webp" alt="USDT TON QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
-      <a href="ton://transfer/UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
+      <a href="ton://transfer/UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
-    
+
     <div id="crypto-btc" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #F7931A; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #F7931A;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F7931A"/><path d="M14.7 10.5C15.1 10.1 15.3 9.5 15.2 8.8C15 7.6 13.9 6.8 12.5 6.8H9V17H13.2C14.7 17 15.8 16.1 16 14.7C16.1 13.7 15.6 12.8 14.7 12.4C15.2 12 15.4 11.2 14.7 10.5ZM11 8.5H12.5C13 8.5 13.5 8.9 13.5 9.4C13.5 9.9 13.1 10.3 12.5 10.3H11V8.5ZM13 15.2H11V12.1H13C13.6 12.1 14.1 12.6 14.1 13.2C14.1 13.8 13.6 15.2 13 15.2Z" fill="white"/></svg>
           BITCOIN (BTC)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Bitcoin Network (Native SegWit)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/Bitcoin%20(BTC).webp" alt="BTC QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">Bitcoin Network (Native SegWit)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/Bitcoin%20(BTC).webp" alt="BTC QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
-      <a href="bitcoin:bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
+      <a href="bitcoin:bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
-    
+
     <div id="crypto-sol" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #9945FF; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #9945FF;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#9945FF"/><path d="M7 15.5L8.5 14H17L15.5 15.5H7ZM7 11.5L8.5 10H17L15.5 11.5H7ZM7 7.5L8.5 9H17L15.5 7.5H7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           SOLANA (SOL)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Solana Native Network</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/Solana%20(SOL).webp" alt="SOL QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">Solana Native Network</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/Solana%20(SOL).webp" alt="SOL QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
-      <a href="solana:4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
+      <a href="solana:4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
 
     <div id="crypto-eth" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #627EEA; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #627EEA;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#627EEA"/><path d="M12 4L6.5 13L12 16.5L17.5 13L12 4Z" fill="white" fill-opacity="0.9"/><path d="M12 17.5L6.5 14L12 20L17.5 14L12 17.5Z" fill="white"/></svg>
           ETHEREUM (ETH)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Ethereum Network (ERC20)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/Ethereum%20(ETH%20%3A%20ERC20).webp" alt="ETH QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">Ethereum Network (ERC20)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/Ethereum%20(ETH%20%3A%20ERC20).webp" alt="ETH QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
 
     <div id="crypto-bnb" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #F3BA2F; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #F3BA2F;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F3BA2F"/><path d="M12 6L14.2 8.2L12 10.4L9.8 8.2L12 6ZM7.8 10.2L10 12.4L7.8 14.6L5.6 12.4L7.8 10.2ZM16.2 10.2L18.4 12.4L16.2 14.6L14 12.4L16.2 10.2ZM12 14.4L14.2 16.6L12 18.8L9.8 16.6L12 14.4ZM12 11.2L13.2 12.4L12 13.6L10.8 12.4L12 11.2Z" fill="white"/></svg>
           BNB CHAIN
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">BNB Smart Chain (BEP20)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/BNB%20(BEP20).webp" alt="BNB QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">BNB Smart Chain (BEP20)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/BNB%20(BEP20).webp" alt="BNB QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
 
     <div id="crypto-trx" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #EF0027; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #EF0027;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#EF0027"/><path d="M6.5 7.5L17.5 6L14.5 18L6.5 7.5ZM8.5 9L13.5 15.5L15.5 8L8.5 9Z" fill="white"/></svg>
           TRON (TRX)
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">TRON Network</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/TRON%20(TRX).webp" alt="TRX QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">TRON Network</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/TRON%20(TRX).webp" alt="TRX QR">
         </div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
-      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary crypto-open-btn">Open Wallet</a>
     </div>
 
     <div id="crypto-binance-pay" class="crypto-panel" style="display: none;">
-      <div style="background: #1e2329; border-radius: 16px; padding: 24px 20px; max-width: 320px; margin: 0 auto 20px; border: 1px solid #2b313a; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; color: #F0B90B; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.05em;">
+      <div class="crypto-qr-card">
+        <div class="crypto-qr-card-label" style="color: #F0B90B;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#F0B90B"><path d="M12 6L14.2 8.2L12 10.4L9.8 8.2L12 6ZM7.8 10.2L10 12.4L7.8 14.6L5.6 12.4L7.8 10.2ZM16.2 10.2L18.4 12.4L16.2 14.6L14 12.4L16.2 10.2ZM12 14.4L14.2 16.6L12 18.8L9.8 16.6L12 14.4ZM12 11.2L13.2 12.4L12 13.6L10.8 12.4L12 11.2Z"/></svg>
           BINANCE PAY
         </div>
-        <p style="font-size: 0.78rem; color: #848e9c; margin-bottom: 16px;">Scan with Binance App (0% Fee)</p>
-        <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 16px; background: #ffffff; padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-          <img src="static/assets/crypto/binance_pay.webp" alt="Binance Pay QR" style="width: 100%; height: 100%; display: block; border-radius: 4px; object-fit: contain;">
+        <p class="crypto-qr-card-subtitle">Scan with Binance App (0% Fee)</p>
+        <div class="crypto-qr-img-wrap">
+          <img src="static/assets/crypto/binance_pay.webp" alt="Binance Pay QR">
         </div>
-        <div style="font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: #ffffff; letter-spacing: 0.03em;">Alex8695</div>
+        <div class="crypto-pay-id">Alex8695</div>
       </div>
-      <p title="Click to copy address" onclick="copyCryptoText(this)" style="font-family: var(--font-mono); font-size: 0.78rem; word-break: break-all; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); user-select: all; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center;">Binance Pay Nickname/ID: <strong>Alex8695</strong></p>
-      <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 8px;">How to pay? (FAQ)</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">Binance Pay Nickname/ID: <strong>Alex8695</strong></p>
+      <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-primary crypto-open-btn">How to pay? (FAQ)</a>
     </div>
   </div>
 </div>
