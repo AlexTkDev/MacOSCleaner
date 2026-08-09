@@ -1379,25 +1379,13 @@ footer a:hover { color: var(--text); }
   color: var(--text);
 }
 
-/* Tabs: horizontal scroll on small screens */
+/* Tabs: always wrap, no horizontal scroll */
 .crypto-tabs-wrap {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 20px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 2px; /* prevent clip of box-shadow */
   justify-content: center;
-  flex-wrap: wrap;
-}
-
-.crypto-tabs-wrap::-webkit-scrollbar { display: none; }
-
-.crypto-tabs-wrap .shot-tab {
-  scroll-snap-align: start;
-  flex-shrink: 0;
 }
 
 /* QR card uses theme vars */
@@ -1487,12 +1475,7 @@ footer a:hover { color: var(--text); }
   border-radius: var(--radius-sm);
 }
 
-@media (max-width: 400px) {
-  .crypto-tabs-wrap {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-  }
-}
+
 
 /* ===== Reveal on scroll ===== */
 .reveal {
