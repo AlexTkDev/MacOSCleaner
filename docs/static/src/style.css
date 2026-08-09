@@ -36,7 +36,7 @@
   --glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 section { scroll-margin-top: 60px; }
 

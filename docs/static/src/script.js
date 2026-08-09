@@ -8,6 +8,27 @@ function syncViewportHeight() {
   if (!viewport) return;
   const currentSlide = slides[slideIndex];
   if (!currentSlide) return;
+
+  // Video slide: use video intrinsic dimensions or estimated aspect ratio
+  const video = currentSlide.querySelector('video');
+  if (video) {
+    const applyVideo = () => {
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      if (w && h) {
+        viewport.style.height = `${Math.round(viewport.clientWidth * (h / w))}px`;
+      } else {
+        // Metadata not yet available — estimate 16:9
+        viewport.style.height = `${Math.round(viewport.clientWidth * (9 / 16))}px`;
+      }
+    };
+    applyVideo();
+    if (video.readyState < 1) {
+      video.addEventListener('loadedmetadata', applyVideo, { once: true });
+    }
+    return;
+  }
+
   const img = currentSlide.querySelector('img');
   if (!img) return;
 
@@ -26,6 +47,12 @@ function syncViewportHeight() {
   if (img.complete && img.naturalWidth) {
     apply();
   } else {
+    // Use declared width/height attributes for immediate sizing before load
+    const declaredW = img.getAttribute('width');
+    const declaredH = img.getAttribute('height');
+    if (declaredW && declaredH) {
+      viewport.style.height = `${Math.round(viewport.clientWidth * (Number(declaredH) / Number(declaredW)))}px`;
+    }
     img.addEventListener('load', apply, { once: true });
   }
 }
