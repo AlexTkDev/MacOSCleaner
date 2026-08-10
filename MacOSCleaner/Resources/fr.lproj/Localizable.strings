@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "Les fichiers sont déplacés dans la Corbeille.";
 "uninstaller_space_reclaim" = "Espace total à récupérer : %@";
 "uninstaller_button_uninstall" = "Désinstaller l'application";
+"uninstaller_uninstalling" = "Désinstallation...";
+"uninstaller_uninstalling_app" = "Désinstallation de « %@ »...";
+"uninstaller_uninstalling_sub" = "Veuillez patienter, suppression des fichiers...";
 "uninstaller_related_files_count" = "%lld fichiers associés trouvés";
 "uninstaller_developer_components" = "Composants développeur associés";
 "uninstaller_developer_components_description" = "Gérez ces éléments dans le Nettoyage intelligent.";
@@ -678,9 +681,24 @@
 "settings_appearance_language" = "Apparence & Langue";
 "settings_appearance_language_sub" = "Personnaliser l'interface";
 "settings_language_sub" = "Langue d'affichage de l'interface";
-"settings_theme_sub" = "Thème de couleur";
-"settings_tooltips_sub" = "Info-bulles d'aide au survol";
-"settings_software_updates" = "Mises à jour manuelles";
+"settings_theme_sub" = "Schéma de couleurs";
+"settings_tooltips_sub" = "Infobulles au survol";
+"settings_system_maintenance_title" = "Maintenance système";
+"settings_system_maintenance_sub" = "Optimisations système pour macOS";
+"settings_touchid_sudo_title" = "Touch ID pour sudo";
+"settings_touchid_sudo_sub" = "Confirmer les commandes sudo avec Touch ID (/etc/pam.d/sudo_local)";
+"settings_touchid_sudo_unsupported" = "Touch ID n'est pas disponible sur ce Mac";
+"settings_touchid_sudo_enabled" = "Activé";
+"settings_touchid_sudo_copy_cmd" = "Copier la commande";
+"settings_touchid_sudo_copied" = "Copié !";
+"settings_touchid_sudo_check_status" = "Vérifier le statut";
+"settings_touchid_sudo_hint" = "Collez cette commande dans le Terminal et exécutez-la pour activer Touch ID pour sudo. La SIP empêche les apps d'accéder directement à /etc/pam.d/.";
+"settings_spotlight_reindex_title" = "Reconstruire l'index Spotlight";
+"settings_spotlight_reindex_sub" = "Force la reconstruction de l'index pour corriger la recherche et le calcul d'espace (mdutil -E /)";
+"settings_spotlight_reindex_button" = "Reconstruire";
+"settings_spotlight_reindexing" = "Reconstruction...";
+"settings_spotlight_reindex_success" = "Réindexation Spotlight lancée";
+"settings_software_updates" = "Mises à jour logicielles";
 "settings_software_updates_sub" = "Vérification des versions";
 "settings_current_version" = "Version actuelle";
 

@@ -10,7 +10,7 @@
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343?logo=swift&logoColor=white)](https://swift.org)
 [![UI: SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)](https://developer.apple.com/documentation/swiftui/)
 [![Build: XcodeGen](https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white)](https://github.com/yonaskolb/XcodeGen)
-[![Version: 2.1.0](https://img.shields.io/badge/Release-2.1.0-brightgreen.svg)]()
+[![Version: 2.1.1](https://img.shields.io/badge/Release-2.1.1-brightgreen.svg)]()
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/alextkdev)
 
 </span>
@@ -88,6 +88,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 - **Scan Modes (Safe / Balanced)** — choose between *Safe* mode (depth 3, exact matches only, no Spotlight, highest confidence files) and *Balanced* mode (depth 5, full deep scan including Spotlight and fuzzy matching) to tailor uninstallation aggressiveness
 - **Background Deep Scanning** — apps are scanned thoroughly in the background; the UI updates in real time as each app's total size is finalized
+- **Privileged Uninstallation & Batching** — root-owned applications located in `/Applications` are cleanly removed with exactly one administrative prompt per operation, accompanied by real-time progress indicators and action spinners
 - **Evidence-Based Forensics** — each candidate file is scored against 30 evidence types: identity, code signing, system integration, metadata, content analysis, graph relationships, and Launch Services registration
 - **Confidence Tiers** — `.guaranteed` (critical evidence), `.veryLikely`, `.possible`, or `.ignore`
 - **Developer Components** — detects and offers to clean Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew artifacts
@@ -97,7 +98,9 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
 
-**Settings** — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About. Manage Full Disk Access and notifications through direct System Settings links, configure Debug Mode (hiding/showing detailed execution logs), Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
+**Settings & System Maintenance** 🛠️ — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About:
+- **System Maintenance** — easily copy terminal commands to enable Touch ID for `sudo` authentication (`/etc/pam.d/sudo_local`) with real-time status verification, and trigger one-click Spotlight index rebuilding (`mdutil -E /`) to resolve search calculation glitches.
+- **Preferences & Permissions** — manage Full Disk Access and notifications through direct System Settings links, configure Debug Mode (hiding/showing detailed execution logs), Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
 
 ---
 
@@ -165,17 +168,15 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 ---
 
-## 🧑‍💻 Currently Working On
+## 🧑‍💻 Project Status & Feedback
 
-Track active development, upcoming releases, and share your ideas in **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**.
+All planned milestone tasks for the current release are completed! The focus is now on community feedback, bug hunting, and refining performance.
 
----
+- 💬 **Share feedback & ideas:** Join the conversation in **[GitHub Discussions](https://github.com/AlexTkDev/MacOSCleaner/discussions)** (or **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**).
+- 🐛 **Report bugs:** Ran into an issue or edge case? Please **[open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues)** with details or logs.
+- 📖 **Documentation & Guides:** For FAQs and in-depth articles, visit the **[MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki)**.
 
-## Feedback & Contributions
-
-Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues) — contributions are welcome.
-
-For detailed documentation, user guides, and FAQs, visit the 📖 [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
+Contributions are welcome!
 
 > *Note: All contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md) to maintain dual-licensing capabilities.*
 

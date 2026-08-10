@@ -12,12 +12,17 @@ struct SettingsGeneralView: View {
     @State private var showResetConfirmation = false
     @State private var showInstructionSheet = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var maintenanceService = SystemMaintenanceService()
+    @State private var touchIDCommandCopied = false
+    @State private var maintenanceAlertMessage: String? = nil
+    @State private var showMaintenanceAlert = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 fullDiskAccessCard
                 appearanceCard
+                systemMaintenanceCard
                 notificationsCard
                 updatesCard
                 resetCard
@@ -25,9 +30,19 @@ struct SettingsGeneralView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .onAppear { updateNotificationStatus() }
+        .onAppear {
+            updateNotificationStatus()
+            maintenanceService.refreshTouchIDStatus()
+        }
         .sheet(isPresented: $showInstructionSheet) {
             PermissionsView(permissionsManager: permissionsManager)
+        }
+        .alert("error".localized, isPresented: $showMaintenanceAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if let msg = maintenanceAlertMessage {
+                Text(msg)
+            }
         }
         .confirmationDialog(
             "settings_reset_confirm_title".localized,
@@ -97,7 +112,7 @@ struct SettingsGeneralView: View {
             content: {
                 SettingsLabeledControl(
                     "settings_current_version".localized,
-                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.1.0")"
+                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.1.1")"
                 ) {
                     if isCheckingForUpdates {
                         ProgressView().controlSize(.small)
@@ -260,6 +275,132 @@ struct SettingsGeneralView: View {
                 }
             }
         )
+    }
+
+    private var systemMaintenanceCard: some View {
+        GlassCard(
+            header: {
+                SettingsSectionHeader(
+                    "settings_system_maintenance_title".localized,
+                    subtitle: "settings_system_maintenance_sub".localized,
+                    iconName: "wrench.and.screwdriver.fill",
+                    iconColor: .indigo
+                )
+            },
+            content: {
+                VStack(spacing: 12) {
+                    // Touch ID for sudo
+                    // SIP on macOS 26 blocks writing /private/etc/pam.d/sudo_local even as root via AppleScript.
+                    // The only reliable method is to have the user run the command themselves in Terminal.
+                    if maintenanceService.isTouchIDHardwareAvailable {
+                        VStack(alignment: .leading, spacing: 8) {
+                            SettingsLabeledControl(
+                                "settings_touchid_sudo_title".localized,
+                                subtitle: "settings_touchid_sudo_sub".localized
+                            ) {
+                                if maintenanceService.isTouchIDForSudoEnabled {
+                                    StatusPill(
+                                        "settings_touchid_sudo_enabled".localized,
+                                        iconName: "checkmark.circle.fill",
+                                        style: .success,
+                                        size: .small
+                                    )
+                                } else {
+                                    HStack(spacing: 8) {
+                                        Button {
+                                            let cmd = touchIDEnableCommand
+                                            NSPasteboard.general.clearContents()
+                                            NSPasteboard.general.setString(cmd, forType: .string)
+                                            touchIDCommandCopied = true
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                touchIDCommandCopied = false
+                                            }
+                                        } label: {
+                                            Label(
+                                                touchIDCommandCopied
+                                                    ? "settings_touchid_sudo_copied".localized
+                                                    : "settings_touchid_sudo_copy_cmd".localized,
+                                                systemImage: touchIDCommandCopied ? "checkmark" : "doc.on.doc"
+                                            )
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+
+                                        Button {
+                                            maintenanceService.refreshTouchIDStatus()
+                                        } label: {
+                                            Label(
+                                                "settings_touchid_sudo_check_status".localized,
+                                                systemImage: "arrow.clockwise"
+                                            )
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+                                    }
+                                }
+                            }
+                            if !maintenanceService.isTouchIDForSudoEnabled {
+                                Text("settings_touchid_sudo_hint".localized)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+
+                        SettingsDivider()
+                    }
+
+                    // Spotlight Reindexing
+                    SettingsLabeledControl(
+                        "settings_spotlight_reindex_title".localized,
+                        subtitle: "settings_spotlight_reindex_sub".localized
+                    ) {
+                        HStack(spacing: 8) {
+                            if let status = maintenanceService.spotlightStatusMessage {
+                                Text(status)
+                                    .font(.caption)
+                                    .foregroundStyle(.green)
+                            }
+                            Button {
+                                reindexSpotlight()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    if maintenanceService.isReindexingSpotlight {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+                                    Text(maintenanceService.isReindexingSpotlight
+                                         ? "settings_spotlight_reindexing".localized
+                                         : "settings_spotlight_reindex_button".localized)
+                                }
+                                .frame(minWidth: 140)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.regular)
+                            .disabled(maintenanceService.isReindexingSpotlight)
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    // The command that enables Touch ID for sudo.
+    // /private/etc/pam.d is SIP-protected on macOS 26: cannot be written by any sandboxed process,
+    // even with root via AppleScript. User must run this in Terminal directly.
+    private var touchIDEnableCommand: String {
+        "sudo cp /etc/pam.d/sudo_local.template /etc/pam.d/sudo_local && sudo sed -i '' 's/^#auth/auth/' /etc/pam.d/sudo_local"
+    }
+
+    private func reindexSpotlight() {
+        Task {
+            do {
+                try await maintenanceService.rebuildSpotlightIndex()
+            } catch {
+                maintenanceAlertMessage = error.localizedDescription
+                showMaintenanceAlert = true
+            }
+        }
     }
 
     private func updateNotificationStatus() {

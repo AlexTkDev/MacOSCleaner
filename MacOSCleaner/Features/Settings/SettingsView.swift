@@ -178,6 +178,6 @@ struct SettingsView: View {
         settings: AppSettings(),
         permissionsManager: PermissionsManager(),
         onForget: {},
-        availableUpdate: .constant("2.1.0")
+        availableUpdate: .constant("2.1.1")
     )
 }

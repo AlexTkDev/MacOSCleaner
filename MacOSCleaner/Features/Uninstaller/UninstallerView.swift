@@ -18,6 +18,8 @@ struct UninstallerView: View {
     @State private var isTargeted = false
     @State private var showingConfirmation = false
     @State private var isLoading = false
+    @State private var isUninstalling = false
+    @State private var uninstallingAppName = ""
     @State private var deepScanCache: [String: UninstallerService.AppInfo] = [:]
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
@@ -75,14 +77,17 @@ struct UninstallerView: View {
                                 }
                                 List(filteredApps) { app in
                                     let unscan = app.scanState != .deepScanned
+                                    let isThisAppUninstalling = isUninstalling && (selectedApp?.id == app.id)
                                     AppRowView(
                                         app: app,
                                         formatter: formatter,
                                         showRelatedFiles: settings.showRelatedFiles,
-                                        isUnscannable: unscan
+                                        isUnscannable: unscan,
+                                        isUninstalling: isThisAppUninstalling
                                     )
                                     .contentShape(Rectangle())
                                     .onTapGesture {
+                                        guard !isUninstalling else { return }
                                         guard app.scanState == .deepScanned else { return }
                                         selectedVersionID = nil
                                         selectedApp = app
@@ -105,7 +110,30 @@ struct UninstallerView: View {
                     
                     // Detail Area
                     ZStack {
-                        if let app = selectedApp {
+                        if isUninstalling {
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .scaleEffect(1.4)
+                                    .controlSize(.large)
+                                    .padding(.bottom, 4)
+
+                                VStack(spacing: 6) {
+                                    Text(String(format: "uninstaller_uninstalling_app".localized, uninstallingAppName))
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                        .multilineTextAlignment(.center)
+
+                                    Text("uninstaller_uninstalling_sub".localized)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .glassCard(cornerRadius: 16)
+                            .padding(24)
+                            .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                        } else if let app = selectedApp {
                             appDetailView(app)
                                 .frame(maxWidth: .infinity)
                         } else {
@@ -113,6 +141,7 @@ struct UninstallerView: View {
                                 .frame(maxWidth: .infinity)
                         }
                     }
+                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isUninstalling)
                     .layoutPriority(1) // Occupy remaining space
                 }
                 .padding(.top, 4)
@@ -249,7 +278,12 @@ struct UninstallerView: View {
     }
 
     private func uninstall(_ app: UninstallerService.AppInfo) {
+        uninstallingAppName = app.name
+        isUninstalling = true
         Task {
+            defer {
+                isUninstalling = false
+            }
             do {
                 try await service.uninstall(
                     app: app,
@@ -272,7 +306,12 @@ struct UninstallerView: View {
     }
 
     private func uninstallVersion(_ versionApp: UninstallerService.AppInfo, from parentApp: UninstallerService.AppInfo) {
+        uninstallingAppName = "\(parentApp.name) v\(versionApp.version)"
+        isUninstalling = true
         Task {
+            defer {
+                isUninstalling = false
+            }
             do {
                 try await service.uninstall(
                     app: versionApp,
@@ -570,13 +609,20 @@ struct UninstallerView: View {
                 .font(.headline)
             
             Button(action: { showingConfirmation = true }) {
-                Text("uninstaller_button_uninstall".localized)
-                    .font(.headline)
-                    .frame(maxWidth: 300)
-                    .frame(height: 32)
+                HStack(spacing: 8) {
+                    if isUninstalling {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(isUninstalling ? "uninstaller_uninstalling".localized : "uninstaller_button_uninstall".localized)
+                        .font(.headline)
+                }
+                .frame(maxWidth: 300)
+                .frame(height: 32)
             }
             .destructiveGlassButtonStyle()
             .controlSize(.large)
+            .disabled(isUninstalling)
         }
     }
 
@@ -837,10 +883,15 @@ struct AppRowView: View {
     let formatter: ByteCountFormatter
     let showRelatedFiles: Bool
     let isUnscannable: Bool
+    var isUninstalling: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
-            if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
+            if isUninstalling {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(width: 32, height: 32)
+            } else if let iconData = app.iconData, let nsImage = NSImage(data: iconData) {
                 Image(nsImage: nsImage)
                     .resizable()
                     .frame(width: 32, height: 32)
@@ -865,7 +916,11 @@ struct AppRowView: View {
                             .background(Capsule().fill(Color.purple.opacity(0.15)))
                     }
                 }
-                if isUnscannable {
+                if isUninstalling {
+                    Text("uninstaller_uninstalling".localized)
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
+                } else if isUnscannable {
                     Text("uninstaller.analyzing".localized)
                         .font(.caption)
                         .foregroundColor(.secondary.opacity(0.5))
