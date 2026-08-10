@@ -656,42 +656,36 @@ public actor UninstallerService {
         }
 
         var trashedURLs: [URL] = []
+        let allTargets = [app.url] + deletionTargets
+
         if bypassTrash {
-            try safetyManager.validate(url: app.url, policy: .uninstall)
-            do {
-                try fileManager.removeItem(at: app.url)
-                Logger.uninstaller.info("Permanently removed: \(app.url.path, privacy: .public)")
-            } catch {
-                Logger.uninstaller.error("removeItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                throw error
-            }
-            for target in deletionTargets {
+            var privilegedPaths: [String] = []
+            for target in allTargets {
                 do {
                     try safetyManager.validate(url: target, policy: .uninstall)
                     try fileManager.removeItem(at: target)
                     Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
-                    Logger.uninstaller.warning("removeItem failed '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                    if Self.isPermissionError(error) {
+                        privilegedPaths.append(target.path)
+                    } else if target == app.url {
+                        Logger.uninstaller.error("removeItem failed '\(target.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                        throw error
+                    } else {
+                        Logger.uninstaller.warning("removeItem failed '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                    }
                 }
+            }
+
+            if !privilegedPaths.isEmpty {
+                Logger.uninstaller.info("Executing single privileged removal for \(privilegedPaths.count) item(s)")
+                let escaped = privilegedPaths.map { "'\($0.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                Logger.uninstaller.info("Permanently removed via admin privileges: \(privilegedPaths.count) item(s)")
             }
         } else {
-            do {
-                let trashed = try await trashManager.trashItem(at: app.url, policy: .uninstall)
-                trashedURLs.append(trashed)
-                Logger.uninstaller.info("Trashed: \(app.url.path, privacy: .public)")
-            } catch {
-                Logger.uninstaller.error("trashItem failed '\(app.url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                throw error
-            }
-            for target in deletionTargets {
-                do {
-                    let trashed = try await trashManager.trashItem(at: target, policy: .uninstall)
-                    trashedURLs.append(trashed)
-                    Logger.uninstaller.debug("Trashed: \(target.path, privacy: .public)")
-                } catch {
-                    Logger.uninstaller.warning("trashItem related '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                }
-            }
+            trashedURLs = try await trashManager.trashItems(urls: allTargets, policy: .uninstall)
+            Logger.uninstaller.info("Trashed \(trashedURLs.count) item(s) for '\(app.name, privacy: .public)'")
         }
 
         if let bundleID = app.bundleID {
@@ -704,7 +698,8 @@ public actor UninstallerService {
         }
 
         // Only permanently delete items we just moved into Trash — never empty whole ~/.Trash.
-        if emptyTrashImmediately, !bypassTrash, !trashedURLs.isEmpty {
+        // Fires for both normal trash path and bypassTrash permission-error fallback.
+        if emptyTrashImmediately, !trashedURLs.isEmpty {
             do {
                 try await trashManager.requestTrashAccess()
                 _ = try await trashManager.permanentlyDelete(urls: trashedURLs)
@@ -732,6 +727,12 @@ public actor UninstallerService {
     }
 
     // MARK: - Private helpers
+
+    /// NSCocoaErrorDomain 513 = NSFileWriteNoPermissionError (maps to POSIX EPERM/EACCES).
+    static func isPermissionError(_ error: Error) -> Bool {
+        let code = (error as NSError).code
+        return code == NSFileWriteNoPermissionError || code == Int(EPERM) || code == Int(EACCES)
+    }
 
     /// Mail message storage must never be offered as an app residual.
     /// ~/Library/Mail/Bundles stays allowed — Mail plugins are legitimate residuals.

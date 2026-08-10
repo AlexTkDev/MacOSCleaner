@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "Os arquivos são movidos para o Lixo.";
 "uninstaller_space_reclaim" = "Espaço total a recuperar: %@";
 "uninstaller_button_uninstall" = "Desinstalar Aplicativo";
+"uninstaller_uninstalling" = "Desinstalando...";
+"uninstaller_uninstalling_app" = "Desinstalando «%@»...";
+"uninstaller_uninstalling_sub" = "Aguarde, removendo arquivos do aplicativo...";
 "uninstaller_related_files_count" = "%lld arquivos associados encontrados";
 "uninstaller_developer_components" = "Dados de desenvolvedor associados";
 "uninstaller_developer_components_description" = "Gerencie estes itens na Limpeza Inteligente.";

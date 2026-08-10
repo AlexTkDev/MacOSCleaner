@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "Les fichiers sont déplacés dans la Corbeille.";
 "uninstaller_space_reclaim" = "Espace total à récupérer : %@";
 "uninstaller_button_uninstall" = "Désinstaller l'application";
+"uninstaller_uninstalling" = "Désinstallation...";
+"uninstaller_uninstalling_app" = "Désinstallation de « %@ »...";
+"uninstaller_uninstalling_sub" = "Veuillez patienter, suppression des fichiers...";
 "uninstaller_related_files_count" = "%lld fichiers associés trouvés";
 "uninstaller_developer_components" = "Composants développeur associés";
 "uninstaller_developer_components_description" = "Gérez ces éléments dans le Nettoyage intelligent.";

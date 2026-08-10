@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "ゴミ箱へ移動するため復元可能です。";
 "uninstaller_space_reclaim" = "解放予定容量: %@";
 "uninstaller_button_uninstall" = "アプリをアンインストール";
+"uninstaller_uninstalling" = "アンインストール中...";
+"uninstaller_uninstalling_app" = "「%@」をアンインストール中...";
+"uninstaller_uninstalling_sub" = "アプリケーションファイルを削除しています。しばらくお待ちください...";
 "uninstaller_related_files_count" = "%lld 個の関連ファイルを検出";
 "uninstaller_developer_components" = "関連する開発者データ";
 "uninstaller_developer_components_description" = "スマートクリーンアップで管理できます。";

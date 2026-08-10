@@ -377,6 +377,9 @@
 "uninstaller_action_info_trash_sub" = "Los archivos se mueven a la Papelera y se pueden restaurar.";
 "uninstaller_space_reclaim" = "Espacio total a recuperar: %@";
 "uninstaller_button_uninstall" = "Desinstalar aplicación";
+"uninstaller_uninstalling" = "Desinstalando...";
+"uninstaller_uninstalling_app" = "Desinstalando «%@»...";
+"uninstaller_uninstalling_sub" = "Por favor espere, eliminando archivos...";
 "uninstaller_related_files_count" = "%lld archivos relacionados encontrados";
 "uninstaller_developer_components" = "Datos relacionados del desarrollador";
 "uninstaller_developer_components_description" = "Gestione estos datos en Smart Cleanup.";

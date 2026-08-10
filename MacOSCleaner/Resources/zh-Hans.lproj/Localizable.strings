@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "文件将被移至废纸篓，可手动还原。";
 "uninstaller_space_reclaim" = "预计可释放空间：%@";
 "uninstaller_button_uninstall" = "卸载应用程序";
+"uninstaller_uninstalling" = "正在卸载...";
+"uninstaller_uninstalling_app" = "正在卸载“%@”...";
+"uninstaller_uninstalling_sub" = "请稍候，正在删除应用程序文件...";
 "uninstaller_related_files_count" = "找到 %lld 个关联文件";
 "uninstaller_developer_components" = "关联的开发者组件";
 "uninstaller_developer_components_description" = "可在“智能清理”中进行详细管理。";

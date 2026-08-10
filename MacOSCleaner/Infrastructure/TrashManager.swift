@@ -21,21 +21,84 @@ public actor TrashManager {
     }
     
     @discardableResult
-    public func trashItem(at url: URL, policy: DeletionPolicy = .cleanup) throws -> URL {
-        try safetyManager.validate(url: url, policy: policy)
-        
-        var resultingURL: NSURL?
-        do {
-            try fileManager.trashItem(at: url, resultingItemURL: &resultingURL)
-            guard let result = resultingURL as URL? else {
-                throw TrashError.trashOperationFailed("Could not determine resulting URL in Trash.")
+    public func trashItem(at url: URL, policy: DeletionPolicy = .cleanup) async throws -> URL {
+        let results = try await trashItems(urls: [url], policy: policy)
+        guard let first = results.first else {
+            throw TrashError.trashOperationFailed("No item trashed")
+        }
+        return first
+    }
+
+    /// Trashes multiple items efficiently, batching any privileged operations so the user
+    /// is prompted for authentication at most ONCE for the entire operation.
+    @discardableResult
+    public func trashItems(urls: [URL], policy: DeletionPolicy = .cleanup) async throws -> [URL] {
+        guard !urls.isEmpty else { return [] }
+
+        for url in urls {
+            try safetyManager.validate(url: url, policy: policy)
+        }
+
+        var trashedURLs: [URL] = []
+        var failedURLs: [URL] = []
+
+        // 1. Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
+        for url in urls {
+            var resultingURL: NSURL?
+            var success = false
+            do {
+                try await MainActor.run {
+                    try FileManager.default.trashItem(at: url, resultingItemURL: &resultingURL)
+                }
+                if let result = resultingURL as URL? {
+                    trashedURLs.append(result)
+                    success = true
+                    Logger.trash.debug("Trashed item via FileManager: \(url.path, privacy: .public)")
+                }
+            } catch {
+                Logger.trash.debug("FileManager.trashItem failed for '\(url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }
-            Logger.trash.debug("Trashed item: \(url.path, privacy: .public)")
-            return result
+
+            if !success {
+                failedURLs.append(url)
+            }
+        }
+
+        guard !failedURLs.isEmpty else {
+            return trashedURLs
+        }
+
+        // 2. For items that need elevated permissions, batch them into a single privileged command (1 prompt max)
+        let trashDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashRoot = trashDir.path
+        let escapedTrashRoot = "'\(trashRoot.replacingOccurrences(of: "'", with: "'\\''"))'"
+        let uid = getuid()
+        let gid = getgid()
+
+        var commands: [String] = []
+        var batchTargetURLs: [URL] = []
+
+        for url in failedURLs {
+            let escapedSource = "'\(url.path.replacingOccurrences(of: "'", with: "'\\''"))'"
+            let targetURL = trashDir.appendingPathComponent(url.lastPathComponent)
+            let targetPath = targetURL.path
+            let escapedTarget = "'\(targetPath.replacingOccurrences(of: "'", with: "'\\''"))'"
+
+            commands.append("/bin/mv \(escapedSource) \(escapedTrashRoot)/ && /usr/sbin/chown -R \(uid):\(gid) \(escapedTarget)")
+            batchTargetURLs.append(targetURL)
+        }
+
+        let singleBatchCmd = commands.joined(separator: " && ")
+        do {
+            _ = try await PrivilegedTaskRunner.runAsAdmin(command: singleBatchCmd)
+            trashedURLs.append(contentsOf: batchTargetURLs)
+            Logger.trash.info("Trashed \(failedURLs.count) privileged item(s) in a single batch")
         } catch {
-            Logger.trash.error("trashItem failed '\(url.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+            Logger.trash.error("Batch privileged trash failed: \(error.localizedDescription, privacy: .public)")
             throw TrashError.trashOperationFailed(error.localizedDescription)
         }
+
+        return trashedURLs
     }
     
     /// Wholesale `~/.Trash` empty is disabled — would delete unrelated user items.
@@ -49,35 +112,49 @@ public actor TrashManager {
     }
 
     /// Permanently deletes only the given URLs (typically items just moved into Trash).
-    /// Does not empty unrelated Trash contents.
+    /// Batches any privileged items so authentication is requested at most ONCE.
     @discardableResult
     public func permanentlyDelete(urls: [URL]) async throws -> Int64 {
         try await ensureAccess()
 
         var totalFreed: Int64 = 0
-        var failedCount = 0
+        var failedURLs: [URL] = []
 
         for url in urls {
             do {
                 try Task.checkCancellation()
-                try safetyManager.validate(url: url)
                 guard fileManager.fileExists(atPath: url.path) else { continue }
                 let size = fileManager.getDirectorySize(url: url)
-                try fileManager.removeItem(at: url)
-                totalFreed += size
-                Logger.trash.debug("Permanently deleted: \(url.path, privacy: .public) (\(size) bytes)")
+                do {
+                    try fileManager.removeItem(at: url)
+                    totalFreed += size
+                    Logger.trash.debug("Permanently deleted: \(url.path, privacy: .public) (\(size) bytes)")
+                } catch {
+                    if (error as NSError).code == NSFileWriteNoPermissionError || (error as NSError).code == Int(EPERM) || (error as NSError).code == Int(EACCES) {
+                        failedURLs.append(url)
+                    } else {
+                        throw error
+                    }
+                }
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
-                failedCount += 1
                 Logger.trash.error("Failed to delete '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }
         }
 
-        if failedCount > 0 {
-            Logger.trash.warning("permanentlyDelete: \(urls.count) items, \(failedCount) failures, \(totalFreed) bytes freed")
-        } else {
-            Logger.trash.info("permanentlyDelete: \(urls.count) items deleted, \(totalFreed) bytes freed")
+        if !failedURLs.isEmpty {
+            let escaped = failedURLs.map { "'\($0.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+            do {
+                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                for url in failedURLs {
+                    let size = fileManager.getDirectorySize(url: url)
+                    totalFreed += size
+                }
+                Logger.trash.info("Permanently deleted \(failedURLs.count) privileged item(s) in a single batch")
+            } catch {
+                Logger.trash.error("Batch privileged delete failed: \(error.localizedDescription, privacy: .public)")
+            }
         }
 
         return totalFreed

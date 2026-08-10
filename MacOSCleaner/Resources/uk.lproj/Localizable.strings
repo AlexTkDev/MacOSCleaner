@@ -373,6 +373,9 @@
 "uninstaller_action_info_trash_sub" = "Файли переміщуються в Смітник і можуть бути відновлені.";
 "uninstaller_space_reclaim" = "Всього місця до звільнення: %@";
 "uninstaller_button_uninstall" = "Видалити додаток";
+"uninstaller_uninstalling" = "Видалення...";
+"uninstaller_uninstalling_app" = "Видалення «%@»...";
+"uninstaller_uninstalling_sub" = "Будь ласка, зачекайте, видаляються файли програми...";
 "uninstaller_related_files_count" = "Знайдено пов'язаних файлів: %lld";
 "uninstaller_developer_components" = "Пов'язані дані розробника";
 "uninstaller_developer_components_description" = "Керуйте цими даними в Smart Cleanup.";

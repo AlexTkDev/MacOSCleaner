@@ -364,6 +364,9 @@
 "uninstaller_action_info_trash_sub" = "Dateien werden in den Papierkorb verschoben.";
 "uninstaller_space_reclaim" = "Freizugebender Speicherplatz: %@";
 "uninstaller_button_uninstall" = "Anwendung deinstallieren";
+"uninstaller_uninstalling" = "Wird deinstalliert...";
+"uninstaller_uninstalling_app" = "„%@“ wird deinstalliert...";
+"uninstaller_uninstalling_sub" = "Bitte warten, Anwendungsdateien werden entfernt...";
 "uninstaller_related_files_count" = "%lld zugehörige Dateien gefunden";
 "uninstaller_developer_components" = "Zugehörige Entwicklerdaten";
 "uninstaller_developer_components_description" = "Verwalten Sie diese Objekte in der Smart-Bereinigung.";

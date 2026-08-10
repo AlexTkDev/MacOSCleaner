@@ -377,6 +377,9 @@
 "uninstaller_action_info_trash_sub" = "Files are moved to the Trash and can be restored.";
 "uninstaller_space_reclaim" = "Total Space to Reclaim: %@";
 "uninstaller_button_uninstall" = "Uninstall Application";
+"uninstaller_uninstalling" = "Uninstalling...";
+"uninstaller_uninstalling_app" = "Uninstalling %@...";
+"uninstaller_uninstalling_sub" = "Please wait, removing application files...";
 "uninstaller_related_files_count" = "%lld Related Files Found";
 "uninstaller_developer_components" = "Related Developer Data";
 "uninstaller_developer_components_description" = "Manage these items in Smart Cleanup.";
