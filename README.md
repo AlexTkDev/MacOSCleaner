@@ -88,6 +88,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 - **Scan Modes (Safe / Balanced)** — choose between *Safe* mode (depth 3, exact matches only, no Spotlight, highest confidence files) and *Balanced* mode (depth 5, full deep scan including Spotlight and fuzzy matching) to tailor uninstallation aggressiveness
 - **Background Deep Scanning** — apps are scanned thoroughly in the background; the UI updates in real time as each app's total size is finalized
+- **Privileged Uninstallation & Batching** — root-owned applications located in `/Applications` are cleanly removed with exactly one administrative prompt per operation, accompanied by real-time progress indicators and action spinners
 - **Evidence-Based Forensics** — each candidate file is scored against 30 evidence types: identity, code signing, system integration, metadata, content analysis, graph relationships, and Launch Services registration
 - **Confidence Tiers** — `.guaranteed` (critical evidence), `.veryLikely`, `.possible`, or `.ignore`
 - **Developer Components** — detects and offers to clean Android SDK, Gradle/Maven, Xcode DerivedData, iOS Simulators, Flutter pub-cache, Docker containers, and Homebrew artifacts
@@ -97,7 +98,9 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 
 **Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
 
-**Settings** — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About. Manage Full Disk Access and notifications through direct System Settings links, configure Debug Mode (hiding/showing detailed execution logs), Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
+**Settings & System Maintenance** 🛠️ — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About:
+- **System Maintenance** — easily copy terminal commands to enable Touch ID for `sudo` authentication (`/etc/pam.d/sudo_local`) with real-time status verification, and trigger one-click Spotlight index rebuilding (`mdutil -E /`) to resolve search calculation glitches.
+- **Preferences & Permissions** — manage Full Disk Access and notifications through direct System Settings links, configure Debug Mode (hiding/showing detailed execution logs), Siri and Automator integrations, Apple Intelligence, themes, languages, scan-on-startup, Trash behavior, custom System Vendors, and more.
 
 ---
 
