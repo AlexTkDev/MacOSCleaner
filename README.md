@@ -168,17 +168,15 @@ sudo xattr -r -c /Applications/MacOSCleaner.app
 
 ---
 
-## 🧑‍💻 Currently Working On
+## 🧑‍💻 Project Status & Feedback
 
-Track active development, upcoming releases, and share your ideas in **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**.
+All planned milestone tasks for the current release are completed! The focus is now on community feedback, bug hunting, and refining performance.
 
----
+- 💬 **Share feedback & ideas:** Join the conversation in **[GitHub Discussions](https://github.com/AlexTkDev/MacOSCleaner/discussions)** (or **[Discussion #12](https://github.com/AlexTkDev/MacOSCleaner/discussions/12)**).
+- 🐛 **Report bugs:** Ran into an issue or edge case? Please **[open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues)** with details or logs.
+- 📖 **Documentation & Guides:** For FAQs and in-depth articles, visit the **[MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki)**.
 
-## Feedback & Contributions
-
-Found a bug or have an idea? [Open an issue](https://github.com/AlexTkDev/MacOSCleaner/issues) — contributions are welcome.
-
-For detailed documentation, user guides, and FAQs, visit the 📖 [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
+Contributions are welcome!
 
 > *Note: All contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md) to maintain dual-licensing capabilities.*
 
