@@ -74,7 +74,7 @@
     },
     "description": "Free open-source macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
 
-    "softwareVersion": "2.1.0",
+    "softwareVersion": "2.1.1",
     "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
     "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
     "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
@@ -205,9 +205,9 @@
 <header class="hero">
   <div class="container">
     <div class="hero-copy">
-      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0">
+      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1">
         <span class="dot" aria-hidden="true"></span>
-        v2.1.0 — Apple Intelligence + Siri &amp; Shortcuts Automation
+        v2.1.1 — Privileged App Uninstaller Fix &amp; System Maintenance
         <span aria-hidden="true">→</span>
       </a>
       <h1>Free macOS Cleaner &amp; App Uninstaller</h1>
@@ -396,8 +396,8 @@
           <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="static/assets/screenshots/Processes_v2_1.webp" width="2272" height="1712" alt="Processes" loading="lazy" decoding="async"></button>
           <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="static/assets/screenshots/Startup_Services_v2_1.webp" width="2272" height="1712" alt="Startup Services" loading="lazy" decoding="async"></button>
           <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="static/assets/screenshots/Permission_screen_v2_1.webp" width="2272" height="1688" alt="Permission Screen" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide carousel-slide--compact" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2_1.webp" width="984" height="1302" alt="About" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Settings screenshot"><img src="static/assets/screenshots/Settings_General_v2_1.webp" width="2272" height="1856" alt="Settings General" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide carousel-slide--compact" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2_1_1.webp" width="984" height="1302" alt="About" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Settings screenshot"><img src="static/assets/screenshots/Settings_General_v2_1_1.webp" width="2272" height="2526" alt="Settings General" loading="lazy" decoding="async"></button>
         </div>
       </div>
       <button class="shot-nav next" id="shot-next" type="button" aria-label="Next screenshot">&#10095;</button>
@@ -481,52 +481,43 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">04 · Changelog</p>
-      <h2>What's new in v2.1.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0" target="_blank" rel="noopener" class="changelog-link" title="View v2.1.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
-      <p>Siri &amp; Shortcuts automation, cryptographic Duplicate Finder, Apple Watch-style disk rings, 1,770 rule paths &amp; 10 localizations</p>
+      <h2>What's new in v2.1.1 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1" target="_blank" rel="noopener" class="changelog-link" title="View v2.1.1 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
+      <p>Root-owned app uninstaller batching, Touch ID for sudo command helper, Spotlight index rebuild &amp; single source of truth versioning</p>
     </div>
     
     <!-- Active Latest Release Details -->
     <div class="release-list reveal">
       <article>
-        <h3>Siri &amp; Shortcuts Automation (AppIntents)</h3>
+        <h3>Privileged App Uninstaller &amp; Batching</h3>
         <ul>
-          <li><strong>Hands-Free Voice Control</strong> — clean Mac storage or run diagnostics by asking Siri (<em>"Hey Siri, Quick Clean"</em>) or building custom Shortcuts</li>
-          <li><strong>Zero Background Drain</strong> — 100% native AppIntents framework; runs instantly without background daemons, agent processes, or battery usage</li>
+          <li><strong>Single Admin Prompt</strong> — root-owned bundles in <code>/Applications</code> are cleanly removed with exactly one credentials prompt via <code>PrivilegedTaskRunner</code></li>
+          <li><strong>Real-Time Deletion Progress</strong> — interactive detail loading overlay, action button status with re-click lockout, and list-row activity spinners</li>
         </ul>
       </article>
       <article>
-        <h3>Cryptographic Duplicate File Finder</h3>
+        <h3>System Maintenance (Settings → General)</h3>
         <ul>
-          <li><strong>Staged Hashing Pipeline</strong> — ultra-fast file size filtering → 4&nbsp;KB initial hash → full SHA-256 validation powered by Swift 6 Actor parallelism</li>
-          <li><strong>Smart Safe Selection</strong> — automatically protects master original files while isolating byte-for-byte exact copies for review</li>
+          <li><strong>Touch ID for sudo Helper</strong> — 1-click terminal command copying to configure <code>/etc/pam.d/sudo_local</code> with dynamic status verification button</li>
+          <li><strong>Spotlight Index Rebuild (mdutil -E)</strong> — force reindex system startup disk to fix search errors and corrupted disk storage calculations</li>
         </ul>
       </article>
       <article>
-        <h3>Apple Watch-Style Disk Ring Dashboard</h3>
+        <h3>Version Architecture (Single Source of Truth)</h3>
         <ul>
-          <li><strong>Multi-Ring Storage Visualizer</strong> — interactive activity-style progress rings displaying realtime disk usage breakdown by category</li>
-          <li><strong>Deep Size Analysis</strong> — instant visual clarity across dev build outputs, browser caches, app containers, and media archives</li>
+          <li><strong>Unified Versioning</strong> — <code>project.yml</code> configured as the single source of truth; dynamic bundle inspection across all SwiftUI views</li>
         </ul>
       </article>
       <article>
-        <h3>1,770 Path Rules &amp; Hybrid Parallel Engine</h3>
+        <h3>Full 10-Language Localization Parity</h3>
         <ul>
-          <li><strong>Unmatched Cleanup Coverage</strong> — 1,770 path definitions covering 251 applications and 66 CLI developer toolchains (Xcode, Docker, Homebrew, Rust, Go, Flutter, Android)</li>
-          <li><strong>All-Core Concurrency</strong> — hybrid parallel scanner utilizes every Apple Silicon CPU core for lightning-fast disk traversal</li>
-        </ul>
-      </article>
-      <article>
-        <h3>Native 10-Language Experience</h3>
-        <ul>
-          <li><strong>100% Key Parity</strong> — full native localizations in English, Deutsch, 日本語, Français, 简体中文, Italiano, Português, Español, Русский, and Українська</li>
-          <li><strong>Locale-Aware Formatting</strong> — dynamic date, byte count, path token, and system error message translations</li>
+          <li><strong>100% Key Parity</strong> — complete translations across English, Deutsch, 日本語, Français, 简体中文, Italiano, Português (Brasil), Español, Русский, and Українська</li>
         </ul>
       </article>
     </div>
 
     <div class="release-current-cta reveal" style="margin-top: 24px;">
-      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-        View v2.1.0 release notes on GitHub →
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+        View v2.1.1 release notes on GitHub →
       </a>
     </div>
 
@@ -536,6 +527,27 @@
       <h3 class="changelog-subhead">Previous Releases</h3>
       
       <div class="changelog-timeline">
+        <!-- v2.1.0 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v2.1.0</span>
+            <span class="changelog-title">Siri &amp; Shortcuts Automation, Duplicate Finder &amp; Disk Rings</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>Siri &amp; Shortcuts (AppIntents)</strong> — hands-free voice control and background-free automation.</li>
+              <li><strong>Duplicate File Finder</strong> — staged cryptographic pipeline (size → 4 KB → SHA-256) with actor concurrency.</li>
+              <li><strong>Apple Watch-Style Disk Rings</strong> — multi-ring storage visualizer and category breakdown.</li>
+              <li><strong>1,770 Path Rules</strong> — 251 applications and 66 CLI developer toolchains.</li>
+            </ul>
+          </div>
+        </details>
         <!-- v2.0.0 -->
         <details class="changelog-item">
           <summary class="changelog-summary">
@@ -697,9 +709,9 @@
     <div class="download-panel reveal">
       <div>
         <h2>Download</h2>
-        <p class="dl-meta">v2.1.0 · macOS 26.0+ · Apple Silicon M1 and newer</p>
+        <p class="dl-meta">v2.1.1 · macOS 26.0+ · Apple Silicon M1 and newer</p>
         <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.0/MacOSCleaner.dmg">
+          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.1/MacOSCleaner.dmg">
             Download DMG <span class="arrow">→</span>
           </a>
           <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>

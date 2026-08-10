@@ -12,7 +12,7 @@
 - Support & Donate: https://alextkdev.github.io/MacOSCleaner/support.html
 - Repository: https://github.com/AlexTkDev/MacOSCleaner
 - Download URL: https://github.com/AlexTkDev/MacOSCleaner/releases/latest
-- Current Version: 2.1.0
+- Current Version: 2.1.1
 - System Requirements: macOS 26.0 or later, Apple Silicon Mac (M1, M2, M3, M4, M5 or newer)
 - Pricing: 100% Free (USD 0) for personal use
 - License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) for non-commercial use, and Commercial License for enterprise integration.
