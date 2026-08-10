@@ -76,6 +76,8 @@ struct SettingsSearchRegistry {
         SettingsItem(id: "language", category: .general, titleKey: "settings_language", subtitleKey: "settings_language_sub", keywords: ["language", "язык", "locale", "english", "ukrainian", "russian", "локализация"], iconName: "globe"),
         SettingsItem(id: "theme", category: .general, titleKey: "settings_theme", subtitleKey: "settings_theme_sub", keywords: ["theme", "тема", "dark", "light", "appearance", "оформление", "вид"], iconName: "paintbrush"),
         SettingsItem(id: "autoScan", category: .general, titleKey: "settings_auto_scan", subtitleKey: "settings_auto_scan_sub", keywords: ["auto", "scan", "startup", "автосканирование", "авто", "запуск"], iconName: "play.circle"),
+        SettingsItem(id: "touchIdSudo", category: .general, titleKey: "settings_touchid_sudo_title", subtitleKey: "settings_touchid_sudo_sub", keywords: ["touch id", "sudo", "pam", "отпечаток", "палец", "пароль", "биометрия", "touchid"], iconName: "touchid"),
+        SettingsItem(id: "spotlightReindex", category: .general, titleKey: "settings_spotlight_reindex_title", subtitleKey: "settings_spotlight_reindex_sub", keywords: ["spotlight", "index", "reindex", "mdutil", "поиск", "спотлайт", "переиндексация", "индекс"], iconName: "magnifyingglass.circle.fill"),
         SettingsItem(id: "reset", category: .general, titleKey: "settings_forget_everything", subtitleKey: "settings_forget_description", keywords: ["reset", "forget", "danger", "сброс", "очистить всё", "сбросить"], iconName: "arrow.counterclockwise"),
 
         // Permissions

@@ -778,9 +778,24 @@
 
 "settings_appearance_language" = "Apariencia e idioma";
 "settings_appearance_language_sub" = "Personalizar interfaz de usuario";
-"settings_language_sub" = "Idioma de pantalla de la interfaz";
-"settings_theme_sub" = "Esquema de colores de la aplicación";
+"settings_language_sub" = "Idioma de visualización";
+"settings_theme_sub" = "Combinación de colores";
 "settings_tooltips_sub" = "Sugerencias al pasar el cursor";
+"settings_system_maintenance_title" = "Mantenimiento del sistema";
+"settings_system_maintenance_sub" = "Optimizaciones del sistema para macOS";
+"settings_touchid_sudo_title" = "Touch ID para sudo";
+"settings_touchid_sudo_sub" = "Confirmar comandos sudo con Touch ID (/etc/pam.d/sudo_local)";
+"settings_touchid_sudo_unsupported" = "Touch ID no disponible en este Mac";
+"settings_touchid_sudo_enabled" = "Activado";
+"settings_touchid_sudo_copy_cmd" = "Copiar comando";
+"settings_touchid_sudo_copied" = "¡Copiado!";
+"settings_touchid_sudo_check_status" = "Comprobar estado";
+"settings_touchid_sudo_hint" = "Pega este comando en Terminal y ejécutalo para activar Touch ID para sudo. SIP impide que las apps escriban en /etc/pam.d/ directamente.";
+"settings_spotlight_reindex_title" = "Reconstruir índice de Spotlight";
+"settings_spotlight_reindex_sub" = "Fuerza la reconstrucción del índice para corregir búsquedas y cálculo de espacio (mdutil -E /)";
+"settings_spotlight_reindex_button" = "Reconstruir";
+"settings_spotlight_reindexing" = "Reconstruyendo...";
+"settings_spotlight_reindex_success" = "Reindexación de Spotlight iniciada";
 "settings_software_updates" = "Actualizaciones de software";
 "settings_software_updates_sub" = "Comprobación de versiones";
 "settings_current_version" = "Versión actual";

@@ -684,8 +684,23 @@
 "settings_appearance_language_sub" = "App-Oberfläche anpassen";
 "settings_language_sub" = "Sprache der Benutzeroberfläche";
 "settings_theme_sub" = "Farbschema";
-"settings_tooltips_sub" = "Hilfreiche Popover beim Darüberbewegen";
-"settings_software_updates" = "Software-Updates";
+"settings_tooltips_sub" = "Hilfreiche Tooltips beim Hovern";
+"settings_system_maintenance_title" = "Systemwartung";
+"settings_system_maintenance_sub" = "Systemoptimierungen für macOS";
+"settings_touchid_sudo_title" = "Touch ID für sudo";
+"settings_touchid_sudo_sub" = "Sudo-Befehle mit Touch ID bestätigen (/etc/pam.d/sudo_local)";
+"settings_touchid_sudo_unsupported" = "Touch ID auf diesem Mac nicht verfügbar";
+"settings_touchid_sudo_enabled" = "Aktiviert";
+"settings_touchid_sudo_copy_cmd" = "Befehl kopieren";
+"settings_touchid_sudo_copied" = "Kopiert!";
+"settings_touchid_sudo_check_status" = "Status prüfen";
+"settings_touchid_sudo_hint" = "Füge diesen Befehl in Terminal ein und führe ihn aus, um Touch ID für sudo zu aktivieren. SIP verhindert, dass Apps in /etc/pam.d/ schreiben.";
+"settings_spotlight_reindex_title" = "Spotlight-Index neu aufbauen";
+"settings_spotlight_reindex_sub" = "Erstellt den Suchindex neu, um Suchfehler und Speicherberechnungen zu beheben (mdutil -E /)";
+"settings_spotlight_reindex_button" = "Neu aufbauen";
+"settings_spotlight_reindexing" = "Wird neu aufgebaut...";
+"settings_spotlight_reindex_success" = "Spotlight-Neuindizierung gestartet";
+"settings_software_updates" = "Softwareaktualisierungen";
 "settings_software_updates_sub" = "Versionsprüfung";
 "settings_current_version" = "Aktuelle Version";
 
