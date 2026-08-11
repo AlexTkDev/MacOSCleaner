@@ -62,8 +62,8 @@ public actor CommandRunner {
                         return process.terminationStatus
                     }.value
 
-                    let out = try await stdoutData
-                    let err = try await stderrData
+                    let out = await stdoutData
+                    let err = await stderrData
 
                     if isTimedOut.withLock({ $0 }) {
                         throw CommandRunnerError.timeout
