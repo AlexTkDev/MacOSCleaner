@@ -77,6 +77,9 @@ targets:
         MARKETING_VERSION: 2.1.1
         CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_DEBUG_DYLIB: NO
+        ENABLE_XOJIT_PREVIEWS: NO
+        ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS: NO
         SWIFT_VERSION: 6.0
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
@@ -95,6 +98,8 @@ targets:
         Debug:
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
           SWIFT_COMPILATION_MODE: singlefile
+          BUILD_ACTIVE_RESOURCES_ONLY: YES
+          ONLY_ACTIVE_ARCH: YES
         Release:
           SWIFT_OPTIMIZATION_LEVEL: "-O"
 

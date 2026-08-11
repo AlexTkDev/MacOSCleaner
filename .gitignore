@@ -127,3 +127,5 @@ engine_paths.json
 ui_metadata.json
 MacOSCleaner/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/
 MacOSCleaner/.require-private-catalog
+./derived_data 
+derived_data/
