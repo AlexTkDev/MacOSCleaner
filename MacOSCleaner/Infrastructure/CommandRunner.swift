@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 public struct CommandResult: Sendable {
     public let stdout: String
@@ -37,37 +38,49 @@ public actor CommandRunner {
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
-        return try await withTaskCancellationHandler {
+        do {
             try process.run()
+        } catch {
+            throw CommandRunnerError.invalidExecutable
+        }
 
-            return try await withThrowingTaskGroup(of: CommandResult.self) { group in
-                
+        let isTimedOut = OSAllocatedUnfairLock(initialState: false)
+
+        return try await withTaskCancellationHandler {
+            try await withThrowingTaskGroup(of: CommandResult.self) { group in
                 group.addTask {
-                    async let stdoutBytes = stdoutPipe.fileHandleForReading.readToEndAsync()
-                    async let stderrBytes = stderrPipe.fileHandleForReading.readToEndAsync()
+                    async let stdoutData = Task.detached {
+                        stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                    }.value
 
-                    let stdoutData = try await stdoutBytes ?? Data()
-                    let stderrData = try await stderrBytes ?? Data()
+                    async let stderrData = Task.detached {
+                        stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                    }.value
 
-                    let exitCode = await withCheckedContinuation { continuation in
-                        if !process.isRunning {
-                            continuation.resume(returning: process.terminationStatus)
-                        } else {
-                            process.terminationHandler = { p in
-                                continuation.resume(returning: p.terminationStatus)
-                            }
-                        }
+                    let exitCode = await Task.detached {
+                        process.waitUntilExit()
+                        return process.terminationStatus
+                    }.value
+
+                    let out = try await stdoutData
+                    let err = try await stderrData
+
+                    if isTimedOut.withLock({ $0 }) {
+                        throw CommandRunnerError.timeout
                     }
 
+                    try Task.checkCancellation()
+
                     return CommandResult(
-                        stdout: String(decoding: stdoutData, as: UTF8.self),
-                        stderr: String(decoding: stderrData, as: UTF8.self),
+                        stdout: String(decoding: out, as: UTF8.self),
+                        stderr: String(decoding: err, as: UTF8.self),
                         exitCode: exitCode
                     )
                 }
 
                 group.addTask {
                     try await Task.sleep(for: timeout)
+                    isTimedOut.withLock { $0 = true }
                     if process.isRunning {
                         process.terminate()
                     }
@@ -147,13 +160,5 @@ public actor CommandRunner {
                 if process.isRunning { process.terminate() }
             }
         }
-    }
-}
-
-extension FileHandle {
-    func readToEndAsync() async throws -> Data? {
-        try await Task {
-            try self.readToEnd()
-        }.value
     }
 }

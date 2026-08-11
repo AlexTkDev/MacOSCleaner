@@ -34,9 +34,9 @@ public struct CodeSignatureInfo: Sendable {
 
         do {
             try task.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
             task.waitUntilExit()
 
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8) ?? ""
 
             guard task.terminationStatus == 0 else {

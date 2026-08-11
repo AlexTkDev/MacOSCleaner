@@ -208,8 +208,9 @@ func runValidator() throws -> Bool {
     process.standardOutput = pipe
     process.standardError = pipe
     try process.run()
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
     process.waitUntilExit()
-    let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    let output = String(data: data, encoding: .utf8) ?? ""
     if process.terminationStatus != 0 {
         fputs(output, stderr)
         return false

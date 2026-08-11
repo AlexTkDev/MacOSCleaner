@@ -29,98 +29,58 @@ final class AppIdentityTests: XCTestCase {
         return appURL
     }
 
-    func test_resolve_postman_identity() {
+    func test_resolve_postman_identity() async {
         let appURL = makeAppBundle(named: "Postman", bundleID: "com.postmanlabs.mac")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertEqual(identity.appName, "Postman")
-            XCTAssertEqual(identity.bundleID, "com.postmanlabs.mac")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertEqual(identity.appName, "Postman")
+        XCTAssertEqual(identity.bundleID, "com.postmanlabs.mac")
     }
 
-    func test_resolve_intellij_identity() {
+    func test_resolve_intellij_identity() async {
         let appURL = makeAppBundle(named: "IntelliJ IDEA", bundleID: "com.jetbrains.intellij")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertEqual(identity.appName, "IntelliJ IDEA")
-            XCTAssertEqual(identity.bundleID, "com.jetbrains.intellij")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertEqual(identity.appName, "IntelliJ IDEA")
+        XCTAssertEqual(identity.bundleID, "com.jetbrains.intellij")
     }
 
-    func test_resolve_discord_identity() {
+    func test_resolve_discord_identity() async {
         let appURL = makeAppBundle(named: "Discord", bundleID: "com.hnc.Discord")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertEqual(identity.appName, "Discord")
-            XCTAssertEqual(identity.bundleID, "com.hnc.Discord")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertEqual(identity.appName, "Discord")
+        XCTAssertEqual(identity.bundleID, "com.hnc.Discord")
     }
 
-    func test_resolve_docker_identity() {
+    func test_resolve_docker_identity() async {
         let appURL = makeAppBundle(named: "Docker", bundleID: "com.docker.docker")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertEqual(identity.appName, "Docker")
-            XCTAssertEqual(identity.bundleID, "com.docker.docker")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertEqual(identity.appName, "Docker")
+        XCTAssertEqual(identity.bundleID, "com.docker.docker")
     }
 
-    func test_resolve_postman_includes_bundleName_and_version() {
+    func test_resolve_postman_includes_bundleName_and_version() async {
         let appURL = makeAppBundle(named: "Postman", bundleID: "com.postmanlabs.mac")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertEqual(identity.bundleName, "Postman")
-            XCTAssertEqual(identity.bundleVersion, "1.0.0")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertEqual(identity.bundleName, "Postman")
+        XCTAssertEqual(identity.bundleVersion, "1.0.0")
     }
 
-    func test_resolve_vendorNames_excludeProductToken() {
+    func test_resolve_vendorNames_excludeProductToken() async {
         // Product token "desktop" from ai.opencode.desktop must not become a vendor name
         let appURL = makeAppBundle(named: "OpenCode", bundleID: "ai.opencode.desktop")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertFalse(identity.vendorNames.contains { $0.lowercased() == "desktop" })
-            XCTAssertTrue(identity.vendorNames.contains { $0.lowercased() == "opencode" })
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertFalse(identity.vendorNames.contains { $0.lowercased() == "desktop" })
+        XCTAssertTrue(identity.vendorNames.contains { $0.lowercased() == "opencode" })
     }
 
-    func test_resolve_appGroups_empty_whenUnsigned() {
+    func test_resolve_appGroups_empty_whenUnsigned() async {
         let appURL = makeAppBundle(named: "PlainApp", bundleID: "com.plain.app")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertTrue(identity.appGroups.isEmpty)
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertTrue(identity.appGroups.isEmpty)
     }
 
-    func test_resolve_teamID_isNil_whenUnsigned() {
+    func test_resolve_teamID_isNil_whenUnsigned() async {
         let appURL = makeAppBundle(named: "UnsignedApp", bundleID: "com.unsigned.app")
-        let expectation = expectation(description: "resolve")
-        Task {
-            let identity = await AppIdentity.resolve(from: appURL)
-            XCTAssertNil(identity.teamID)
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 10)
+        let identity = await AppIdentity.resolve(from: appURL)
+        XCTAssertNil(identity.teamID)
     }
 }
