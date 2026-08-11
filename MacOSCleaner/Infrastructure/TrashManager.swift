@@ -41,9 +41,17 @@ public actor TrashManager {
 
         var trashedURLs: [URL] = []
         var failedURLs: [URL] = []
+        var missingURLs: [URL] = []
 
         // 1. Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
         for url in urls {
+            // Missing paths must not fall through to runAsAdmin — AppleScript auth dialog hangs headless CI.
+            guard fileManager.fileExists(atPath: url.path) else {
+                missingURLs.append(url)
+                Logger.trash.debug("Trash skipped missing item: \(url.path, privacy: .public)")
+                continue
+            }
+
             var resultingURL: NSURL?
             var success = false
             do {
@@ -65,6 +73,9 @@ public actor TrashManager {
         }
 
         guard !failedURLs.isEmpty else {
+            if trashedURLs.isEmpty, !missingURLs.isEmpty {
+                throw TrashError.trashOperationFailed("Item does not exist")
+            }
             return trashedURLs
         }
 
