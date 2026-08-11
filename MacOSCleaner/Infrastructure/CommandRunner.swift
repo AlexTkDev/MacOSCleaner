@@ -22,12 +22,11 @@ public enum CommandRunnerError: Error {
 public actor CommandRunner {
     public init() {}
 
-    public func run(
+    public nonisolated func run(
         command: String,
         arguments: [String] = [],
         timeout: Duration = .seconds(30)
     ) async throws -> CommandResult {
-
         let process = Process()
         process.executableURL = URL(fileURLWithPath: command)
         process.arguments = arguments
@@ -38,49 +37,94 @@ public actor CommandRunner {
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
-        do {
-            try process.run()
-        } catch {
-            throw CommandRunnerError.invalidExecutable
+        final class ProcessState: @unchecked Sendable {
+            private let lock = NSLock()
+            private var isResumed = false
+            private var stdoutData = Data()
+            private var stderrData = Data()
+
+            func appendStdout(_ data: Data) {
+                lock.lock()
+                stdoutData.append(data)
+                lock.unlock()
+            }
+
+            func appendStderr(_ data: Data) {
+                lock.lock()
+                stderrData.append(data)
+                lock.unlock()
+            }
+
+            func finish(process: Process) -> CommandResult {
+                lock.lock()
+                defer { lock.unlock() }
+                return CommandResult(
+                    stdout: String(decoding: stdoutData, as: UTF8.self),
+                    stderr: String(decoding: stderrData, as: UTF8.self),
+                    exitCode: process.terminationStatus
+                )
+            }
+
+            func resumeOnce(
+                continuation: CheckedContinuation<CommandResult, Error>,
+                result: Result<CommandResult, Error>
+            ) {
+                lock.lock()
+                defer { lock.unlock() }
+                guard !isResumed else { return }
+                isResumed = true
+                continuation.resume(with: result)
+            }
         }
 
-        let isTimedOut = OSAllocatedUnfairLock(initialState: false)
+        let state = ProcessState()
+
+        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty {
+                state.appendStdout(data)
+            }
+        }
+
+        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty {
+                state.appendStderr(data)
+            }
+        }
 
         return try await withTaskCancellationHandler {
             try await withThrowingTaskGroup(of: CommandResult.self) { group in
                 group.addTask {
-                    async let stdoutData = Task.detached {
-                        stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-                    }.value
+                    try await withCheckedThrowingContinuation { continuation in
+                        process.terminationHandler = { proc in
+                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
+                            stderrPipe.fileHandleForReading.readabilityHandler = nil
 
-                    async let stderrData = Task.detached {
-                        stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                    }.value
+                            let remOut = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                            let remErr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                            if !remOut.isEmpty { state.appendStdout(remOut) }
+                            if !remErr.isEmpty { state.appendStderr(remErr) }
 
-                    let exitCode = await Task.detached {
-                        process.waitUntilExit()
-                        return process.terminationStatus
-                    }.value
+                            let result = state.finish(process: proc)
+                            state.resumeOnce(continuation: continuation, result: .success(result))
+                        }
 
-                    let out = await stdoutData
-                    let err = await stderrData
-
-                    if isTimedOut.withLock({ $0 }) {
-                        throw CommandRunnerError.timeout
+                        do {
+                            try process.run()
+                        } catch {
+                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
+                            stderrPipe.fileHandleForReading.readabilityHandler = nil
+                            state.resumeOnce(
+                                continuation: continuation,
+                                result: .failure(CommandRunnerError.invalidExecutable)
+                            )
+                        }
                     }
-
-                    try Task.checkCancellation()
-
-                    return CommandResult(
-                        stdout: String(decoding: out, as: UTF8.self),
-                        stderr: String(decoding: err, as: UTF8.self),
-                        exitCode: exitCode
-                    )
                 }
 
                 group.addTask {
                     try await Task.sleep(for: timeout)
-                    isTimedOut.withLock { $0 = true }
                     if process.isRunning {
                         process.terminate()
                     }
