@@ -901,7 +901,7 @@
 "settings_privacy_item_1_title" = "100% Private";
 "settings_privacy_item_1_desc" = "No telemetry, no analytics, no usage tracking, and no remote logging. All operations run fully offline on your device.";
 "settings_privacy_item_2_title" = "Minimal Networking";
-"settings_privacy_item_2_desc" = "The only network connection is a startup update check using the GitHub Releases API (can be disabled in Settings).";
+"settings_privacy_item_2_desc" = "The only network use is an optional startup or manual update check against the public GitHub Releases API (version and DMG asset URL). No telemetry.";
 "settings_privacy_item_3_title" = "Safe Trash Recovery";
 "settings_privacy_item_3_desc" = "Disk Space and App Uninstaller move files to Trash via trashItem(at:) — recoverable by default.";
 "settings_privacy_item_4_title" = "Smart Cleanup Confirmation";

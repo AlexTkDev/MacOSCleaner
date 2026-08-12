@@ -792,7 +792,7 @@
 "settings_privacy_item_1_title" = "100% 完全ローカル";
 "settings_privacy_item_1_desc" = "テレメトリやトラッキングは一切ありません。すべての処理はデバイス上で実行されます。";
 "settings_privacy_item_2_title" = "最小限のネットワーク";
-"settings_privacy_item_2_desc" = "ネットワーク通信は GitHub リリース確認のみです。";
+"settings_privacy_item_2_desc" = "ネットワーク利用は、起動時または手動での公開 GitHub Releases API による更新確認（バージョンと DMG の URL）のみです。テレメトリはありません。";
 "settings_privacy_item_3_title" = "ゴミ箱からの安全復元";
 "settings_privacy_item_3_desc" = "ファイルは trashItem(at:) で移動されるため、復元可能です。";
 "settings_privacy_item_4_title" = "スマート確認";

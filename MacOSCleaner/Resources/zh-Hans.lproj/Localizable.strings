@@ -792,7 +792,7 @@
 "settings_privacy_item_1_title" = "100% 完全本地化";
 "settings_privacy_item_1_desc" = "无遥测、无数据分析、无追踪。所有操作均完全在设备本地离线运行。";
 "settings_privacy_item_2_title" = "极简网络请求";
-"settings_privacy_item_2_desc" = "唯一的网络连接为启动时通过 GitHub Releases API 检查更新（可在设置中禁用）。";
+"settings_privacy_item_2_desc" = "唯一的网络请求是启动时或手动通过公开的 GitHub Releases API 检查更新（版本与 DMG 下载地址）。无遥测。";
 "settings_privacy_item_3_title" = "安全的废纸篓恢复";
 "settings_privacy_item_3_desc" = "磁盘分析与应用卸载通过 trashItem(at:) 将文件移至废纸篓 — 默认可完全还原。";
 "settings_privacy_item_4_title" = "智能清理二次确认";

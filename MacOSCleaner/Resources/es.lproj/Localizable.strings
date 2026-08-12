@@ -898,7 +898,7 @@
 "settings_privacy_item_1_title" = "100% privado";
 "settings_privacy_item_1_desc" = "Sin telemetría, análisis, seguimiento de uso ni registro remoto. Todas las operaciones se ejecutan localmente en tu dispositivo.";
 "settings_privacy_item_2_title" = "Red mínima";
-"settings_privacy_item_2_desc" = "La única conexión de red es la comprobación de actualizaciones al inicio usando la API de GitHub Releases (se puede desactivar).";
+"settings_privacy_item_2_desc" = "El único uso de red es una comprobación opcional de actualizaciones al inicio o manual contra la API pública de GitHub Releases (versión y URL del DMG). Sin telemetría.";
 "settings_privacy_item_3_title" = "Recuperación segura de la papelera";
 "settings_privacy_item_3_desc" = "El Desinstalador de apps y el Análisis de disco mueven los archivos a la papelera mediante trashItem(at:) — recuperables por defecto.";
 "settings_privacy_item_4_title" = "Confirmación de limpieza inteligente";

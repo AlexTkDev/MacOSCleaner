@@ -802,7 +802,7 @@
 "settings_privacy_item_1_title" = "100% Privat";
 "settings_privacy_item_1_desc" = "Keine Telemetrie, keine Analysen, kein Tracking. Alle Aktionen laufen vollständig offline.";
 "settings_privacy_item_2_title" = "Minimale Netzwerkverbindung";
-"settings_privacy_item_2_desc" = "Die einzige Netzwerkverbindung ist die Update-Prüfung über GitHub Releases.";
+"settings_privacy_item_2_desc" = "Die einzige Netzwerknutzung ist eine optionale Update-Prüfung beim Start oder manuell über die öffentliche GitHub-Releases-API (Version und DMG-URL). Keine Telemetrie.";
 "settings_privacy_item_3_title" = "Sichere Papierkorb-Wiederherstellung";
 "settings_privacy_item_3_desc" = "Dateien werden über trashItem(at:) in den Papierkorb verschoben und sind wiederherstellbar.";
 "settings_privacy_item_4_title" = "Bestätigung der Smart-Bereinigung";
@@ -832,15 +832,6 @@
 "settings_search_no_results" = "Keine Einstellungen gefunden";
 "settings_search_no_results_sub" = "Suchen Sie nach Begriffen wie 'Papierkorb', 'FDA' oder 'KI'";
 
-
-/* Evidence Categories */
-"uninstaller.evidence_category.identity" = "Identitätsübereinstimmung";
-"uninstaller.evidence_category.signature" = "Code-Signatur";
-"uninstaller.evidence_category.system" = "Systemintegration";
-"uninstaller.evidence_category.metadata" = "Datei-Metadaten";
-"uninstaller.evidence_category.content" = "Inhaltsanalyse";
-"uninstaller.evidence_category.graph" = "Graphen-Propagierung";
-"uninstaller.evidence_category.launch_services" = "Launch Services";
 
 /* Evidence Descriptions */
 "uninstaller.evidence.bundleIDExact.title" = "Bundle-ID-Übereinstimmung";

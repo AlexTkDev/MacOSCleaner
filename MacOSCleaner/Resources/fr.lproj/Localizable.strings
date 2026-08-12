@@ -800,7 +800,7 @@
 "settings_privacy_item_1_title" = "100% Privé";
 "settings_privacy_item_1_desc" = "Pas de télémétrie, pas d'analyse, pas de suivi. Toutes les opérations s'exécutent localement hors ligne.";
 "settings_privacy_item_2_title" = "Réseau minimal";
-"settings_privacy_item_2_desc" = "La seule connexion réseau est la vérification des mises à jour via l'API GitHub Releases.";
+"settings_privacy_item_2_desc" = "Le seul usage réseau est une vérification optionnelle des mises à jour au démarrage ou manuelle via l'API publique GitHub Releases (version et URL du DMG). Pas de télémétrie.";
 "settings_privacy_item_3_title" = "Récupération sécurisée de la Corbeille";
 "settings_privacy_item_3_desc" = "Les fichiers sont déplacés vers la Corbeille via trashItem(at:) — récupérables par défaut.";
 "settings_privacy_item_4_title" = "Confirmation du Nettoyage intelligent";
@@ -830,15 +830,6 @@
 "settings_search_no_results" = "Aucun réglage trouvé";
 "settings_search_no_results_sub" = "Essayez de chercher des termes comme 'corbeille', 'FDA', 'IA' ou 'thème'";
 
-
-/* Evidence Categories */
-"uninstaller.evidence_category.identity" = "Correspondance d'identité";
-"uninstaller.evidence_category.signature" = "Signature de code";
-"uninstaller.evidence_category.system" = "Intégration système";
-"uninstaller.evidence_category.metadata" = "Métadonnées de fichier";
-"uninstaller.evidence_category.content" = "Analyse de contenu";
-"uninstaller.evidence_category.graph" = "Propagation de graphe";
-"uninstaller.evidence_category.launch_services" = "Launch Services";
 
 /* Evidence Descriptions */
 "uninstaller.evidence.bundleIDExact.title" = "Correspondance Bundle ID";

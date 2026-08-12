@@ -792,7 +792,7 @@
 "settings_privacy_item_1_title" = "100% Privado";
 "settings_privacy_item_1_desc" = "Sem telemetria, sem análise, sem rastreamento. Todas as operações rodam totalmente offline.";
 "settings_privacy_item_2_title" = "Rede Mínima";
-"settings_privacy_item_2_desc" = "A única conexão é a verificação de atualizações no GitHub Releases.";
+"settings_privacy_item_2_desc" = "O único uso de rede é uma verificação opcional de atualizações na inicialização ou manual via a API pública do GitHub Releases (versão e URL do DMG). Sem telemetria.";
 "settings_privacy_item_3_title" = "Recuperação Segura do Lixo";
 "settings_privacy_item_3_desc" = "Os arquivos são movidos para o Lixo via trashItem(at:) — totalmente recuperáveis.";
 "settings_privacy_item_4_title" = "Confirmação de Limpeza Inteligente";
