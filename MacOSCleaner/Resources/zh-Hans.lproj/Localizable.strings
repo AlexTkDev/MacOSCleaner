@@ -216,6 +216,14 @@
 "update.releases_label" = "发布版本:";
 "update.website_label" = "官方网站:";
 "update.checking" = "正在检查...";
+"update_sheet_title" = "有可用更新";
+"update_sheet_subtitle" = "新版本的 MacOS Cleaner 已可下载。";
+"update_sheet_current" = "当前";
+"update_sheet_latest" = "最新";
+"update.download_dmg" = "下载 DMG";
+"update.view_releases" = "查看发布页";
+"update.dismiss_later" = "稍后";
+"update.dismiss_version" = "此版本不再提醒";
 
 /* Settings Tooltips */
 "settings_tooltip_language" = "选择应用程序界面显示的语言。";

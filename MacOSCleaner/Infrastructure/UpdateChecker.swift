@@ -5,15 +5,30 @@ private extension Logger {
     static let updater = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "UpdateChecker")
 }
 
+public struct AvailableUpdate: Sendable, Equatable {
+    public let version: String
+    public let dmgURL: URL?
+
+    public var openURL: URL {
+        dmgURL ?? UpdateChecker.releasesURL
+    }
+}
+
 public actor UpdateChecker {
     public static let releasesURL = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases")!
     private static let apiURL = URL(string: "https://api.github.com/repos/AlexTkDev/MacOSCleaner/releases/latest")!
 
     private struct Release: Decodable {
         let tag_name: String
+        let assets: [Asset]
+
+        struct Asset: Decodable {
+            let name: String
+            let browser_download_url: String
+        }
     }
 
-    public func checkForUpdate() async -> String? {
+    public func checkForUpdate() async -> AvailableUpdate? {
         guard let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
             return nil
         }
@@ -26,11 +41,14 @@ public actor UpdateChecker {
             let release = try JSONDecoder().decode(Release.self, from: data)
             let remoteTag = release.tag_name
             let remoteVersion = remoteTag.hasPrefix("v") ? String(remoteTag.dropFirst()) : remoteTag
-            if isNewer(remoteVersion, than: localVersion) {
-                Logger.updater.info("Update available: \(remoteVersion, privacy: .public) (current: \(localVersion, privacy: .public))")
-                return remoteVersion
-            }
-            return nil
+            guard isNewer(remoteVersion, than: localVersion) else { return nil }
+
+            let dmgURL = release.assets
+                .first { $0.name.lowercased().hasSuffix(".dmg") }
+                .flatMap { URL(string: $0.browser_download_url) }
+
+            Logger.updater.info("Update available: \(remoteVersion, privacy: .public) (current: \(localVersion, privacy: .public))")
+            return AvailableUpdate(version: remoteVersion, dmgURL: dmgURL)
         } catch {
             Logger.updater.error("Update check failed: \(error.localizedDescription, privacy: .public)")
             return nil

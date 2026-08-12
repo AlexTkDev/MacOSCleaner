@@ -6,7 +6,7 @@ struct SettingsView: View {
     @Bindable var settings: AppSettings
     let permissionsManager: PermissionsManager
     let onForget: () -> Void
-    @Binding var availableUpdate: String?
+    @Binding var availableUpdate: AvailableUpdate?
 
     @State private var selectedCategory: SettingsCategory? = .general
     @State private var searchText: String = ""
@@ -178,6 +178,6 @@ struct SettingsView: View {
         settings: AppSettings(),
         permissionsManager: PermissionsManager(),
         onForget: {},
-        availableUpdate: .constant("2.1.1")
+        availableUpdate: .constant(AvailableUpdate(version: "2.1.1", dmgURL: nil))
     )
 }

@@ -217,6 +217,14 @@
 "update.releases_label" = "Релизы:";
 "update.website_label" = "Веб-сайт:";
 "update.checking" = "Проверяем...";
+"update_sheet_title" = "Доступно обновление";
+"update_sheet_subtitle" = "Новая версия MacOS Cleaner готова к загрузке.";
+"update_sheet_current" = "Текущая";
+"update_sheet_latest" = "Новая";
+"update.download_dmg" = "Скачать DMG";
+"update.view_releases" = "Открыть релизы";
+"update.dismiss_later" = "Позже";
+"update.dismiss_version" = "Не напоминать об этой версии";
 
 /* Settings Tooltips */
 "settings_tooltip_language" = "Выберите язык интерфейса приложения.";

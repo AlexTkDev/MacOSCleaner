@@ -4,7 +4,7 @@ import UserNotifications
 struct SettingsGeneralView: View {
     @Bindable var settings: AppSettings
     let permissionsManager: PermissionsManager
-    @Binding var availableUpdate: String?
+    @Binding var availableUpdate: AvailableUpdate?
     let onForget: () -> Void
 
     @State private var isCheckingForUpdates = false
@@ -116,9 +116,9 @@ struct SettingsGeneralView: View {
                 ) {
                     if isCheckingForUpdates {
                         ProgressView().controlSize(.small)
-                    } else if let version = availableUpdate {
-                        Button(String(format: "update.available".localized, version)) {
-                            NSWorkspace.shared.open(UpdateChecker.releasesURL)
+                    } else if let update = availableUpdate {
+                        Button(String(format: "update.available".localized, update.version)) {
+                            UpdatePromptController.open(update)
                         }
                         .buttonStyle(.bordered)
                         .tint(.orange)

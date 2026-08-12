@@ -27,7 +27,8 @@ struct MacOSCleanerApp: App {
     private let appSettings = AppSettings()
     private let permissionsManager = PermissionsManager()
     private let updateChecker = UpdateChecker()
-    @State private var availableUpdate: String? = nil
+    private let updatePrompt = UpdatePromptController()
+    @State private var availableUpdate: AvailableUpdate? = nil
     @State private var isCheckingForUpdates = false
     
     init() {
@@ -76,6 +77,7 @@ struct MacOSCleanerApp: App {
                 journal: journal,
                 appSettings: appSettings,
                 permissionsManager: permissionsManager,
+                updatePrompt: updatePrompt,
                 availableUpdate: $availableUpdate
             )
             .task {
@@ -98,12 +100,15 @@ struct MacOSCleanerApp: App {
                         let alert = NSAlert()
                         alert.messageText = "update.check".localized
                         if let result {
-                            alert.informativeText = String(format: "update.available".localized, result)
-                            alert.addButton(withTitle: "update.download".localized)
+                            alert.informativeText = String(format: "update.available".localized, result.version)
+                            let downloadTitle = result.dmgURL != nil
+                                ? "update.download_dmg".localized
+                                : "update.download".localized
+                            alert.addButton(withTitle: downloadTitle)
                             alert.addButton(withTitle: "cancel".localized)
                             let response = alert.runModal()
                             if response == .alertFirstButtonReturn {
-                                NSWorkspace.shared.open(UpdateChecker.releasesURL)
+                                UpdatePromptController.open(result)
                             }
                         } else {
                             let accessory = NSHostingView(rootView: UpToDateAlertView())

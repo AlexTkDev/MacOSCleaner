@@ -216,6 +216,14 @@
 "update.releases_label" = "リリース:";
 "update.website_label" = "ウェブサイト:";
 "update.checking" = "確認中...";
+"update_sheet_title" = "アップデートがあります";
+"update_sheet_subtitle" = "新しいバージョンの MacOS Cleaner をダウンロードできます。";
+"update_sheet_current" = "現在";
+"update_sheet_latest" = "最新";
+"update.download_dmg" = "DMG をダウンロード";
+"update.view_releases" = "リリースを見る";
+"update.dismiss_later" = "あとで";
+"update.dismiss_version" = "このバージョンでは再通知しない";
 
 /* Settings Tooltips */
 "settings_tooltip_language" = "表示言語を選択します。";

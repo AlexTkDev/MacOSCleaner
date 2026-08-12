@@ -97,7 +97,7 @@ Cleanup tasks run in parallel across all available cores for maximum speed. All 
 - **Why this file?** — each related file includes an evidence breakdown with localized explanations. Tap any file to see exactly why it was associated with the app
 - **Post-Uninstall Verification** — re-scan confirms cleanup completeness; snapshots stored for rollback
 
-**Smart Updates** 🔄 — automatic, lightweight background check for new versions on startup directly via GitHub Releases. Get gently notified when a new update is ready, without background daemons, persistent tracking, or extra dependencies.
+**Smart Updates** 🔄 — on launch the app asks the GitHub Releases API once (no daemons, no polling). If a newer version exists, an FDA-style sheet offers **Download DMG** (opens the release asset URL) or **View Releases**. You can dismiss for this session or stop reminders for that version. Manual check remains in Settings and the app menu.
 
 **Settings & System Maintenance** 🛠️ — modular Liquid Glass interface organized into General, Cleanup, Automation, Processes, Advanced, and About:
 - **System Maintenance** — easily copy terminal commands to enable Touch ID for `sudo` authentication (`/etc/pam.d/sudo_local`) with real-time status verification, and trigger one-click Spotlight index rebuilding (`mdutil -E /`) to resolve search calculation glitches.
@@ -116,7 +116,7 @@ Cleanup and residual discovery use tokenized path templates, an O(1) bundle regi
 ## Privacy & Safety 🛡️
 
 - **100% Private** — No telemetry, no analytics, no usage tracking, and no remote logging. All operations run fully offline on your device.
-- **Minimal Networking** — The only network connection is a startup update check using the GitHub Releases API (can be disabled in Settings).
+- **Minimal Networking** — The only network use is an optional startup / manual update check against the public GitHub Releases API (version + DMG asset URL). No telemetry.
 - Disk Space and App Uninstaller move files to Trash via `trashItem(at:)` — recoverable by default
 - Smart Cleanup removes selected cache and temporary data after confirmation
 - `SafetyManager` blocks access to `/System`, `/usr`, `/bin`, `~/.ssh`, and other critical paths

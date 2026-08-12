@@ -3,7 +3,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    var availableUpdate: String? = nil
+    var availableUpdate: AvailableUpdate? = nil
 
     var body: some View {
         GlassEffectContainer {
@@ -46,7 +46,7 @@ struct AboutView: View {
     private var contentStack: some View {
         VStack(spacing: 14) {
             if let update = availableUpdate {
-                updateBanner(version: update)
+                updateBanner(update: update)
             }
 
             developerCard
@@ -69,9 +69,9 @@ struct AboutView: View {
         .padding(20)
     }
 
-    private func updateBanner(version: String) -> some View {
+    private func updateBanner(update: AvailableUpdate) -> some View {
         Button {
-            NSWorkspace.shared.open(UpdateChecker.releasesURL)
+            UpdatePromptController.open(update)
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
@@ -79,12 +79,12 @@ struct AboutView: View {
                     .foregroundStyle(.purple)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(String(format: "update.available".localized, version))
+                    Text(String(format: "update.available".localized, update.version))
                         .font(.headline)
                         .lineLimit(nil)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("update.download".localized + " →")
+                    Text((update.dmgURL != nil ? "update.download_dmg" : "update.download").localized + " →")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(nil)
@@ -169,5 +169,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: "2.1.1")
+    AboutView(availableUpdate: AvailableUpdate(version: "2.1.1", dmgURL: nil))
 }

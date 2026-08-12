@@ -10,7 +10,12 @@ struct RootView: View {
     let journal: TransactionJournal
     let appSettings: AppSettings
     @Bindable var permissionsManager: PermissionsManager
-    @Binding var availableUpdate: String?
+    @Bindable var updatePrompt: UpdatePromptController
+    @Binding var availableUpdate: AvailableUpdate?
+
+    private var currentVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "version_unknown".localized
+    }
 
     var body: some View {
         ZStack {
@@ -38,13 +43,39 @@ struct RootView: View {
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }
+        .sheet(isPresented: $updatePrompt.showSheet) {
+            if let update = availableUpdate {
+                UpdateAvailableView(
+                    update: update,
+                    currentVersion: currentVersion,
+                    onDismissLater: { updatePrompt.dismissTemporarily() },
+                    onDismissForVersion: { updatePrompt.dismissForVersion(update.version) }
+                )
+            }
+        }
         .onAppear {
             appSettings.applyTheme()
         }
         .task {
             permissionsManager.refresh()
             permissionsManager.showGuidanceIfNeeded()
+            presentUpdateIfReady()
         }
+        .onChange(of: availableUpdate) { _, _ in
+            presentUpdateIfReady()
+        }
+        .onChange(of: permissionsManager.showGuidance) { _, showing in
+            if !showing {
+                presentUpdateIfReady()
+            }
+        }
+    }
+
+    private func presentUpdateIfReady() {
+        updatePrompt.presentIfNeeded(
+            update: availableUpdate,
+            fdaShowing: permissionsManager.showGuidance
+        )
     }
 
     // MARK: - Navigation Groups
@@ -169,7 +200,7 @@ struct RootView: View {
         journal: journal,
         appSettings: settings,
         permissionsManager: PermissionsManager(),
+        updatePrompt: UpdatePromptController(),
         availableUpdate: .constant(nil)
     )
 }
-

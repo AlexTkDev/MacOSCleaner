@@ -217,6 +217,14 @@
 "update.releases_label" = "Lanzamientos:";
 "update.website_label" = "Sitio web:";
 "update.checking" = "Comprobando...";
+"update_sheet_title" = "Actualización disponible";
+"update_sheet_subtitle" = "Hay una versión más reciente de MacOS Cleaner lista para descargar.";
+"update_sheet_current" = "Actual";
+"update_sheet_latest" = "Más reciente";
+"update.download_dmg" = "Descargar DMG";
+"update.view_releases" = "Ver lanzamientos";
+"update.dismiss_later" = "Más tarde";
+"update.dismiss_version" = "No recordar esta versión";
 
 // Settings Tooltips
 "settings_tooltip_language" = "Seleccione el idioma de la interfaz de la aplicación.";
