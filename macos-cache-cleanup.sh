@@ -4,6 +4,10 @@ set -euo pipefail
 # ==============================================================================
 # 🧹 macOS Cache Cleanup
 # ==============================================================================
+# Copyright (c) 2026 AlexTkDev (https://github.com/AlexTkDev)
+# ORCID: https://orcid.org/0009-0002-8907-5406
+# License: SOURCE-AVAILABLE PERSONAL USE ONLY — see LICENSE
+#
 # Script for safely cleaning up caches, temporary files, and old logs on macOS.
 # Uses a whitelist approach to remove only known-safe directories and their contents.
 #

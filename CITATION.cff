@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using these metadata.
+  Licensed under SOURCE-AVAILABLE PERSONAL USE ONLY (see LICENSE).
+  Commercial use requires prior written permission from the author.
+type: software
+title: "macOS Cache Cleanup"
+abstract: "Shell script for safely cleaning caches, temporary files, and application remnants on macOS."
+url: "https://github.com/AlexTkDev/MacOSCleaner"
+repository-code: "https://github.com/AlexTkDev/MacOSCleaner"
+# Custom personal-use license; binding terms are in LICENSE.
+license: "LicenseRef-Source-Available-Personal-Use"
+authors:
+  - given-names: "Aleksandr"
+    alias: "AlexTkDev"
+    orcid: "https://orcid.org/0009-0002-8907-5406"
+    website: "https://github.com/AlexTkDev"

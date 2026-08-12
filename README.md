@@ -1,5 +1,8 @@
 # 🧹 macOS Cache Cleanup
 
+[![License: Source-Available](https://img.shields.io/badge/License-Source--Available%20Personal%20Use-blue.svg)](LICENSE)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0002-8907-5406)
+
 A high-performance shell script for safely cleaning up caches, temporary files, and application remnants on macOS. 
 It uses an intelligent **whitelist and app-discovery approach**: only known-safe directories are targeted, and leftover files are detected based on the currently installed applications.
 
@@ -83,3 +86,16 @@ The script is built with modular helper functions:
 - `clean_contents`: Safely empties a directory while preserving the folder itself.
 - `_is_installed`: Cross-references folder names with the list of installed applications.
 - `print_step`: Displays a beautiful progress bar and formatted status for each stage.
+
+---
+
+## Author
+
+**AlexTkDev** — [ORCID 0009-0002-8907-5406](https://orcid.org/0009-0002-8907-5406)
+
+Machine-readable citation: [`CITATION.cff`](CITATION.cff)
+
+## License
+
+**[SOURCE-AVAILABLE PERSONAL USE ONLY](LICENSE)** — personal / non-commercial study only.
+Commercial use, redistribution for sale, and re-licensing require prior written permission from the author.
