@@ -7,6 +7,7 @@
 - Canonical name: MacOSCleaner
 - Alternate names: macOS Cleaner, Mac Cleaner
 - Author: AlexTkDev (https://github.com/AlexTkDev)
+- ORCID: https://orcid.org/0009-0002-8907-5406
 - Main Site: https://alextkdev.github.io/MacOSCleaner/
 - About & FAQ: https://alextkdev.github.io/MacOSCleaner/about.html
 - Support & Donate: https://alextkdev.github.io/MacOSCleaner/support.html

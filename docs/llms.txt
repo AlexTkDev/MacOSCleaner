@@ -5,6 +5,7 @@
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.1.1.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
+Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 
 
 ## Pages & Docs
@@ -29,3 +30,4 @@ License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commerc
 
 - [Ko-fi](https://ko-fi.com/alextkdev): Support development via monthly subscription or one-time tip
 - [Author](https://github.com/AlexTkDev): AlexTkDev
+- [ORCID](https://orcid.org/0009-0002-8907-5406): 0009-0002-8907-5406

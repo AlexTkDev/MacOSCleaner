@@ -88,6 +88,10 @@ The script is built with modular helper functions:
 
 ---
 
+## Author
+
+**AlexTkDev** — [ORCID 0009-0002-8907-5406](https://orcid.org/0009-0002-8907-5406)
+
 ## 📜 Feedback & License
 
 - **[Contributor License Agreement (CLA)](CLA.md)**: Contributions to the codebase are covered by the CLA for dual-licensing compatibility.
