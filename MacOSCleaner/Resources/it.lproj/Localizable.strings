@@ -127,6 +127,7 @@
 "about_star_github" = "Valuta su GitHub ⭐";
 "settings_about_star_github" = "Valuta su GitHub ⭐";
 "about_copyright" = "© 2026 AlexTkDev. Tutti i diritti riservati.";
+"about_orcid" = "ORCID 0009-0002-8907-5406";
 
 /* Dashboard View */
 "menu_dashboard" = "Pannello di controllo";
@@ -776,6 +777,7 @@
 "settings_about_report_issue" = "Segnala un problema";
 "settings_about_report_issue_sub" = "Segnalazioni di bug & richieste di funzionalità";
 "settings_about_website" = "Sito web";
+"settings_about_orcid" = "ORCID";
 
 "settings_privacy_safety_title" = "Privacy e Sicurezza 🛡️";
 "settings_privacy_safety_sub" = "Protezione del sistema e garanzia di privacy dei dati";

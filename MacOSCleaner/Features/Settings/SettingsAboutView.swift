@@ -29,6 +29,8 @@ struct SettingsAboutView: View {
                     linkRow("settings_about_report_issue".localized, subtitle: "https://github.com/AlexTkDev/MacOSCleaner/issues", icon: "ladybug.fill", iconColor: .orange, url: "https://github.com/AlexTkDev/MacOSCleaner/issues")
                     SettingsDivider()
                     linkRow("settings_about_website".localized, subtitle: "https://alextkdev.github.io/MacOSCleaner/", icon: "globe", iconColor: .cyan, url: "https://alextkdev.github.io/MacOSCleaner/")
+                    SettingsDivider()
+                    linkRow("settings_about_orcid".localized, subtitle: "https://orcid.org/0009-0002-8907-5406", icon: "person.text.rectangle", iconColor: .green, url: "https://orcid.org/0009-0002-8907-5406")
                 }
             }
         )

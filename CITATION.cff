@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using these metadata.
+  SPDX base is GPL-3.0-or-later; full terms are GPLv3 + Commons Clause v1.0
+  (non-commercial) in LICENSE. Commercial use requires a separate license.
+type: software
+title: MacOS Cleaner
+version: "2.1.1"
+date-released: "2026-08-12"
+url: "https://github.com/AlexTkDev/MacOSCleaner"
+repository-code: "https://github.com/AlexTkDev/MacOSCleaner"
+# SPDX has no Commons Clause compound; see LICENSE for the binding terms.
+license: "GPL-3.0-or-later"
+authors:
+  - given-names: "Aleksandr"
+    alias: "AlexTkDev"
+    orcid: "https://orcid.org/0009-0002-8907-5406"
+    website: "https://github.com/AlexTkDev"

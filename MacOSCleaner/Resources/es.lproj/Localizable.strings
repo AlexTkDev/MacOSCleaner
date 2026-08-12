@@ -128,6 +128,7 @@
 "about_star_github" = "Dar una ⭐️ en GitHub";
 "settings_about_star_github" = "Dar una ⭐️ en GitHub";
 "about_copyright" = "© 2026 AlexTkDev. Todos los derechos reservados.";
+"about_orcid" = "ORCID 0009-0002-8907-5406";
 
 // Dashboard View
 "menu_dashboard" = "Panel";
@@ -881,6 +882,7 @@
 "settings_about_wiki_sub" = "Guías detalladas sobre cómo usar la aplicación";
 "settings_about_report_issue" = "Informar de un problema";
 "settings_about_website" = "Sitio web";
+"settings_about_orcid" = "ORCID";
 
 /* Privacy & Safety (About) */
 "settings_privacy_safety_title" = "Privacidad y seguridad 🛡️";

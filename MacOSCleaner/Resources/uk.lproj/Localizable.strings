@@ -128,6 +128,7 @@
 "about_star_github" = "Поставити ⭐️ проекту на GitHub";
 "settings_about_star_github" = "Поставити ⭐️ проекту на GitHub";
 "about_copyright" = "© 2026 AlexTkDev. Усі права захищені.";
+"about_orcid" = "ORCID 0009-0002-8907-5406";
 
 /* Dashboard View */
 "menu_dashboard" = "Огляд";
@@ -877,6 +878,7 @@
 "settings_about_wiki_sub" = "Детальний посібник із використання програми";
 "settings_about_report_issue" = "Повідомити про проблему";
 "settings_about_website" = "Сайт";
+"settings_about_orcid" = "ORCID";
 
 /* Privacy & Safety (About) */
 "settings_privacy_safety_title" = "Приватність та безпека 🛡️";

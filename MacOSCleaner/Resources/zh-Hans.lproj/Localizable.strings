@@ -127,6 +127,7 @@
 "about_star_github" = "在 GitHub 上点赞 ⭐";
 "settings_about_star_github" = "在 GitHub 上点赞 ⭐";
 "about_copyright" = "© 2026 AlexTkDev. 保留所有权利。";
+"about_orcid" = "ORCID 0009-0002-8907-5406";
 
 /* Dashboard View */
 "menu_dashboard" = "仪表盘";
@@ -776,6 +777,7 @@
 "settings_about_report_issue" = "反馈问题";
 "settings_about_report_issue_sub" = "提交 Bug 报告或功能建议";
 "settings_about_website" = "官方网站";
+"settings_about_orcid" = "ORCID";
 
 "settings_privacy_safety_title" = "隐私与安全 🛡️";
 "settings_privacy_safety_sub" = "核心系统防护与数据隐私承诺";

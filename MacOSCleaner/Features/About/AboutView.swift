@@ -101,18 +101,31 @@ struct AboutView: View {
     }
 
     private var developerCard: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.circle.fill")
-                .font(.title3)
-                .foregroundColor(.accentColor)
-            Text("about_developer".localized)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Spacer()
+        Link(destination: URL(string: "https://orcid.org/0009-0002-8907-5406")!) {
+            HStack(spacing: 12) {
+                Image(systemName: "person.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("about_developer".localized)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    Text("about_orcid".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.up.forward.app")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
         .glassCard(cornerRadius: 12)
+        .buttonStyle(.plain)
     }
 
     private var linksCard: some View {

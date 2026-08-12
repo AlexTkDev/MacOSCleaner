@@ -87,7 +87,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
         INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches."
-        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 MacOSCleaner. All rights reserved."
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 AlexTkDev (ORCID 0009-0002-8907-5406). All rights reserved."
         SWIFT_COMPILATION_MODE: wholemodule
         DEAD_CODE_STRIPPING: YES
         SWIFT_STRICT_CONCURRENCY: complete

@@ -5,6 +5,7 @@
 <span align="center">
 
 [![License: GPLv3+CommonsClause](https://img.shields.io/badge/License-GPLv3%2BCommonsClause-blue.svg)](LICENSE)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0002-8907-5406)
 [![GitHub Stars](https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=flat&logo=github&color=gold&cacheSeconds=3600)](https://github.com/AlexTkDev/MacOSCleaner/stargazers)
 [![Platform: macOS](https://img.shields.io/badge/Platform-macOS-000000.svg?logo=apple&logoColor=white)](https://apple.com)
 [![Language: Swift 6](https://img.shields.io/badge/Language-Swift%206-FA7343?logo=swift&logoColor=white)](https://swift.org)
@@ -193,6 +194,12 @@ If **MacOS Cleaner** helped you free up disk space or speed up your Mac, please 
 </p>
 
 ---
+
+## Author
+
+**AlexTkDev** — [ORCID 0009-0002-8907-5406](https://orcid.org/0009-0002-8907-5406)
+
+Machine-readable citation: [`CITATION.cff`](CITATION.cff)
 
 ## License
 
