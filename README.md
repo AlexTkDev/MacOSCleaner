@@ -133,7 +133,7 @@ open MacOSCleaner.xcodeproj
 ```bash
 sudo xattr -r -c /Applications/MacOSCleaner.app
 ```
-*(Removes the quarantine attribute applied by macOS on ad-hoc downloaded binaries).*
+> **Note:** This command removes extended security attributes (such as the Gatekeeper quarantine flag) set by macOS for unsigned or locally built applications. It is completely safe: it does not alter system files, grant persistent permissions, or modify the app's contents.
 
 **Viewing Application Logs:**
 Filter logs in `Console.app` using subsystem `input.MacOSCleaner`.
