@@ -8,6 +8,16 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
+    <img src="https://img.shields.io/badge/Direct_Download-.dmg-black?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG">
+  </a>
+  &nbsp;
+  <a href="https://github.com/kurikomi-labs/komi-store">
+    <img src="https://img.shields.io/badge/Get_it_on-Komi_Store-5856D6?style=for-the-badge&logo=app-store&logoColor=white" alt="Komi Store">
+  </a>
+</p>
+
+<p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3%2BCommonsClause-blue.svg" alt="License"></a>
   <a href="https://orcid.org/0009-0002-8907-5406"><img src="https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?logo=orcid&logoColor=white" alt="ORCID"></a>
   <a href="https://github.com/AlexTkDev/MacOSCleaner/stargazers"><img src="https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=flat&logo=github&color=gold&cacheSeconds=3600" alt="Stars"></a>
@@ -16,19 +26,6 @@
   <a href="https://developer.apple.com/documentation/swiftui/"><img src="https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white" alt="SwiftUI"></a>
   <a href="https://github.com/yonaskolb/XcodeGen"><img src="https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white" alt="XcodeGen"></a>
   <a href="https://ko-fi.com/alextkdev"><img src="https://img.shields.io/badge/Ko--fi-F16061?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
-</p>
-
----
-
-## 📦 Download & Install
-
-<p align="left">
-  <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
-    <img src="https://img.shields.io/badge/Direct_Download-.dmg-black?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG">
-  </a>
-  <a href="https://github.com/kurikomi-labs/komi-store">
-    <img src="https://img.shields.io/badge/Get_it_on-Komi_Store-5856D6?style=for-the-badge&logo=app-store&logoColor=white" alt="Komi Store">
-  </a>
 </p>
 
 ---
@@ -153,9 +150,9 @@ Filter logs in `Console.app` using subsystem `input.MacOSCleaner`.
 
 ---
 
-## ⭐️ Star History
+## ⭐️ Support & Star
 
-If MacOS Cleaner helped reclaim storage on your Mac, please consider starring the repository:
+Building a native, privacy-first cleaner takes continuous maintenance and testing. If MacOS Cleaner helped you reclaim disk space, giving it a ⭐️ star on GitHub helps more Mac users discover a transparent, open-source alternative:
 
 <p align="center">
   <a href="https://github.com/AlexTkDev/MacOSCleaner/stargazers">
