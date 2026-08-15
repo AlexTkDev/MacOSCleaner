@@ -172,7 +172,7 @@ Building a native, privacy-first cleaner takes continuous maintenance and testin
       </a>
     </td>
     <td>
-      <strong>Aleksandr (AlexTkDev)</strong> — Indie macOS & iOS Developer<br>
+      <strong>Aleksandr (AlexTkDev)</strong>
       <a href="https://github.com/AlexTkDev"><img src="https://img.shields.io/badge/GitHub-AlexTkDev-181717?style=flat&logo=github" alt="GitHub"></a>
       <a href="https://orcid.org/0009-0002-8907-5406"><img src="https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?style=flat&logo=orcid&logoColor=white" alt="ORCID"></a>
       <a href="https://ko-fi.com/alextkdev"><img src="https://img.shields.io/badge/Ko--fi-Support-F16061?style=flat&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
