@@ -143,6 +143,7 @@ Filter logs in `Console.app` using subsystem `input.MacOSCleaner`.
 ## 💬 Community & Feedback
 
 - 💬 **Discussions & Feature Requests:** [GitHub Discussions](https://github.com/AlexTkDev/MacOSCleaner/discussions)
+- 🚧 **What's in development (2.2.0):** [MacOSCleaner 2.2.0 — in development](https://github.com/AlexTkDev/MacOSCleaner/discussions/14)
 - 🐛 **Issue Tracker:** [GitHub Issues](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - 📖 **Documentation:** [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 
