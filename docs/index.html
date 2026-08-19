@@ -44,10 +44,9 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "MacOSCleaner",
-    "alternateName": ["macOS Cleaner", "Mac Cleaner"],
+    "alternateName": ["macOS Cleaner", "Mac Cleaner", "Apple Silicon Cleaner"],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
     "description": "Free open-source macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry.",
-
     "inLanguage": "en",
     "publisher": {
       "@type": "Person",
@@ -67,22 +66,24 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "MacOSCleaner",
-    "alternateName": ["macOS Cleaner", "Mac Cleaner"],
-    "operatingSystem": "macOS 26.0 or later",
-    "applicationCategory": "UtilityApplication",
-    "applicationSubCategory": "Disk Cleanup Utility",
+    "alternateName": ["macOS Cleaner", "Mac Cleaner", "MacOS Cleaner App"],
+    "operatingSystem": "macOS 26.0 or later (Tahoe), macOS Sequoia 15+, macOS Sonoma 14+",
+    "applicationCategory": "UtilitiesApplication",
+    "applicationSubCategory": "Disk Cleanup & App Uninstaller Utility",
     "isAccessibleForFree": true,
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock"
+      "availability": "https://schema.org/InStock",
+      "category": "Free Open-Source Software"
     },
     "description": "Free open-source macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
-
     "softwareVersion": "2.1.1",
-    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
+    "fileFormat": "application/x-apple-diskimage",
+    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.1/MacOSCleaner.dmg",
     "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
+    "releaseNotes": "https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1",
     "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
     "featureList": [
       "AppIntents & Siri voice automation",
@@ -99,7 +100,7 @@
       "100% Offline with zero telemetry"
     ],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
-    "image": "https://alextkdev.github.io/MacOSCleaner/static/assets/logo-og.png",
+    "image": "https://alextkdev.github.io/MacOSCleaner/static/og-banner.png",
     "screenshot": "https://alextkdev.github.io/MacOSCleaner/static/assets/hero-dashboard.webp",
     "author": {
       "@type": "Person",
@@ -158,6 +159,20 @@
           "@type": "Answer",
           "text": "Cleanup targets known cache and tooling paths, not your source repositories. Still review results before deleting — especially custom Docker volumes or shared simulator data."
         }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
       }
     ]
   }

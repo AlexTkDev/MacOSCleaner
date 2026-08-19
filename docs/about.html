@@ -45,11 +45,14 @@
     "mainEntity": {
       "@type": "SoftwareApplication",
       "name": "MacOSCleaner",
+      "alternateName": ["macOS Cleaner", "Mac Cleaner"],
       "softwareVersion": "2.1.1",
       "operatingSystem": "macOS 26.0 or later",
-      "applicationCategory": "UtilityApplication",
+      "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Disk Cleanup & App Uninstaller Utility",
       "isAccessibleForFree": true,
       "url": "https://alextkdev.github.io/MacOSCleaner/",
+      "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.1/MacOSCleaner.dmg",
       "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
       "author": {
         "@type": "Person",
@@ -63,6 +66,74 @@
         ]
       }
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is MacOSCleaner a free Mac cleaner?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The app is free to download for personal use. Releases are published on GitHub."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it replace built-in macOS storage tools?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. It complements them. Apple’s storage recommendations help with large personal files; MacOSCleaner targets caches, developer artifacts, and incomplete uninstall leftovers more deeply."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is cache cleaning safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Safe categories recover temporary data; apps may rebuild caches on next launch. Moderate and dangerous items need a closer look — risk badges exist for that reason. Always review the list before confirming a clean."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use it only as an app uninstaller?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Open the Uninstaller, drop a .app, review leftovers, and remove what you accept. You do not have to run a full system scan first."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Docker or Xcode cleanup wipe my projects?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cleanup targets known cache and tooling paths, not your source repositories. Still review results before deleting — especially custom Docker volumes or shared simulator data."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html"
+      }
+    ]
   }
   </script>
   <link rel="icon" type="image/png" sizes="96x96" href="static/assets/logo-96.png">

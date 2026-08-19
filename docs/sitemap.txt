@@ -1,5 +1,5 @@
 https://alextkdev.github.io/MacOSCleaner/
-https://alextkdev.github.io/MacOSCleaner/llms.txt
-https://alextkdev.github.io/MacOSCleaner/llms-full.txt
 https://alextkdev.github.io/MacOSCleaner/about.html
 https://alextkdev.github.io/MacOSCleaner/support.html
+https://alextkdev.github.io/MacOSCleaner/llms.txt
+https://alextkdev.github.io/MacOSCleaner/llms-full.txt
