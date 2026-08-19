@@ -428,6 +428,7 @@ const CRYPTO_MODAL_HTML = `
       </button>
     </div>
 
+    <!-- USDT TRC20 -->
     <div id="crypto-usdt-trc20" class="crypto-panel">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #26A17B;">
@@ -439,10 +440,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(TRC20).webp" alt="USDT TRC20 QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
-      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, 'TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp')">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, 'TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c195_tTR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&address=TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="tronlinkoutside://pull.activity?param=%7B%22action%22%3A%22transfer%22%2C%22protocol%22%3A%22TronLink%22%2C%22version%22%3A%221.0%22%2C%22toAddress%22%3A%22TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp%22%2C%22contract%22%3A%22TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t%22%7D" class="btn btn-secondary crypto-btn">TronLink</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- USDT BEP20 -->
     <div id="crypto-usdt-bep20" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #26A17B;">
@@ -454,10 +466,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(BEP20%20%3A%20BNB%20Smart%20Chain).webp" alt="USDT BEP20 QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c20000714_t0x55d398326f99059fF775485246999027B3197955&address=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="https://metamask.app.link/send/0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">MetaMask</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- USDT TON -->
     <div id="crypto-usdt-ton" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #26A17B;">
@@ -469,10 +492,20 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/USDT%20(TON).webp" alt="USDT TON QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
-      <a href="ton://transfer/UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, 'UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge')">UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, 'UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://app.tonkeeper.com/transfer/UQDalQWmfsFTIEAT_t-urAoCCw_KzxBsRwcnfTZZfPCak2Ge" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Tonkeeper</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- BTC -->
     <div id="crypto-btc" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #F7931A;">
@@ -484,10 +517,20 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Bitcoin%20(BTC).webp" alt="BTC QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
-      <a href="bitcoin:bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, 'bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk')">bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, 'bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c0&address=bc1q4myt8cj8a67twf6038mmaaes6xxst502lxe7kk" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- SOL -->
     <div id="crypto-sol" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #9945FF;">
@@ -499,10 +542,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Solana%20(SOL).webp" alt="SOL QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
-      <a href="solana:4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, '4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5')">4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, '4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c501&address=4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="https://phantom.app/ul/v1/transfer?recipient=4cg4Exxajew3xr5oyDFuz6EseD8Eq7oN8Fibvrka7A5" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Phantom</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- ETH -->
     <div id="crypto-eth" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #627EEA;">
@@ -514,10 +568,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/Ethereum%20(ETH%20%3A%20ERC20).webp" alt="ETH QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c60&address=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="https://metamask.app.link/send/0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">MetaMask</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- BNB -->
     <div id="crypto-bnb" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #F3BA2F;">
@@ -529,10 +594,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/BNB%20(BEP20).webp" alt="BNB QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
-      <a href="ethereum:0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, '0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c20000714&address=0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="https://metamask.app.link/send/0x04b972bD6deF9d97bEe305CC22FED8f04D9BcAC4" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">MetaMask</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- TRX -->
     <div id="crypto-trx" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #EF0027;">
@@ -544,10 +620,21 @@ const CRYPTO_MODAL_HTML = `
           <img src="static/assets/crypto/TRON%20(TRX).webp" alt="TRX QR">
         </div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
-      <a href="tron:TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" class="btn btn-primary crypto-open-btn">Open Wallet</a>
+      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this, 'TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp')">TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp</p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, 'TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Address
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://link.trustwallet.com/send?asset=c195&address=TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Trust Wallet</a>
+          <a href="tronlinkoutside://pull.activity?param=%7B%22action%22%3A%22transfer%22%2C%22protocol%22%3A%22TronLink%22%2C%22version%22%3A%221.0%22%2C%22toAddress%22%3A%22TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp%22%2C%22amount%22%3A0%7D" class="btn btn-secondary crypto-btn">TronLink</a>
+        </div>
+      </div>
+      <p class="crypto-hint">For wallets without direct link support (Binance, ZenGo, etc.): copy the address or scan the QR code in your app.</p>
     </div>
 
+    <!-- Binance Pay -->
     <div id="crypto-binance-pay" class="crypto-panel" style="display: none;">
       <div class="crypto-qr-card">
         <div class="crypto-qr-card-label" style="color: #F0B90B;">
@@ -560,28 +647,49 @@ const CRYPTO_MODAL_HTML = `
         </div>
         <div class="crypto-pay-id">Alex8695</div>
       </div>
-      <p class="crypto-address" title="Click to copy address" onclick="copyCryptoText(this)">Binance Pay Nickname/ID: <strong>Alex8695</strong></p>
-      <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-primary crypto-open-btn">How to pay? (FAQ)</a>
+      <p class="crypto-address" title="Click to copy Binance ID" onclick="copyCryptoText(this, 'Alex8695')">Binance Pay Nickname/ID: <strong>Alex8695</strong></p>
+      <div class="crypto-actions">
+        <button type="button" class="btn btn-primary crypto-btn" onclick="copyCryptoText(this, 'Alex8695')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Binance Pay ID
+        </button>
+        <div class="crypto-wallet-links">
+          <a href="https://app.binance.com/uni-qr/UbtLZX3K" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">Open in Binance App</a>
+          <a href="https://www.binance.com/en/support/faq/3771bb743ee54151a2d255641d902b67" target="_blank" rel="noopener" class="btn btn-secondary crypto-btn">FAQ Guide</a>
+        </div>
+      </div>
+      <p class="crypto-hint">Tap "Open in Binance App" or scan QR code in Binance App (Pay to: <strong>Alex8695</strong>)</p>
     </div>
   </div>
 </div>
 `;
 
-window.copyCryptoText = function(el) {
+window.copyCryptoText = function(el, explicitVal) {
   if (el.dataset.copying) return;
   el.dataset.copying = "true";
-  let text = el.innerText.trim();
-  if (text.includes(':')) text = text.split(':').pop().trim();
+  let text = explicitVal || el.innerText.trim();
+  if (text.includes(':') && !explicitVal) text = text.split(':').pop().trim();
+
   navigator.clipboard.writeText(text).then(() => {
     const origHtml = el.innerHTML;
-    const origColor = el.style.color;
-    el.style.color = '#26A17B';
-    el.innerHTML = '<strong>Copied to clipboard!</strong>';
+    const isButton = el.tagName === 'BUTTON';
+    const isId = explicitVal === 'Alex8695';
+    if (isButton) {
+      el.classList.add('copied');
+      el.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> ${isId ? 'ID Copied!' : 'Address Copied!'}`;
+    } else {
+      const origColor = el.style.color;
+      el.style.color = '#26A17B';
+      el.innerHTML = '<strong>Copied to clipboard!</strong>';
+      setTimeout(() => {
+        el.style.color = origColor;
+      }, 1200);
+    }
     setTimeout(() => {
-      el.style.color = origColor;
       el.innerHTML = origHtml;
+      if (isButton) el.classList.remove('copied');
       delete el.dataset.copying;
-    }, 1200);
+    }, 1500);
   }).catch(err => {
     console.error('Copy failed', err);
     delete el.dataset.copying;
