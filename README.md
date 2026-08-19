@@ -8,6 +8,10 @@
 </p>
 
 <p align="center">
+  <a href="https://alextkdev.github.io/MacOSCleaner/">
+    <img src="https://img.shields.io/badge/Official_Website-Visit_Site-238636?style=for-the-badge&logo=safari&logoColor=white" alt="Official Website">
+  </a>
+  &nbsp;
   <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
     <img src="https://img.shields.io/badge/Direct_Download-.dmg-black?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG">
   </a>
@@ -18,6 +22,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1"><img src="https://img.shields.io/badge/Release-v2.1.1-007AFF?style=flat&logo=apple&logoColor=white" alt="Release v2.1.1"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3%2BCommonsClause-blue.svg" alt="License"></a>
   <a href="https://orcid.org/0009-0002-8907-5406"><img src="https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?logo=orcid&logoColor=white" alt="ORCID"></a>
   <a href="https://github.com/AlexTkDev/MacOSCleaner/stargazers"><img src="https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=flat&logo=github&color=gold&cacheSeconds=3600" alt="Stars"></a>
