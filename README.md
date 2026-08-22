@@ -30,7 +30,6 @@
   <a href="https://swift.org"><img src="https://img.shields.io/badge/Language-Swift%206-FA7343?logo=swift&logoColor=white" alt="Swift 6"></a>
   <a href="https://developer.apple.com/documentation/swiftui/"><img src="https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white" alt="SwiftUI"></a>
   <a href="https://github.com/yonaskolb/XcodeGen"><img src="https://img.shields.io/badge/Build-XcodeGen-black.svg?logo=xcode&logoColor=white" alt="XcodeGen"></a>
-  <a href="https://orcid.org/0009-0002-8907-5406"><img src="https://img.shields.io/badge/ORCID-0009--0002--8907--5406-A6CE39?logo=orcid&logoColor=white" alt="ORCID"></a>
 </p>
 
 ---
