@@ -1,6 +1,6 @@
 <div align="center">
   <h1 align="center">
-    <img src=".github/logo.png?v=3" alt="MacOS Cleaner Logo" width="100"><br>
+    <img src=".github/logo.png?v=3" alt="MacOS Cleaner Logo" width="140"><br>
     MacOS Cleaner
   </h1>
   <p>
