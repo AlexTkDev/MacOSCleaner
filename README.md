@@ -166,6 +166,7 @@ Building a native, privacy-first cleaner takes continuous maintenance and testin
 - 🚧 **What's in development (2.2.0):** [MacOSCleaner 2.2.0 — in development](https://github.com/AlexTkDev/MacOSCleaner/discussions/14)
 - 🐛 **Issue Tracker:** [GitHub Issues](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - 📖 **Documentation:** [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki)
+- <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor" align="absmiddle"></a> **Cursor Directory:** [Cursor Codebase Hub](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
 
 > *Note: Contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md).*
 
