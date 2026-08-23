@@ -1,6 +1,8 @@
 <div align="center">
-  <img src=".github/logo.png?v=2" alt="MacOS Cleaner Logo" width="120">
-  <h1>MacOS Cleaner</h1>
+  <h1 align="center">
+    <img src=".github/logo.png?v=3" alt="MacOS Cleaner Logo" width="100"><br>
+    MacOS Cleaner
+  </h1>
   <p>
     Free, native, privacy-first cleaner and application uninstaller for macOS.<br>
     Built with Swift 6 and SwiftUI. Moves files to Trash by default instead of permanently deleting them.
