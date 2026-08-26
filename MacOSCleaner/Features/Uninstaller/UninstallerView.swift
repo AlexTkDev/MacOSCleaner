@@ -46,6 +46,7 @@ struct UninstallerView: View {
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
+    @State private var scanTask: Task<Void, Never>? = nil
     @State private var expandedConfidenceTiers: Set<ConfidenceTier> = [.guaranteed, .veryLikely, .possible]
     @State private var versionToUninstall: UninstallerService.AppInfo?
     @State private var showingVersionConfirmation = false
@@ -132,7 +133,14 @@ struct UninstallerView: View {
                 }
             )
         }
-        .onAppear(perform: loadApps)
+        .onAppear {
+            if allApps.isEmpty {
+                loadApps()
+            }
+        }
+        .onDisappear {
+            scanTask?.cancel()
+        }
         .onChange(of: selectedApp?.id) { _, newID in
             guard let id = newID else { return }
             guard let app = allApps.first(where: { $0.id == id }) else { return }
@@ -215,10 +223,10 @@ struct UninstallerView: View {
                         VStack(spacing: 0) {
                             if isDeepScanning {
                                 VStack(spacing: 4) {
-                                    ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
+                                    ProgressView(value: Double(min(deepScanCompleted, deepScanTotal)), total: Double(max(1, deepScanTotal)))
                                         .progressViewStyle(.linear)
                                         .padding(.horizontal, 8)
-                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
+                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, min(deepScanCompleted, deepScanTotal), deepScanTotal))
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
                                 }
@@ -299,9 +307,16 @@ struct UninstallerView: View {
     }
 
     private func loadApps() {
+        scanTask?.cancel()
         isLoading = true
-        Task {
+        isDeepScanning = false
+        deepScanCompleted = 0
+        deepScanTotal = 0
+        
+        scanTask = Task {
             let fresh = (try? await service.scanAllApplications()) ?? []
+            guard !Task.isCancelled else { return }
+            
             allApps = fresh
             isLoading = false
 
@@ -313,8 +328,10 @@ struct UninstallerView: View {
             deepScanTotal = total
 
             for app in fresh {
+                guard !Task.isCancelled else { break }
                 if let result = try? await service.deepScan(app, mode: settings.uninstallerScanMode) {
-                    deepScanCompleted += 1
+                    guard !Task.isCancelled else { break }
+                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
                     if let idx = allApps.firstIndex(where: { $0.id == result.id || sameAppURL($0.url, result.url) }) {
                         allApps[idx] = result
                     }
@@ -323,11 +340,14 @@ struct UninstallerView: View {
                     }
                     deepScanCache[NormalizedPath.key(result.url)] = result
                 } else {
-                    deepScanCompleted += 1
+                    guard !Task.isCancelled else { break }
+                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
                 }
             }
 
-            isDeepScanning = false
+            if !Task.isCancelled {
+                isDeepScanning = false
+            }
         }
     }
 
