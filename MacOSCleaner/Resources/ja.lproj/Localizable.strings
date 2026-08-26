@@ -119,6 +119,8 @@
 
 /* About View */
 "about_title" = "MacOS Cleaner について";
+"menu_donate" = "寄付する...";
+"about_donate" = "プロジェクトを支援";
 "about_version" = "バージョン %@";
 "about_developer" = "開発者: AlexTkDev";
 "about_problem_link" = "不具合・ご要望はこちらから報告";

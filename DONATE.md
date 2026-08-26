@@ -1,8 +1,13 @@
 # Support My Work
+Thank you for supporting my projects!
 
-Thank you for supporting my projects.
+## ☕ Ko-fi
+Support via Card, Apple Pay, or PayPal:
+**[https://ko-fi.com/alextkdev](https://ko-fi.com/alextkdev)**
 
-## Recommended
+---
+
+## 💎 Cryptocurrency
 
 ### USDT (TRC20)
 TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp

@@ -120,6 +120,8 @@
 
 /* About View */
 "about_title" = "Про програму MacOS Cleaner";
+"menu_donate" = "Зробити пожертву...";
+"about_donate" = "Підтримати проєкт";
 "about_version" = "Версія %@";
 "about_developer" = "Розробник: AlexTkDev";
 "about_problem_link" = "Якщо виникла проблема з додатком, повідомте мені тут";

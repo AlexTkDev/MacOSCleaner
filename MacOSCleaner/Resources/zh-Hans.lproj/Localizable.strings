@@ -119,6 +119,8 @@
 
 /* About View */
 "about_title" = "关于 MacOS Cleaner";
+"menu_donate" = "赞助项目...";
+"about_donate" = "支持项目";
 "about_version" = "版本 %@";
 "about_developer" = "由 AlexTkDev 开发";
 "about_problem_link" = "如遇到问题，请在此处反馈";

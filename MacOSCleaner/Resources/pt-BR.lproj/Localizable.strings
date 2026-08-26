@@ -119,6 +119,8 @@
 
 /* About View */
 "about_title" = "Sobre o MacOS Cleaner";
+"menu_donate" = "Fazer uma doação...";
+"about_donate" = "Apoiar o projeto";
 "about_version" = "Versão %@";
 "about_developer" = "Desenvolvido por AlexTkDev";
 "about_problem_link" = "Se você encontrar um problema com o app, reporte aqui";

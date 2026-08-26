@@ -120,6 +120,12 @@ struct MacOSCleanerApp: App {
                     }
                 }
                 .disabled(isCheckingForUpdates)
+                
+                Button("menu_donate".localized) {
+                    if let url = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
             }
         }
         

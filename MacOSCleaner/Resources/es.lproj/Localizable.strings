@@ -118,8 +118,10 @@
 "disk_analyzer_category_archives" = "Archivos";
 
 
-// About View
+//* About View */
 "about_title" = "Acerca de MacOS Cleaner";
+"menu_donate" = "Hacer una donación...";
+"about_donate" = "Apoyar el proyecto";
 "about_version" = "Versión %@";
 "about_developer" = "Desarrollado por AlexTkDev";
 "about_problem_link" = "Si tiene un problema con la aplicación, avíseme aquí";

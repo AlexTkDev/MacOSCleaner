@@ -120,6 +120,8 @@
 
 /* About View */
 "about_title" = "About MacOS Cleaner";
+"menu_donate" = "Donate...";
+"about_donate" = "Donate / Support Project";
 "about_version" = "Version %@";
 "about_developer" = "Developed by AlexTkDev";
 "about_problem_link" = "If you have a problem with the app, let me know here";

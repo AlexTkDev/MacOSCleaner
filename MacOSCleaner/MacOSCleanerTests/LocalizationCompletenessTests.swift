@@ -38,7 +38,9 @@ final class LocalizationCompletenessTests: XCTestCase {
         "uninstaller_evidence_card_title",
         "uninstaller_evidence_why_flagged",
         "uninstaller_leftovers_cleaned_notification",
-        "uninstaller_show_in_finder"
+        "uninstaller_show_in_finder",
+        "menu_donate",
+        "about_donate"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {
