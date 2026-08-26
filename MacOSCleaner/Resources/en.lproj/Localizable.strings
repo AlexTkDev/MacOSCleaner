@@ -590,6 +590,7 @@
 "category.sleep_image" = "Sleep Image";
 "category.duplicate_files" = "Duplicate Files";
 "category.unused_apps" = "Unused Apps";
+"category.project_build_artifacts" = "Project Build Artifacts";
 
 /* Process View - Missing Keys */
 "view_mode" = "View Mode";
@@ -953,3 +954,7 @@
 "settings_search_results_title" = "Search Results for «%@»";
 "settings_search_no_results" = "No Settings Found";
 "settings_search_no_results_sub" = "Try searching for terms like 'trash', 'FDA', 'AI', or 'theme'";
+
+"settings_project_artifacts_age" = "Project Artifacts Age";
+"settings_project_artifacts_age_sub" = "Scan build artifacts not modified in more than this many days";
+"settings_days_count" = "> %d days";

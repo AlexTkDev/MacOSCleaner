@@ -38,6 +38,7 @@ struct CleanupEngineTests {
 
     @Test("Timeout error description")
     func timeoutErrorDescription() {
+        LanguageManager.shared.setLanguage(.english)
         let error = CleanupEngineError.timeout
         #expect(error.errorDescription != nil)
         #expect(error.errorDescription!.contains("timed out"))
@@ -45,12 +46,14 @@ struct CleanupEngineTests {
 
     @Test("Safety violation error description")
     func safetyViolationErrorDescription() {
+        LanguageManager.shared.setLanguage(.english)
         let error = CleanupEngineError.safetyViolation("/System")
         #expect(error.errorDescription == "Safety violation: /System")
     }
 
     @Test("Command failed error description")
     func commandFailedErrorDescription() {
+        LanguageManager.shared.setLanguage(.english)
         let error = CleanupEngineError.commandFailed("brew not found")
         #expect(error.errorDescription == "Command failed: brew not found")
     }

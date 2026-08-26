@@ -570,6 +570,7 @@
 "category.sleep_image" = "Sleep-Image";
 "category.duplicate_files" = "Duplikate";
 "category.unused_apps" = "Ungenutzte Apps";
+"category.project_build_artifacts" = "Projekt-Build-Artefakte";
 
 "view_mode" = "Ansichtsmodus";
 "sort_by" = "Sortieren nach";
@@ -854,6 +855,10 @@
 "settings_search_results_title" = "Suchergebnisse für «%@»";
 "settings_search_no_results" = "Keine Einstellungen gefunden";
 "settings_search_no_results_sub" = "Suchen Sie nach Begriffen wie 'Papierkorb', 'FDA' oder 'KI'";
+
+"settings_project_artifacts_age" = "Alter der Projekt-Artefakte";
+"settings_project_artifacts_age_sub" = "Build-Artefakte suchen, die seit dieser Anzahl von Tagen nicht geändert wurden";
+"settings_days_count" = "> %d Tage";
 
 
 /* Evidence Descriptions */

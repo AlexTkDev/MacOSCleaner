@@ -567,7 +567,8 @@
 "category.font_cache" = "Cache dei font";
 "category.sleep_image" = "Sleep Image";
 "category.duplicate_files" = "File duplicati";
-"category.unused_apps" = "App non utilizzate";
+"category.unused_apps" = "Applicazioni non utilizzate";
+"category.project_build_artifacts" = "Artefatti di build dei progetti";
 
 "view_mode" = "Modalità visualizzazione";
 "sort_by" = "Ordina per";
@@ -844,6 +845,10 @@
 "settings_search_results_title" = "Risultati della ricerca per «%@»";
 "settings_search_no_results" = "Nessuna impostazione trovata";
 "settings_search_no_results_sub" = "Prova a cercare termini come 'Cestino', 'FDA' o 'AI'";
+
+"settings_project_artifacts_age" = "Età degli artefatti dei progetti";
+"settings_project_artifacts_age_sub" = "Cerca artefatti di compilazione non modificati da più di questi giorni";
+"settings_days_count" = "> %d giorni";
 
 
 /* Evidence Categories */

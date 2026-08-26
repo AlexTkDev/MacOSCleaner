@@ -568,6 +568,7 @@
 "category.sleep_image" = "スリープ画像";
 "category.duplicate_files" = "重複ファイル";
 "category.unused_apps" = "未使用アプリ";
+"category.project_build_artifacts" = "プロジェクトビルド成果物";
 
 "view_mode" = "表示モード";
 "sort_by" = "並べ替え";
@@ -844,6 +845,10 @@
 "settings_search_results_title" = "「%@」の検索結果";
 "settings_search_no_results" = "設定が見つかりません";
 "settings_search_no_results_sub" = "「ゴミ箱」「権限」「AI」などのキーワードを試してください";
+
+"settings_project_artifacts_age" = "プロジェクト成果物の経過日数";
+"settings_project_artifacts_age_sub" = "指定日数以上変更されていないビルド成果物を検索します";
+"settings_days_count" = "%d日以上";
 
 
 /* Evidence Categories */

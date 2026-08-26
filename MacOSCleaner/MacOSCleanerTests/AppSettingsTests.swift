@@ -46,9 +46,14 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.emptyTrashImmediately)
         XCTAssertTrue(settings.enableAI)
         XCTAssertFalse(settings.isDebugMode)
+        XCTAssertEqual(settings.projectArtifactsOlderThanDays, 60)
     }
 
-    // MARK: - Persistence
+    func testProjectArtifactsAgePersisted() {
+        let settings = AppSettings()
+        settings.projectArtifactsOlderThanDays = 90
+        XCTAssertEqual(UserDefaults.standard.integer(forKey: "settings_projectArtifactsOlderThanDays"), 90)
+    }
 
     func testLanguagePersisted() {
         let settings = AppSettings()
@@ -98,6 +103,7 @@ final class AppSettingsTests: XCTestCase {
         settings.emptyTrashImmediately = true
         settings.enableAI = false
         settings.isDebugMode = true
+        settings.projectArtifactsOlderThanDays = 180
  
         settings.resetAll()
  
@@ -112,5 +118,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.emptyTrashImmediately)
         XCTAssertTrue(settings.enableAI)
         XCTAssertFalse(settings.isDebugMode)
+        XCTAssertEqual(settings.projectArtifactsOlderThanDays, 60)
     }
 }

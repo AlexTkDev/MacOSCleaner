@@ -591,6 +591,7 @@
 "category.sleep_image" = "Imagen de suspensión";
 "category.duplicate_files" = "Archivos duplicados";
 "category.unused_apps" = "Aplicaciones no utilizadas";
+"category.project_build_artifacts" = "Artefactos de compilación de proyectos";
 
 // Process View - Missing Keys
 "view_mode" = "Modo de vista";
@@ -951,3 +952,7 @@
 "settings_search_no_results_sub" = "Pruebe a buscar 'papelera', 'FDA', 'IA' o 'tema'";
 
 "settings_about_report_issue_sub" = "Reportes de errores y sugerencias";
+
+"settings_project_artifacts_age" = "Antigüedad de artefactos de proyecto";
+"settings_project_artifacts_age_sub" = "Buscar artefactos de compilación no modificados en más de estos días";
+"settings_days_count" = "> %d días";

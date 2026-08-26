@@ -40,7 +40,11 @@ final class LocalizationCompletenessTests: XCTestCase {
         "uninstaller_leftovers_cleaned_notification",
         "uninstaller_show_in_finder",
         "menu_donate",
-        "about_donate"
+        "about_donate",
+        "category.project_build_artifacts",
+        "settings_project_artifacts_age",
+        "settings_project_artifacts_age_sub",
+        "settings_days_count"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

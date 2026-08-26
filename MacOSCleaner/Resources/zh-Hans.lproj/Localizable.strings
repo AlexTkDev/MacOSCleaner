@@ -568,6 +568,7 @@
 "category.sleep_image" = "休眠镜像";
 "category.duplicate_files" = "重复文件";
 "category.unused_apps" = "未使用应用";
+"category.project_build_artifacts" = "项目构建产物";
 
 "view_mode" = "视图模式";
 "sort_by" = "排序依据";
@@ -844,6 +845,10 @@
 "settings_search_results_title" = "“%@”的搜索结果";
 "settings_search_no_results" = "未找到设置";
 "settings_search_no_results_sub" = "尝试搜索“废纸篓”、“权限”、“AI”或“主题”";
+
+"settings_project_artifacts_age" = "项目构建产物保留期";
+"settings_project_artifacts_age_sub" = "扫描未修改时间超过指定天数的构建产物";
+"settings_days_count" = "> %d 天";
 
 
 /* Evidence Categories */

@@ -146,7 +146,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 let categories = self.itemManager.selectedCleanupCategories(from: options.categories())
                 // Review-only categories — never run category-level wipe.
                 let safeCategories = categories.filter {
-                    $0 != .oldBackups && $0 != .aiModels && $0 != .installerPackages && $0 != .largeFiles
+                    $0 != .oldBackups && $0 != .aiModels && $0 != .installerPackages && $0 != .largeFiles && $0 != .projectBuildArtifacts
                 }
                 var records: [OperationRecord] = []
                 var hadPartialFailure = false
@@ -210,6 +210,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     (.aiModels, "AI Models"),
                     (.installerPackages, "Installer Packages"),
                     (.largeFiles, "Large files"),
+                    (.projectBuildArtifacts, "Project build artifacts"),
                 ]
                 for (category, logLabel) in reviewGroups {
                     let selectedURLs = self.selectedReviewLeafURLs(for: category)
@@ -357,7 +358,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
     @MainActor
     private func deselectReviewOnlyGroups() {
-        for category in [CleanupCategory.oldBackups, .aiModels, .installerPackages, .largeFiles] {
+        for category in [CleanupCategory.oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts] {
             for label in category.previewLabels {
                 itemManager.setSelection(underParentLabel: label, isSelected: false)
             }

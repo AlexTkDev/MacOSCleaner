@@ -567,7 +567,8 @@
 "category.font_cache" = "Cache de fontes";
 "category.sleep_image" = "Imagem de repouso";
 "category.duplicate_files" = "Arquivos duplicados";
-"category.unused_apps" = "Apps não utilizados";
+"category.unused_apps" = "Aplicativos não utilizados";
+"category.project_build_artifacts" = "Artefatos de build de projetos";
 
 "view_mode" = "Modo de visualização";
 "sort_by" = "Ordenar por";
@@ -844,6 +845,10 @@
 "settings_search_results_title" = "Resultados da busca para «%@»";
 "settings_search_no_results" = "Nenhum ajuste encontrado";
 "settings_search_no_results_sub" = "Tente buscar por termos como 'Lixo', 'FDA' ou 'IA'";
+
+"settings_project_artifacts_age" = "Idade dos artefatos de projetos";
+"settings_project_artifacts_age_sub" = "Examinar artefatos de build não modificados há mais deste período";
+"settings_days_count" = "> %d dias";
 
 
 /* Evidence Categories */

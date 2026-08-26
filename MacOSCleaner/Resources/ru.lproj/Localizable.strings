@@ -591,6 +591,7 @@
 "category.sleep_image" = "Образ сна";
 "category.duplicate_files" = "Дубликаты файлов";
 "category.unused_apps" = "Неиспользуемые приложения";
+"category.project_build_artifacts" = "Артефакты проектов";
 
 /* Process View - Missing Keys */
 "view_mode" = "Режим просмотра";
@@ -952,3 +953,7 @@
 
 "settings_about_report_issue_sub" = "Отчеты об ошибках и пожелания";
 "startup_help_system" = "Системная служба Apple. Отключать не рекомендуется.";
+
+"settings_project_artifacts_age" = "Возраст артефактов проектов";
+"settings_project_artifacts_age_sub" = "Поиск папок сборок, не менявшихся дольше указанного срока";
+"settings_days_count" = "> %d дн.";

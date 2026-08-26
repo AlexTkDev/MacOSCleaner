@@ -144,6 +144,7 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
     case sleepImage = "sleep_image"
     case duplicateFiles = "duplicate_files"
     case unusedApps = "unused_apps"
+    case projectBuildArtifacts = "project_build_artifacts"
 }
 
 // MARK: - CleanupEngine Actor
@@ -350,6 +351,7 @@ public actor CleanupEngine {
         case .sleepImage: return try await cleanSleepImage(dryRun: dryRun, progress: progress)
         case .duplicateFiles: return try await cleanDuplicateFiles(dryRun: dryRun, progress: progress)
         case .unusedApps: return try await cleanUnusedApps(dryRun: dryRun, progress: progress)
+        case .projectBuildArtifacts: return try await cleanProjectBuildArtifacts(dryRun: dryRun, progress: progress, olderThanDays: options.projectArtifactsOlderThanDays)
         }
     }
 
@@ -454,6 +456,10 @@ public struct CleanupOptions: Sendable, Equatable {
     public var cleanModCache: Bool = true
     /// When true, deep cleans project artifacts (.dart_tool directories).
     public var cleanProjects: Bool = true
+    /// When true, cleans project-local build artifacts. Default is false (review-only).
+    public var cleanProjectArtifacts: Bool = false
+    /// Project build artifacts older than this many days will be cleaned (default: 60).
+    public var projectArtifactsOlderThanDays: Int = 60
     /// Xcode Archives older than this many days will be cleaned.
     public var xcodeArchivesOlderThanDays: Int = 90
     /// When true, cleans CloudDocs (iCloud document cache).
@@ -469,11 +475,27 @@ public struct CleanupOptions: Sendable, Equatable {
     /// When true, cleans Time Machine local snapshots.
     public var cleanTimeMachineSnapshots: Bool = false
 
-    public init(cleanDSStore: Bool = false, cleanMaven: Bool = true, cleanModCache: Bool = true, cleanProjects: Bool = true, xcodeArchivesOlderThanDays: Int = 90, cleanCloudDocs: Bool = false, cleanVoiceMemos: Bool = false, cleanGarageBandLogic: Bool = false, cleanIMovieFinalCut: Bool = false, cleanSleepImage: Bool = false, cleanTimeMachineSnapshots: Bool = false) {
+    public init(
+        cleanDSStore: Bool = false,
+        cleanMaven: Bool = true,
+        cleanModCache: Bool = true,
+        cleanProjects: Bool = true,
+        cleanProjectArtifacts: Bool = false,
+        projectArtifactsOlderThanDays: Int = 60,
+        xcodeArchivesOlderThanDays: Int = 90,
+        cleanCloudDocs: Bool = false,
+        cleanVoiceMemos: Bool = false,
+        cleanGarageBandLogic: Bool = false,
+        cleanIMovieFinalCut: Bool = false,
+        cleanSleepImage: Bool = false,
+        cleanTimeMachineSnapshots: Bool = false
+    ) {
         self.cleanDSStore = cleanDSStore
         self.cleanMaven = cleanMaven
         self.cleanModCache = cleanModCache
         self.cleanProjects = cleanProjects
+        self.cleanProjectArtifacts = cleanProjectArtifacts
+        self.projectArtifactsOlderThanDays = projectArtifactsOlderThanDays
         self.xcodeArchivesOlderThanDays = xcodeArchivesOlderThanDays
         self.cleanCloudDocs = cleanCloudDocs
         self.cleanVoiceMemos = cleanVoiceMemos
@@ -494,7 +516,7 @@ public struct CleanupOptions: Sendable, Equatable {
     /// per-item ownership proofs and explicit user selection:
     /// orphaned remnants/files, old backups, AI/LLM user_content, installer packages,
     /// large-file review items, launch agents/daemons,
-    /// privileged helpers, package receipts, internet plugins.
+    /// privileged helpers, package receipts, internet plugins, project build artifacts.
     public func categories() -> [CleanupCategory] {
         var categories: [CleanupCategory] = [
             .appCaches,
@@ -543,6 +565,9 @@ public struct CleanupOptions: Sendable, Equatable {
         }
         if cleanCloudDocs {
             categories.append(.cloudDocs)
+        }
+        if cleanProjectArtifacts {
+            categories.append(.projectBuildArtifacts)
         }
         if cleanVoiceMemos {
             categories.append(.voiceMemos)
@@ -1070,23 +1095,43 @@ extension CleanupEngine {
         freed += af
         if dryRun { emitFileItem(ai, category: "Xcode", parentName: nil, progress: progress) }
 
-        // Project-local build artifacts (DerivedData, build/ inside project repos)
-        let projectLocalFreed = try await cleanProjectLocalBuildArtifacts(home: home, dryRun: dryRun, progress: progress)
-        freed += projectLocalFreed
-
         let mb = Int(freed / (1024 * 1024))
         progress?(.log("Xcode total: \(Self.formatBytes(freed))"))
         progress?(.result(label: "Xcode cleanup", freedMB: mb))
         return [CleanupEngineResult(label: "Xcode", freedMB: mb)]
     }
 
+    // MARK: - Project Build Artifacts
+
+    func cleanProjectBuildArtifacts(
+        dryRun: Bool,
+        progress: (@Sendable (CleanupEngineEvent) -> Void)?,
+        olderThanDays: Int = 60
+    ) async throws -> [CleanupEngineResult] {
+        let home = fileSystemContext.homePath
+        progress?(.log("Scanning project build artifacts (older than \(olderThanDays) days)..."))
+        let freed = try await cleanProjectLocalBuildArtifacts(
+            home: home,
+            dryRun: dryRun,
+            progress: progress,
+            olderThanDays: olderThanDays
+        )
+        let mb = Int(freed / (1024 * 1024))
+        progress?(.log("Project build artifacts total: \(Self.formatBytes(freed))"))
+        progress?(.result(label: "Project build artifacts", freedMB: mb))
+        return [CleanupEngineResult(label: "Project build artifacts", freedMB: mb)]
+    }
+
     /// Scans common developer directories for project-local build artifacts.
+    /// Filters by mtime of the artifact directory (older than olderThanDays).
     /// All targets are 100% regenerable by their respective build tools.
     private func cleanProjectLocalBuildArtifacts(
         home: String,
         dryRun: Bool,
-        progress: (@Sendable (CleanupEngineEvent) -> Void)?
+        progress: (@Sendable (CleanupEngineEvent) -> Void)?,
+        olderThanDays: Int = 60
     ) async throws -> Int64 {
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -olderThanDays, to: Date()) ?? Date.distantPast
         let searchRoots = [
             "\(home)/Documents",
             "\(home)/Developer",
@@ -1188,11 +1233,17 @@ extension CleanupEngine {
                 // Check if this is an always-removable artifact
                 if alwaysRemovable.contains(name) {
                     enumerator.skipDescendants()
+                    if let attrs = try? fm.attributesOfItem(atPath: url.path),
+                       let modDate = attrs[.modificationDate] as? Date,
+                       modDate > cutoffDate {
+                        // Modified recently (< olderThanDays), keep it
+                        continue
+                    }
                     do {
                         let (f, item) = try await removeDirectory(url.path, dryRun: dryRun, progress: progress)
                         freed += f
                         foundCount += 1
-                        if dryRun { emitFileItem(item, category: "Xcode", parentName: "Project build artifacts", progress: progress) }
+                        if dryRun { emitFileItem(item, category: "Project build artifacts", parentName: "Project build artifacts", progress: progress) }
                     } catch is SafetyError {
                         progress?(.log("  \(shortPath(url.path)) — protected, skipped"))
                     }
@@ -1221,11 +1272,17 @@ extension CleanupEngine {
                 guard matched else { continue }
 
                 enumerator.skipDescendants()
+                if let attrs = try? fm.attributesOfItem(atPath: url.path),
+                   let modDate = attrs[.modificationDate] as? Date,
+                   modDate > cutoffDate {
+                    // Modified recently (< olderThanDays), keep it
+                    continue
+                }
                 do {
                     let (f, item) = try await removeDirectory(url.path, dryRun: dryRun, progress: progress)
                     freed += f
                     foundCount += 1
-                    if dryRun { emitFileItem(item, category: "Xcode", parentName: "Project build artifacts", progress: progress) }
+                    if dryRun { emitFileItem(item, category: "Project build artifacts", parentName: "Project build artifacts", progress: progress) }
                 } catch is SafetyError {
                     progress?(.log("  \(shortPath(url.path)) — protected, skipped"))
                 }
@@ -2181,44 +2238,6 @@ extension CleanupEngine {
                 scannedCount += 1
             }
             progress?(.log("  Checked \(scannedCount) files in \(downloadDir.replacingOccurrences(of: home, with: "~"))"))
-        }
-
-        // node_modules directories > 100MB (recursive search)
-        progress?(.log("  Scanning home directory for node_modules > 100 MB..."))
-        let searchDirs = [home]
-        for baseDir in searchDirs {
-            guard fm.fileExists(atPath: baseDir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: baseDir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                let fullPath = "\(baseDir)/\(item)"
-                // Skip hidden dirs, Library
-                if item.hasPrefix(".") || fullPath.contains("/Library/") {
-                    enumerator.skipDescendants()
-                    continue
-                }
-                // Skip heavy directories (Docker, VMs, etc.) — only for actual directories
-                if Self.isHeavyDirectory(fullPath) {
-                    var isDir: ObjCBool = false
-                    fm.fileExists(atPath: fullPath, isDirectory: &isDir)
-                    if isDir.boolValue {
-                        progress?(.log("  Skipping heavy directory: \(shortPath(fullPath))"))
-                        enumerator.skipDescendants()
-                    }
-                    continue
-                }
-                if item == "node_modules" {
-                    let size = await getDirectorySizeWithTimeout(fullPath, timeout: .seconds(10))
-                    if size > 100 * 1024 * 1024 {
-                        items.append(("\(fullPath.replacingOccurrences(of: home, with: "~"))", size))
-                        totalFound += size
-                        if dryRun {
-                            emitFileItem(CleanupFileItem(path: fullPath, sizeBytes: size, modificationDate: nil, isDirectory: true), category: "Large files", parentName: "Large files", progress: progress)
-                        }
-                    }
-                    enumerator.skipDescendants()
-                }
-            }
         }
 
         // IPSW firmware files

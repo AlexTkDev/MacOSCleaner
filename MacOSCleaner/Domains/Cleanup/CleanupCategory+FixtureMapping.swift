@@ -142,6 +142,9 @@ extension CleanupCategory {
             labels.insert("Duplicate Files")
         case .unusedApps:
             labels.insert("Unused Apps")
+        case .projectBuildArtifacts:
+            labels.insert("Project build artifacts")
+            labels.insert("Project-local build artifacts")
         }
 
         return labels
@@ -220,6 +223,7 @@ extension CleanupCategory {
         case "itunes_backup_scanner": return .iosBackups
         case "spotlight_index_scanner": return .systemCaches
         case "swap_files_scanner": return .systemCaches
+        case "project_build_artifacts_scanner": return .projectBuildArtifacts
         default: return nil
         }
     }

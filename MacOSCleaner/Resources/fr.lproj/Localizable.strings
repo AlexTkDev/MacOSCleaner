@@ -568,6 +568,7 @@
 "category.sleep_image" = "Image de veille";
 "category.duplicate_files" = "Fichiers en doublon";
 "category.unused_apps" = "Applications inutilisées";
+"category.project_build_artifacts" = "Artefacts de build de projets";
 
 "view_mode" = "Mode d'affichage";
 "sort_by" = "Trier par";
@@ -852,6 +853,10 @@
 "settings_search_results_title" = "Résultats de recherche pour «%@»";
 "settings_search_no_results" = "Aucun réglage trouvé";
 "settings_search_no_results_sub" = "Essayez de chercher des termes comme 'corbeille', 'FDA', 'IA' ou 'thème'";
+
+"settings_project_artifacts_age" = "Âge des artefacts de projets";
+"settings_project_artifacts_age_sub" = "Analyser les artefacts de build non modifiés depuis plus de ce nombre de jours";
+"settings_days_count" = "> %d jours";
 
 
 /* Evidence Descriptions */

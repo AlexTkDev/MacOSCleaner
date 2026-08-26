@@ -588,6 +588,7 @@
 "category.sleep_image" = "Образ сну";
 "category.duplicate_files" = "Дублікати файлів";
 "category.unused_apps" = "Невикористовувані додатки";
+"category.project_build_artifacts" = "Артефакти проєктів";
 
 /* Process View - Missing Keys */
 "view_mode" = "Режим перегляду";
@@ -949,3 +950,7 @@
 
 "settings_about_report_issue_sub" = "Звіти про помилки та пропозиції";
 "startup_help_system" = "Системна служба Apple. Вимикати не рекомендується.";
+
+"settings_project_artifacts_age" = "Вік артефактів проєктів";
+"settings_project_artifacts_age_sub" = "Пошук папок збірок, які не змінювалися довше вказаного терміну";
+"settings_days_count" = "> %d дн.";
