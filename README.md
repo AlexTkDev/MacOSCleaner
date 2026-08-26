@@ -83,8 +83,8 @@
 <a id="features"></a>
 ## ✨ Features
 
-- **Smart Cleanup:** scans 55+ categories across system caches, applications, developer project build artifacts (Xcode, Docker, Rust `target`, Go `pkg`, Python `.venv`, Node `node_modules` with configurable age limits), local AI models (Ollama, MLX, Hugging Face), and safe Time Machine snapshot thinning (`thinlocalsnapshots`).
-- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) to find remnants, with standalone orphaned residuals discovery, confidence score tiers, post-uninstall review sheets, and root-level helper removal.
+- **Smart Cleanup:** scans 55+ categories across system caches, 275+ applications, 85+ developer toolchains & package managers (Xcode, Docker, `uv`, `mise`, Rust, Go, Python, Node), local AI models & coding assistants (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`).
+- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) to trace remnants across 1,800+ known application paths and heuristics, with standalone orphaned residuals discovery, confidence score tiers, post-uninstall review sheets, and root-level helper removal.
 - **Duplicate Finder:** identifies duplicate files through a 3-stage pipeline (file size matching, 4 KB header checksum, full SHA-256 verification).
 - **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSize`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
 - **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical processes (`kernel_task`, `launchd`), plus LaunchAgents and LaunchDaemons toggling.
