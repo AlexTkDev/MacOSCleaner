@@ -1,4 +1,5 @@
 import SwiftUI
+import QuickLook
 
 public struct DiskAnalyzerView: View {
     let settings: AppSettings
@@ -9,20 +10,23 @@ public struct DiskAnalyzerView: View {
     }
     
     public var body: some View {
-        GlassEffectContainer {
-            VStack(spacing: 16) {
-                headerControlsView
-                
-                if viewModel.isScanning {
-                    scanningView
-                } else if viewModel.filteredItems.isEmpty {
-                    emptyView
-                } else {
-                    itemsListView
-                }
+        VStack(spacing: 12) {
+            headerControlsView
+            
+            if !viewModel.isScanning && viewModel.currentItem != nil {
+                breadcrumbsView
             }
-            .padding()
+            
+            if viewModel.isScanning {
+                scanningView
+            } else if viewModel.displayedItems.isEmpty {
+                emptyView
+            } else {
+                itemsListView
+            }
         }
+        .padding(16)
+        .quickLookPreview($viewModel.quickLookURL)
         .onAppear {
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
@@ -32,7 +36,7 @@ public struct DiskAnalyzerView: View {
     
     private var headerControlsView: some View {
         HStack(spacing: 12) {
-            // Folder Selector Menu (matching DuplicatesView)
+            // Folder Selector Menu
             Menu {
                 Button(action: { viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser) }) {
                     Label("duplicate_folder_home".localized, systemImage: "house")
@@ -61,10 +65,32 @@ public struct DiskAnalyzerView: View {
 
             Spacer()
 
+            // Search bar
+            HStack(spacing: 6) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+                TextField("settings_search_prompt".localized, text: $viewModel.searchQuery)
+                    .textFieldStyle(.plain)
+                    .frame(width: 140)
+                if !viewModel.searchQuery.isEmpty {
+                    Button(action: { viewModel.searchQuery = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.primary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+
             // Scan Action Button
             Button(action: { viewModel.selectFolderAndScan() }) {
                 HStack(spacing: 6) {
-                    Image(systemName: "folder.badge.plus")
+                    Image(systemName: "arrow.clockwise")
                     Text("disk_analyzer_scan".localized)
                 }
             }
@@ -78,6 +104,84 @@ public struct DiskAnalyzerView: View {
             selection: $viewModel.selectedCategory,
             label: { $0.localizedName }
         )
+    }
+    
+    private var breadcrumbsView: some View {
+        HStack(spacing: 8) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    viewModel.navigateUp()
+                }
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+            }
+            .buttonStyle(.plain)
+            .disabled(!viewModel.canNavigateUp)
+            .opacity(viewModel.canNavigateUp ? 1.0 : 0.3)
+            .help("disk_analyzer_back".localized)
+            
+            Divider()
+                .frame(height: 16)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(Array(viewModel.pathTrail.enumerated()), id: \.element.id) { index, item in
+                        let isLast = index == viewModel.pathTrail.count - 1
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                viewModel.navigateTo(item: item)
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                if index == 0 {
+                                    Image(systemName: "house.fill")
+                                        .font(.caption)
+                                }
+                                Text(item.name.isEmpty ? "/" : item.name)
+                                    .font(.callout.weight(isLast ? .semibold : .regular))
+                                    .foregroundColor(isLast ? .primary : .secondary)
+                            }
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(isLast ? Color.primary.opacity(0.08) : Color.clear)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                        .buttonStyle(.plain)
+                        
+                        if !isLast {
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundColor(.secondary.opacity(0.6))
+                        }
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            if let current = viewModel.currentItem {
+                HStack(spacing: 8) {
+                    let count = viewModel.selectedCategory == .all ? current.fileCount : viewModel.displayedItems.count
+                    Text(String(format: "disk_analyzer_items_count".localized, count))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    let totalSize = viewModel.selectedCategory == .all ? current.size : viewModel.displayedItems.reduce(0) { $0 + $1.size }
+                    Text(totalSize.formattedByteCount())
+                        .font(.caption.monospaced().weight(.semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.accentColor.opacity(0.12))
+                        .foregroundColor(.accentColor)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color.primary.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     
     private var scanningView: some View {
@@ -105,17 +209,16 @@ public struct DiskAnalyzerView: View {
         VStack(spacing: 12) {
             Spacer()
             Image(systemName: "folder.badge.questionmark")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
-            
-            if viewModel.items.isEmpty {
-                Text("disk_analyzer_empty".localized)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            } else {
-                Text(String(format: "disk_analyzer_category_empty".localized, viewModel.selectedCategory.localizedName))
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+            if viewModel.displayedItems.isEmpty {
+                if viewModel.selectedCategory != .all {
+                    Text(String(format: "disk_analyzer_category_empty".localized, viewModel.selectedCategory.localizedName))
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("disk_analyzer_empty".localized)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
             }
             Spacer()
         }
@@ -124,25 +227,53 @@ public struct DiskAnalyzerView: View {
     
     private var itemsListView: some View {
         ScrollView {
-            LazyVStack(spacing: 1) {
-                ForEach(viewModel.filteredItems) { item in
-                    DiskItemRow(item: item, settings: settings, onShowInFinder: {
-                        viewModel.showInFinder(item: item)
-                    }, onDelete: {
-                        viewModel.moveToTrash(item: item)
-                    })
+            LazyVStack(spacing: 2) {
+                ForEach(viewModel.displayedItems) { item in
+                    let isSelected = viewModel.selectedItem?.id == item.id
+                    DiskItemRow(
+                        item: item,
+                        isSelected: isSelected,
+                        settings: settings,
+                        onDrillDown: {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                viewModel.drillDown(into: item)
+                            }
+                        },
+                        onQuickLook: {
+                            viewModel.toggleQuickLook(for: item)
+                        },
+                        onShowInFinder: {
+                            viewModel.showInFinder(item: item)
+                        },
+                        onDelete: {
+                            viewModel.moveToTrash(item: item)
+                        }
+                    )
+                    .onTapGesture {
+                        if item.isDirectory && !item.isPackage {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                viewModel.drillDown(into: item)
+                            }
+                        } else {
+                            viewModel.selectedItem = item
+                        }
+                    }
                 }
             }
-            .padding(.horizontal, 4)
+            .padding(4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .glassCard(cornerRadius: 12)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
 struct DiskItemRow: View {
     let item: DiskItem
+    let isSelected: Bool
     let settings: AppSettings
+    let onDrillDown: () -> Void
+    let onQuickLook: () -> Void
     let onShowInFinder: () -> Void
     let onDelete: () -> Void
     
@@ -155,20 +286,28 @@ struct DiskItemRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: iconName)
                     .font(.title3)
                     .foregroundColor(iconColor)
                     .frame(width: 24, height: 24)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.name)
-                        .font(.body)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(item.name)
+                            .font(.body.weight(item.isDirectory && !item.isPackage ? .medium : .regular))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        
+                        if item.isDirectory && !item.isPackage {
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundColor(.secondary.opacity(0.7))
+                        }
+                    }
                     
-                    if item.isDirectory {
-                        Text("folder".localized)
+                    if item.isDirectory && !item.isPackage {
+                        Text(String(format: "disk_analyzer_items_count".localized, item.fileCount))
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     } else {
@@ -201,10 +340,26 @@ struct DiskItemRow: View {
                 Text(item.size.formattedByteCount())
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.secondary)
-                    .padding(.trailing, 8)
+                    .padding(.trailing, 4)
                 
-                if isHovered {
+                if isHovered || isSelected {
                     HStack(spacing: 4) {
+                        if !item.isDirectory || item.isPackage {
+                            Button(action: onQuickLook) {
+                                Image(systemName: "eye")
+                            }
+                            .buttonStyle(.plain)
+                            .help("disk_analyzer_quick_look".localized)
+                        }
+                        
+                        if item.isDirectory && !item.isPackage {
+                            Button(action: onDrillDown) {
+                                Image(systemName: "folder")
+                            }
+                            .buttonStyle(.plain)
+                            .help("disk_analyzer_open_folder".localized)
+                        }
+                        
                         Button(action: onShowInFinder) {
                             Image(systemName: "magnifyingglass")
                         }
@@ -223,12 +378,12 @@ struct DiskItemRow: View {
                     .transition(.opacity)
                 }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .padding(.horizontal, 10)
             .contentShape(Rectangle())
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
+                    .fill(isSelected ? Color.accentColor.opacity(0.18) : (isHovered ? Color.primary.opacity(0.05) : Color.clear))
             )
             .onHover { hover in
                 withAnimation(.easeInOut(duration: 0.1)) {
@@ -308,7 +463,7 @@ struct DiskItemRow: View {
     }
     
     private var iconName: String {
-        if item.isDirectory {
+        if item.isDirectory && !item.isPackage {
             return "folder.fill"
         }
         switch item.fileType {
@@ -323,7 +478,7 @@ struct DiskItemRow: View {
     }
     
     private var iconColor: Color {
-        if item.isDirectory {
+        if item.isDirectory && !item.isPackage {
             return .blue
         }
         switch item.fileType {
@@ -337,3 +492,4 @@ struct DiskItemRow: View {
         }
     }
 }
+

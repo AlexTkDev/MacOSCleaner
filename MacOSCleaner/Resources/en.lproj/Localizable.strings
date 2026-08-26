@@ -116,6 +116,9 @@
 "disk_analyzer_category_apps" = "Apps";
 "disk_analyzer_category_docs" = "Documents";
 "disk_analyzer_category_archives" = "Archives";
+"disk_analyzer_items_count" = "%d items";
+"disk_analyzer_quick_look" = "Quick Look";
+"disk_analyzer_open_folder" = "Open Folder";
 
 
 /* About View */

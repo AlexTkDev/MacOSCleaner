@@ -116,6 +116,9 @@
 "disk_analyzer_category_apps" = "Apps";
 "disk_analyzer_category_docs" = "Dokumente";
 "disk_analyzer_category_archives" = "Archive";
+"disk_analyzer_items_count" = "%d Objekte";
+"disk_analyzer_quick_look" = "Übersicht";
+"disk_analyzer_open_folder" = "Ordner öffnen";
 
 /* About View */
 "about_title" = "Über MacOS Cleaner";

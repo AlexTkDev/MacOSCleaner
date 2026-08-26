@@ -116,6 +116,9 @@
 "disk_analyzer_category_apps" = "アプリ";
 "disk_analyzer_category_docs" = "書類";
 "disk_analyzer_category_archives" = "アーカイブ";
+"disk_analyzer_items_count" = "%d項目";
+"disk_analyzer_quick_look" = "クイックルック";
+"disk_analyzer_open_folder" = "フォルダを開く";
 
 /* About View */
 "about_title" = "MacOS Cleaner について";

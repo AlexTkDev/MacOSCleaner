@@ -116,6 +116,9 @@
 "disk_analyzer_category_apps" = "Приложения";
 "disk_analyzer_category_docs" = "Документы";
 "disk_analyzer_category_archives" = "Архивы";
+"disk_analyzer_items_count" = "%d файлов";
+"disk_analyzer_quick_look" = "Быстрый просмотр";
+"disk_analyzer_open_folder" = "Открыть папку";
 
 
 /* About View */

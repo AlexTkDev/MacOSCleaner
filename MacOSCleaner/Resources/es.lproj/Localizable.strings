@@ -115,7 +115,10 @@
 "disk_analyzer_category_photo" = "Fotos";
 "disk_analyzer_category_apps" = "Aplicaciones";
 "disk_analyzer_category_docs" = "Documentos";
-"disk_analyzer_category_archives" = "Archivos";
+"disk_analyzer_category_archives" = "Archivos comprimidos";
+"disk_analyzer_items_count" = "%d elementos";
+"disk_analyzer_quick_look" = "Vista rápida";
+"disk_analyzer_open_folder" = "Abrir carpeta";
 
 
 //* About View */

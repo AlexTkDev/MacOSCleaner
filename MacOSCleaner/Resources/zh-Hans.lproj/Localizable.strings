@@ -116,6 +116,9 @@
 "disk_analyzer_category_apps" = "应用";
 "disk_analyzer_category_docs" = "文档";
 "disk_analyzer_category_archives" = "压缩包";
+"disk_analyzer_items_count" = "%d 个项目";
+"disk_analyzer_quick_look" = "快速查看";
+"disk_analyzer_open_folder" = "打开文件夹";
 
 /* About View */
 "about_title" = "关于 MacOS Cleaner";

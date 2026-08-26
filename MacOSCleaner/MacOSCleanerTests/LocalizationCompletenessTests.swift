@@ -44,7 +44,10 @@ final class LocalizationCompletenessTests: XCTestCase {
         "category.project_build_artifacts",
         "settings_project_artifacts_age",
         "settings_project_artifacts_age_sub",
-        "settings_days_count"
+        "settings_days_count",
+        "disk_analyzer_items_count",
+        "disk_analyzer_quick_look",
+        "disk_analyzer_open_folder"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

@@ -115,7 +115,10 @@
 "disk_analyzer_category_photo" = "Фото";
 "disk_analyzer_category_apps" = "Програми";
 "disk_analyzer_category_docs" = "Документи";
-"disk_analyzer_category_archives" = "Архів";
+"disk_analyzer_category_archives" = "Архіви";
+"disk_analyzer_items_count" = "%d файлів";
+"disk_analyzer_quick_look" = "Швидкий перегляд";
+"disk_analyzer_open_folder" = "Відкрити папку";
 
 
 /* About View */
