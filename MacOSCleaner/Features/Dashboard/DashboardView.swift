@@ -105,7 +105,8 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
-                    .glassCard()
+                    .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 VStack(spacing: 0) {
                     ForEach(viewModel.recentTransactions) { transaction in
@@ -115,7 +116,8 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .glassCard()
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
     }
