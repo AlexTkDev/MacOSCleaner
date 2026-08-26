@@ -2388,32 +2388,41 @@ extension CleanupEngine {
         }
 
         let snapshots = await TimeMachineScanner.listLocalSnapshots()
+        let purgeableMB = TimeMachineScanner.getPurgeableSpaceMB()
 
-        progress?(.log("  Found \(snapshots.count) local snapshots"))
+        progress?(.log("  Found \(snapshots.count) local snapshots (purgeable: ~\(purgeableMB) MB)"))
 
         if dryRun {
             for snap in snapshots {
                 progress?(.log("  ⊘ \(snap.name)"))
             }
+            progress?(.result(label: "Time Machine Snapshots", freedMB: purgeableMB))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: purgeableMB)]
+        }
+
+        if snapshots.isEmpty {
+            progress?(.log("  No local snapshots to thin"))
             progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
             return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
         }
 
-        var deleted = 0
-        for snap in snapshots {
-            try Task.checkCancellation()
-            do {
-                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/usr/bin/tmutil deletelocalsnapshots \(snap.name)")
-                deleted += 1
-                progress?(.log("  ✓ Deleted \(snap.name)"))
-            } catch {
-                progress?(.log("  ✗ Failed to delete \(snap.name): \(error.localizedDescription)"))
-            }
-        }
+        let availableBefore = (try? URL(fileURLWithPath: "/").resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity ?? 0
+        let purgeBytes = max(10_000_000_000, Int64(purgeableMB) * 1024 * 1024)
 
-        progress?(.log("  Deleted \(deleted) snapshots"))
-        progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
-        return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+        do {
+            try Task.checkCancellation()
+            _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/usr/bin/tmutil thinlocalsnapshots / \(purgeBytes) 4")
+            let availableAfter = (try? URL(fileURLWithPath: "/").resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity ?? 0
+            let freedBytes = max(0, availableAfter - availableBefore)
+            let freedMB = Int(freedBytes / (1024 * 1024))
+            progress?(.log("  ✓ Thinned local snapshots (freed ~\(freedMB) MB)"))
+            progress?(.result(label: "Time Machine Snapshots", freedMB: freedMB))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: freedMB, freedBytes: Int64(freedBytes))]
+        } catch {
+            progress?(.log("  ✗ Failed to thin snapshots: \(error.localizedDescription)"))
+            progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+        }
     }
 
     // MARK: 24. iOS Backups
@@ -3105,15 +3114,16 @@ extension CleanupEngine {
     func cleanDNSFlush(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         progress?(.log("Flushing DNS cache..."))
         if dryRun {
-            progress?(.log("  Would run: sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"))
+            progress?(.log("  Would run: dscacheutil -flushcache && killall -HUP mDNSResponder"))
             progress?(.result(label: "DNS Cache", freedMB: 0))
             return [CleanupEngineResult(label: "DNS Cache", freedMB: 0)]
         }
-        let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"])
-        if result?.exitCode == 0 {
-            progress?(.log("  DNS cache flushed successfully"))
-        } else {
-            progress?(.log("  DNS cache flush failed (may need sudo without password)"))
+        do {
+            try Task.checkCancellation()
+            _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/usr/bin/dscacheutil -flushcache; /usr/bin/killall -HUP mDNSResponder")
+            progress?(.log("  ✓ DNS cache flushed successfully"))
+        } catch {
+            progress?(.log("  ✗ DNS cache flush failed: \(error.localizedDescription)"))
         }
         progress?(.result(label: "DNS Cache", freedMB: 0))
         return [CleanupEngineResult(label: "DNS Cache", freedMB: 0)]

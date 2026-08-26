@@ -615,6 +615,14 @@ struct CleanupEngineTests {
         #expect(results.first?.label == "Time Machine Snapshots")
     }
 
+    @Test("DNS flush dry run")
+    func dnsFlushDryRun() async throws {
+        let engine = CleanupEngine()
+        let results = try await engine.cleanDNSFlush(dryRun: true, progress: nil)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "DNS Cache")
+    }
+
     @Test("IOS backups dry run")
     func iosBackupsDryRun() async throws {
         let engine = CleanupEngine()
