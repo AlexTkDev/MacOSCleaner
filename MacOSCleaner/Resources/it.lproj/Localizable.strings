@@ -398,6 +398,27 @@
 "uninstaller_versions" = "Versioni";
 "shared_data_warning" = "Questi dati sono condivisi con altre app.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Applicazioni";
+"uninstaller_tab_leftovers" = "Residui";
+"uninstaller_leftovers_hero_title" = "Cerca file residui";
+"uninstaller_leftovers_hero_subtitle" = "Trova e rimuovi cache residue, preferenze e file di supporto lasciati da applicazioni disinstallate.";
+"uninstaller_start_leftover_scan" = "Cerca residui";
+"uninstaller_scanning_leftovers" = "Scansione dei file residui in corso...";
+"uninstaller_no_leftovers_title" = "Nessun residuo trovato";
+"uninstaller_no_leftovers_subtitle" = "Il tuo sistema è pulito da residui orfani di applicazioni.";
+"uninstaller_leftovers_found_count" = "%lld residui trovati";
+"uninstaller_filter_all" = "Tutti";
+"uninstaller_clean_selected_leftovers" = "Sposta selezionati nel Cestino";
+"uninstaller_confirm_trash_leftovers_title" = "Spostare i residui selezionati nel Cestino?";
+"uninstaller_confirm_trash_leftovers_message" = "Sei sicuro di voler spostare %lld file residui selezionati (%@) nel Cestino?";
+"uninstaller_post_leftovers_title" = "File residui rilevati";
+"uninstaller_post_leftovers_subtitle" = "I seguenti file residui sono stati rilevati dopo la rimozione di «%@». Seleziona gli elementi da rimuovere.";
+"uninstaller_evidence_card_title" = "Prove e affidabilità";
+"uninstaller_evidence_why_flagged" = "Perché questo file è stato rilevato?";
+"uninstaller_leftovers_cleaned_notification" = "%lld elementi residui ripuliti (%@ liberati)";
+"uninstaller_show_in_finder" = "Mostra nel Finder";
+
 /* Processes View */
 "menu_processes" = "Processi";
 "processes_title" = "Processi";

@@ -398,6 +398,27 @@
 "uninstaller_versions" = "Versionen";
 "shared_data_warning" = "Diese Daten werden mit anderen Apps geteilt. Das Löschen kann andere IDEs beeinträchtigen.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Programme";
+"uninstaller_tab_leftovers" = "Reste";
+"uninstaller_leftovers_hero_title" = "Nach Restdateien suchen";
+"uninstaller_leftovers_hero_subtitle" = "Finden und entfernen Sie verbliebene Caches, Einstellungen und Support-Dateien von deinstallierten Programmen.";
+"uninstaller_start_leftover_scan" = "Nach Resten suchen";
+"uninstaller_scanning_leftovers" = "Suche nach Restdateien...";
+"uninstaller_no_leftovers_title" = "Keine Reste gefunden";
+"uninstaller_no_leftovers_subtitle" = "Ihr System ist frei von verwaisten Anwendungsresten.";
+"uninstaller_leftovers_found_count" = "%lld Reste gefunden";
+"uninstaller_filter_all" = "Alle";
+"uninstaller_clean_selected_leftovers" = "Ausgewählte in den Papierkorb";
+"uninstaller_confirm_trash_leftovers_title" = "Ausgewählte Reste in den Papierkorb?";
+"uninstaller_confirm_trash_leftovers_message" = "Möchten Sie %lld ausgewählte Restdateien (%@) wirklich in den Papierkorb verschieben?";
+"uninstaller_post_leftovers_title" = "Verbliebene Dateien erkannt";
+"uninstaller_post_leftovers_subtitle" = "Nach der Deinstallation von «%@» wurden folgende Restdateien gefunden. Wählen Sie Elemente zum Entfernen aus.";
+"uninstaller_evidence_card_title" = "Nachweise & Vertrauen";
+"uninstaller_evidence_why_flagged" = "Warum wurde diese Datei erkannt?";
+"uninstaller_leftovers_cleaned_notification" = "%lld Restdatei(en) bereinigt (%@ freigegeben)";
+"uninstaller_show_in_finder" = "Im Finder anzeigen";
+
 /* Processes View */
 "menu_processes" = "Prozesse";
 "processes_title" = "Prozesse";

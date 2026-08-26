@@ -398,6 +398,27 @@
 "uninstaller_versions" = "版本";
 "shared_data_warning" = "此数据与其他应用共享，删除可能影响其他开发环境。";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "应用程序";
+"uninstaller_tab_leftovers" = "残留文件";
+"uninstaller_leftovers_hero_title" = "扫描残留文件";
+"uninstaller_leftovers_hero_subtitle" = "查找并清理已被手动或外部卸载应用程序遗留的缓存、偏好设置和支持文件。";
+"uninstaller_start_leftover_scan" = "扫描残留文件";
+"uninstaller_scanning_leftovers" = "正在扫描残留文件...";
+"uninstaller_no_leftovers_title" = "未发现残留文件";
+"uninstaller_no_leftovers_subtitle" = "您的系统中没有孤立的应用程序残留文件。";
+"uninstaller_leftovers_found_count" = "找到 %lld 项残留文件";
+"uninstaller_filter_all" = "全部";
+"uninstaller_clean_selected_leftovers" = "将选中项移至废纸篓";
+"uninstaller_confirm_trash_leftovers_title" = "将选中的残留文件移至废纸篓？";
+"uninstaller_confirm_trash_leftovers_message" = "确定要将选中的 %lld 个残留文件 (%@) 移至废纸篓吗？";
+"uninstaller_post_leftovers_title" = "检测到残留文件";
+"uninstaller_post_leftovers_subtitle" = "卸载“%@”后检测到以下残留文件。请选择要移除的项。";
+"uninstaller_evidence_card_title" = "匹配依据与置信度";
+"uninstaller_evidence_why_flagged" = "为什么标记此文件？";
+"uninstaller_leftovers_cleaned_notification" = "已清理 %lld 项残留文件 (释放 %@)";
+"uninstaller_show_in_finder" = "在访达中显示";
+
 /* Processes View */
 "menu_processes" = "进程管理";
 "processes_title" = "进程管理";

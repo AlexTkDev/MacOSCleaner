@@ -5,8 +5,8 @@ message: >-
   (non-commercial) in LICENSE. Commercial use requires a separate license.
 type: software
 title: MacOS Cleaner
-version: "2.1.1"
-date-released: "2026-08-12"
+version: "2.2.0"
+date-released: "2026-08-26"
 url: "https://github.com/AlexTkDev/MacOSCleaner"
 repository-code: "https://github.com/AlexTkDev/MacOSCleaner"
 # SPDX has no Commons Clause compound; see LICENSE for the binding terms.

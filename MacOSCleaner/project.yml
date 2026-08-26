@@ -74,7 +74,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 2.1.1
+        MARKETING_VERSION: 2.2.0
         CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_DEBUG_DYLIB: NO

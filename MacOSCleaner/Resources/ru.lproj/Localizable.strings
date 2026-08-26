@@ -412,6 +412,27 @@
 "uninstaller_versions" = "Версии";
 "shared_data_warning" = "Эти данные общие для других приложений (например, Android SDK, AVD). Удаление может повлиять на другие IDE.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Приложения";
+"uninstaller_tab_leftovers" = "Остатки";
+"uninstaller_leftovers_hero_title" = "Поиск остаточных файлов";
+"uninstaller_leftovers_hero_subtitle" = "Поиск и удаление остаточных кэшей, настроек и служебных файлов от ранее удалённых приложений.";
+"uninstaller_start_leftover_scan" = "Найти остатки";
+"uninstaller_scanning_leftovers" = "Поиск остаточных файлов...";
+"uninstaller_no_leftovers_title" = "Остатков не найдено";
+"uninstaller_no_leftovers_subtitle" = "В системе нет осиротевших остаточных файлов приложений.";
+"uninstaller_leftovers_found_count" = "Найдено остатков: %lld";
+"uninstaller_filter_all" = "Все";
+"uninstaller_clean_selected_leftovers" = "Переместить выбранные в Корзину";
+"uninstaller_confirm_trash_leftovers_title" = "Переместить выбранные остатки в Корзину?";
+"uninstaller_confirm_trash_leftovers_message" = "Вы уверены, что хотите переместить %lld выбранных остаточных файлов (%@) в Корзину?";
+"uninstaller_post_leftovers_title" = "Обнаружены остаточные файлы";
+"uninstaller_post_leftovers_subtitle" = "После удаления «%@» обнаружены следующие остаточные файлы. Выберите элементы для удаления.";
+"uninstaller_evidence_card_title" = "Подтверждения и уверенность";
+"uninstaller_evidence_why_flagged" = "Почему этот файл найден?";
+"uninstaller_leftovers_cleaned_notification" = "Удалено %lld остаточных файлов (освобождено %@)";
+"uninstaller_show_in_finder" = "Показать в Finder";
+
 /* Processes View */
 "menu_processes" = "Процессы";
 "processes_title" = "Процессы";

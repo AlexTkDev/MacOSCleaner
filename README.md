@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1"><img src="https://img.shields.io/badge/Release-v2.1.1-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0"><img src="https://img.shields.io/badge/Release-v2.2.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>

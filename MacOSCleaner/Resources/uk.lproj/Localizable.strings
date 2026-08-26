@@ -409,6 +409,27 @@
 "uninstaller_versions" = "Версії";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Програми";
+"uninstaller_tab_leftovers" = "Залишки";
+"uninstaller_leftovers_hero_title" = "Пошук залишкових файлів";
+"uninstaller_leftovers_hero_subtitle" = "Пошук та видалення залишкових кешів, налаштувань та службових файлів від раніше видалених програм.";
+"uninstaller_start_leftover_scan" = "Знайти залишки";
+"uninstaller_scanning_leftovers" = "Пошук залишкових файлів...";
+"uninstaller_no_leftovers_title" = "Залишків не знайдено";
+"uninstaller_no_leftovers_subtitle" = "У системі немає залишкових файлів видалених програм.";
+"uninstaller_leftovers_found_count" = "Знайдено залишків: %lld";
+"uninstaller_filter_all" = "Усі";
+"uninstaller_clean_selected_leftovers" = "Перемістити вибрані до Смітника";
+"uninstaller_confirm_trash_leftovers_title" = "Перемістити вибрані залишки до Смітника?";
+"uninstaller_confirm_trash_leftovers_message" = "Ви впевнені, що хочете перемістити %lld вибраних залишкових файлів (%@) до Смітника?";
+"uninstaller_post_leftovers_title" = "Виявлено залишкові файли";
+"uninstaller_post_leftovers_subtitle" = "Після видалення «%@» виявлено такі залишкові файли. Виберіть елементи для видалення.";
+"uninstaller_evidence_card_title" = "Підтвердження та впевненість";
+"uninstaller_evidence_why_flagged" = "Чому цей файл знайдено?";
+"uninstaller_leftovers_cleaned_notification" = "Видалено %lld залишкових файлів (звільнено %@)";
+"uninstaller_show_in_finder" = "Показати у Finder";
+
 /* Processes View */
 "menu_processes" = "Процеси";
 "processes_title" = "Процеси";

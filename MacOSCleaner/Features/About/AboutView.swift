@@ -169,5 +169,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: AvailableUpdate(version: "2.1.1", dmgURL: nil))
+    AboutView(availableUpdate: AvailableUpdate(version: "2.2.0", dmgURL: nil))
 }

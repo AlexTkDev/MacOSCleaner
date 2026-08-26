@@ -6,9 +6,22 @@ import SwiftUI
 struct GlassPillPicker<T: Hashable>: View {
     let items: [T]
     @Binding var selection: T
+    var icon: ((T) -> String)? = nil
     let label: (T) -> String
 
     @Environment(\.locale) private var locale
+
+    init(
+        items: [T],
+        selection: Binding<T>,
+        icon: ((T) -> String)? = nil,
+        label: @escaping (T) -> String
+    ) {
+        self.items = items
+        self._selection = selection
+        self.icon = icon
+        self.label = label
+    }
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
@@ -29,19 +42,25 @@ struct GlassPillPicker<T: Hashable>: View {
                         selection = item
                     }
                 } label: {
-                    Text(label(item))
-                        .font(.system(size: 12, weight: .medium))
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.horizontal, horizontalPadding)
-                        .padding(.vertical, 5)
-                        .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
-                        .background {
-                            if isSelected {
-                                Capsule()
-                                    .fill(Color.accentColor)
-                            }
+                    HStack(spacing: 5) {
+                        if let iconName = icon?(item) {
+                            Image(systemName: iconName)
+                                .font(.system(size: 11, weight: .medium))
                         }
+                        Text(label(item))
+                            .font(.system(size: 12, weight: .medium))
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.vertical, 5)
+                    .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
+                    .background {
+                        if isSelected {
+                            Capsule()
+                                .fill(Color.accentColor)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
             }

@@ -173,10 +173,10 @@ struct UpdateAvailableView: View {
 #Preview {
     UpdateAvailableView(
         update: AvailableUpdate(
-            version: "2.2.0",
-            dmgURL: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.2.0/MacOSCleaner.dmg")
+            version: "2.3.0",
+            dmgURL: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.3.0/MacOSCleaner.dmg")
         ),
-        currentVersion: "2.1.1",
+        currentVersion: "2.2.0",
         onDismissLater: {},
         onDismissForVersion: {}
     )

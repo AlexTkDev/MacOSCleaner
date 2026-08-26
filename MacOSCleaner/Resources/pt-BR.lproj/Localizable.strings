@@ -398,6 +398,27 @@
 "uninstaller_versions" = "Versões";
 "shared_data_warning" = "Estes dados são compartilhados com outros aplicativos.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Aplicativos";
+"uninstaller_tab_leftovers" = "Restos";
+"uninstaller_leftovers_hero_title" = "Escanear arquivos residuais";
+"uninstaller_leftovers_hero_subtitle" = "Encontre e remova caches residuais, preferências e arquivos de suporte deixados por aplicativos desinstalados.";
+"uninstaller_start_leftover_scan" = "Escanear restos";
+"uninstaller_scanning_leftovers" = "Escaneando arquivos residuais...";
+"uninstaller_no_leftovers_title" = "Nenhum resto encontrado";
+"uninstaller_no_leftovers_subtitle" = "Seu sistema está livre de sobras órfãs de aplicativos.";
+"uninstaller_leftovers_found_count" = "%lld restos encontrados";
+"uninstaller_filter_all" = "Todos";
+"uninstaller_clean_selected_leftovers" = "Mover selecionados para a Lixeira";
+"uninstaller_confirm_trash_leftovers_title" = "Mover restos selecionados para a Lixeira?";
+"uninstaller_confirm_trash_leftovers_message" = "Tem certeza de que deseja mover %lld arquivos residuais selecionados (%@) para a Lixeira?";
+"uninstaller_post_leftovers_title" = "Arquivos residuais detectados";
+"uninstaller_post_leftovers_subtitle" = "Os seguintes arquivos residuais foram detectados após a remoção de «%@». Selecione os itens que deseja remover.";
+"uninstaller_evidence_card_title" = "Evidências e confiança";
+"uninstaller_evidence_why_flagged" = "Por que este arquivo foi detectado?";
+"uninstaller_leftovers_cleaned_notification" = "%lld arquivos residuais limpos (%@ liberados)";
+"uninstaller_show_in_finder" = "Mostrar no Finder";
+
 /* Processes View */
 "menu_processes" = "Processos";
 "processes_title" = "Processos";
