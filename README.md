@@ -54,12 +54,12 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard_v2_1.png" width="48%" alt="Dashboard">
-  <img src="assets/screenshots/Uninstaller_v2_1.png" width="48%" alt="App Uninstaller">
+  <img src="assets/screenshots/Dashboard_v2_2.png" width="48%" alt="Dashboard">
+  <img src="assets/screenshots/Uninstaller_v2_2.png" width="48%" alt="App Uninstaller">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2_1.png" width="48%" alt="Smart Cleanup">
-  <img src="assets/screenshots/Processes_v2_1.png" width="48%" alt="Process Manager">
+  <img src="assets/screenshots/Cleanup_Scan_v2_2.png" width="48%" alt="Smart Cleanup">
+  <img src="assets/screenshots/Processes_v2_2.png" width="48%" alt="Process Manager">
 </p>
 
 <p align="center">
