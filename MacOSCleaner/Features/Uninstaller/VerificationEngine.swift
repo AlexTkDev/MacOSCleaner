@@ -54,6 +54,7 @@ public actor VerificationEngine {
         )
 
         var artifacts: [ScoredArtifact] = []
+        var artifactMap: [URL: (evidence: [ArtifactEvidence], rawEvidence: Set<Evidence>, tier: ConfidenceTier, size: Int64)] = [:]
         let rule = await ruleRegistry.bestRule(for: identity)
 
         for url in candidates {
@@ -63,10 +64,13 @@ public actor VerificationEngine {
 
             let artifactEvidence = evidence.artifactEvidence(weights: weights) + ruleEvidence
             let score = artifactEvidence.reduce(0) { $0 + $1.weight }
+            let ruleScore = ruleEvidence.reduce(0) { $0 + $1.weight }
+            let assessment = ConfidenceEngine.assess(evidence, ruleScore: ruleScore, identity: identity, weights: weights)
 
-            artifacts.append(
-                ScoredArtifact(url: url, score: score, evidence: artifactEvidence)
-            )
+            let scored = ScoredArtifact(url: url, score: score, evidence: artifactEvidence)
+            artifacts.append(scored)
+            let size = FileManager.default.getDirectorySize(url: url)
+            artifactMap[url] = (artifactEvidence, evidence, assessment.tier, size)
         }
 
         let classified = ArtifactClassifier.classifyBatch(artifacts, thresholds: thresholds)
@@ -75,7 +79,30 @@ public actor VerificationEngine {
         leftovers.append(contentsOf: classified.related.map(\.artifact))
         leftovers.append(contentsOf: classified.developer.map(\.artifact))
 
-        let report = VerificationReport(leftovers: leftovers)
+        var leftoverItems: [LeftoverItem] = []
+        for artifact in leftovers {
+            let details = artifactMap[artifact.url]
+            leftoverItems.append(
+                LeftoverItem(
+                    url: artifact.url,
+                    appName: identity.appName,
+                    bundleID: identity.bundleID,
+                    sizeBytes: details?.size ?? FileManager.default.getDirectorySize(url: artifact.url),
+                    score: artifact.score,
+                    evidence: details?.evidence ?? artifact.evidence,
+                    rawEvidence: details?.rawEvidence ?? [],
+                    confidence: details?.tier ?? .possible,
+                    isSelected: true
+                )
+            )
+        }
+
+        let report = VerificationReport(
+            appName: identity.appName,
+            bundleID: identity.bundleID,
+            leftovers: leftovers,
+            items: leftoverItems
+        )
         Logger.verification.info("\(report.count, privacy: .public) leftover(s) detected")
         report.leftovers.forEach { artifact in
             Logger.verification.debug("  leftover: \(artifact.url.path, privacy: .public) score=\(artifact.score)")

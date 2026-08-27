@@ -116,9 +116,14 @@
 "disk_analyzer_category_apps" = "Applications";
 "disk_analyzer_category_docs" = "Documents";
 "disk_analyzer_category_archives" = "Archives";
+"disk_analyzer_items_count" = "%d éléments";
+"disk_analyzer_quick_look" = "Coup d'œil";
+"disk_analyzer_open_folder" = "Ouvrir le dossier";
 
 /* About View */
 "about_title" = "À propos de MacOS Cleaner";
+"menu_donate" = "Faire un don...";
+"about_donate" = "Soutenir le projet";
 "about_version" = "Version %@";
 "about_developer" = "Développé par AlexTkDev";
 "about_problem_link" = "Si vous rencontrez un problème avec l'application, signalez-le ici";
@@ -398,6 +403,27 @@
 "uninstaller_versions" = "Versions";
 "shared_data_warning" = "Ces données sont partagées avec d'autres applications. La suppression peut impacter d'autres IDE.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Applications";
+"uninstaller_tab_leftovers" = "Restes";
+"uninstaller_leftovers_hero_title" = "Rechercher les fichiers résiduels";
+"uninstaller_leftovers_hero_subtitle" = "Trouvez et supprimez les caches résiduels, préférences et fichiers de support laissés par les applications désinstallées.";
+"uninstaller_start_leftover_scan" = "Rechercher les restes";
+"uninstaller_scanning_leftovers" = "Recherche des fichiers résiduels...";
+"uninstaller_no_leftovers_title" = "Aucun reste trouvé";
+"uninstaller_no_leftovers_subtitle" = "Votre système est nettoyé de tout résidu d'application orphelin.";
+"uninstaller_leftovers_found_count" = "%lld restes trouvés";
+"uninstaller_filter_all" = "Tous";
+"uninstaller_clean_selected_leftovers" = "Placer la sélection dans la Corbeille";
+"uninstaller_confirm_trash_leftovers_title" = "Déplacer les restes sélectionnés dans la Corbeille ?";
+"uninstaller_confirm_trash_leftovers_message" = "Voulez-vous vraiment déplacer %lld fichiers résiduels sélectionnés (%@) dans la Corbeille ?";
+"uninstaller_post_leftovers_title" = "Fichiers résiduels détectés";
+"uninstaller_post_leftovers_subtitle" = "Les fichiers résiduels suivants ont été détectés après la suppression de «%@». Sélectionnez les éléments à supprimer.";
+"uninstaller_evidence_card_title" = "Preuves et niveau de confiance";
+"uninstaller_evidence_why_flagged" = "Pourquoi ce fichier a-t-il été identifié ?";
+"uninstaller_leftovers_cleaned_notification" = "%lld élément(s) résiduel(s) nettoyé(s) (%@ libéré)";
+"uninstaller_show_in_finder" = "Afficher dans le Finder";
+
 /* Processes View */
 "menu_processes" = "Processus";
 "processes_title" = "Processus";
@@ -545,6 +571,7 @@
 "category.sleep_image" = "Image de veille";
 "category.duplicate_files" = "Fichiers en doublon";
 "category.unused_apps" = "Applications inutilisées";
+"category.project_build_artifacts" = "Artefacts de build de projets";
 
 "view_mode" = "Mode d'affichage";
 "sort_by" = "Trier par";
@@ -829,6 +856,10 @@
 "settings_search_results_title" = "Résultats de recherche pour «%@»";
 "settings_search_no_results" = "Aucun réglage trouvé";
 "settings_search_no_results_sub" = "Essayez de chercher des termes comme 'corbeille', 'FDA', 'IA' ou 'thème'";
+
+"settings_project_artifacts_age" = "Âge des artefacts de projets";
+"settings_project_artifacts_age_sub" = "Analyser les artefacts de build non modifiés depuis plus de ce nombre de jours";
+"settings_days_count" = "> %d jours";
 
 
 /* Evidence Descriptions */

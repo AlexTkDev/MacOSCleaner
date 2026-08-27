@@ -51,12 +51,16 @@ public final class CleanupViewModel {
 
     @MainActor
     public func startScan() {
-        coordinator.startScan(options: options)
+        var scanOptions = options
+        scanOptions.projectArtifactsOlderThanDays = settings.projectArtifactsOlderThanDays
+        coordinator.startScan(options: scanOptions)
     }
 
     @MainActor
     public func executeCleanup() {
-        coordinator.executeCleanup(options: options)
+        var cleanupOptions = options
+        cleanupOptions.projectArtifactsOlderThanDays = settings.projectArtifactsOlderThanDays
+        coordinator.executeCleanup(options: cleanupOptions)
     }
 
     @MainActor

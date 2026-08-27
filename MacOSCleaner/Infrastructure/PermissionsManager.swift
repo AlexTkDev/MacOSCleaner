@@ -174,22 +174,46 @@ public final class PermissionsManager {
     
     /// Opens Accessibility settings in System Settings.
     public func openAccessibilitySettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
-        NSWorkspace.shared.open(url)
-        Logger.permissions.info("Opened Accessibility settings")
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.preference.security"
+        ]
+        for urlString in urls {
+            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
+                Logger.permissions.info("Opened Accessibility settings via: \(urlString, privacy: .public)")
+                return
+            }
+        }
     }
     
     /// Opens Automation settings in System Settings.
     public func openAutomationSettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
-        NSWorkspace.shared.open(url)
-        Logger.permissions.info("Opened Automation settings")
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Automation",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation",
+            "x-apple.systempreferences:com.apple.preference.security"
+        ]
+        for urlString in urls {
+            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
+                Logger.permissions.info("Opened Automation settings via: \(urlString, privacy: .public)")
+                return
+            }
+        }
     }
     
     /// Opens System Settings Privacy & Security main page.
     public func openPrivacySettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security")!
-        NSWorkspace.shared.open(url)
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension",
+            "x-apple.systempreferences:com.apple.preference.security"
+        ]
+        for urlString in urls {
+            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
+                Logger.permissions.info("Opened Privacy settings via: \(urlString, privacy: .public)")
+                return
+            }
+        }
     }
     
     /// Shows the guidance panel to the user.

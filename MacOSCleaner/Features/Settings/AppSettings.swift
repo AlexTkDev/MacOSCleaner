@@ -121,6 +121,19 @@ public enum ProcessSortOption: String, CaseIterable, Identifiable {
     }
 }
 
+public enum ProjectArtifactsAgeLimit: Int, CaseIterable, Identifiable, Sendable {
+    case days30 = 30
+    case days60 = 60
+    case days90 = 90
+    case days180 = 180
+
+    public var id: Int { rawValue }
+
+    public var localizedName: String {
+        String(format: "settings_days_count".localized, rawValue)
+    }
+}
+
 @MainActor
 @Observable
 public final class AppSettings {
@@ -139,6 +152,7 @@ public final class AppSettings {
         static let processRefreshInterval = "settings_processRefreshInterval"
         static let processSortOption = "settings_processSortOption"
         static let uninstallerScanMode = "settings_uninstallerScanMode"
+        static let projectArtifactsOlderThanDays = "settings_projectArtifactsOlderThanDays"
         static let enableAI = "settings_enableAI"
         static let enableSiri = "settings_enableSiri"
         static let enableShortcutsAndAutomator = "settings_enableShortcutsAndAutomator"
@@ -230,6 +244,10 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(emptyTrashDuringCleanup, forKey: Keys.emptyTrashDuringCleanup) }
     }
 
+    public var projectArtifactsOlderThanDays: Int {
+        didSet { UserDefaults.standard.set(projectArtifactsOlderThanDays, forKey: Keys.projectArtifactsOlderThanDays) }
+    }
+
     // MARK: - Uninstaller
 
     public var bypassTrashOnUninstall: Bool {
@@ -280,6 +298,7 @@ public final class AppSettings {
         self.showTooltips = defaults.object(forKey: Keys.showTooltips) as? Bool ?? true
         self.autoScanOnStartup = defaults.bool(forKey: Keys.autoScanOnStartup)
         self.emptyTrashDuringCleanup = defaults.bool(forKey: Keys.emptyTrashDuringCleanup)
+        self.projectArtifactsOlderThanDays = defaults.object(forKey: Keys.projectArtifactsOlderThanDays) as? Int ?? 60
         self.bypassTrashOnUninstall = defaults.bool(forKey: Keys.bypassTrashOnUninstall)
         self.showRelatedFiles = defaults.object(forKey: Keys.showRelatedFiles) as? Bool ?? true
         self.emptyTrashImmediately = defaults.bool(forKey: Keys.emptyTrashImmediately)
@@ -318,6 +337,7 @@ public final class AppSettings {
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
             Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.isDebugMode,
             Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
+            Keys.projectArtifactsOlderThanDays,
             Keys.enableAI, Keys.enableSiri, Keys.enableShortcutsAndAutomator,
             Keys.enableDeveloperCachesCommand, Keys.enableStorageStatusCommand,
             Keys.enableCleanCategoryCommand, Keys.enableScheduledCleanupCommand,
@@ -333,6 +353,7 @@ public final class AppSettings {
         showTooltips = true
         autoScanOnStartup = false
         emptyTrashDuringCleanup = false
+        projectArtifactsOlderThanDays = 60
         bypassTrashOnUninstall = false
         showRelatedFiles = true
         emptyTrashImmediately = false

@@ -13,7 +13,7 @@ public actor PrivilegedTaskRunner {
     }
     
     /// Executes a shell command with administrator privileges.
-    /// - Parameter command: The command to execute (e.g. `tmutil deletelocalsnapshots /`)
+    /// - Parameter command: The command to execute (e.g. `tmutil thinlocalsnapshots / 10000000000 4`)
     /// - Returns: The stdout output of the command.
     /// - Throws: An error if execution fails or user cancels the password prompt.
     public static func runAsAdmin(command: String) async throws -> String {

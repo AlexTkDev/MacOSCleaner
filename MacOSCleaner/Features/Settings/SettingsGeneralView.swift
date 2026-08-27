@@ -112,7 +112,7 @@ struct SettingsGeneralView: View {
             content: {
                 SettingsLabeledControl(
                     "settings_current_version".localized,
-                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.1.1")"
+                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.2.0")"
                 ) {
                     if isCheckingForUpdates {
                         ProgressView().controlSize(.small)

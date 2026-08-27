@@ -115,11 +115,16 @@
 "disk_analyzer_category_photo" = "Fotos";
 "disk_analyzer_category_apps" = "Aplicaciones";
 "disk_analyzer_category_docs" = "Documentos";
-"disk_analyzer_category_archives" = "Archivos";
+"disk_analyzer_category_archives" = "Archivos comprimidos";
+"disk_analyzer_items_count" = "%d elementos";
+"disk_analyzer_quick_look" = "Vista rápida";
+"disk_analyzer_open_folder" = "Abrir carpeta";
 
 
-// About View
+//* About View */
 "about_title" = "Acerca de MacOS Cleaner";
+"menu_donate" = "Hacer una donación...";
+"about_donate" = "Apoyar el proyecto";
 "about_version" = "Versión %@";
 "about_developer" = "Desarrollado por AlexTkDev";
 "about_problem_link" = "Si tiene un problema con la aplicación, avíseme aquí";
@@ -413,6 +418,26 @@
 "uninstaller_versions" = "Versiones";
 "shared_data_warning" = "Estos datos se comparten con otras aplicaciones (ej. Android SDK, AVD). Eliminarlos puede afectar a otros IDEs.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Aplicaciones";
+"uninstaller_tab_leftovers" = "Restos";
+"uninstaller_leftovers_hero_title" = "Buscar archivos residuales";
+"uninstaller_leftovers_hero_subtitle" = "Encuentre y elimine cachés residuales, preferencias y archivos de soporte dejados por aplicaciones desinstaladas.";
+"uninstaller_start_leftover_scan" = "Buscar restos";
+"uninstaller_scanning_leftovers" = "Buscando archivos residuales...";
+"uninstaller_no_leftovers_title" = "No se encontraron restos";
+"uninstaller_no_leftovers_subtitle" = "Su sistema está limpio de remanentes huérfanos de aplicaciones.";
+"uninstaller_leftovers_found_count" = "%lld restos encontrados";
+"uninstaller_filter_all" = "Todos";
+"uninstaller_clean_selected_leftovers" = "Mover seleccionados a la Papelera";
+"uninstaller_confirm_trash_leftovers_title" = "¿Mover restos seleccionados a la Papelera?";
+"uninstaller_confirm_trash_leftovers_message" = "¿Está seguro de que desea mover %lld archivos residuales seleccionados (%@) a la Papelera?";
+"uninstaller_post_leftovers_title" = "Archivos residuales detectados";
+"uninstaller_post_leftovers_subtitle" = "Se detectaron los siguientes archivos residuales después de eliminar «%@». Seleccione los elementos que desea eliminar.";
+"uninstaller_evidence_card_title" = "Evidencias y confianza";
+"uninstaller_evidence_why_flagged" = "¿Por qué se detectó este archivo?";
+"uninstaller_leftovers_cleaned_notification" = "Se limpiaron %lld archivos residuales (%@ liberados)";
+
 // Processes View
 "menu_processes" = "Procesos";
 "processes_title" = "Procesos";
@@ -569,6 +594,7 @@
 "category.sleep_image" = "Imagen de suspensión";
 "category.duplicate_files" = "Archivos duplicados";
 "category.unused_apps" = "Aplicaciones no utilizadas";
+"category.project_build_artifacts" = "Artefactos de compilación de proyectos";
 
 // Process View - Missing Keys
 "view_mode" = "Modo de vista";
@@ -929,3 +955,7 @@
 "settings_search_no_results_sub" = "Pruebe a buscar 'papelera', 'FDA', 'IA' o 'tema'";
 
 "settings_about_report_issue_sub" = "Reportes de errores y sugerencias";
+
+"settings_project_artifacts_age" = "Antigüedad de artefactos de proyecto";
+"settings_project_artifacts_age_sub" = "Buscar artefactos de compilación no modificados en más de estos días";
+"settings_days_count" = "> %d días";

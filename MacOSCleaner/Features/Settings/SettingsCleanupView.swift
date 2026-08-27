@@ -87,6 +87,22 @@ struct SettingsCleanupView: View {
 
                     SettingsDivider()
 
+                    SettingsLabeledControl(
+                        "settings_project_artifacts_age".localized,
+                        subtitle: "settings_project_artifacts_age_sub".localized
+                    ) {
+                        GlassPillPicker(
+                            items: ProjectArtifactsAgeLimit.allCases,
+                            selection: Binding(
+                                get: { ProjectArtifactsAgeLimit(rawValue: settings.projectArtifactsOlderThanDays) ?? .days60 },
+                                set: { settings.projectArtifactsOlderThanDays = $0.rawValue }
+                            ),
+                            label: { $0.localizedName }
+                        )
+                    }
+
+                    SettingsDivider()
+
                     SettingsToggleRow(
                         "settings_show_related".localized,
                         subtitle: "settings_show_related_sub".localized,

@@ -116,9 +116,14 @@
 "disk_analyzer_category_apps" = "アプリ";
 "disk_analyzer_category_docs" = "書類";
 "disk_analyzer_category_archives" = "アーカイブ";
+"disk_analyzer_items_count" = "%d項目";
+"disk_analyzer_quick_look" = "クイックルック";
+"disk_analyzer_open_folder" = "フォルダを開く";
 
 /* About View */
 "about_title" = "MacOS Cleaner について";
+"menu_donate" = "寄付する...";
+"about_donate" = "プロジェクトを支援";
 "about_version" = "バージョン %@";
 "about_developer" = "開発者: AlexTkDev";
 "about_problem_link" = "不具合・ご要望はこちらから報告";
@@ -398,6 +403,27 @@
 "uninstaller_versions" = "バージョン";
 "shared_data_warning" = "このデータは他のアプリと共有されています。";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "アプリケーション";
+"uninstaller_tab_leftovers" = "残存ファイル";
+"uninstaller_leftovers_hero_title" = "残存ファイルをスキャン";
+"uninstaller_leftovers_hero_subtitle" = "アンインストールされたアプリの不要なキャッシュ、環境設定、サポートファイルを検出して削除します。";
+"uninstaller_start_leftover_scan" = "残存ファイルをスキャン";
+"uninstaller_scanning_leftovers" = "残存ファイルをスキャン中...";
+"uninstaller_no_leftovers_title" = "残存ファイルは見つかりませんでした";
+"uninstaller_no_leftovers_subtitle" = "システムは孤立したアプリの残骸からクリーンな状態です。";
+"uninstaller_leftovers_found_count" = "%lld 件の残存ファイルが見つかりました";
+"uninstaller_filter_all" = "すべて";
+"uninstaller_clean_selected_leftovers" = "選択項目をゴミ箱に移動";
+"uninstaller_confirm_trash_leftovers_title" = "選択した残存ファイルをゴミ箱に移動しますか？";
+"uninstaller_confirm_trash_leftovers_message" = "選択した %lld 件の残存ファイル (%@) をゴミ箱に移動してもよろしいですか？";
+"uninstaller_post_leftovers_title" = "残存ファイルが検出されました";
+"uninstaller_post_leftovers_subtitle" = "「%@」の削除後に次の残存ファイルが見つかりました。削除する項目を選択してください。";
+"uninstaller_evidence_card_title" = "検出根拠と信頼度";
+"uninstaller_evidence_why_flagged" = "このファイルが検出された理由";
+"uninstaller_leftovers_cleaned_notification" = "%lld 件の残存ファイルを削除しました (%@ を解放)";
+"uninstaller_show_in_finder" = "Finderで表示";
+
 /* Processes View */
 "menu_processes" = "プロセス";
 "processes_title" = "プロセス";
@@ -545,6 +571,7 @@
 "category.sleep_image" = "スリープ画像";
 "category.duplicate_files" = "重複ファイル";
 "category.unused_apps" = "未使用アプリ";
+"category.project_build_artifacts" = "プロジェクトビルド成果物";
 
 "view_mode" = "表示モード";
 "sort_by" = "並べ替え";
@@ -821,6 +848,10 @@
 "settings_search_results_title" = "「%@」の検索結果";
 "settings_search_no_results" = "設定が見つかりません";
 "settings_search_no_results_sub" = "「ゴミ箱」「権限」「AI」などのキーワードを試してください";
+
+"settings_project_artifacts_age" = "プロジェクト成果物の経過日数";
+"settings_project_artifacts_age_sub" = "指定日数以上変更されていないビルド成果物を検索します";
+"settings_days_count" = "%d日以上";
 
 
 /* Evidence Categories */

@@ -115,11 +115,16 @@
 "disk_analyzer_category_photo" = "Фото";
 "disk_analyzer_category_apps" = "Програми";
 "disk_analyzer_category_docs" = "Документи";
-"disk_analyzer_category_archives" = "Архів";
+"disk_analyzer_category_archives" = "Архіви";
+"disk_analyzer_items_count" = "%d файлів";
+"disk_analyzer_quick_look" = "Швидкий перегляд";
+"disk_analyzer_open_folder" = "Відкрити папку";
 
 
 /* About View */
 "about_title" = "Про програму MacOS Cleaner";
+"menu_donate" = "Зробити пожертву...";
+"about_donate" = "Підтримати проєкт";
 "about_version" = "Версія %@";
 "about_developer" = "Розробник: AlexTkDev";
 "about_problem_link" = "Якщо виникла проблема з додатком, повідомте мені тут";
@@ -409,6 +414,27 @@
 "uninstaller_versions" = "Версії";
 "shared_data_warning" = "Ці дані спільні для інших додатків (наприклад, Android SDK, AVD). Видалення може вплинути на інші IDE.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Програми";
+"uninstaller_tab_leftovers" = "Залишки";
+"uninstaller_leftovers_hero_title" = "Пошук залишкових файлів";
+"uninstaller_leftovers_hero_subtitle" = "Пошук та видалення залишкових кешів, налаштувань та службових файлів від раніше видалених програм.";
+"uninstaller_start_leftover_scan" = "Знайти залишки";
+"uninstaller_scanning_leftovers" = "Пошук залишкових файлів...";
+"uninstaller_no_leftovers_title" = "Залишків не знайдено";
+"uninstaller_no_leftovers_subtitle" = "У системі немає залишкових файлів видалених програм.";
+"uninstaller_leftovers_found_count" = "Знайдено залишків: %lld";
+"uninstaller_filter_all" = "Усі";
+"uninstaller_clean_selected_leftovers" = "Перемістити вибрані до Смітника";
+"uninstaller_confirm_trash_leftovers_title" = "Перемістити вибрані залишки до Смітника?";
+"uninstaller_confirm_trash_leftovers_message" = "Ви впевнені, що хочете перемістити %lld вибраних залишкових файлів (%@) до Смітника?";
+"uninstaller_post_leftovers_title" = "Виявлено залишкові файли";
+"uninstaller_post_leftovers_subtitle" = "Після видалення «%@» виявлено такі залишкові файли. Виберіть елементи для видалення.";
+"uninstaller_evidence_card_title" = "Підтвердження та впевненість";
+"uninstaller_evidence_why_flagged" = "Чому цей файл знайдено?";
+"uninstaller_leftovers_cleaned_notification" = "Видалено %lld залишкових файлів (звільнено %@)";
+"uninstaller_show_in_finder" = "Показати у Finder";
+
 /* Processes View */
 "menu_processes" = "Процеси";
 "processes_title" = "Процеси";
@@ -565,6 +591,7 @@
 "category.sleep_image" = "Образ сну";
 "category.duplicate_files" = "Дублікати файлів";
 "category.unused_apps" = "Невикористовувані додатки";
+"category.project_build_artifacts" = "Артефакти проєктів";
 
 /* Process View - Missing Keys */
 "view_mode" = "Режим перегляду";
@@ -926,3 +953,7 @@
 
 "settings_about_report_issue_sub" = "Звіти про помилки та пропозиції";
 "startup_help_system" = "Системна служба Apple. Вимикати не рекомендується.";
+
+"settings_project_artifacts_age" = "Вік артефактів проєктів";
+"settings_project_artifacts_age_sub" = "Пошук папок збірок, які не змінювалися довше вказаного терміну";
+"settings_days_count" = "> %d дн.";

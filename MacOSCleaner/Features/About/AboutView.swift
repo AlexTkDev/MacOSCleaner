@@ -130,6 +130,15 @@ struct AboutView: View {
 
     private var linksCard: some View {
         VStack(spacing: 0) {
+            Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md")!) {
+                Label("about_donate".localized, systemImage: "heart.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.pink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .contentShape(Rectangle())
+            }
+            Divider().padding(.leading, 38)
             Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner")!) {
                 Label("about_star_github".localized, systemImage: "star.fill")
                     .font(.subheadline.weight(.semibold))
@@ -169,5 +178,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: AvailableUpdate(version: "2.1.1", dmgURL: nil))
+    AboutView(availableUpdate: AvailableUpdate(version: "2.2.0", dmgURL: nil))
 }

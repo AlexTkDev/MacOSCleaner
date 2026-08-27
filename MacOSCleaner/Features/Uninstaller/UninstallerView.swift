@@ -7,11 +7,33 @@ private extension Logger {
     static let uninstallerView = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "UninstallerView")
 }
 
+enum UninstallerTab: String, CaseIterable, Identifiable {
+    case applications
+    case leftovers
+
+    var id: String { rawValue }
+
+    var localizedTitle: String {
+        switch self {
+        case .applications: return "uninstaller_tab_apps".localized
+        case .leftovers: return "uninstaller_tab_leftovers".localized
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .applications: return "square.grid.2x2"
+        case .leftovers: return "shippingbox.and.arrow.backward"
+        }
+    }
+}
+
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
+    @State private var selectedTab: UninstallerTab = .applications
     @State private var allApps: [UninstallerService.AppInfo] = []
     @State private var selectedApp: UninstallerService.AppInfo?
     @State private var searchText = ""
@@ -24,10 +46,13 @@ struct UninstallerView: View {
     @State private var isDeepScanning = false
     @State private var deepScanCompleted = 0
     @State private var deepScanTotal = 0
+    @State private var scanTask: Task<Void, Never>? = nil
     @State private var expandedConfidenceTiers: Set<ConfidenceTier> = [.guaranteed, .veryLikely, .possible]
     @State private var versionToUninstall: UninstallerService.AppInfo?
     @State private var showingVersionConfirmation = false
     @State private var selectedVersionID: UUID? = nil
+    @State private var postUninstallReport: VerificationReport? = nil
+    @State private var showingPostUninstallSheet = false
 
     private func sameAppURL(_ lhs: URL, _ rhs: URL) -> Bool {
         NormalizedPath.key(lhs) == NormalizedPath.key(rhs)
@@ -49,106 +74,24 @@ struct UninstallerView: View {
 
     var body: some View {
         GlassEffectContainer {
-            GeometryReader { geometry in
-                HStack(spacing: 0) {
-                    // Apps List
-                    VStack(spacing: 0) {
-                        if isLoading {
-                            AnimatedScanView(
-                                title: "uninstaller_scanning_apps".localized,
-                                subtitle: service.progress.message,
-                                currentStep: service.progress.currentStep,
-                                totalSteps: service.progress.totalSteps
-                            )
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        } else {
-                            VStack(spacing: 0) {
-                                if isDeepScanning {
-                                    VStack(spacing: 4) {
-                                        ProgressView(value: Double(deepScanCompleted), total: Double(deepScanTotal))
-                                            .progressViewStyle(.linear)
-                                            .padding(.horizontal, 8)
-                                        Text(String(format: "uninstaller.deep_scanning_progress".localized, deepScanCompleted, deepScanTotal))
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .padding(.vertical, 6)
-                                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
-                                }
-                                List(filteredApps) { app in
-                                    let unscan = app.scanState != .deepScanned
-                                    let isThisAppUninstalling = isUninstalling && (selectedApp?.id == app.id)
-                                    AppRowView(
-                                        app: app,
-                                        formatter: formatter,
-                                        showRelatedFiles: settings.showRelatedFiles,
-                                        isUnscannable: unscan,
-                                        isUninstalling: isThisAppUninstalling
-                                    )
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        guard !isUninstalling else { return }
-                                        guard app.scanState == .deepScanned else { return }
-                                        selectedVersionID = nil
-                                        selectedApp = app
-                                    }
-                                    .listRowBackground(
-                                        (selectedApp?.id == app.id)
-                                            ? Color.accentColor.opacity(0.1)
-                                            : Color.clear
-                                    )
-                                }
-                                .listStyle(.inset)
-                                .scrollContentBackground(.hidden)
-                            }
-                        }
-                    }
-                    .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
-                    .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
-                    
-                    Divider()
-                    
-                    // Detail Area
-                    ZStack {
-                        if isUninstalling {
-                            VStack(spacing: 20) {
-                                ProgressView()
-                                    .scaleEffect(1.4)
-                                    .controlSize(.large)
-                                    .padding(.bottom, 4)
-
-                                VStack(spacing: 6) {
-                                    Text(String(format: "uninstaller_uninstalling_app".localized, uninstallingAppName))
-                                        .font(.title3)
-                                        .fontWeight(.bold)
-                                        .multilineTextAlignment(.center)
-
-                                    Text("uninstaller_uninstalling_sub".localized)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .glassCard(cornerRadius: 16)
-                            .padding(24)
-                            .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                        } else if let app = selectedApp {
-                            appDetailView(app)
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            dropZoneView
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isUninstalling)
-                    .layoutPriority(1) // Occupy remaining space
+            VStack(spacing: 0) {
+                if selectedTab == .applications {
+                    applicationsContentView
+                } else {
+                    OrphanedResidualsView(service: service, settings: settings)
                 }
-                .padding(.top, 4)
             }
         }
         .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                GlassPillPicker(
+                    items: UninstallerTab.allCases,
+                    selection: $selectedTab,
+                    icon: { $0.iconName },
+                    label: { $0.localizedTitle }
+                )
+            }
             ToolbarItem(placement: .automatic) {
                 // Scan mode badge
                 HStack(spacing: 4) {
@@ -178,7 +121,26 @@ struct UninstallerView: View {
                 .help("uninstaller_reload".localized)
             }
         }
-        .onAppear(perform: loadApps)
+        .sheet(isPresented: $showingPostUninstallSheet) {
+            PostUninstallLeftoversSheet(
+                report: $postUninstallReport,
+                onClean: { selectedItems in
+                    cleanPostUninstallLeftovers(selectedItems)
+                },
+                onDismiss: {
+                    showingPostUninstallSheet = false
+                    postUninstallReport = nil
+                }
+            )
+        }
+        .onAppear {
+            if allApps.isEmpty {
+                loadApps()
+            }
+        }
+        .onDisappear {
+            scanTask?.cancel()
+        }
         .onChange(of: selectedApp?.id) { _, newID in
             guard let id = newID else { return }
             guard let app = allApps.first(where: { $0.id == id }) else { return }
@@ -244,10 +206,117 @@ struct UninstallerView: View {
         }
     }
 
+    private var applicationsContentView: some View {
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                // Apps List
+                VStack(spacing: 0) {
+                    if isLoading {
+                        AnimatedScanView(
+                            title: "uninstaller_scanning_apps".localized,
+                            subtitle: service.progress.message,
+                            currentStep: service.progress.currentStep,
+                            totalSteps: service.progress.totalSteps
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        VStack(spacing: 0) {
+                            if isDeepScanning {
+                                VStack(spacing: 4) {
+                                    ProgressView(value: Double(min(deepScanCompleted, deepScanTotal)), total: Double(max(1, deepScanTotal)))
+                                        .progressViewStyle(.linear)
+                                        .padding(.horizontal, 8)
+                                    Text(String(format: "uninstaller.deep_scanning_progress".localized, min(deepScanCompleted, deepScanTotal), deepScanTotal))
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 6)
+                                .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                            }
+                            List(filteredApps) { app in
+                                let unscan = app.scanState != .deepScanned
+                                let isThisAppUninstalling = isUninstalling && (selectedApp?.id == app.id)
+                                AppRowView(
+                                    app: app,
+                                    formatter: formatter,
+                                    showRelatedFiles: settings.showRelatedFiles,
+                                    isUnscannable: unscan,
+                                    isUninstalling: isThisAppUninstalling
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    guard !isUninstalling else { return }
+                                    guard app.scanState == .deepScanned else { return }
+                                    selectedVersionID = nil
+                                    selectedApp = app
+                                }
+                                .listRowBackground(
+                                    (selectedApp?.id == app.id)
+                                        ? Color.accentColor.opacity(0.1)
+                                        : Color.clear
+                                )
+                            }
+                            .listStyle(.inset)
+                            .scrollContentBackground(.hidden)
+                        }
+                    }
+                }
+                .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
+                .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                
+                Divider()
+                
+                // Detail Area
+                ZStack {
+                    if isUninstalling {
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .scaleEffect(1.4)
+                                .controlSize(.large)
+                                .padding(.bottom, 4)
+
+                            VStack(spacing: 6) {
+                                Text(String(format: "uninstaller_uninstalling_app".localized, uninstallingAppName))
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .multilineTextAlignment(.center)
+
+                                Text("uninstaller_uninstalling_sub".localized)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .glassCard(cornerRadius: 16)
+                        .padding(24)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                    } else if let app = selectedApp {
+                        appDetailView(app)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        dropZoneView
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isUninstalling)
+                .layoutPriority(1) // Occupy remaining space
+            }
+            .padding(.top, 4)
+        }
+    }
+
     private func loadApps() {
+        scanTask?.cancel()
         isLoading = true
-        Task {
+        isDeepScanning = false
+        deepScanCompleted = 0
+        deepScanTotal = 0
+        
+        scanTask = Task {
             let fresh = (try? await service.scanAllApplications()) ?? []
+            guard !Task.isCancelled else { return }
+            
             allApps = fresh
             isLoading = false
 
@@ -259,8 +328,10 @@ struct UninstallerView: View {
             deepScanTotal = total
 
             for app in fresh {
+                guard !Task.isCancelled else { break }
                 if let result = try? await service.deepScan(app, mode: settings.uninstallerScanMode) {
-                    deepScanCompleted += 1
+                    guard !Task.isCancelled else { break }
+                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
                     if let idx = allApps.firstIndex(where: { $0.id == result.id || sameAppURL($0.url, result.url) }) {
                         allApps[idx] = result
                     }
@@ -269,11 +340,14 @@ struct UninstallerView: View {
                     }
                     deepScanCache[NormalizedPath.key(result.url)] = result
                 } else {
-                    deepScanCompleted += 1
+                    guard !Task.isCancelled else { break }
+                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
                 }
             }
 
-            isDeepScanning = false
+            if !Task.isCancelled {
+                isDeepScanning = false
+            }
         }
     }
 
@@ -285,20 +359,24 @@ struct UninstallerView: View {
                 isUninstalling = false
             }
             do {
-                try await service.uninstall(
+                let report = try await service.uninstall(
                     app: app,
                     bypassTrash: settings.bypassTrashOnUninstall,
                     emptyTrashImmediately: settings.emptyTrashImmediately
                 )
                 
-                if settings.showNotifications {
-                    let title = "uninstaller_complete_title".localized
-                    let body = String(format: "uninstaller_complete_body".localized, app.name)
-                    NotificationManager.shared.sendNotification(title: title, body: body)
+                await MainActor.run {
+                    loadApps()
+                    selectedApp = nil
+                    if let report = report, report.hasLeftovers {
+                        postUninstallReport = report
+                        showingPostUninstallSheet = true
+                    } else if settings.showNotifications {
+                        let title = "uninstaller_complete_title".localized
+                        let body = String(format: "uninstaller_complete_body".localized, app.name)
+                        NotificationManager.shared.sendNotification(title: title, body: body)
+                    }
                 }
-                
-                loadApps()
-                selectedApp = nil
             } catch {
                 Logger.uninstallerView.error("Uninstall failed: \(error.localizedDescription, privacy: .public)")
             }
@@ -313,41 +391,76 @@ struct UninstallerView: View {
                 isUninstalling = false
             }
             do {
-                try await service.uninstall(
+                let report = try await service.uninstall(
                     app: versionApp,
                     bypassTrash: settings.bypassTrashOnUninstall,
                     emptyTrashImmediately: settings.emptyTrashImmediately
                 )
                 
-                if settings.showNotifications {
-                    let title = "uninstaller_complete_title".localized
-                    let body = String(format: "uninstaller_version_deleted_body".localized, versionApp.version, parentApp.name)
-                    NotificationManager.shared.sendNotification(title: title, body: body)
-                }
-                
-                let remaining = parentApp.versions.filter { NormalizedPath.key($0.url) != NormalizedPath.key(versionApp.url) }
-                
-                if remaining.isEmpty {
-                    allApps.removeAll { $0.id == parentApp.id }
-                    selectedApp = nil
-                } else if remaining.count == 1 {
-                    var updatedParent = remaining[0]
-                    updatedParent.versions = []
-                    if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
-                        allApps[idx] = updatedParent
+                await MainActor.run {
+                    if let report = report, report.hasLeftovers {
+                        postUninstallReport = report
+                        showingPostUninstallSheet = true
+                    } else if settings.showNotifications {
+                        let title = "uninstaller_complete_title".localized
+                        let body = String(format: "uninstaller_version_deleted_body".localized, versionApp.version, parentApp.name)
+                        NotificationManager.shared.sendNotification(title: title, body: body)
                     }
-                    selectedApp = updatedParent
-                } else {
-                    var updatedParent = parentApp
-                    updatedParent.versions = remaining
-                    updatedParent.size = remaining.reduce(0) { $0 + $1.size }
-                    if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
-                        allApps[idx] = updatedParent
+                    
+                    let remaining = parentApp.versions.filter { NormalizedPath.key($0.url) != NormalizedPath.key(versionApp.url) }
+                    
+                    if remaining.isEmpty {
+                        allApps.removeAll { $0.id == parentApp.id }
+                        selectedApp = nil
+                    } else if remaining.count == 1 {
+                        var updatedParent = remaining[0]
+                        updatedParent.versions = []
+                        if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
+                            allApps[idx] = updatedParent
+                        }
+                        selectedApp = updatedParent
+                    } else {
+                        var updatedParent = parentApp
+                        updatedParent.versions = remaining
+                        updatedParent.size = remaining.reduce(0) { $0 + $1.size }
+                        if let idx = allApps.firstIndex(where: { $0.id == parentApp.id }) {
+                            allApps[idx] = updatedParent
+                        }
+                        selectedApp = updatedParent
                     }
-                    selectedApp = updatedParent
                 }
             } catch {
                 Logger.uninstallerView.error("Uninstall version failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    private func cleanPostUninstallLeftovers(_ items: [LeftoverItem]) {
+        guard !items.isEmpty else {
+            showingPostUninstallSheet = false
+            postUninstallReport = nil
+            return
+        }
+
+        Task {
+            do {
+                let freed = try await service.removeLeftovers(items, bypassTrash: settings.bypassTrashOnUninstall)
+                await MainActor.run {
+                    self.showingPostUninstallSheet = false
+                    self.postUninstallReport = nil
+                    
+                    if settings.showNotifications {
+                        let title = "uninstaller_complete_title".localized
+                        let body = String(
+                            format: "uninstaller_leftovers_cleaned_notification".localized,
+                            Int64(items.count),
+                            ByteCountFormatter.localizedString(fromByteCount: freed, countStyle: .file)
+                        )
+                        NotificationManager.shared.sendNotification(title: title, body: body)
+                    }
+                }
+            } catch {
+                Logger.uninstallerView.error("Failed to clean leftovers: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

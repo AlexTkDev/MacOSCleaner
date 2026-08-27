@@ -116,9 +116,14 @@
 "disk_analyzer_category_apps" = "Apps";
 "disk_analyzer_category_docs" = "Dokumente";
 "disk_analyzer_category_archives" = "Archive";
+"disk_analyzer_items_count" = "%d Objekte";
+"disk_analyzer_quick_look" = "Übersicht";
+"disk_analyzer_open_folder" = "Ordner öffnen";
 
 /* About View */
 "about_title" = "Über MacOS Cleaner";
+"menu_donate" = "Spenden...";
+"about_donate" = "Projekt unterstützen";
 "about_version" = "Version %@";
 "about_developer" = "Entwickelt von AlexTkDev";
 "about_problem_link" = "Wenn Sie ein Problem mit der App haben, teilen Sie es hier mit";
@@ -398,6 +403,27 @@
 "uninstaller_versions" = "Versionen";
 "shared_data_warning" = "Diese Daten werden mit anderen Apps geteilt. Das Löschen kann andere IDEs beeinträchtigen.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Programme";
+"uninstaller_tab_leftovers" = "Reste";
+"uninstaller_leftovers_hero_title" = "Nach Restdateien suchen";
+"uninstaller_leftovers_hero_subtitle" = "Finden und entfernen Sie verbliebene Caches, Einstellungen und Support-Dateien von deinstallierten Programmen.";
+"uninstaller_start_leftover_scan" = "Nach Resten suchen";
+"uninstaller_scanning_leftovers" = "Suche nach Restdateien...";
+"uninstaller_no_leftovers_title" = "Keine Reste gefunden";
+"uninstaller_no_leftovers_subtitle" = "Ihr System ist frei von verwaisten Anwendungsresten.";
+"uninstaller_leftovers_found_count" = "%lld Reste gefunden";
+"uninstaller_filter_all" = "Alle";
+"uninstaller_clean_selected_leftovers" = "Ausgewählte in den Papierkorb";
+"uninstaller_confirm_trash_leftovers_title" = "Ausgewählte Reste in den Papierkorb?";
+"uninstaller_confirm_trash_leftovers_message" = "Möchten Sie %lld ausgewählte Restdateien (%@) wirklich in den Papierkorb verschieben?";
+"uninstaller_post_leftovers_title" = "Verbliebene Dateien erkannt";
+"uninstaller_post_leftovers_subtitle" = "Nach der Deinstallation von «%@» wurden folgende Restdateien gefunden. Wählen Sie Elemente zum Entfernen aus.";
+"uninstaller_evidence_card_title" = "Nachweise & Vertrauen";
+"uninstaller_evidence_why_flagged" = "Warum wurde diese Datei erkannt?";
+"uninstaller_leftovers_cleaned_notification" = "%lld Restdatei(en) bereinigt (%@ freigegeben)";
+"uninstaller_show_in_finder" = "Im Finder anzeigen";
+
 /* Processes View */
 "menu_processes" = "Prozesse";
 "processes_title" = "Prozesse";
@@ -547,6 +573,7 @@
 "category.sleep_image" = "Sleep-Image";
 "category.duplicate_files" = "Duplikate";
 "category.unused_apps" = "Ungenutzte Apps";
+"category.project_build_artifacts" = "Projekt-Build-Artefakte";
 
 "view_mode" = "Ansichtsmodus";
 "sort_by" = "Sortieren nach";
@@ -831,6 +858,10 @@
 "settings_search_results_title" = "Suchergebnisse für «%@»";
 "settings_search_no_results" = "Keine Einstellungen gefunden";
 "settings_search_no_results_sub" = "Suchen Sie nach Begriffen wie 'Papierkorb', 'FDA' oder 'KI'";
+
+"settings_project_artifacts_age" = "Alter der Projekt-Artefakte";
+"settings_project_artifacts_age_sub" = "Build-Artefakte suchen, die seit dieser Anzahl von Tagen nicht geändert wurden";
+"settings_days_count" = "> %d Tage";
 
 
 /* Evidence Descriptions */

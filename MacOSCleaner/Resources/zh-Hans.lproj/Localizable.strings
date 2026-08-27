@@ -116,9 +116,14 @@
 "disk_analyzer_category_apps" = "应用";
 "disk_analyzer_category_docs" = "文档";
 "disk_analyzer_category_archives" = "压缩包";
+"disk_analyzer_items_count" = "%d 个项目";
+"disk_analyzer_quick_look" = "快速查看";
+"disk_analyzer_open_folder" = "打开文件夹";
 
 /* About View */
 "about_title" = "关于 MacOS Cleaner";
+"menu_donate" = "赞助项目...";
+"about_donate" = "支持项目";
 "about_version" = "版本 %@";
 "about_developer" = "由 AlexTkDev 开发";
 "about_problem_link" = "如遇到问题，请在此处反馈";
@@ -398,6 +403,27 @@
 "uninstaller_versions" = "版本";
 "shared_data_warning" = "此数据与其他应用共享，删除可能影响其他开发环境。";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "应用程序";
+"uninstaller_tab_leftovers" = "残留文件";
+"uninstaller_leftovers_hero_title" = "扫描残留文件";
+"uninstaller_leftovers_hero_subtitle" = "查找并清理已被手动或外部卸载应用程序遗留的缓存、偏好设置和支持文件。";
+"uninstaller_start_leftover_scan" = "扫描残留文件";
+"uninstaller_scanning_leftovers" = "正在扫描残留文件...";
+"uninstaller_no_leftovers_title" = "未发现残留文件";
+"uninstaller_no_leftovers_subtitle" = "您的系统中没有孤立的应用程序残留文件。";
+"uninstaller_leftovers_found_count" = "找到 %lld 项残留文件";
+"uninstaller_filter_all" = "全部";
+"uninstaller_clean_selected_leftovers" = "将选中项移至废纸篓";
+"uninstaller_confirm_trash_leftovers_title" = "将选中的残留文件移至废纸篓？";
+"uninstaller_confirm_trash_leftovers_message" = "确定要将选中的 %lld 个残留文件 (%@) 移至废纸篓吗？";
+"uninstaller_post_leftovers_title" = "检测到残留文件";
+"uninstaller_post_leftovers_subtitle" = "卸载“%@”后检测到以下残留文件。请选择要移除的项。";
+"uninstaller_evidence_card_title" = "匹配依据与置信度";
+"uninstaller_evidence_why_flagged" = "为什么标记此文件？";
+"uninstaller_leftovers_cleaned_notification" = "已清理 %lld 项残留文件 (释放 %@)";
+"uninstaller_show_in_finder" = "在访达中显示";
+
 /* Processes View */
 "menu_processes" = "进程管理";
 "processes_title" = "进程管理";
@@ -545,6 +571,7 @@
 "category.sleep_image" = "休眠镜像";
 "category.duplicate_files" = "重复文件";
 "category.unused_apps" = "未使用应用";
+"category.project_build_artifacts" = "项目构建产物";
 
 "view_mode" = "视图模式";
 "sort_by" = "排序依据";
@@ -821,6 +848,10 @@
 "settings_search_results_title" = "“%@”的搜索结果";
 "settings_search_no_results" = "未找到设置";
 "settings_search_no_results_sub" = "尝试搜索“废纸篓”、“权限”、“AI”或“主题”";
+
+"settings_project_artifacts_age" = "项目构建产物保留期";
+"settings_project_artifacts_age_sub" = "扫描未修改时间超过指定天数的构建产物";
+"settings_days_count" = "> %d 天";
 
 
 /* Evidence Categories */

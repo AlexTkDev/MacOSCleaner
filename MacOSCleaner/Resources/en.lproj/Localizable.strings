@@ -116,10 +116,15 @@
 "disk_analyzer_category_apps" = "Apps";
 "disk_analyzer_category_docs" = "Documents";
 "disk_analyzer_category_archives" = "Archives";
+"disk_analyzer_items_count" = "%d items";
+"disk_analyzer_quick_look" = "Quick Look";
+"disk_analyzer_open_folder" = "Open Folder";
 
 
 /* About View */
 "about_title" = "About MacOS Cleaner";
+"menu_donate" = "Donate...";
+"about_donate" = "Donate / Support Project";
 "about_version" = "Version %@";
 "about_developer" = "Developed by AlexTkDev";
 "about_problem_link" = "If you have a problem with the app, let me know here";
@@ -411,6 +416,27 @@
 "uninstaller_versions" = "Versions";
 "shared_data_warning" = "This data is shared with other apps (e.g., Android SDK, AVDs). Deleting may affect other IDEs.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Applications";
+"uninstaller_tab_leftovers" = "Leftovers";
+"uninstaller_leftovers_hero_title" = "Scan for Leftover Files";
+"uninstaller_leftovers_hero_subtitle" = "Find and remove residual cache, preference, and support files left behind by uninstalled applications.";
+"uninstaller_start_leftover_scan" = "Scan for Leftovers";
+"uninstaller_scanning_leftovers" = "Scanning for leftover files...";
+"uninstaller_no_leftovers_title" = "No Leftovers Found";
+"uninstaller_no_leftovers_subtitle" = "Your system is clean of orphaned application remnants.";
+"uninstaller_leftovers_found_count" = "%lld leftover items found";
+"uninstaller_filter_all" = "All";
+"uninstaller_clean_selected_leftovers" = "Move Selected to Trash";
+"uninstaller_confirm_trash_leftovers_title" = "Trash Selected Leftovers?";
+"uninstaller_confirm_trash_leftovers_message" = "Are you sure you want to move %lld selected leftover files (%@) to the Trash?";
+"uninstaller_post_leftovers_title" = "Residual Files Detected";
+"uninstaller_post_leftovers_subtitle" = "The following leftover files were detected after removing «%@». Select items to remove.";
+"uninstaller_evidence_card_title" = "Evidence & Confidence";
+"uninstaller_evidence_why_flagged" = "Why was this flagged?";
+"uninstaller_leftovers_cleaned_notification" = "Cleaned %lld leftover item(s) (%@ freed)";
+"uninstaller_show_in_finder" = "Show in Finder";
+
 /* Processes View */
 "menu_processes" = "Processes";
 "processes_title" = "Processes";
@@ -567,6 +593,7 @@
 "category.sleep_image" = "Sleep Image";
 "category.duplicate_files" = "Duplicate Files";
 "category.unused_apps" = "Unused Apps";
+"category.project_build_artifacts" = "Project Build Artifacts";
 
 /* Process View - Missing Keys */
 "view_mode" = "View Mode";
@@ -930,3 +957,7 @@
 "settings_search_results_title" = "Search Results for «%@»";
 "settings_search_no_results" = "No Settings Found";
 "settings_search_no_results_sub" = "Try searching for terms like 'trash', 'FDA', 'AI', or 'theme'";
+
+"settings_project_artifacts_age" = "Project Artifacts Age";
+"settings_project_artifacts_age_sub" = "Scan build artifacts not modified in more than this many days";
+"settings_days_count" = "> %d days";

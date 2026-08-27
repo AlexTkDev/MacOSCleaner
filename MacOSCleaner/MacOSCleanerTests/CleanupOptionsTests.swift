@@ -9,6 +9,8 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertTrue(options.cleanMaven)
         XCTAssertTrue(options.cleanModCache)
         XCTAssertTrue(options.cleanProjects)
+        XCTAssertFalse(options.cleanProjectArtifacts)
+        XCTAssertEqual(options.projectArtifactsOlderThanDays, 60)
     }
 
     func testAllCategoriesAlwaysIncluded() {
@@ -77,6 +79,16 @@ final class CleanupOptionsTests: XCTestCase {
         let categories = options.categories()
 
         XCTAssertFalse(categories.contains(.scatteredJunk))
+    }
+
+    func testProjectArtifactsDisabledByDefault() {
+        let options = CleanupOptions()
+        XCTAssertFalse(options.categories().contains(.projectBuildArtifacts))
+    }
+
+    func testProjectArtifactsEnabledAddsCategory() {
+        let options = CleanupOptions(cleanProjectArtifacts: true)
+        XCTAssertTrue(options.categories().contains(.projectBuildArtifacts))
     }
 
     func testOptionsEquality() {

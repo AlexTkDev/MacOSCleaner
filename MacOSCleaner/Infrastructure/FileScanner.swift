@@ -33,7 +33,7 @@ public actor FileScanner {
                     
                     guard let enumerator = fm.enumerator(
                         at: url,
-                        includingPropertiesForKeys: [.isDirectoryKey],
+                        includingPropertiesForKeys: [.isDirectoryKey, .isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey],
                         options: []
                     ) else {
                         continue
@@ -45,6 +45,15 @@ public actor FileScanner {
                         let shouldExclude = FileManager.shouldExclude(url: fileURL)
                         if shouldExclude {
                             if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                                enumerator.skipDescendants()
+                            }
+                            continue
+                        }
+                        
+                        if let values = try? fileURL.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey, .isDirectoryKey]),
+                           let isUbiquitous = values.isUbiquitousItem, isUbiquitous,
+                           values.ubiquitousItemDownloadingStatus == .notDownloaded {
+                            if values.isDirectory == true {
                                 enumerator.skipDescendants()
                             }
                             continue

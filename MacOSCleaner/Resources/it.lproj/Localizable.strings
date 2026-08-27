@@ -116,9 +116,14 @@
 "disk_analyzer_category_apps" = "Applicazioni";
 "disk_analyzer_category_docs" = "Documenti";
 "disk_analyzer_category_archives" = "Archivi";
+"disk_analyzer_items_count" = "%d elementi";
+"disk_analyzer_quick_look" = "Visualizzazione rapida";
+"disk_analyzer_open_folder" = "Apri cartella";
 
 /* About View */
 "about_title" = "Informazioni su MacOS Cleaner";
+"menu_donate" = "Fai una donazione...";
+"about_donate" = "Sostieni il progetto";
 "about_version" = "Versione %@";
 "about_developer" = "Sviluppato da AlexTkDev";
 "about_problem_link" = "Se riscontri un problema con l'app, segnalalo qui";
@@ -398,6 +403,27 @@
 "uninstaller_versions" = "Versioni";
 "shared_data_warning" = "Questi dati sono condivisi con altre app.";
 
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "Applicazioni";
+"uninstaller_tab_leftovers" = "Residui";
+"uninstaller_leftovers_hero_title" = "Cerca file residui";
+"uninstaller_leftovers_hero_subtitle" = "Trova e rimuovi cache residue, preferenze e file di supporto lasciati da applicazioni disinstallate.";
+"uninstaller_start_leftover_scan" = "Cerca residui";
+"uninstaller_scanning_leftovers" = "Scansione dei file residui in corso...";
+"uninstaller_no_leftovers_title" = "Nessun residuo trovato";
+"uninstaller_no_leftovers_subtitle" = "Il tuo sistema è pulito da residui orfani di applicazioni.";
+"uninstaller_leftovers_found_count" = "%lld residui trovati";
+"uninstaller_filter_all" = "Tutti";
+"uninstaller_clean_selected_leftovers" = "Sposta selezionati nel Cestino";
+"uninstaller_confirm_trash_leftovers_title" = "Spostare i residui selezionati nel Cestino?";
+"uninstaller_confirm_trash_leftovers_message" = "Sei sicuro di voler spostare %lld file residui selezionati (%@) nel Cestino?";
+"uninstaller_post_leftovers_title" = "File residui rilevati";
+"uninstaller_post_leftovers_subtitle" = "I seguenti file residui sono stati rilevati dopo la rimozione di «%@». Seleziona gli elementi da rimuovere.";
+"uninstaller_evidence_card_title" = "Prove e affidabilità";
+"uninstaller_evidence_why_flagged" = "Perché questo file è stato rilevato?";
+"uninstaller_leftovers_cleaned_notification" = "%lld elementi residui ripuliti (%@ liberati)";
+"uninstaller_show_in_finder" = "Mostra nel Finder";
+
 /* Processes View */
 "menu_processes" = "Processi";
 "processes_title" = "Processi";
@@ -544,7 +570,8 @@
 "category.font_cache" = "Cache dei font";
 "category.sleep_image" = "Sleep Image";
 "category.duplicate_files" = "File duplicati";
-"category.unused_apps" = "App non utilizzate";
+"category.unused_apps" = "Applicazioni non utilizzate";
+"category.project_build_artifacts" = "Artefatti di build dei progetti";
 
 "view_mode" = "Modalità visualizzazione";
 "sort_by" = "Ordina per";
@@ -821,6 +848,10 @@
 "settings_search_results_title" = "Risultati della ricerca per «%@»";
 "settings_search_no_results" = "Nessuna impostazione trovata";
 "settings_search_no_results_sub" = "Prova a cercare termini come 'Cestino', 'FDA' o 'AI'";
+
+"settings_project_artifacts_age" = "Età degli artefatti dei progetti";
+"settings_project_artifacts_age_sub" = "Cerca artefatti di compilazione non modificati da più di questi giorni";
+"settings_days_count" = "> %d giorni";
 
 
 /* Evidence Categories */

@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1"><img src="https://img.shields.io/badge/Release-v2.1.1-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0"><img src="https://img.shields.io/badge/Release-v2.2.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>
@@ -54,12 +54,12 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard_v2_1.png" width="48%" alt="Dashboard">
-  <img src="assets/screenshots/Uninstaller_v2_1.png" width="48%" alt="App Uninstaller">
+  <img src="assets/screenshots/Dashboard_v2_2.png" width="48%" alt="Dashboard">
+  <img src="assets/screenshots/Uninstaller_v2_2.png" width="48%" alt="App Uninstaller">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2_1.png" width="48%" alt="Smart Cleanup">
-  <img src="assets/screenshots/Processes_v2_1.png" width="48%" alt="Process Manager">
+  <img src="assets/screenshots/Cleanup_Scan_v2_2.png" width="48%" alt="Smart Cleanup">
+  <img src="assets/screenshots/Processes_v2_2.png" width="48%" alt="Process Manager">
 </p>
 
 <p align="center">
@@ -83,12 +83,12 @@
 <a id="features"></a>
 ## ✨ Features
 
-- **Smart Cleanup:** scans 54 categories and 1,770 rules across 251 applications, 66 developer toolchains (Xcode, Docker, Rust `target`, Go `pkg`, Python `.venv`, Node `node_modules`), local AI models (Ollama, MLX, Hugging Face), and APFS purgeable space.
-- Forensic uninstaller inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) to find remnants, with root-level helper removal and rollback snapshots.
+- **Smart Cleanup:** scans 55+ categories across system caches, 275+ applications, 85+ developer toolchains & package managers (Xcode, Docker, `uv`, `mise`, Rust, Go, Python, Node), local AI models & coding assistants (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`).
+- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) to trace remnants across 1,800+ known application paths and heuristics, with standalone orphaned residuals discovery, confidence score tiers, post-uninstall review sheets, and root-level helper removal.
 - **Duplicate Finder:** identifies duplicate files through a 3-stage pipeline (file size matching, 4 KB header checksum, full SHA-256 verification).
-- Disk space analyzer groups directory contents by file type (Videos, Audio, Photos, Documents, Archives) for inspection.
+- **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSize`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
 - **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical processes (`kernel_task`, `launchd`), plus LaunchAgents and LaunchDaemons toggling.
-- Native system integrations include on-device `FoundationModels` explanations for unknown caches, Siri and App Intents automation, Liquid Glass keyboard navigation (`⌘,`, `⌘C`, `⌘F`, `⌘R`), and 10 language localizations.
+- **Native System Integrations:** on-device `FoundationModels` explanations for unknown caches, Siri and App Intents automation, Liquid Glass materials with keyboard navigation (`⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 10 language localizations.
 
 Complete feature breakdowns and path specifications are documented in the [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
 
@@ -117,7 +117,6 @@ Build and run with **⌘R**, or run tests with **⌘U**.
 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/stargazers"><img src="https://img.shields.io/badge/GitHub-⭐️_Star_Repository-gold?style=flat&logo=github&logoColor=black" alt="Star Repository" align="absmiddle"></a> — [Star the repository](https://github.com/AlexTkDev/MacOSCleaner/stargazers) and watch releases for update notifications.
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions"><img src="https://img.shields.io/badge/Discussions-Forum-181717?style=flat&logo=discourse&logoColor=white" alt="Discussions" align="absmiddle"></a> — [Ask questions, propose features, and share feedback.](https://github.com/AlexTkDev/MacOSCleaner/discussions)
-- <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/14"><img src="https://img.shields.io/badge/Roadmap-v2.2.0-007AFF?style=flat&logo=git&logoColor=white" alt="Roadmap" align="absmiddle"></a> — [Track upcoming tasks for the next release.](https://github.com/AlexTkDev/MacOSCleaner/discussions/14)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/issues"><img src="https://img.shields.io/badge/Issues-Tracker-E5534B?style=flat&logo=instabug&logoColor=white" alt="Issue Tracker" align="absmiddle"></a> — [Report bugs or suggest rule improvements.](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)

@@ -603,14 +603,57 @@ public actor UninstallerService {
         return freed
     }
 
+    public func removeLeftovers(_ items: [LeftoverItem], bypassTrash: Bool = false) async throws -> Int64 {
+        let shouldBypass = bypassTrash
+        var freed: Int64 = 0
+        for item in items {
+            do {
+                if shouldBypass {
+                    try safetyManager.validate(url: item.url, policy: .uninstall)
+                    try FileManager.default.removeItem(at: item.url)
+                } else {
+                    try await trashManager.trashItem(at: item.url)
+                }
+                freed += item.sizeBytes
+            } catch {
+                Logger.uninstaller.error("Failed to remove leftover \(item.url.path): \(error.localizedDescription)")
+            }
+        }
+        return freed
+    }
+
+    public func removeLeftovers(urls: [URL], bypassTrash: Bool = false) async throws -> Int64 {
+        let shouldBypass = bypassTrash
+        var freed: Int64 = 0
+        for url in urls {
+            do {
+                let size = FileManager.default.getDirectorySize(url: url)
+                if shouldBypass {
+                    try safetyManager.validate(url: url, policy: .uninstall)
+                    try FileManager.default.removeItem(at: url)
+                } else {
+                    try await trashManager.trashItem(at: url)
+                }
+                freed += size
+            } catch {
+                Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
+            }
+        }
+        return freed
+    }
+
     // MARK: - Uninstall
 
-    public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws {
+    @discardableResult
+    public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws -> VerificationReport? {
         if !app.versions.isEmpty {
+            var combinedLeftovers: [LeftoverItem] = []
             for versionApp in app.versions {
-                try await uninstall(app: versionApp, bypassTrash: bypassTrash, emptyTrashImmediately: emptyTrashImmediately)
+                if let report = try await uninstall(app: versionApp, bypassTrash: bypassTrash, emptyTrashImmediately: emptyTrashImmediately) {
+                    combinedLeftovers.append(contentsOf: report.items)
+                }
             }
-            return
+            return combinedLeftovers.isEmpty ? nil : VerificationReport(appName: app.name, bundleID: app.bundleID, items: combinedLeftovers)
         }
 
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
@@ -723,7 +766,9 @@ public actor UninstallerService {
             } else {
                 Logger.uninstaller.info("0 leftovers — clean uninstall of '\(app.name, privacy: .public)'")
             }
+            return report
         }
+        return nil
     }
 
     // MARK: - Private helpers
