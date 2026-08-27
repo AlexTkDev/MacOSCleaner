@@ -79,21 +79,22 @@
       "category": "Free Open-Source Software"
     },
     "description": "Free open-source macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
-    "softwareVersion": "2.1.1",
+    "softwareVersion": "2.2.0",
     "fileFormat": "application/x-apple-diskimage",
-    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.1/MacOSCleaner.dmg",
+    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.2.0/MacOSCleaner.dmg",
     "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
-    "releaseNotes": "https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1",
+    "releaseNotes": "https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0",
     "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
     "featureList": [
       "AppIntents & Siri voice automation",
       "Cryptographic Duplicate File Finder",
       "Apple Watch-style disk ring dashboard",
-      "1,770 path rules for 251 apps and 66 CLI toolchains",
+      "1,887 path rules for 275 apps and 86 CLI toolchains",
       "On-device Apple Intelligence explanations",
-      "Smart Cleanup for 54 categories",
-      "App Uninstaller with 5-level forensic leftover scan",
-      "Disk Space Analyzer",
+      "Smart Cleanup for 55 categories",
+      "App Uninstaller with forensic leftover scan & orphan reviews",
+      "Navigable Disk Space Analyzer with APFS allocated sizing",
+      "Project Build Artifacts manager with age filters",
       "Startup Services Manager",
       "Process Manager",
       "Full localization for 10 languages",
@@ -180,10 +181,8 @@
 
   <script>
     (function () {
-      var stored = localStorage.getItem('theme');
-      var theme = stored === 'light' || stored === 'dark'
-        ? stored
-        : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
@@ -193,7 +192,7 @@
 
 <nav id="main-nav">
   <div class="container">
-    <a class="nav-brand" href="https://alextkdev.github.io/MacOSCleaner/" aria-label="MacOSCleaner home">
+    <a class="nav-brand" href="./" aria-label="MacOSCleaner home">
       <img src="static/assets/logo-96.png" width="40" height="40" alt="">
       MacOSCleaner
     </a>
@@ -232,9 +231,9 @@
 <header class="hero">
   <div class="container">
     <div class="hero-copy">
-      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1">
+      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0">
         <span class="dot" aria-hidden="true"></span>
-        v2.1.1 — Privileged App Uninstaller Fix &amp; System Maintenance
+        v2.2.0 — Forensic Leftovers Uninstaller, Project Build Artifacts &amp; APFS Analyzer
         <span aria-hidden="true">→</span>
       </a>
       <h1>Free macOS Cleaner &amp; App Uninstaller</h1>
@@ -253,16 +252,16 @@
     </div>
 
     <figure class="hero-window">
-      <img src="static/assets/hero-dashboard.webp" width="2358" height="1706" alt="MacOSCleaner dashboard" fetchpriority="high" decoding="async">
+      <img src="static/assets/hero-dashboard.webp" width="2272" height="1740" alt="MacOSCleaner dashboard" fetchpriority="high" decoding="async">
     </figure>
 
     <div class="hero-stats">
       <div class="stat">
-        <div class="stat-num" data-count="54">0</div>
+        <div class="stat-num" data-count="55">0</div>
         <div class="stat-label">cleanup categories</div>
       </div>
       <div class="stat">
-        <div class="stat-num" data-count="1770" data-suffix="+">0+</div>
+        <div class="stat-num" data-count="1887" data-suffix="+">0+</div>
         <div class="stat-label">built-in paths</div>
       </div>
       <div class="stat">
@@ -398,33 +397,35 @@
       <button type="button" class="shot-tab" data-index="5">Duplicates</button>
       <button type="button" class="shot-tab" data-index="6">Analyzer</button>
       <button type="button" class="shot-tab" data-index="7">Uninstaller</button>
-      <button type="button" class="shot-tab" data-index="8">Uninstall&nbsp;Scan</button>
-      <button type="button" class="shot-tab" data-index="9">Processes</button>
-      <button type="button" class="shot-tab" data-index="10">Startup</button>
-      <button type="button" class="shot-tab" data-index="11">Permissions</button>
-      <button type="button" class="shot-tab" data-index="12">About</button>
-      <button type="button" class="shot-tab" data-index="13">Settings</button>
+      <button type="button" class="shot-tab" data-index="8">Leftovers</button>
+      <button type="button" class="shot-tab" data-index="9">Uninstall&nbsp;Scan</button>
+      <button type="button" class="shot-tab" data-index="10">Processes</button>
+      <button type="button" class="shot-tab" data-index="11">Startup</button>
+      <button type="button" class="shot-tab" data-index="12">Permissions</button>
+      <button type="button" class="shot-tab" data-index="13">About</button>
+      <button type="button" class="shot-tab" data-index="14">Settings</button>
     </div>
     <div class="shot-stage reveal">
       <button class="shot-nav prev" id="shot-prev" type="button" aria-label="Previous screenshot">&#10094;</button>
       <div class="shot-viewport">
         <div class="carousel-track">
           <div class="carousel-slide carousel-slide--video">
-            <video src="static/assets/screenshots/demo_video.mp4" loop muted playsinline controls id="demo-video" style="width:100%;height:auto;display:block;"></video>
+            <video src="static/assets/screenshots/demo_video.mp4?v=2" loop muted playsinline controls id="demo-video" style="width:100%;height:auto;display:block;"></video>
           </div>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="static/assets/screenshots/Dashboard_v2_1.webp" width="2272" height="1688" alt="Dashboard" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="static/assets/screenshots/Cleanup_page_v2_1.webp" width="2272" height="1712" alt="Cleanup Page" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan screenshot"><img src="static/assets/screenshots/Cleanup_Scan_v2_1.webp" width="2272" height="1688" alt="Cleanup Scan" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan Results screenshot"><img src="static/assets/screenshots/Cleanup_Scan_Results_v2_1.webp" width="2272" height="1688" alt="Cleanup Scan Results" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Duplicate Finder screenshot"><img src="static/assets/screenshots/Duplicate_Finder_v2_1.webp" width="2272" height="1712" alt="Duplicate Finder" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Disk Space Analyzer screenshot"><img src="static/assets/screenshots/Disk_analyzer_v2_1.webp" width="2272" height="1712" alt="Disk Space Analyzer" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller screenshot"><img src="static/assets/screenshots/Uninstaller_v2_1.webp" width="2272" height="1712" alt="Uninstaller" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Scan screenshot"><img src="static/assets/screenshots/Uninstaller_scan_v2_1.webp" width="2272" height="1712" alt="Uninstaller Scan" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="static/assets/screenshots/Processes_v2_1.webp" width="2272" height="1712" alt="Processes" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="static/assets/screenshots/Startup_Services_v2_1.webp" width="2272" height="1712" alt="Startup Services" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="static/assets/screenshots/Permission_screen_v2_1.webp" width="2272" height="1688" alt="Permission Screen" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide carousel-slide--compact" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2_1_1.webp" width="984" height="1302" alt="About" loading="lazy" decoding="async"></button>
-          <button type="button" class="carousel-slide" aria-label="Enlarge Settings screenshot"><img src="static/assets/screenshots/Settings_General_v2_1_1.webp" width="2272" height="2526" alt="Settings General" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="static/assets/screenshots/Dashboard_v2_2.webp" width="2272" height="1740" alt="Dashboard" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="static/assets/screenshots/Cleanup_page_v2_2.webp" width="2272" height="1740" alt="Cleanup Page" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan screenshot"><img src="static/assets/screenshots/Cleanup_Scan_v2_2.webp" width="2272" height="1688" alt="Cleanup Scan" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Scan Results screenshot"><img src="static/assets/screenshots/Cleanup_Scan_Results_v2_2.webp" width="2272" height="1688" alt="Cleanup Scan Results" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Duplicate Finder screenshot"><img src="static/assets/screenshots/Duplicate_Finder_v2_2.webp" width="2272" height="1740" alt="Duplicate Finder" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Disk Space Analyzer screenshot"><img src="static/assets/screenshots/Disk_analyzer_v2_2.webp" width="2272" height="1740" alt="Disk Space Analyzer" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller screenshot"><img src="static/assets/screenshots/Uninstaller_v2_2.webp" width="2272" height="1984" alt="Uninstaller" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Leftovers screenshot"><img src="static/assets/screenshots/Uninstaller_Leftovers_v2_2.webp" width="2272" height="1688" alt="Uninstaller Leftovers" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Uninstaller Scan screenshot"><img src="static/assets/screenshots/Uninstaller_scan_v2_2.webp" width="2272" height="1712" alt="Uninstaller Scan" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Processes screenshot"><img src="static/assets/screenshots/Processes_v2_2.webp" width="2272" height="1688" alt="Processes" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Startup Services screenshot"><img src="static/assets/screenshots/Startup_Services_v2_2.webp" width="2272" height="1688" alt="Startup Services" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Permission Screen screenshot"><img src="static/assets/screenshots/Permission_screen_v2_2.webp" width="2272" height="1688" alt="Permission Screen" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide carousel-slide--compact" aria-label="Enlarge About screenshot"><img src="static/assets/screenshots/About_v2_2.webp" width="984" height="1396" alt="About" loading="lazy" decoding="async"></button>
+          <button type="button" class="carousel-slide" aria-label="Enlarge Settings screenshot"><img src="static/assets/screenshots/Settings_General_v2_2.webp" width="2272" height="2510" alt="Settings General" loading="lazy" decoding="async"></button>
         </div>
       </div>
       <button class="shot-nav next" id="shot-next" type="button" aria-label="Next screenshot">&#10095;</button>
@@ -440,7 +441,7 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">03 · What gets cleaned</p>
-      <h2>54 categories, one scan</h2>
+      <h2>55 categories, one scan</h2>
       <p>Every category is scanned; risk badges appear after scan — you pick what to delete</p>
     </div>
     <div class="cells reveal">
@@ -451,7 +452,7 @@
           </span>
           App &amp; browser caches
         </h3>
-        <p>Google, Spotify, JetBrains, Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc, Telegram, Discord, Slack, Signal, Teams</p>
+        <p>Google, Spotify, JetBrains, Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc, Zen Browser, Dia, Telegram, Discord, Slack, Signal, Teams</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -460,16 +461,16 @@
           </span>
           Package managers
         </h3>
-        <p>Homebrew, npm, yarn, pnpm, CocoaPods — native cleanup commands where available</p>
+        <p>Homebrew, uv, mise, proto, npm, yarn, pnpm, CocoaPods, vcpkg, Conan, Zig/ZLS — native cleanup commands where available</p>
       </div>
       <div class="cell-cat">
         <h3>
           <span class="cell-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
           </span>
-          Dev tools
+          Dev tools &amp; build artifacts
         </h3>
-        <p>Xcode DerivedData, iOS Simulators, Android SDK, Gradle/Maven, Flutter/Dart, Go, Rust, Python, Node, Swift PM, Bazel</p>
+        <p>Xcode DerivedData, Simulators, Android SDK, Gradle/Maven, Flutter/Dart, Tuist, Go, Rust, Python, Swift PM, Bazel; project-local build caches with age filters</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -478,7 +479,7 @@
           </span>
           IDE &amp; AI caches
         </h3>
-        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Claude, ChatGPT, Gemini, opencode, Figma, Notion, Postman</p>
+        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Claude Code CLI, Goose, Continue.dev, Ollama, MLX, Hugging Face, WhisperKit, Superwhisper</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -487,19 +488,19 @@
           </span>
           System &amp; Docker
         </h3>
-        <p>QuickLook, fonts, Spotlight, CloudKit, Time Machine local snapshots, Docker prune, crash reports, Mail downloads</p>
+        <p>QuickLook, fonts, Spotlight, CloudKit, Time Machine snapshot thinning, Docker prune, crash reports, Mail downloads, privileged DNS flush</p>
       </div>
       <div class="cell-cat">
         <h3>
           <span class="cell-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
           </span>
-          Orphans &amp; large files
+          Orphans &amp; leftovers
         </h3>
-        <p>Leftovers in HTTPStorages, WebKit, Cookies; DMG/pkg/iso installers; <code>node_modules</code>; iPhone backups; IPSW</p>
+        <p>Post-uninstall leftovers sheet; standalone orphaned remnants (Guaranteed, Very Likely, Possible); installers; iOS backups</p>
       </div>
     </div>
-    <p class="clean-note reveal">Opt-in toggles: Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>, .DS_Store, iCloud Documents, Voice Memos, GarageBand/Logic, iMovie/Final Cut, Sleep Image.</p>
+    <p class="clean-note reveal">Opt-in toggles: Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>, .DS_Store, Project Build Artifacts (30–180d), iCloud Documents, Voice Memos, GarageBand/Logic, iMovie/Final Cut, Sleep Image.</p>
   </div>
 </section>
 
@@ -508,43 +509,46 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">04 · Changelog</p>
-      <h2>What's new in v2.1.1 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1" target="_blank" rel="noopener" class="changelog-link" title="View v2.1.1 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
-      <p>Root-owned app uninstaller batching, Touch ID for sudo command helper, Spotlight index rebuild &amp; single source of truth versioning</p>
+      <h2>What's new in v2.2.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0" target="_blank" rel="noopener" class="changelog-link" title="View v2.2.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
+      <p>Forensic leftovers uninstaller &amp; orphan scanner, dedicated project build artifacts manager with age filters, navigable APFS disk analyzer, and 2026 AI/dev toolchain catalog</p>
     </div>
     
     <!-- Active Latest Release Details -->
     <div class="release-list reveal">
       <article>
-        <h3>Privileged App Uninstaller &amp; Batching</h3>
+        <h3>Forensic Leftovers &amp; Orphan Scanner</h3>
         <ul>
-          <li><strong>Single Admin Prompt</strong> — root-owned bundles in <code>/Applications</code> are cleanly removed with exactly one credentials prompt via <code>PrivilegedTaskRunner</code></li>
-          <li><strong>Real-Time Deletion Progress</strong> — interactive detail loading overlay, action button status with re-click lockout, and list-row activity spinners</li>
+          <li><strong>Post-Uninstall Review Sheet</strong> — inspect and selectively delete remaining files immediately after app uninstallation with evidence trails</li>
+          <li><strong>Standalone Orphan Scanner</strong> — dedicated review section detecting remnants from previously removed apps, sorted into 3 confidence tiers (Guaranteed, Very Likely, Possible)</li>
+          <li><strong>Deep Recall</strong> — catalogs over 1,880+ locations across 275+ macOS applications and 86 toolchains</li>
         </ul>
       </article>
       <article>
-        <h3>System Maintenance (Settings → General)</h3>
+        <h3>Project Build Artifacts (Default Off)</h3>
         <ul>
-          <li><strong>Touch ID for sudo Helper</strong> — 1-click terminal command copying to configure <code>/etc/pam.d/sudo_local</code> with dynamic status verification button</li>
-          <li><strong>Spotlight Index Rebuild (mdutil -E)</strong> — force reindex system startup disk to fix search errors and corrupted disk storage calculations</li>
+          <li><strong>Isolated Category</strong> — regenerable build folders (<code>node_modules</code>, <code>target</code>, <code>.venv</code>, <code>.dart_tool</code>, <code>build</code>) decoupled from Xcode with safe sibling verification</li>
+          <li><strong>Configurable Age Filter</strong> — clean artifacts older than 30, 60, 90, or 180 days in AppSettings; whole-home <code>node_modules</code> sweep removed from Large Files</li>
         </ul>
       </article>
       <article>
-        <h3>Version Architecture (Single Source of Truth)</h3>
+        <h3>Navigable Disk Space Analyzer</h3>
         <ul>
-          <li><strong>Unified Versioning</strong> — <code>project.yml</code> configured as the single source of truth; dynamic bundle inspection across all SwiftUI views</li>
+          <li><strong>Hierarchical Directory Tree</strong> — drill into nested subfolders with 1-click navigation and clickable breadcrumb trail</li>
+          <li><strong>Honest APFS Sizing &amp; Quick Look</strong> — reports physical <code>totalFileAllocatedSize</code> blocks; instant file preview on <code>Space</code>; skips dataless iCloud files</li>
         </ul>
       </article>
       <article>
-        <h3>Full 10-Language Localization Parity</h3>
+        <h3>System Hygiene &amp; 2026 Developer Ecosystem</h3>
         <ul>
-          <li><strong>100% Key Parity</strong> — complete translations across English, Deutsch, 日本語, Français, 简体中文, Italiano, Português (Brasil), Español, Русский, and Українська</li>
+          <li><strong>Modern AI &amp; Package Managers</strong> — added support for Claude Code CLI, Goose, Continue.dev, uv, mise, proto, Tuist, Zig/ZLS, Ghostty, Zen Browser</li>
+          <li><strong>Time Machine &amp; DNS</strong> — gentle <code>thinlocalsnapshots</code> thinning based on reclaimable space; secure privileged DNS cache flush</li>
         </ul>
       </article>
     </div>
 
     <div class="release-current-cta reveal" style="margin-top: 24px;">
-      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-        View v2.1.1 release notes on GitHub →
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+        View v2.2.0 release notes on GitHub →
       </a>
     </div>
 
@@ -554,6 +558,27 @@
       <h3 class="changelog-subhead">Previous Releases</h3>
       
       <div class="changelog-timeline">
+        <!-- v2.1.1 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v2.1.1</span>
+            <span class="changelog-title">Privileged App Uninstaller Fix &amp; System Maintenance</span>
+            <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1" target="_blank" rel="noopener" class="changelog-link" title="View on GitHub" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>Privileged Uninstaller</strong> — single admin prompt for root-owned bundles in <code>/Applications</code> via PrivilegedTaskRunner.</li>
+              <li><strong>Touch ID for sudo</strong> — 1-click terminal command copying with dynamic status verification.</li>
+              <li><strong>Spotlight Index Rebuild</strong> — force reindex system startup disk with <code>mdutil -E</code>.</li>
+              <li><strong>10-Language Parity</strong> — full key parity across all 10 supported localizations.</li>
+            </ul>
+          </div>
+        </details>
         <!-- v2.1.0 -->
         <details class="changelog-item">
           <summary class="changelog-summary">
@@ -736,9 +761,9 @@
     <div class="download-panel reveal">
       <div>
         <h2>Download</h2>
-        <p class="dl-meta">v2.1.1 · macOS 26.0+ · Apple Silicon M1 and newer</p>
+        <p class="dl-meta">v2.2.0 · macOS 26.0+ · Apple Silicon M1 and newer</p>
         <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.1.1/MacOSCleaner.dmg">
+          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.2.0/MacOSCleaner.dmg">
             Download DMG <span class="arrow">→</span>
           </a>
           <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>

@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://alextkdev.github.io/MacOSCleaner/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -24,7 +24,7 @@
   </url>
   <url>
     <loc>https://alextkdev.github.io/MacOSCleaner/about.html</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -35,7 +35,7 @@
   </url>
   <url>
     <loc>https://alextkdev.github.io/MacOSCleaner/support.html</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
@@ -46,13 +46,13 @@
   </url>
   <url>
     <loc>https://alextkdev.github.io/MacOSCleaner/llms.txt</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://alextkdev.github.io/MacOSCleaner/llms-full.txt</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>

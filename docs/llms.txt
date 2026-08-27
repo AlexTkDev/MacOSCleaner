@@ -3,14 +3,14 @@
 > Free source-available macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry. Personal use only.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
-Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.1.1.
+Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.2.0.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 
 
 ## Pages & Docs
 
-- [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with core features, interactive screenshot showcase, changelog, and direct ZIP download
+- [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with core features, interactive screenshot showcase, changelog, and direct DMG download
 - [About & FAQ](https://alextkdev.github.io/MacOSCleaner/about.html): Deep-dive into cache safety, forensic uninstaller leftovers, developer cleanup (Xcode, Docker, Homebrew), privacy model, and FAQs
 - [Support the Project](https://alextkdev.github.io/MacOSCleaner/support.html): Support options (Ko-fi subscription and Crypto donations) with roadmap breakdown
 - [Full agent brief](https://alextkdev.github.io/MacOSCleaner/llms-full.txt): Self-contained product facts for AI agents
@@ -19,7 +19,8 @@ Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 ## GitHub & Source
 
 - [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
-- [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download ZIP / release notes
+- [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Download DMG / release notes
+- [v2.2.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0): Forensic Leftovers Uninstaller, Project Build Artifacts with Age Filters, APFS Disk Analyzer, 1,887 paths
 - [v2.1.1 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1): Root-owned app uninstaller batching, Touch ID for sudo helper, Spotlight reindex, Version SoT
 - [v2.1.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0): AppIntents & Siri support, Duplicate File Finder, Apple Watch-style disk visualization, 10 localizations
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
