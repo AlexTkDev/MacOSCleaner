@@ -30,44 +30,81 @@ public actor CommandRunner {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: command)
         process.arguments = arguments
+        process.standardInput = FileHandle.nullDevice
 
         let stdoutPipe = Pipe()
         let stderrPipe = Pipe()
-
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
-        final class ProcessState: @unchecked Sendable {
+        let stdoutHandle = stdoutPipe.fileHandleForReading
+        let stderrHandle = stderrPipe.fileHandleForReading
+
+        // Parent still holds pipe write ends until we close them. Drain on
+        // dedicated threads so a fast-exiting child cannot drop stderr (CI flake:
+        // terminationHandler nilling readabilityHandler races availableData).
+        let stdoutTask = Task.detached(priority: .utility) {
+            CommandRunner.readPipeToEnd(stdoutHandle)
+        }
+        let stderrTask = Task.detached(priority: .utility) {
+            CommandRunner.readPipeToEnd(stderrHandle)
+        }
+
+        let stdoutWrite = stdoutPipe.fileHandleForWriting
+        let stderrWrite = stderrPipe.fileHandleForWriting
+
+        let exitCode: Int32
+        do {
+            exitCode = try await withTaskCancellationHandler {
+                try await CommandRunner.waitForExit(process, timeout: timeout)
+            } onCancel: {
+                if process.isRunning {
+                    process.terminate()
+                }
+                try? stdoutWrite.close()
+                try? stderrWrite.close()
+            }
+            try? stdoutWrite.close()
+            try? stderrWrite.close()
+        } catch {
+            if process.isRunning {
+                process.terminate()
+            }
+            try? stdoutWrite.close()
+            try? stderrWrite.close()
+            _ = await stdoutTask.value
+            _ = await stderrTask.value
+            throw error
+        }
+
+        let stdoutData = await stdoutTask.value
+        let stderrData = await stderrTask.value
+        return CommandResult(
+            stdout: String(decoding: stdoutData, as: UTF8.self),
+            stderr: String(decoding: stderrData, as: UTF8.self),
+            exitCode: exitCode
+        )
+    }
+
+    /// Blocks until EOF. Empty `availableData` is EOF on a pipe.
+    private nonisolated static func readPipeToEnd(_ handle: FileHandle) -> Data {
+        var data = Data()
+        while true {
+            let chunk = handle.availableData
+            if chunk.isEmpty { break }
+            data.append(chunk)
+        }
+        return data
+    }
+
+    private nonisolated static func waitForExit(_ process: Process, timeout: Duration) async throws -> Int32 {
+        final class ResumeOnce: @unchecked Sendable {
             private let lock = NSLock()
             private var isResumed = false
-            private var stdoutData = Data()
-            private var stderrData = Data()
 
-            func appendStdout(_ data: Data) {
-                lock.lock()
-                stdoutData.append(data)
-                lock.unlock()
-            }
-
-            func appendStderr(_ data: Data) {
-                lock.lock()
-                stderrData.append(data)
-                lock.unlock()
-            }
-
-            func finish(process: Process) -> CommandResult {
-                lock.lock()
-                defer { lock.unlock() }
-                return CommandResult(
-                    stdout: String(decoding: stdoutData, as: UTF8.self),
-                    stderr: String(decoding: stderrData, as: UTF8.self),
-                    exitCode: process.terminationStatus
-                )
-            }
-
-            func resumeOnce(
-                continuation: CheckedContinuation<CommandResult, Error>,
-                result: Result<CommandResult, Error>
+            func resume(
+                _ continuation: CheckedContinuation<Int32, Error>,
+                _ result: Result<Int32, Error>
             ) {
                 lock.lock()
                 defer { lock.unlock() }
@@ -77,71 +114,34 @@ public actor CommandRunner {
             }
         }
 
-        let state = ProcessState()
-
-        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
-            let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStdout(data)
-            }
-        }
-
-        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
-            let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStderr(data)
-            }
-        }
-
-        return try await withTaskCancellationHandler {
-            try await withThrowingTaskGroup(of: CommandResult.self) { group in
-                group.addTask {
-                    try await withCheckedThrowingContinuation { continuation in
-                        process.terminationHandler = { proc in
-                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
-                            stderrPipe.fileHandleForReading.readabilityHandler = nil
-
-                            let remOut = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-                            let remErr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                            if !remOut.isEmpty { state.appendStdout(remOut) }
-                            if !remErr.isEmpty { state.appendStderr(remErr) }
-
-                            let result = state.finish(process: proc)
-                            state.resumeOnce(continuation: continuation, result: .success(result))
-                        }
-
-                        do {
-                            try process.run()
-                        } catch {
-                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
-                            stderrPipe.fileHandleForReading.readabilityHandler = nil
-                            state.resumeOnce(
-                                continuation: continuation,
-                                result: .failure(CommandRunnerError.invalidExecutable)
-                            )
-                        }
+        let resume = ResumeOnce()
+        return try await withThrowingTaskGroup(of: Int32.self) { group in
+            group.addTask {
+                try await withCheckedThrowingContinuation { continuation in
+                    process.terminationHandler = { proc in
+                        resume.resume(continuation, .success(proc.terminationStatus))
+                    }
+                    do {
+                        try process.run()
+                    } catch {
+                        resume.resume(continuation, .failure(CommandRunnerError.invalidExecutable))
                     }
                 }
-
-                group.addTask {
-                    try await Task.sleep(for: timeout)
-                    if process.isRunning {
-                        process.terminate()
-                    }
-                    throw CommandRunnerError.timeout
-                }
-
-                guard let result = try await group.next() else {
-                    throw CommandRunnerError.invalidExecutable
-                }
-
-                group.cancelAll()
-                return result
             }
-        } onCancel: {
-            if process.isRunning {
-                process.terminate()
+
+            group.addTask {
+                try await Task.sleep(for: timeout)
+                if process.isRunning {
+                    process.terminate()
+                }
+                throw CommandRunnerError.timeout
             }
+
+            guard let code = try await group.next() else {
+                throw CommandRunnerError.invalidExecutable
+            }
+            group.cancelAll()
+            return code
         }
     }
 
