@@ -43,6 +43,9 @@ let assetWatermarks: [String] = [
 ]
 
 // MARK: - Category mapping (JSON category → CleanupCategory.rawValue)
+//
+// Generic category + token tables only. Vendor leftover paths stay in gitignored
+// SoT: engine_paths.json, ui_metadata.json, catalog_policy.json.
 
 let categoryMap: [String: String] = [
     "browsers": "browser_caches",

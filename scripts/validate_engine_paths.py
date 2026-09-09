@@ -14,49 +14,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from catalog_policy import POLICY, user_content_roots  # noqa: E402
 from migrate_engine_paths_v3 import ENGINE, UI, validate  # noqa: E402
 
-# Paths that must never be classified as a cache: regular cleanup would delete them.
+# Generic filenames that must never be classified as a cache.
 USER_DATA_RE = re.compile(
     r"login data|cookies|bookmarks|places\.sqlite|logins\.json|key4\.db|web data|"
     r"secure preferences|local state|/documents/|/desktop/|/saves|keychain",
     re.IGNORECASE,
-)
-
-USER_CONTENT_ROOTS = (
-    "<HOME>/Desktop",
-    "<HOME>/Documents",
-    "<HOME>/Downloads",
-    "<HOME>/Movies",
-    "<HOME>/Music",
-    "<HOME>/Pictures",
-    "<HOME>/Dropbox",
-    "<HOME>/Google Drive",
-    "<HOME>/OneDrive",
-    "<HOME>/Creative Cloud Files",
-    "<HOME>/Parallels",
-    "<HOME>/Documents/Parallels",
-    "<HOME>/Documents/Virtual Machines",
-    "<HOME>/Documents/Virtual Machines.localized",
-    "<HOME>/Documents/Zoom",
-    "<HOME>/Library/CloudStorage",
-    "<HOME>/Library/Mobile Documents",
-    # Models / global package stores — informational, never unattended cleanup
-    "<HOME>/.ollama",
-    "<HOME>/.pub-cache",
-    "<HOME>/.cache/huggingface",
-    "<HOME>/.cache/torch",
-    "<HOME>/.cache/whisper",
-    "<HOME>/.cache/mlx",
-    "<HOME>/.cache/vllm",
-    "<HOME>/.cache/kagglehub",
-    "<USER_CACHE>/huggingface",
-    "<CACHES>/huggingface",
-    "<APP_SUPPORT>/LM Studio",
-    "<APP_SUPPORT>/Jan",
-    "<APP_SUPPORT>/jan.ai.app",
-    "<HOME>/jan",
-    "<USER_CACHE>/lm-studio",
 )
 
 
@@ -73,6 +38,11 @@ def main() -> int:
     if engine.get("version") != "3.0" or ui.get("version") != "3.0":
         problems.append("version must be 3.0 in both files")
 
+    if not POLICY.is_file():
+        problems.append(f"missing sidecar {POLICY.name} next to SoT JSON")
+
+    content_roots = user_content_roots()
+
     for section in ("apps", "toolchains"):
         for key, entry in engine[section].items():
             for record in entry["paths"]:
@@ -80,9 +50,9 @@ def main() -> int:
                 purpose = record["purpose"]
                 if path == "<HOME>":
                     problems.append(f"{key}: bare home token must not be classified: {path}")
-                if purpose == "app_data" and any(_under_root(path, root) for root in USER_CONTENT_ROOTS):
+                if purpose == "app_data" and any(_under_root(path, root) for root in content_roots):
                     problems.append(f"{key}: user content under personal roots must be user_content: {path}")
-                if purpose == "user_content" and not any(_under_root(path, root) for root in USER_CONTENT_ROOTS):
+                if purpose == "user_content" and not any(_under_root(path, root) for root in content_roots):
                     problems.append(f"{key}: user_content must stay under personal roots: {path}")
                 if purpose == "cache" and USER_DATA_RE.search(path):
                     problems.append(f"{key}: user data classified as cache: {path}")

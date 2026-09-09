@@ -18,6 +18,7 @@ import json
 import re
 import sys
 from collections import OrderedDict
+from functools import cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,289 +37,68 @@ SYSTEM_TOKENS = {t for t in TOKENS if t.startswith("SYS_")}
 # Absolute (non-token) prefixes allowed to stay in the base.
 ABSOLUTE_ALLOWED = ("/usr/local/", "/opt/homebrew/", "/Library/", "/var/log/", "/var/root/")
 
-# ---------------------------------------------------------------------------
-# 1. Truncated paths, placeholders and documentation artifacts.
-#    key -> {broken path: [replacements]}   ([] drops the path)
-# ---------------------------------------------------------------------------
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from catalog_policy import POLICY, migrate_tables, user_content_roots  # noqa: E402
 
-PATH_FIXES: dict[str, dict[str, list[str]]] = {
-    # Covered by the dedicated Edge channels entry.
-    "com.microsoft.edgemac": {"/Canary": []},
-    "company.thebrowser.Browser": {"/Default/Cache": ["<APP_SUPPORT>/Arc/User Data/Default/Cache"]},
-    "company.thebrowser.Browser_1": {
-        "/Arc/Default/Extensions/": ["<APP_SUPPORT>/Arc/User Data/Default/Extensions"]
-    },
-    # Legacy Xcode 3 layout on a SIP-protected volume + a size annotation from the docs.
-    "com.apple.dt.Xcode": {
-        "/Developer/Library/uninstall-devtools": [],
-        "/Developer/Applications/Xcode.app": [],
-        "~2-5GB": [],
-    },
-    "com.apple.dt.Xcode_1": {"/Developer/Library/uninstall-devtools": [], "~2-5GB": []},
-    "com.valvesoftware.steam": {
-        "/compatdata/": ["<APP_SUPPORT>/Steam/steamapps/compatdata"],
-        "/shadercache/": ["<APP_SUPPORT>/Steam/steamapps/shadercache"],
-    },
-    "com.tinyspeck.slackmacgap": {"/Slack/storage": ["<APP_SUPPORT>/Slack/storage"]},
-    "com.microsoft.teams2": {"/Microsoft/Teams": ["<APP_SUPPORT>/Microsoft/Teams"]},
-    "org.telegram.desktop": {
-        "/user_data/stickers/": ["<APP_SUPPORT>/Telegram Desktop/tdata/user_data/stickers"],
-        "/user_data/media_cache/": ["<APP_SUPPORT>/Telegram Desktop/tdata/user_data/media_cache"],
-    },
-    "com.spotify.client": {"/Storage": ["<CACHES>/com.spotify.client/Storage"]},
-    "com.google.drivefs": {"/content_cache": [], "/metadata": []},  # covered by the glob entries
-    "net.battle.bootstrapper": {"/Blizzard": ["<APP_SUPPORT>/Blizzard"], "/Applications/World": []},
-    "com.mojang.minecraftlauncher": {
-        "/saves/": ["<APP_SUPPORT>/minecraft/saves"],
-        "/mods/": ["<APP_SUPPORT>/minecraft/mods"],
-        "/versions/": ["<APP_SUPPORT>/minecraft/versions"],
-        "/libraries/": ["<APP_SUPPORT>/minecraft/libraries"],
-    },
-    "com.panic.Transmit": {
-        "/Favorites": ["<APP_SUPPORT>/Transmit/Favorites"],
-        "/History": ["<APP_SUPPORT>/Transmit/History"],
-    },
-    "com.resilio.Sync": {"/.sync": ["<HOME>/.sync"]},
-    "com.evernote.Evernote": {"/Evernote/": []},  # <CONTAINERS>/com.evernote.Evernote already listed
-    # Ambiguous document-relative fragments — no safe reconstruction.
-    "us.zoom.xos": {"/video": []},
-    "com.apple.FinalCut": {"/proxy": []},
-    "com.apple.logic10": {"/Logic/Plug-in": [], "/Audio/": []},
-    "com.apple.Music / com.apple.iTunes": {
-        "/Music": [], "/Tunes": [], "/Album": [], "/Backup/": [], "/iTunes": []
-    },
-    "com.parallels.desktop": {"/Backups/": []},
-    "com.vmware.fusion": {"/VMware": []},
-    "md.obsidian": {"/plugins/": [], "/themes/": []},  # vault-relative, not a fixed location
-    # Toolchains: root-relative project artifacts belong to cleanProjectLocalBuildArtifacts.
-    "com.vagrant.vagrant": {"/.vagrant/": []},
-    "development.flutter": {"/build/": []},
-    "development.terraform": {"/.terraform/": [], "/terraform.tfstate": []},
-    "development.node_js_npm_nvm_fnm_pnpm_yarn_bun": {"/node_modules": []},
-    "development.python_system_pyenv_conda_pip_poetry_pipenv": {
-        "/__pycache__": [],
-        "<HOME>/anaconda3 или ~/miniconda3": ["<HOME>/anaconda3", "<HOME>/miniconda3"],
-    },
-    "development.rust_rustup_cargo": {"/target/": []},
-    "ai_tools.weights_biases_wandb": {"/wandb/": []},
-    "ai_agents_and_coding.aider_ai_pair_programmer": {
-        "/.aider.chat.history.md": ["<HOME>/.aider.chat.history.md"],
-        "/.aider.tags.cache.v3": ["<HOME>/.aider.tags.cache.v3"],
-    },
-    "database_servers.mysql_mariadb_homebrew": {
-        "/ibdata1": ["/usr/local/var/mysql/ibdata1", "/opt/homebrew/var/mysql/ibdata1"],
-        "/mysql-bin.*": [],  # already covered by var/mysql/mysql-bin.* globs
-        "/*.err": ["/usr/local/var/mysql/*.err", "/opt/homebrew/var/mysql/*.err"],
-    },
-    # SIP-protected system assets: never removable by the app.
-    "com.apple.GenerativeModels": {
-        "/System/Library/AssetsV2/": [],
-        "/System/Library/AssetsV2/com_apple_MobileAsset_UAF_FM_GenerativeModels": [],
-    },
-    # Vendor uninstall helper inside the bundle, not a residual.
-    "com.docker.docker": {"/Applications/Docker.app/Contents/MacOS/uninstall": []},
-    "com.docker.docker_1": {"/Applications/Docker.app/Contents/MacOS/uninstall": []},
-    # The Homebrew prefix itself is out of scope; only its sub-directories are listed.
-    "development.homebrew": {"/opt/homebrew": [], "/usr/local/Homebrew": []},
-    "problematic_apps.homebrew": {"/opt/homebrew": [], "/usr/local/Homebrew": []},
-    "database_servers.mongodb_mongod": {
-        "/data/": [], "/journal/": [],  # duplicated by the absolute var/mongodb paths
-        "/mongodb/mongod.log": ["/usr/local/var/log/mongodb/mongod.log",
-                                "/opt/homebrew/var/log/mongodb/mongod.log"],
-    },
-}
 
-# Applied to every entry.
-GLOBAL_PATH_FIXES: dict[str, list[str]] = {
-    "<USER_LIB>/Application": [],  # truncated string, present in 22 entries
-    "<SYS_LIB>/Application": [],
-    "<SYS_LIB>/SystemExtensions": [],  # OS-owned directory, not an app residual
-    "<SYS_LIB>/StagedExtensions": [],
-}
+@cache
+def _migrate() -> dict:
+    return migrate_tables()
 
+
+def _path_fixes() -> dict:
+    return _migrate().get("path_fixes") or {}
+
+
+def _global_path_fixes() -> dict:
+    return _migrate().get("global_path_fixes") or {}
+
+
+def _pseudo_to_app() -> dict[str, tuple[str, list[str], list[str]]]:
+    raw = _migrate().get("pseudo_to_app") or {}
+    out: dict[str, tuple[str, list[str], list[str]]] = {}
+    for key, value in raw.items():
+        out[key] = (value["primary"], list(value["bundle_ids"]), list(value["prefixes"]))
+    return out
+
+
+def _toolchain_slugs() -> dict[str, str]:
+    return dict(_migrate().get("toolchain_slugs") or {})
+
+
+def _split_entries() -> dict[str, list[tuple[str, list[str], list[str], str]]]:
+    raw = _migrate().get("split_entries") or {}
+    out: dict[str, list[tuple[str, list[str], list[str], str]]] = {}
+    for key, rows in raw.items():
+        out[key] = [
+            (row["primary"], list(row["bundle_ids"]), list(row["markers"]), row["name"])
+            for row in rows
+        ]
+    return out
+
+
+def _category_overrides() -> dict[str, str]:
+    return dict(_migrate().get("category_overrides") or {})
+
+
+def _extra_prefixes() -> dict[str, list[str]]:
+    return dict(_migrate().get("extra_prefixes") or {})
+
+
+def _additions() -> dict[str, dict]:
+    return dict(_migrate().get("additions") or {})
+
+
+def _toolchain_suites() -> dict[str, str]:
+    return dict(_migrate().get("toolchain_suites") or {})
+
+
+# Generic placeholder rewrites (not vendor leftovers).
 PLACEHOLDER_FIXES = [
     (r"\[account_id\]", "*"),
     (r"\$\(TeamID\)\.", "*."),
     (r"<VAR_FOLDERS>/xx/yyyyyy/", "<VAR_FOLDERS>/*/*/"),
 ]
-
-# ---------------------------------------------------------------------------
-# 2. Key normalisation.
-# ---------------------------------------------------------------------------
-
-# Entries whose key is a pseudo-id but which really are apps matched by a bundle-id family.
-PSEUDO_TO_APP: dict[str, tuple[str, list[str], list[str]]] = {
-    # pseudo key -> (primary key, bundle_ids, bundle_id_prefixes)
-    "development.jetbrains_ides_intellij_idea_pycharm_webstorm_clion_goland_rider_datagrip_rubymine_phpstorm_appcode":
-        ("com.jetbrains", [], ["com.jetbrains."]),
-    "problematic_apps.jetbrains_ides_intellij_pycharm_webstorm_etc":
-        ("com.jetbrains", [], ["com.jetbrains."]),
-    "utilities.cleanmymac_x": ("com.macpaw.cleanmymac", [], ["com.macpaw.cleanmymac"]),
-    "media_and_creative_tools.topaz_labs_suite_photo_ai_video_ai":
-        ("com.topazlabs", [], ["com.topazlabs."]),
-    "media_and_creative_tools.native_instruments_kontakt_maschine":
-        ("com.native-instruments", [], ["com.native-instruments."]),
-}
-
-# Non-app entries: CLI toolchains, SDKs, servers, system caches. pseudo key -> slug.
-TOOLCHAIN_SLUGS: dict[str, str] = {
-    "development.colima": "colima",
-    "development.lima": "lima",
-    "development.flutter": "flutter",
-    "development.react_native_expo": "react_native_expo",
-    "development.aws_cli_aws_sam": "aws_cli",
-    "development.google_cloud_sdk_gcloud": "gcloud",
-    "development.azure_cli": "azure_cli",
-    "development.terraform": "terraform",
-    "development.pulumi": "pulumi",
-    "development.ansible": "ansible",
-    "development.kubernetes_kubectl_minikube_kind_k3d": "kubernetes",
-    "development.homebrew": "homebrew",
-    "problematic_apps.homebrew": "homebrew",
-    "development.node_js_npm_nvm_fnm_pnpm_yarn_bun": "node",
-    "development.python_system_pyenv_conda_pip_poetry_pipenv": "python",
-    "development.rust_rustup_cargo": "rust",
-    "development.go_golang": "go",
-    "development.ruby_rbenv_rvm_ruby_build_bundler_gem": "ruby",
-    "development.java_jdk_maven_gradle_intellij": "java",
-    "development.swift_toolchain_non_xcode": "swift_toolchain",
-    "development.dart_flutter_standalone": "dart",
-    "development.cmake": "cmake",
-    "development.meson": "meson",
-    "development.bazel": "bazel",
-    "development.buck2": "buck2",
-    "development.xcodebuild_xcrun": "xcodebuild",
-    "development.ngrok": "ngrok",
-    "development.cloudflare_tunnel_cloudflared": "cloudflared",
-    "development.github_codespaces_vs_code_extension": "github_codespaces",
-    "development.tmate": "tmate",
-    "development.localtunnel_lt": "localtunnel",
-    "development.playwright_puppeteer_headless_browsers": "playwright",
-    "development.neovim_modern_configurations_lazyvim_lunarvim_mason": "neovim",
-    "development.serverless_cloud_clis_vercel_netlify_supabase": "serverless_clis",
-    "utilities.wasmtime_wasmer_webassembly_runtimes": "wasm_runtimes",
-    "database_servers.mysql_mariadb_homebrew": "mysql",
-    "database_servers.mongodb_mongod": "mongodb",
-    "database_servers.redis_homebrew": "redis",
-    "macos_system_caches.macos_system_caches": "macos_system_caches",
-    "ai_tools.hugging_face_cache_models_datasets": "hugging_face",
-    "ai_tools.pytorch_torchvision_keras_caches": "pytorch",
-    "ai_tools.local_vector_databases_chromadb_faiss": "vector_databases",
-    "ai_tools.stable_diffusion_ui_caches_automatic1111_comfyui": "stable_diffusion",
-    "ai_tools.weights_biases_wandb": "wandb",
-    "ai_tools.github_copilot_tabnine_pieces_ai_assistants": "ai_assistants",
-    "ai_tools.gradio_streamlit_ui_frameworks_cache": "gradio_streamlit",
-    "ai_tools.llama_cpp_llamafile": "llama_cpp",
-    "runtimes_and_package_managers.bun": "bun",
-    "runtimes_and_package_managers.deno": "deno",
-    "runtimes_and_package_managers.pnpm": "pnpm",
-    "runtimes_and_package_managers.yarn": "yarn",
-    "runtimes_and_package_managers.asdf_version_manager": "asdf",
-    "runtimes_and_package_managers.nvm_node_version_manager": "nvm",
-    "runtimes_and_package_managers.cargo_rustup": "cargo",
-    "runtimes_and_package_managers.composer_php": "composer",
-    "runtimes_and_package_managers.nuget_net": "nuget",
-    "runtimes_and_package_managers.platformio_embedded_development": "platformio",
-    "runtimes_and_package_managers.carthage_ios_dependency_manager": "carthage",
-    "ai_agents_and_coding.aider_ai_pair_programmer": "aider",
-    "ai_agents_and_coding.openhands_opendevin_autonomous_ai_software_engineer": "openhands",
-    "ai_agents_and_coding.cline_roo_code_vs_code_ai_agents": "cline_roo",
-    "data_science_and_ml_tools.kaggle_cli_api": "kaggle",
-    "data_science_and_ml_tools.duckdb_local_analytical_db": "duckdb",
-    "devops_and_build_tools.turborepo_global_cache": "turborepo",
-    "devops_and_build_tools.nix_package_manager": "nix",
-    "devops_and_build_tools.fly_io_flyctl": "flyctl",
-    "web3_and_crypto.foundry_ethereum_development": "foundry",
-    "web3_and_crypto.hardhat": "hardhat",
-}
-
-# Entries that merged unrelated vendors: split back, routing each path by its marker.
-# source key -> [(primary id, bundle_ids, path markers)]
-SPLIT_ENTRIES: dict[str, list[tuple[str, list[str], list[str], str]]] = {
-    "com.hegenberg.BetterSnapTool / com.crowdcafe.windowmagnet": [
-        ("com.hegenberg.BetterSnapTool", ["com.hegenberg.BetterSnapTool"],
-         ["bettersnaptool", "hegenberg"], "BetterSnapTool"),
-        ("com.crowdcafe.windowmagnet", ["com.crowdcafe.windowmagnet"],
-         ["windowmagnet", "magnet"], "Magnet"),
-    ],
-    "com.apple.TV / com.apple.QuickTimePlayerX": [
-        ("com.apple.TV", ["com.apple.TV"], ["com.apple.tv"], "Apple TV"),
-        ("com.apple.QuickTimePlayerX", ["com.apple.QuickTimePlayerX"], ["quicktime"], "QuickTime Player"),
-    ],
-    "com.adobe.Photoshop / com.adobe.Illustrator / com.adobe.PremierePro": [
-        ("com.adobe.Photoshop", ["com.adobe.Photoshop"], ["photoshop"], "Adobe Photoshop"),
-        ("com.adobe.Illustrator", ["com.adobe.Illustrator"], ["illustrator"], "Adobe Illustrator"),
-        ("com.adobe.PremierePro", ["com.adobe.PremierePro"], ["premiere"], "Adobe Premiere Pro"),
-    ],
-    # ExpressVPN contributed no dedicated paths — everything here is NordVPN's.
-    "com.nordvpn.macos / com.expressvpn.ExpressVPN": [
-        ("com.nordvpn.macos", ["com.nordvpn.macos"], [], "NordVPN"),
-    ],
-}
-
-# Entries left in the catch-all "problematic_apps" bucket get a real category.
-CATEGORY_OVERRIDES: dict[str, str] = {
-    "com.adobe.ccx.process": "media_and_creative_tools",
-    "com.adobe.Photoshop": "media_and_creative_tools",
-    "com.adobe.Illustrator": "media_and_creative_tools",
-    "com.adobe.PremierePro": "media_and_creative_tools",
-    "com.blackmagic-design.DaVinciResolve": "media_and_creative_tools",
-    "com.epicgames.EpicGamesLauncher": "game_clients",
-    "com.valvesoftware.steam": "game_clients",
-    "com.microsoft.word": "modern_productivity",
-    "com.nordvpn.macos": "security_tools",
-    "com.unity3d.unityhub": "development",
-}
-
-# Extra bundle-id prefixes for existing app entries.
-EXTRA_PREFIXES: dict[str, list[str]] = {
-    "com.unity3d.unityhub / com.unity3d.UnityEditor5.x": ["com.unity3d."],
-    "com.adobe.Photoshop / com.adobe.Illustrator / com.adobe.PremierePro": [],
-    "com.google.Chrome": ["com.google.chrome."],
-    "com.microsoft.edgemac": ["com.microsoft.edgemac."],
-    "com.brave.Browser": ["com.brave.browser."],
-}
-
-# Apps present in KnownResidualCatalog.swift but absent from the JSON base.
-ADDITIONS: dict[str, dict] = {
-    "com.google.antigravity-ide": {
-        "name": "Antigravity IDE",
-        "difficulty": "medium",
-        "known_issues": [
-            "Antigravity IDE — VS Code fork, keeps agent state in ~/.antigravity",
-            "Electron/Chromium caches — GPUCache, Code Cache",
-        ],
-        "category": "ai_agents_and_coding",
-        "paths": [
-            "<HOME>/.antigravity",
-            "<HOME>/.antigravity-ide",
-            "<APP_SUPPORT>/Antigravity IDE",
-            "<APP_SUPPORT>/com.google.antigravity-ide",
-            "<CACHES>/com.google.antigravity-ide",
-            "<CACHES>/com.google.antigravity-ide.ShipIt",
-            "<USER_LIB>/HTTPStorages/com.google.antigravity-ide",
-            "<LOGS>/Antigravity IDE",
-            "<PREFS>/com.google.antigravity-ide*.plist",
-            "<SAVED_STATE>/com.google.antigravity-ide.savedState",
-        ],
-    },
-    "ai.opencode.desktop": {
-        "name": "OpenCode",
-        "difficulty": "medium",
-        "known_issues": [
-            "OpenCode — Electron app, keeps session history and model caches",
-        ],
-        "category": "ai_agents_and_coding",
-        "paths": [
-            "<APP_SUPPORT>/ai.opencode.desktop",
-            "<CACHES>/ai.opencode.desktop",
-            "<CACHES>/ai.opencode.desktop.ShipIt",
-            "<USER_LIB>/HTTPStorages/ai.opencode.desktop",
-            "<PREFS>/ai.opencode.desktop*.plist",
-            "<SAVED_STATE>/ai.opencode.desktop.savedState",
-        ],
-    },
-}
 
 # ---------------------------------------------------------------------------
 # 3. Purpose classification.
@@ -351,15 +131,6 @@ SHARED_ROOTS = (
     "<home>/library/android", "<home>/.sdkman", "<home>/.nuget",
 )
 
-USER_CONTENT_ROOTS = (
-    "<home>/desktop", "<home>/documents", "<home>/downloads", "<home>/movies",
-    "<home>/music", "<home>/pictures", "<home>/dropbox", "<home>/google drive",
-    "<home>/onedrive", "<home>/creative cloud files", "<home>/parallels",
-    "<home>/documents/parallels", "<home>/documents/virtual machines",
-    "<home>/documents/virtual machines.localized", "<home>/documents/zoom",
-    "<home>/library/cloudstorage", "<home>/library/mobile documents",
-)
-
 
 def strip_trailing(path: str) -> str:
     return path.rstrip("/") if path != "/" else path
@@ -376,7 +147,7 @@ def classify(path: str) -> tuple[str, bool]:
     lower = path.lower()
     is_system = token in SYSTEM_TOKENS or (token is None and path.startswith("/"))
 
-    if any(lower == root or lower.startswith(root + "/") for root in USER_CONTENT_ROOTS):
+    if any(lower == root or lower.startswith(root + "/") for root in (r.lower() for r in user_content_roots())):
         return "user_content", is_system
     if any(marker in lower for marker in SHARED_SUBSTRINGS):
         return "shared", is_system
@@ -411,33 +182,6 @@ SUITE_RULES: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"^com\.apple\.(logic10|FinalCut|Motion|Compressor|MainStage)", re.I), "Apple Pro Apps"),
 ]
 
-TOOLCHAIN_SUITES = {
-    "mysql": "Homebrew", "mongodb": "Homebrew", "redis": "Homebrew", "homebrew": "Homebrew",
-    "xcodebuild": "Xcode", "swift_toolchain": "Xcode",
-    "cargo": "Rust", "rust": "Rust",
-    "nvm": "Node.js", "pnpm": "Node.js", "yarn": "Node.js", "bun": "Node.js", "node": "Node.js",
-    "deno": "Node.js", "turborepo": "Node.js", "playwright": "Node.js",
-    "dart": "Flutter", "flutter": "Flutter", "react_native_expo": "React Native",
-    "hugging_face": "AI Models", "pytorch": "AI Models", "llama_cpp": "AI Models",
-    "stable_diffusion": "AI Models", "wandb": "AI Models", "vector_databases": "AI Models",
-    "gradio_streamlit": "AI Models", "kaggle": "AI Models",
-    "aider": "AI Agents", "openhands": "AI Agents", "cline_roo": "AI Agents", "ai_assistants": "AI Agents",
-    "duckdb": "Data Science",
-    "colima": "Containers", "lima": "Containers", "kubernetes": "Kubernetes",
-    "aws_cli": "Cloud CLIs", "azure_cli": "Cloud CLIs", "gcloud": "Cloud CLIs",
-    "flyctl": "Cloud CLIs", "serverless_clis": "Cloud CLIs",
-    "pulumi": "Infrastructure as Code", "terraform": "Infrastructure as Code", "ansible": "Infrastructure as Code",
-    "bazel": "Build Tools", "buck2": "Build Tools", "cmake": "Build Tools", "meson": "Build Tools",
-    "nix": "Package Managers", "asdf": "Version Managers",
-    "python": "Python", "go": "Go", "ruby": "Ruby", "java": "Java",
-    "composer": "PHP", "nuget": ".NET",
-    "foundry": "Web3", "hardhat": "Web3",
-    "macos_system_caches": "macOS",
-    "ngrok": "Networking", "cloudflared": "Networking", "tmate": "Networking",
-    "carthage": "iOS Development", "platformio": "Embedded",
-    "neovim": "Neovim", "github_codespaces": "VS Code", "wasm_runtimes": "WebAssembly",
-}
-
 
 def suite_for_app(primary: str, bundle_ids: list[str]) -> str | None:
     for candidate in [primary, *bundle_ids]:
@@ -454,7 +198,7 @@ def suite_for_app(primary: str, bundle_ids: list[str]) -> str | None:
 # ---------------------------------------------------------------------------
 
 def normalise_paths(key: str, entry: dict) -> list[dict]:
-    fixes = PATH_FIXES.get(key, {})
+    fixes = _path_fixes().get(key, {})
     raw: list[str] = []
     for field in ("exact_paths", "glob_paths", "system_paths"):
         raw.extend(entry.get(field, []))
@@ -465,7 +209,8 @@ def normalise_paths(key: str, entry: dict) -> list[dict]:
         variants = [path, strip_trailing(path)]
         fix = next((fixes[v] for v in variants if v in fixes), None)
         if fix is None:
-            fix = next((GLOBAL_PATH_FIXES[v] for v in variants if v in GLOBAL_PATH_FIXES), None)
+            global_fixes = _global_path_fixes()
+            fix = next((global_fixes[v] for v in variants if v in global_fixes), None)
         if fix is not None:
             expanded.extend(fix)
             continue
@@ -523,6 +268,9 @@ def merge_issues(base: list[str], extra: list[str]) -> list[str]:
 
 
 def main() -> int:
+    if not POLICY.is_file():
+        print(f"missing {POLICY}", file=sys.stderr)
+        return 1
     engine = json.loads(ENGINE.read_text())
     ui = json.loads(UI.read_text())
     src_apps: dict[str, dict] = engine["apps"]
@@ -535,22 +283,25 @@ def main() -> int:
 
     def target_of(key: str) -> tuple[str, str, list[str], list[str]]:
         """Returns (kind, primary key, bundle_ids, prefixes)."""
-        if key in TOOLCHAIN_SLUGS:
-            return "toolchain", TOOLCHAIN_SLUGS[key], [], []
-        if key in PSEUDO_TO_APP:
-            primary, ids, prefixes = PSEUDO_TO_APP[key]
+        slugs = _toolchain_slugs()
+        if key in slugs:
+            return "toolchain", slugs[key], [], []
+        pseudo = _pseudo_to_app()
+        if key in pseudo:
+            primary, ids, prefixes = pseudo[key]
             return "app", primary, ids, prefixes
         base = key[:-2] if key.endswith("_1") else key
         ids = [part.strip() for part in base.split(" / ") if part.strip()]
         primary = ids[0]
-        return "app", primary, ids, EXTRA_PREFIXES.get(key, [])
+        return "app", primary, ids, _extra_prefixes().get(key, [])
 
     def targets_for(key: str, entry: dict, meta: dict):
         """Yields (kind, primary, ids, prefixes, paths, meta, category) per source entry."""
         paths = normalise_paths(key, entry)
         category = entry["category"]
-        if key in SPLIT_ENTRIES:
-            splits = SPLIT_ENTRIES[key]
+        splits_map = _split_entries()
+        if key in splits_map:
+            splits = splits_map[key]
             for primary, ids, markers, name in splits:
                 own = [p for p in paths if any(m in p["p"].lower() for m in markers)]
                 generic = [
@@ -595,7 +346,7 @@ def main() -> int:
             # A specific category beats the generic "problematic_apps" bucket.
             if record["category"] == "problematic_apps" and category != "problematic_apps":
                 record["category"] = category
-            record["category"] = CATEGORY_OVERRIDES.get(primary, record["category"])
+            record["category"] = _category_overrides().get(primary, record["category"])
 
         ui_record = ui_bucket.get(primary)
         if ui_record is None:
@@ -624,7 +375,7 @@ def main() -> int:
                 unique.setdefault(path["p"], path)
             record["paths"] = sorted(collapse(list(unique.values())), key=lambda p: p["p"])
 
-    for key, addition in ADDITIONS.items():
+    for key, addition in _additions().items():
         records = []
         for path in addition["paths"]:
             purpose, admin = classify(path)
@@ -660,7 +411,7 @@ def main() -> int:
         if suite:
             meta["parent_suite"] = suite
     for key, meta in ui_toolchains.items():
-        suite = TOOLCHAIN_SUITES.get(key)
+        suite = _toolchain_suites().get(key)
         if suite:
             meta["parent_suite"] = suite
 

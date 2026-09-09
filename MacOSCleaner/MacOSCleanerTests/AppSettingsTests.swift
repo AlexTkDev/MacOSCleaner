@@ -15,7 +15,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_enableAI", "settings_isDebugMode"
+            "settings_enableAI", "settings_isDebugMode",
+            "settings_projectArtifactsOlderThanDays"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
@@ -26,7 +27,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_showTooltips", "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
-            "settings_enableAI", "settings_isDebugMode"
+            "settings_enableAI", "settings_isDebugMode",
+            "settings_projectArtifactsOlderThanDays"
         ]
         keysToReset.forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }

@@ -125,6 +125,7 @@ implementation_plan.md
 # Protected Engine Catalogs (Local only)
 engine_paths.json
 ui_metadata.json
+catalog_policy.json
 MacOSCleaner/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/
 MacOSCleaner/.require-private-catalog
 ./derived_data 

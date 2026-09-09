@@ -18,6 +18,7 @@ targets:
         excludes:
           - engine_paths.json
           - ui_metadata.json
+          - catalog_policy.json
       - SharedViews
     preBuildScripts:
       - name: Pack Cleanup Catalog
@@ -25,6 +26,7 @@ targets:
           set -euo pipefail
           ENGINE="$SRCROOT/Resources/engine_paths.json"
           UI="$SRCROOT/Resources/ui_metadata.json"
+          POLICY="$SRCROOT/Resources/catalog_policy.json"
           ASSET="$SRCROOT/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/catalog.bin"
           MARKER="$SRCROOT/.require-private-catalog"
           GEN="$PROJECT_DIR/../scripts/generate_cleanup_paths.swift"
@@ -51,6 +53,11 @@ targets:
             exit 1
           fi
 
+          if [[ ! -f "$POLICY" ]]; then
+            echo "error: catalog_policy.json is required next to engine_paths.json / ui_metadata.json" >&2
+            exit 1
+          fi
+
           # Local/official Xcode: pack from SoT, then verify asset matches SoT.
           swift "$GEN" --write
           swift "$GEN" --check
@@ -63,8 +70,10 @@ targets:
         inputFiles:
           - $(SRCROOT)/Resources/engine_paths.json
           - $(SRCROOT)/Resources/ui_metadata.json
+          - $(SRCROOT)/Resources/catalog_policy.json
           - $(SRCROOT)/../scripts/generate_cleanup_paths.swift
           - $(SRCROOT)/../scripts/validate_engine_paths.py
+          - $(SRCROOT)/../scripts/catalog_policy.py
         outputFiles:
           - $(DERIVED_FILE_DIR)/cleanup_paths_verified.stamp
           - $(SRCROOT)/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/catalog.bin
