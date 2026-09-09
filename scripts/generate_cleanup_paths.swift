@@ -80,6 +80,7 @@ let tokenReplacements: [(token: String, value: String)] = [
     ("<USER_CONFIG>", "~/.config"),
     ("<USER_CACHE>", "~/.cache"),
     ("<USER_LOCAL_SHARE>", "~/.local/share"),
+    ("<USER_LOCAL_STATE>", "~/.local/state"),
     ("<VAR_FOLDERS>", "/private/var/folders"),
     ("<SYS_LIB>", "/Library"),
     ("<SYS_APP_SUPPORT>", "/Library/Application Support"),

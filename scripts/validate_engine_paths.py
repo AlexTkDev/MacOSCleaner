@@ -23,10 +23,16 @@ USER_DATA_RE = re.compile(
     r"secure preferences|local state|/documents/|/desktop/|/saves|keychain",
     re.IGNORECASE,
 )
+BUNDLE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9_@-]+)+$")
 
 
 def _under_root(path: str, root: str) -> bool:
     return path == root or path.startswith(root + "/")
+
+
+def _looks_suspicious_bundle_id(bundle_id: str) -> bool:
+    parts = bundle_id.split(".")
+    return len(parts) >= 4 and parts[0].lower() == parts[2].lower() and len(parts[0]) <= 3
 
 
 def main() -> int:
@@ -61,11 +67,21 @@ def main() -> int:
 
     seen_ids: dict[str, str] = {}
     for key, entry in engine["apps"].items():
+        if not BUNDLE_ID_RE.match(key):
+            problems.append(f"{key}: key is not bundle-id shaped")
         for bundle_id in entry["bundle_ids"]:
             lower = bundle_id.lower()
+            if not BUNDLE_ID_RE.match(bundle_id):
+                problems.append(f"{key}: malformed bundle id {bundle_id}")
             if lower in seen_ids:
                 problems.append(f"{key}: bundle id {bundle_id} also claimed by {seen_ids[lower]}")
             seen_ids[lower] = key
+        if _looks_suspicious_bundle_id(key):
+            problems.append(f"{key}: suspicious primary key form")
+        if key.lower() not in {bundle_id.lower() for bundle_id in entry["bundle_ids"]} and key.lower() not in {
+            prefix.rstrip(".").lower() for prefix in entry["bundle_id_prefixes"]
+        }:
+            problems.append(f"{key}: key absent from bundle_ids/bundle_id_prefixes")
 
     path_owners: dict[str, set[str]] = {}
     path_purposes: dict[str, set[str]] = {}

@@ -28,7 +28,8 @@ UI = RESOURCES / "ui_metadata.json"
 
 TOKENS = {
     "APP_SUPPORT", "CACHES", "PREFS", "CONTAINERS", "GROUP_CONTAINERS", "LOGS", "HOME",
-    "SAVED_STATE", "USER_LIB", "USER_CONFIG", "USER_CACHE", "USER_LOCAL_SHARE", "VAR_FOLDERS",
+    "SAVED_STATE", "USER_LIB", "USER_CONFIG", "USER_CACHE", "USER_LOCAL_SHARE",
+    "USER_LOCAL_STATE", "VAR_FOLDERS",
     "SYS_LIB", "SYS_APP_SUPPORT", "SYS_LAUNCH_AGENTS", "SYS_LAUNCH_DAEMONS",
     "SYS_PRIV_HELPERS", "SYS_CACHES", "SYS_PREFS", "SYS_LOGS",
 }
@@ -83,6 +84,19 @@ def _category_overrides() -> dict[str, str]:
 
 def _extra_prefixes() -> dict[str, list[str]]:
     return dict(_migrate().get("extra_prefixes") or {})
+
+
+def _bundle_id_overrides() -> dict[str, str]:
+    raw = _migrate().get("bundle_id_overrides") or {}
+    return {str(k): str(v) for k, v in raw.items()}
+
+
+def _bundle_id_additions() -> dict[str, list[str]]:
+    raw = _migrate().get("bundle_id_additions") or {}
+    out: dict[str, list[str]] = {}
+    for key, ids in raw.items():
+        out[str(key)] = [str(bundle_id) for bundle_id in ids]
+    return out
 
 
 def _additions() -> dict[str, dict]:
@@ -191,6 +205,45 @@ def suite_for_app(primary: str, bundle_ids: list[str]) -> str | None:
                     return None
                 return suite
     return None
+
+
+def merge_app_records(
+    apps: "OrderedDict[str, dict]",
+    ui_apps: "OrderedDict[str, dict]",
+    source: str,
+    target: str,
+) -> None:
+    if source == target or source not in apps:
+        return
+    source_record = apps.pop(source)
+    source_meta = ui_apps.pop(source, {"name": source, "difficulty": "medium", "known_issues": []})
+    target_record = apps.get(target)
+    if target_record is None:
+        apps[target] = source_record
+        ui_apps[target] = source_meta
+        return
+
+    for bundle_id in source_record["bundle_ids"]:
+        if bundle_id not in target_record["bundle_ids"]:
+            target_record["bundle_ids"].append(bundle_id)
+    for prefix in source_record["bundle_id_prefixes"]:
+        if prefix not in target_record["bundle_id_prefixes"]:
+            target_record["bundle_id_prefixes"].append(prefix)
+    target_record["paths"].extend(source_record["paths"])
+    if target_record["category"] == "problematic_apps" and source_record["category"] != "problematic_apps":
+        target_record["category"] = source_record["category"]
+
+    order = ["low", "medium", "high", "critical"]
+    target_meta = ui_apps[target]
+    source_difficulty = source_meta.get("difficulty", "medium")
+    if order.index(source_difficulty) > order.index(target_meta.get("difficulty", "medium")):
+        target_meta["difficulty"] = source_difficulty
+    target_meta["known_issues"] = merge_issues(
+        target_meta.get("known_issues", []),
+        source_meta.get("known_issues", []),
+    )
+    if len(source_meta.get("name", "")) > len(target_meta.get("name", "")):
+        target_meta["name"] = source_meta["name"]
 
 
 # ---------------------------------------------------------------------------
@@ -396,6 +449,17 @@ def main() -> int:
             "difficulty": addition["difficulty"],
             "known_issues": list(addition["known_issues"]),
         }
+
+    for source, target in _bundle_id_overrides().items():
+        merge_app_records(apps, ui_apps, source, target)
+
+    for key, ids in _bundle_id_additions().items():
+        record = apps.get(key)
+        if record is None:
+            continue
+        for bundle_id in ids:
+            if bundle_id not in record["bundle_ids"]:
+                record["bundle_ids"].append(bundle_id)
 
     # Entries without a single path carry no information.
     for bucket, ui_bucket in ((apps, ui_apps), (toolchains, ui_toolchains)):
