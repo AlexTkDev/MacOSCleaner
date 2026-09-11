@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0"><img src="https://img.shields.io/badge/Release-v2.2.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.3.0"><img src="https://img.shields.io/badge/Release-v2.3.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>
@@ -122,7 +122,6 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/issues"><img src="https://img.shields.io/badge/Issues-Tracker-E5534B?style=flat&logo=instabug&logoColor=white" alt="Issue Tracker" align="absmiddle"></a> — [Report bugs or suggest rule improvements.](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
-- <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/16"><img src="https://img.shields.io/badge/Roadmap-v2.3.0_Preview-0969DA?style=flat&logo=github&logoColor=white" alt="v2.3.0 Preview" align="absmiddle"></a> — [Explore what’s being worked on for the upcoming 2.3.0 release.](https://github.com/AlexTkDev/MacOSCleaner/discussions/16)
 
 > *Note: Contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md).*
 
