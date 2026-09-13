@@ -1730,3 +1730,67 @@ footer a:hover { color: var(--text); }
   max-width: 36em;
   margin: 0 auto;
 }
+
+.page-header .page-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 18px;
+}
+
+.about-seo .seo-topic ul,
+.about-seo .seo-topic ol {
+  margin: 0 0 0.95em;
+  padding-left: 1.25em;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.about-seo .seo-topic li + li {
+  margin-top: 0.35em;
+}
+
+.about-seo .seo-topic .terminal {
+  margin: 0 0 1.1em;
+}
+
+.guide-seo .seo-lead,
+.guide-seo .seo-topics,
+.guide-seo .seo-faq,
+.guide-seo .guide-related {
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.guide-seo .seo-topics {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.guide-seo a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.guide-seo a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.guide-seo .terminal-body .t-line {
+  white-space: pre-wrap;
+}
+
+.guide-related {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.guide-related strong {
+  color: var(--text);
+}

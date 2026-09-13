@@ -3,3 +3,6 @@ https://alextkdev.github.io/MacOSCleaner/about.html
 https://alextkdev.github.io/MacOSCleaner/support.html
 https://alextkdev.github.io/MacOSCleaner/llms.txt
 https://alextkdev.github.io/MacOSCleaner/llms-full.txt
+https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html
+https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html

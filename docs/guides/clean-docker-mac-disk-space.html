@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clean Docker disk space on Mac (never delete Docker.raw)</title>
+  <meta name="description" content="Reclaim Docker Desktop disk space on Mac with docker system df and prune. Understand sparse Docker.raw logical vs allocated size. Never delete the VM disk.">
+  <meta name="keywords" content="Docker disk space Mac, Docker.raw, docker system df, docker prune, Docker Desktop sparse file">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="Clean Docker disk space on Mac (never delete Docker.raw)">
+  <meta property="og:description" content="Reclaim Docker Desktop disk space with docker system df and prune. Understand sparse Docker.raw. Never delete the VM disk.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-13">
+  <meta property="article:modified_time" content="2026-09-13">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Clean Docker disk space on Mac (never delete Docker.raw)">
+  <meta name="twitter:description" content="Reclaim Docker Desktop disk space with docker system df and prune. Never delete Docker.raw.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Clean Docker disk space on Mac (never delete Docker.raw)",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html",
+    "description": "Measure Docker Desktop's sparse VM disk, then reclaim space with docker system df and prune. Never delete Docker.raw.",
+    "dateModified": "2026-09-13",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Understand Docker.raw",
+        "text": "On Apple Silicon, Docker Desktop keeps a sparse VM disk named Docker.raw. Logical size from ls or Finder is not allocated size from du."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure with docker system df",
+        "text": "With Docker running, run docker system df to see images, containers, volumes, and build cache."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Prune unused data",
+        "text": "Prune stopped containers, dangling images, and build cache. Review volumes separately — unused volumes often hold databases."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Never delete Docker.raw",
+        "text": "Do not delete or truncate the VM disk in Finder. That destroys images, containers, and volumes. Use Docker prune (and Docker Desktop's own disk controls if you need to compact)."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why is Docker.raw so large on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Docker.raw is a sparse virtual disk. Finder and ls -lh show logical capacity. du shows allocated blocks. Those numbers often disagree; that is expected. Do not delete the file to 'fix' the logical size."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is docker system prune safe for volumes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "docker system prune without --volumes leaves volumes alone. docker volume prune and docker system prune --volumes delete unused volumes, which often hold databases and app data. Review named volumes first."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I delete Docker.raw in Finder?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Deleting Docker.raw destroys the Linux VM: images, containers, and volumes. Reclaim space with docker prune commands instead."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Clean Docker disk space",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../#features">features</a>
+      <a href="../#screenshots">screenshots</a>
+      <a href="../#cleaned">cleaned</a>
+      <a href="../#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="macos-system-data-too-large-developers.html" class="active">guides</a>
+      <a href="../#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../" class="back-link">← Back to home</a>
+      <h1>Clean Docker disk space on Mac (never delete Docker.raw)</h1>
+      <p>Sparse VM disks lie about size. Prune images, containers, and build cache — leave the raw disk alone</p>
+      <p class="page-meta">Updated <time datetime="2026-09-13">2026-09-13</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          On Apple Silicon, Docker Desktop stores a Linux VM behind a sparse disk usually named <code>Docker.raw</code>.
+          Finder can show a huge file while <code>du</code> reports far less allocated space.
+          Reclaim room with <code>docker system df</code> and prune. <strong>Never delete <code>Docker.raw</code></strong> —
+          that wipes images, containers, and volumes in one shot. No SIP changes, no <code>/System</code> deletes.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/></svg>
+              </span>
+              Logical size vs allocated size
+            </h3>
+            <p>
+              A sparse file can claim tens of gigabytes of <em>logical</em> capacity while occupying fewer blocks on APFS.
+              <code>ls -lh</code> and Finder’s headline size follow the logical number.
+              <code>du -h</code> (and Get Info “size on disk”) follow allocated blocks.
+              Those two numbers disagree on purpose. That is not a corrupt disk and it is not a reason to delete the VM image.
+            </p>
+            <p>
+              <code>Docker.raw</code> typically sits under Docker Desktop’s data directory in <code>~/Library</code>.
+              You can measure it with <code>du</code> if you find the file — still do not move it to Trash.
+              Docker Desktop Settings → Resources may show a disk-image size cap; that cap is not current use.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure with <code>docker system df</code>
+            </h3>
+            <p>
+              Start Docker Desktop so the engine is running. Then:
+            </p>
+            <div class="terminal" aria-label="docker system df">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — docker df</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> docker system df</div>
+                <div class="t-line"><span class="prompt">$</span> docker system df -v</div>
+              </div>
+            </div>
+            <p>
+              The summary lists Images, Containers, Local Volumes, and Build Cache, each with a reclaimable column.
+              <code>-v</code> names the objects. That is the map for prune — not Finder’s view of <code>Docker.raw</code>.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </span>
+              Prune unused images, containers, and build cache
+            </h3>
+            <p>
+              Work from least to most aggressive. Stop containers you still need before pruning.
+            </p>
+            <div class="terminal" aria-label="Docker prune commands">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — prune</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># stopped containers</span></div>
+                <div class="t-line"><span class="prompt">$</span> docker container prune</div>
+                <div class="t-line"><span class="cmt"># dangling images only</span></div>
+                <div class="t-line"><span class="prompt">$</span> docker image prune</div>
+                <div class="t-line"><span class="cmt"># build cache</span></div>
+                <div class="t-line"><span class="prompt">$</span> docker builder prune</div>
+                <div class="t-line"><span class="cmt"># unused containers, networks, dangling images</span></div>
+                <div class="t-line"><span class="prompt">$</span> docker system prune</div>
+              </div>
+            </div>
+            <p>
+              <code>docker image prune -a</code> also drops unused tagged images. You will re-pull them later.
+              <code>docker system prune -a</code> is the same idea, broader. Use those only when you accept re-downloading images.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4M12 16h.01"/></svg>
+              </span>
+              Volumes: review before prune
+            </h3>
+            <p>
+              Named volumes often hold Postgres, Redis, or app state.
+              <code>docker system prune</code> without <code>--volumes</code> leaves them alone.
+              <code>docker volume prune</code> and <code>docker system prune --volumes</code> delete volumes not attached to a container —
+              including data you still want after a compose down.
+            </p>
+            <div class="terminal" aria-label="List Docker volumes">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — volumes</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> docker volume ls</div>
+                <div class="t-line"><span class="cmt"># inspect before any volume prune</span></div>
+                <div class="t-line"><span class="prompt">$</span> docker volume inspect VOLUME_NAME</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+              </span>
+              Never delete Docker.raw
+            </h3>
+            <p>
+              Do not Trash, <code>rm</code>, truncate, or “replace with empty file” the VM disk.
+              That is not compacting. It destroys the engine’s disk.
+              After a successful prune, allocated size may drop slowly; that is still not a reason to touch <code>Docker.raw</code>.
+              If Docker Desktop offers a supported reclaim or compact control in its own UI, use that — never Finder-delete the raw file.
+            </p>
+            <p>
+              Also skip SIP disable and any cleanup under <code>/System</code>, <code>/Library</code>, or <code>/usr</code>.
+              Docker’s reclaim path is the <code>docker</code> CLI (and Docker Desktop settings), all inside your user data.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional prune mapping in a GUI
+            </h3>
+            <p>
+              The commands above are the whole workflow.
+              If you prefer a review list afterward, <a href="../">MacOSCleaner</a> Smart Cleanup can surface its Docker category mapped to prune-style targets (unused images, containers, related build cache) with risk badges —
+              not a Finder delete of <code>Docker.raw</code>.
+              Optional. Related:
+              <a href="clean-xcode-caches-mac.html">Xcode caches</a>
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Why is Docker.raw so large on Mac?</dt>
+              <dd>
+                <code>Docker.raw</code> is a sparse virtual disk. Finder and <code>ls -lh</code> show logical capacity.
+                <code>du</code> shows allocated blocks. Those numbers often disagree; that is expected.
+                Do not delete the file to “fix” the logical size.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is docker system prune safe for volumes?</dt>
+              <dd>
+                <code>docker system prune</code> without <code>--volumes</code> leaves volumes alone.
+                <code>docker volume prune</code> and <code>docker system prune --volumes</code> delete unused volumes,
+                which often hold databases and app data. Review named volumes first.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Can I delete Docker.raw in Finder?</dt>
+              <dd>
+                No. Deleting <code>Docker.raw</code> destroys the Linux VM: images, containers, and volumes.
+                Reclaim space with <code>docker</code> prune commands instead.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="macos-system-data-too-large-developers.html">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

@@ -12,6 +12,9 @@ Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 
 - [Product site](https://alextkdev.github.io/MacOSCleaner/): Landing page with core features, interactive screenshot showcase, changelog, and direct DMG download
 - [About & FAQ](https://alextkdev.github.io/MacOSCleaner/about.html): Deep-dive into cache safety, forensic uninstaller leftovers, developer cleanup (Xcode, Docker, Homebrew), privacy model, and FAQs
+- [How to clean Xcode caches safely on Mac](https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html): DerivedData, DeviceSupport, CoreSimulator, DocumentationCache; keep Archives and dSYMs
+- [Clean Docker disk space on Mac](https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html): docker system df and prune; never delete Docker.raw
+- [macOS System Data is too large](https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html): Developer reclaim order (Xcode → Docker → simulators → caches → thinlocalsnapshots)
 - [Support the Project](https://alextkdev.github.io/MacOSCleaner/support.html): Support options (Ko-fi subscription and Crypto donations) with roadmap breakdown
 - [Full agent brief](https://alextkdev.github.io/MacOSCleaner/llms-full.txt): Self-contained product facts for AI agents
 - [XML Sitemap](https://alextkdev.github.io/MacOSCleaner/sitemap.xml): Indexable URLs for search engines and crawlers

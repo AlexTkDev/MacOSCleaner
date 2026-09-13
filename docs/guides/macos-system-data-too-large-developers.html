@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>macOS System Data is too large — a developer reclaim order</title>
+  <meta name="description" content="System Data is a bucket, not one folder. Reclaim space in order: Xcode, Docker prune, simulators, package caches, IDE/AI caches, Time Machine thinning, user caches. No SIP hacks.">
+  <meta name="keywords" content="macOS System Data too large, developer disk space, thinlocalsnapshots, Xcode Docker caches, Apple Silicon storage">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="macOS System Data is too large — a developer reclaim order">
+  <meta property="og:description" content="System Data is a bucket. Reclaim in order: Xcode, Docker prune, simulators, package caches, IDE/AI caches, Time Machine thinning, user caches.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-13">
+  <meta property="article:modified_time" content="2026-09-13">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="macOS System Data is too large — a developer reclaim order">
+  <meta name="twitter:description" content="Reclaim System Data in order: Xcode, Docker prune, simulators, package caches, IDE/AI caches, Time Machine thinning, user caches.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "macOS System Data is too large — a developer reclaim order",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html",
+    "description": "System Data is a storage bucket. Reclaim developer space in a fixed order without disabling SIP or deleting /System.",
+    "dateModified": "2026-09-13",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Clean Xcode caches",
+        "text": "Quit Xcode, measure DerivedData and related folders, keep Archives and dSYMs."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Prune Docker",
+        "text": "Run docker system df and prune unused images, containers, and build cache. Never delete Docker.raw."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Remove unused simulators",
+        "text": "Delete unused simulator runtimes and devices from Xcode Platforms or simctl."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Clear package-manager caches",
+        "text": "Use native cleanup for Homebrew, npm, yarn, pnpm, and similar toolchains."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Review IDE and AI caches",
+        "text": "Remove regenerable editor and local-model caches, not settings or source."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Thin Time Machine local snapshots",
+        "text": "Use tmutil thinlocalsnapshots only. Do not wipe all local snapshots."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Review user caches",
+        "text": "Inspect ~/Library/Caches. Skip /System, /Library, /usr, ~/.ssh, and documents."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is macOS System Data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "System Data in Settings → General → Storage is a remainder bucket: caches, local snapshots, developer data, VM disks, logs, and other files Apple does not file under Apps, Documents, or iCloud. It is not one folder you can delete."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I disable SIP to shrink System Data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Disabling SIP and deleting /System will not safely reclaim developer storage. Stay in your home folder and use the reclaim order on this page."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I thin Time Machine local snapshots?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use tmutil thinlocalsnapshots with a mount point and a byte target. Do not run a full local-snapshot wipe. Thinning asks macOS to free reclaimable snapshot space; wiping removes the safety net."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../#features">features</a>
+      <a href="../#screenshots">screenshots</a>
+      <a href="../#cleaned">cleaned</a>
+      <a href="../#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="macos-system-data-too-large-developers.html" class="active">guides</a>
+      <a href="../#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../" class="back-link">← Back to home</a>
+      <h1>macOS System Data is too large — a developer reclaim order</h1>
+      <p>System Data is a bucket. Work top-down: Xcode, Docker, simulators, package caches, then snapshots and user caches</p>
+      <p class="page-meta">Updated <time datetime="2026-09-13">2026-09-13</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          In <strong>System Settings → General → Storage</strong>, <strong>System Data</strong> is a remainder, not a single directory.
+          On a developer Mac it often includes Xcode trees, Docker’s VM disk, simulator runtimes, package caches, editor caches, and local Time Machine snapshots.
+          There is nothing to “open and delete.” Reclaim in the order below. Do not disable SIP. Do not delete <code>/System</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              The order
+            </h3>
+            <ol>
+              <li><a href="clean-xcode-caches-mac.html">Xcode caches</a> (DerivedData, DeviceSupport, simulators — keep Archives / dSYMs)</li>
+              <li><a href="clean-docker-mac-disk-space.html">Docker prune</a> — never delete <code>Docker.raw</code></li>
+              <li>Unused simulator runtimes and devices</li>
+              <li>Package-manager caches (Homebrew, npm, yarn, pnpm, and the rest you actually use)</li>
+              <li>IDE and AI caches (settings stay)</li>
+              <li>Time Machine thinning with <code>thinlocalsnapshots</code> only — no snapshot wipe</li>
+              <li>User caches under <code>~/Library/Caches</code>, reviewed one folder at a time</li>
+            </ol>
+            <p>
+              Stop when Storage looks sane. Later steps are smaller and easier to regret.
+              After any move to Trash, empty Trash only when you are sure — space returns then, not at the first drag.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              1. Xcode
+            </h3>
+            <p>
+              Quit Xcode, measure with <code>du</code>, then remove regenerable trees.
+              Full walkthrough: <a href="clean-xcode-caches-mac.html">How to clean Xcode caches safely on Mac</a>.
+              Keep <code>~/Library/Developer/Xcode/Archives</code> unless dSYMs already live elsewhere.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><path d="M6 6h.01"/><path d="M6 18h.01"/></svg>
+              </span>
+              2. Docker prune
+            </h3>
+            <p>
+              Docker Desktop’s sparse <code>Docker.raw</code> often inflates System Data in Finder even when allocated size is smaller.
+              Use <code>docker system df</code> and prune unused images, containers, and build cache.
+              Do not delete the VM disk. Details: <a href="clean-docker-mac-disk-space.html">Clean Docker disk space on Mac</a>.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></svg>
+              </span>
+              3. Unused simulators
+            </h3>
+            <p>
+              Old iOS runtimes under <code>~/Library/Developer/CoreSimulator</code> are a frequent System Data spike.
+              Remove runtimes you no longer boot in <strong>Xcode → Settings → Platforms</strong>
+              and unused devices in <strong>Window → Devices and Simulators</strong>.
+              <code>xcrun simctl delete unavailable</code> only drops broken device records.
+              Keep the runtime you still ship against.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+              </span>
+              4. Package-manager caches
+            </h3>
+            <p>
+              Prefer each tool’s own cleanup so you do not trash a global store you still need:
+            </p>
+            <div class="terminal" aria-label="Package manager cache cleanup">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — package caches</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> brew cleanup</div>
+                <div class="t-line"><span class="prompt">$</span> npm cache clean --force</div>
+                <div class="t-line"><span class="prompt">$</span> yarn cache clean</div>
+                <div class="t-line"><span class="prompt">$</span> pnpm store prune</div>
+              </div>
+            </div>
+            <p>
+              Skip commands for tools you do not install. CocoaPods, uv, and others have their own cache/clean flags —
+              use those rather than deleting <code>~/.ssh</code> or project sources.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </span>
+              5. IDE and AI caches
+            </h3>
+            <p>
+              Editors and local AI tools accumulate Cache, CachedData, and GPU/cache folders under
+              <code>~/Library/Caches</code> and <code>~/Library/Application Support</code>.
+              Typical names on a developer Mac include Cursor, VS Code, Windsurf, Zed, and JetBrains.
+              Delete cache directories, not <code>User</code> settings, snippets, or model files you still want offline.
+              Quit the app first. Measure with <code>du -sh</code> before Trash.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </span>
+              6. Time Machine thinning only
+            </h3>
+            <p>
+              Local snapshots count toward System Data. Thin them; do not wipe the set.
+              <code>tmutil thinlocalsnapshots</code> asks macOS to free reclaimable snapshot space for a byte target.
+              Do not run a full local-snapshot delete.
+            </p>
+            <div class="terminal" aria-label="thinlocalsnapshots">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — Time Machine</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> tmutil listlocalsnapshots /</div>
+                <div class="t-line"><span class="cmt"># thin only — example: ask for ~20 GB, urgency 4</span></div>
+                <div class="t-line"><span class="prompt">$</span> tmutil thinlocalsnapshots / 21474836480 4</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </span>
+              7. User caches — last
+            </h3>
+            <p>
+              <code>du -sh ~/Library/Caches/*</code> lists large app caches. Review names you recognize, then Trash those folders.
+              Leave <code>~/.ssh</code>, Documents, Desktop, and project trees alone.
+              Blocked on purpose: SIP paths, <code>/System</code>, <code>/Library</code>, <code>/usr</code>.
+              If a remaining giant is still Docker’s VM disk, go back to prune — never delete <code>Docker.raw</code>.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              This order works in Finder and Terminal with no extra app.
+              If you want one scan afterward, <a href="../">MacOSCleaner</a> Smart Cleanup can list the same kinds of developer categories
+              (Xcode, Docker prune mapping, package managers, IDE/AI caches, snapshot thinning) with risk badges so you confirm each selection.
+              Trash-first where the app supports it; protected paths stay blocked.
+              Optional, Apple Silicon, macOS 26.0+.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>What is macOS System Data?</dt>
+              <dd>
+                System Data in Settings → General → Storage is a remainder bucket: caches, local snapshots, developer data, VM disks, logs,
+                and other files Apple does not file under Apps, Documents, or iCloud. It is not one folder you can delete.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>Should I disable SIP to shrink System Data?</dt>
+              <dd>
+                No. Disabling SIP and deleting <code>/System</code> will not safely reclaim developer storage.
+                Stay in your home folder and use the reclaim order on this page.
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>How do I thin Time Machine local snapshots?</dt>
+              <dd>
+                Use <code>tmutil thinlocalsnapshots</code> with a mount point and a byte target.
+                Do not run a full local-snapshot wipe. Thinning asks macOS to free reclaimable snapshot space; wiping removes the safety net.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="macos-system-data-too-large-developers.html">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

@@ -10,6 +10,9 @@
 - ORCID: https://orcid.org/0009-0002-8907-5406
 - Main Site: https://alextkdev.github.io/MacOSCleaner/
 - About & FAQ: https://alextkdev.github.io/MacOSCleaner/about.html
+- Guide — How to clean Xcode caches safely on Mac: https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html
+- Guide — Clean Docker disk space on Mac (never delete Docker.raw): https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html
+- Guide — macOS System Data is too large (developer reclaim order): https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html
 - Support & Donate: https://alextkdev.github.io/MacOSCleaner/support.html
 - Repository: https://github.com/AlexTkDev/MacOSCleaner
 - Download URL: https://github.com/AlexTkDev/MacOSCleaner/releases/latest
