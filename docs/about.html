@@ -151,19 +151,18 @@
 
 <nav id="main-nav">
   <div class="container">
-    <a class="nav-brand" href="./" aria-label="MacOSCleaner home">
+    <a class="nav-brand" href="index.html" aria-label="MacOSCleaner home">
       <img src="static/assets/logo-96.png" width="40" height="40" alt="">
       MacOSCleaner
     </a>
     <div class="nav-links" id="nav-links">
-      <a href="./#features">features</a>
-      <a href="./#screenshots">screenshots</a>
-      <a href="./#cleaned">cleaned</a>
-      <a href="./#release">changelog</a>
+      <a href="index.html#features">features</a>
+      <a href="index.html#screenshots">screenshots</a>
+      <a href="index.html#cleaned">cleaned</a>
+      <a href="index.html#release">changelog</a>
       <a href="about.html" class="active">about</a>
-      <a href="guides/macos-system-data-too-large-developers.html">guides</a>
-      <a href="./#how-it-works">how&nbsp;it&nbsp;works</a>
-      <a href="./#download">download</a>
+      <a href="index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="index.html#download">download</a>
       <a href="support.html" style="color: var(--accent);">support&nbsp;♥</a>
       <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
     </div>
@@ -190,7 +189,7 @@
 
   <header class="page-header">
     <div class="container">
-      <a href="./" class="back-link">← Back to home</a>
+      <a href="index.html" class="back-link">← Back to home</a>
       <h1>About MacOSCleaner</h1>
       <p>A free macOS cleaner built for Apple Silicon — caches, leftovers, and developer data</p>
     </div>
@@ -246,7 +245,7 @@
             </p>
           </div>
 
-          <div class="seo-topic reveal">
+          <div class="seo-topic reveal" id="guides">
             <h3>
               <span class="cell-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
@@ -265,6 +264,14 @@
               You still choose what to run. Dangerous or protected paths stay marked; system areas remain blocked.
               The goal is not “delete everything that looks large,” but informed cleanup that fits how you work.
             </p>
+            <p>
+              Step-by-step developer guides:
+            </p>
+            <ul>
+              <li><a href="guides/clean-xcode-caches-mac.html">How to clean Xcode caches safely on Mac</a> — DerivedData, DeviceSupport, and simulators without touching archives.</li>
+              <li><a href="guides/clean-docker-mac-disk-space.html">Clean Docker disk space on Mac</a> — safe prune workflow and sparse <code>Docker.raw</code> handling.</li>
+              <li><a href="guides/macos-system-data-too-large-developers.html">macOS System Data is too large</a> — practical top-down reclaim order.</li>
+            </ul>
           </div>
 
           <div class="seo-topic reveal">
@@ -382,6 +389,19 @@
             </div>
           </dl>
         </div>
+
+        <div class="about-cta-banner reveal">
+          <div class="about-cta-content">
+            <h3>Crafted for macOS. Free forever.</h3>
+            <p>
+              MacOSCleaner was created because Mac users deserve a fast, transparent cleaner without subscription traps, fake urgency counters, or background telemetry. If the app saved you time or disk space, consider supporting its independent development.
+            </p>
+          </div>
+          <div class="about-cta-actions">
+            <a href="index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
       </article>
 
     </div>
@@ -395,7 +415,7 @@
 
     <div class="footer-links">
       <a href="about.html">About</a>
-      <a href="guides/macos-system-data-too-large-developers.html">Guides</a>
+      <a href="#guides">Guides</a>
       <a href="support.html">Support</a>
       <a href="llms.txt">llms.txt</a>
       <a href="llms-full.txt">llms-full.txt</a>

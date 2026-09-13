@@ -192,7 +192,7 @@
 
 <nav id="main-nav">
   <div class="container">
-    <a class="nav-brand" href="./" aria-label="MacOSCleaner home">
+    <a class="nav-brand" href="index.html" aria-label="MacOSCleaner home">
       <img src="static/assets/logo-96.png" width="40" height="40" alt="">
       MacOSCleaner
     </a>
@@ -202,7 +202,6 @@
       <a href="#cleaned">cleaned</a>
       <a href="#release">changelog</a>
       <a href="about.html">about</a>
-      <a href="guides/macos-system-data-too-large-developers.html">guides</a>
       <a href="#how-it-works">how&nbsp;it&nbsp;works</a>
       <a href="#download">download</a>
       <a href="support.html" style="color: var(--accent);">support&nbsp;♥</a>
@@ -787,11 +786,21 @@
           <div class="t-line"><span class="prompt">$</span> sudo xattr -r -c /Applications/MacOSCleaner.app</div>
         </div>
       </div>
-    <div class="reveal" style="grid-column: 1 / -1; margin-top: 32px; text-align: center; border-top: 1px solid var(--line); padding-top: 24px; width: 100%;">
-      <p style="color: var(--text-muted); font-size: 0.95rem;">
-        Enjoying MacOSCleaner? <a href="support.html" style="color: var(--accent); font-weight: 600; text-decoration: none;">Support the project ♥</a> to keep development active and free.
-      </p>
+    <div class="download-support-banner reveal">
+      <div class="download-support-content">
+        <div class="download-support-badge">
+          <span class="cell-icon" aria-hidden="true" style="width: 20px; height: 20px; font-size: 0.75rem;">♥</span>
+          <span>100% Free · Zero Telemetry · Open Source</span>
+        </div>
+        <h3>Help keep MacOSCleaner independent &amp; free</h3>
+        <p>Commercial cleaners charge $40/year subscriptions with aggressive background upsells. MacOSCleaner is built as honest, craft software for macOS. Community donations help fund our <strong>Apple Developer Program ($99/yr)</strong> to officially code-sign and notarize releases — eliminating the <code>sudo xattr</code> Gatekeeper workaround above for everyone.</p>
+      </div>
+      <div class="download-support-actions">
+        <a href="support.html" class="btn btn-primary">Support the project ♥</a>
+        <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener" class="btn btn-secondary">Tip on Ko-fi ↗</a>
+      </div>
     </div>
+  </div>
   </div>
 </section>
 
@@ -803,7 +812,7 @@
 
     <div class="footer-links">
       <a href="about.html">About</a>
-      <a href="guides/macos-system-data-too-large-developers.html">Guides</a>
+      <a href="about.html#guides">Guides</a>
       <a href="support.html">Support</a>
       <a href="llms.txt">llms.txt</a>
       <a href="llms-full.txt">llms-full.txt</a>
@@ -816,8 +825,6 @@
     </div>
   </div>
 </footer>
-
-</div>
 
 <!-- Screenshot Modal -->
 <div id="image-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Screenshot Viewer">
