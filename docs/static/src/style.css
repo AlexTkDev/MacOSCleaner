@@ -1730,3 +1730,398 @@ footer a:hover { color: var(--text); }
   max-width: 36em;
   margin: 0 auto;
 }
+
+.page-header .page-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 18px;
+}
+
+.about-seo .seo-topic ul,
+.about-seo .seo-topic ol {
+  margin: 0 0 0.95em;
+  padding-left: 1.25em;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.about-seo .seo-topic li + li {
+  margin-top: 0.35em;
+}
+
+.about-seo .seo-topic .terminal {
+  margin: 0 0 1.1em;
+}
+
+.guide-seo .seo-lead,
+.guide-seo .seo-topics,
+.guide-seo .seo-faq,
+.guide-seo .guide-related {
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.guide-seo .seo-topics {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.guide-seo a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.guide-seo a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.guide-seo .terminal-body .t-line {
+  white-space: pre-wrap;
+}
+
+.guide-related {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.guide-related strong {
+  color: var(--text);
+}
+
+/* ===== Support Page ===== */
+.support-hero-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 52px;
+  box-shadow: var(--shadow-window);
+}
+
+.support-hero-card h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 10px;
+}
+
+.support-hero-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto 26px;
+}
+
+.support-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.support-actions .btn {
+  font-size: 0.95rem;
+  padding: 13px 26px;
+}
+
+.support-hero-card .support-note {
+  margin-top: 18px;
+  margin-bottom: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto 48px;
+}
+
+@media (max-width: 768px) {
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.support-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  transition: border-color 0.2s;
+}
+
+.support-item:hover {
+  border-color: var(--line-strong);
+}
+
+.support-item h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.support-item p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.support-recognition {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  max-width: 860px;
+  margin: 0 auto 48px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.support-recognition .cell-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+.support-recognition h3 {
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.support-recognition p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.support-free-tier {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-top: 36px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.support-free-tier h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.support-free-links {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.support-free-links a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.support-free-links a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Site-wide CTA & Support Banners ===== */
+.download-support-banner {
+  grid-column: 1 / -1;
+  margin-top: 36px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.download-support-content {
+  max-width: 680px;
+}
+
+.download-support-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.download-support-content h3 {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.download-support-content p {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.download-support-content strong {
+  color: var(--text);
+}
+
+.download-support-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.download-support-actions .btn {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* About page closing CTA */
+.about-cta-banner {
+  margin-top: 48px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.about-cta-content {
+  max-width: 640px;
+}
+
+.about-cta-content h3 {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.about-cta-content p {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.about-cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.about-cta-actions .btn {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Guide bottom CTA */
+.guide-cta-card {
+  margin: 40px 0 24px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.guide-cta-content {
+  max-width: 600px;
+}
+
+.guide-cta-content h3 {
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.guide-cta-content p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.guide-cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.guide-cta-actions .btn {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .download-support-banner,
+  .about-cta-banner,
+  .guide-cta-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 24px;
+    gap: 20px;
+  }
+  .download-support-actions,
+  .about-cta-actions,
+  .guide-cta-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .download-support-actions .btn,
+  .about-cta-actions .btn,
+  .guide-cta-actions .btn {
+    flex: 1 1 180px;
+  }
+}
+

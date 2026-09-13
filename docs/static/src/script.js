@@ -696,10 +696,19 @@ window.copyCryptoText = function(el, explicitVal) {
   });
 };
 
+function siteStaticPrefix() {
+  const link = document.querySelector('link[rel="stylesheet"][href*="style.css"]');
+  const href = link && link.getAttribute('href');
+  if (!href) return 'static/';
+  const i = href.indexOf('static/');
+  return i >= 0 ? href.slice(0, i + 7) : 'static/';
+}
+
 function getOrInjectCryptoModal() {
   let modal = document.getElementById('crypto-modal');
   if (!modal) {
-    document.body.insertAdjacentHTML('beforeend', CRYPTO_MODAL_HTML);
+    const html = CRYPTO_MODAL_HTML.replaceAll('src="static/', 'src="' + siteStaticPrefix());
+    document.body.insertAdjacentHTML('beforeend', html);
     modal = document.getElementById('crypto-modal');
     setupCryptoModalEvents(modal);
   }

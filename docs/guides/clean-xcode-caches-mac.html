@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to clean Xcode caches safely on Mac</title>
+  <meta name="description" content="Safely clean Xcode DerivedData, DeviceSupport, CoreSimulator, and DocumentationCache on Mac. Keep Archives and dSYMs. Measure with du; no SIP hacks.">
+  <meta name="keywords" content="clean Xcode cache Mac, DerivedData, DeviceSupport, CoreSimulator, Xcode Archives dSYM, DocumentationCache">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to clean Xcode caches safely on Mac">
+  <meta property="og:description" content="Safely clean Xcode DerivedData, DeviceSupport, CoreSimulator, and DocumentationCache. Keep Archives and dSYMs. Measure with du; no SIP hacks.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-13">
+  <meta property="article:modified_time" content="2026-09-13">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to clean Xcode caches safely on Mac">
+  <meta name="twitter:description" content="Safely clean Xcode DerivedData, DeviceSupport, CoreSimulator, and DocumentationCache. Keep Archives and dSYMs.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to clean Xcode caches safely on Mac",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html",
+    "description": "Measure and safely reclaim Xcode disk space: DerivedData, DeviceSupport, CoreSimulator, DocumentationCache, and Xcode caches. Keep Archives and dSYMs. No SIP changes.",
+    "dateModified": "2026-09-13",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Quit Xcode and Simulator",
+        "text": "Fully quit Xcode and Simulator before deleting caches so files are not in use."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure with du",
+        "text": "Use du -sh on DerivedData, DeviceSupport, Archives, CoreSimulator, DocumentationCache, and ~/Library/Caches/com.apple.dt.Xcode."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Remove regenerable caches",
+        "text": "Move DerivedData, DeviceSupport, DocumentationCache, CoreSimulator caches, and com.apple.dt.Xcode caches to Trash. Keep Archives and dSYMs."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Use Finder or Xcode UI when preferred",
+        "text": "Finder Go to Folder, Xcode Settings → Platforms, and Window → Organizer cover the same locations without Terminal."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is it safe to delete Xcode DerivedData?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, after quitting Xcode. DerivedData is rebuildable. The next build is slower while indexes and products regenerate. It does not delete your source repositories."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I delete Xcode Archives to free space?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Treat Archives as keep-by-default, not cache. Each .xcarchive holds the app and dSYMs used to symbolicate crash reports. Remove an archive only if you already have those dSYMs elsewhere."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to clean Xcode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Xcode developer data lives under your home folder. Do not disable SIP and do not delete anything under /System, /Library, or /usr."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Clean Xcode caches",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to clean Xcode caches safely on Mac</h1>
+      <p>Measure first, quit Xcode, then remove only regenerable developer data — keep Archives and dSYMs</p>
+      <p class="page-meta">Updated <time datetime="2026-09-13">2026-09-13</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Xcode can occupy tens of gigabytes under <code>~/Library/Developer</code> without touching your git repos.
+          The safe loop is: <strong>quit Xcode</strong>, <strong>measure with <code>du</code></strong>, then move regenerable caches to Trash.
+          Archives are not cache. Do not disable SIP and do not delete anything under <code>/System</code>, <code>/Library</code>, or <code>/usr</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+              </span>
+              Quit Xcode first
+            </h3>
+            <p>
+              Fully quit Xcode (<strong>Xcode → Quit Xcode</strong>) and the Simulator app.
+              Caches, indexes, and simulator files stay open while those processes run.
+              Cleaning with Xcode still running can fail, corrupt a session, or look like “nothing happened.”
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure with <code>du</code> before deleting
+            </h3>
+            <p>
+              Allocated size is what Storage cares about. <code>du -sh</code> reports that for each tree.
+              Run these in Terminal, then decide what is worth reclaiming:
+            </p>
+            <div class="terminal" aria-label="Measure Xcode folders with du">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure Xcode</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/Xcode/DerivedData</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/Xcode/iOS\ DeviceSupport</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/Xcode/Archives</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/CoreSimulator</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/Xcode/DocumentationCache</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/com.apple.dt.Xcode</div>
+              </div>
+            </div>
+            <p>
+              In Finder, use <strong>Go → Go to Folder…</strong> (<code>⇧⌘G</code>) and paste the same paths.
+              Get Info shows size on disk. Prefer moving items to Trash over <code>rm -rf</code> so you can restore a mistake.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              DerivedData — regenerate
+            </h3>
+            <p>
+              <code>~/Library/Developer/Xcode/DerivedData</code> holds build products, indexes, and module caches.
+              It is fully rebuildable. After you move it to Trash, the next build and index pass recreate what that project needs.
+              This does not delete project sources.
+            </p>
+            <p>
+              Xcode also exposes the path under <strong>Settings → Locations</strong>.
+              You can change the DerivedData folder there, or delete its contents from Finder after quitting Xcode.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </span>
+              DeviceSupport — re-downloaded
+            </h3>
+            <p>
+              Symbols for connected devices live under folders such as
+              <code>~/Library/Developer/Xcode/iOS DeviceSupport</code>
+              (and the watchOS / visionOS siblings when those platforms are installed).
+              Xcode re-downloads symbols when you plug the device in again.
+              Safe to remove if you do not need offline symbolication for that OS version right now.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              Archives are not cache — keep dSYMs
+            </h3>
+            <p>
+              <code>~/Library/Developer/Xcode/Archives</code> stores <code>.xcarchive</code> bundles from Product → Archive.
+              Each archive includes the built app <strong>and dSYMs</strong>. Without those dSYMs, App Store and TestFlight crash logs stay unreadable.
+            </p>
+            <p>
+              Review archives in <strong>Window → Organizer</strong>. Keep any archive whose dSYMs you still need.
+              Only remove an old archive if you already copied its dSYMs somewhere durable.
+              Do not treat this folder like DerivedData.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></svg>
+              </span>
+              CoreSimulator — caches vs devices vs runtimes
+            </h3>
+            <p>
+              <code>~/Library/Developer/CoreSimulator</code> mixes caches, device data, and runtimes.
+              Caches under <code>CoreSimulator/Caches</code> regenerate. Unavailable device records are safe to drop.
+              Installed simulator runtimes and device data you still use should stay until you choose otherwise.
+            </p>
+            <p>
+              Preferred UI: <strong>Xcode → Settings → Platforms</strong> to remove unused runtimes, and
+              <strong>Window → Devices and Simulators</strong> to delete simulators you no longer boot.
+              In Terminal, after quitting Simulator:
+            </p>
+            <div class="terminal" aria-label="Remove unavailable simulators">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — simctl</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># broken device records only</span></div>
+                <div class="t-line"><span class="prompt">$</span> xcrun simctl delete unavailable</div>
+                <div class="t-line"><span class="cmt"># list runtimes before removing any you still need</span></div>
+                <div class="t-line"><span class="prompt">$</span> xcrun simctl list runtimes</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h8M8 11h6"/></svg>
+              </span>
+              DocumentationCache and <code>com.apple.dt.Xcode</code>
+            </h3>
+            <p>
+              <code>~/Library/Developer/Xcode/DocumentationCache</code> is the downloaded DocC / documentation index.
+              Xcode fetches it again when you open Developer Documentation.
+            </p>
+            <p>
+              <code>~/Library/Caches/com.apple.dt.Xcode</code> is a normal app cache.
+              Safe to move to Trash after quitting Xcode; it regenerates on the next launch.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Regenerate vs keep
+            </h3>
+            <ul>
+              <li><strong>Regenerate:</strong> DerivedData, DeviceSupport, DocumentationCache, CoreSimulator caches, <code>~/Library/Caches/com.apple.dt.Xcode</code>.</li>
+              <li><strong>Keep unless you chose to uninstall that runtime:</strong> simulator runtimes and device data you still boot.</li>
+              <li><strong>Keep:</strong> Archives and the dSYMs inside them. Organizer is the review UI.</li>
+              <li><strong>Never:</strong> SIP off, deletes under <code>/System</code>, <code>/Library</code>, <code>/usr</code>, or project source trees.</li>
+            </ul>
+            <p>
+              After Trash, empty Trash only when you are sure. Space returns when Trash is emptied, not when files first move there.
+              Then reopen Xcode and build once so indexes come back.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Finder, Terminal, Platforms, and Organizer are enough.
+              If you want a later review list, <a href="../index.html">MacOSCleaner</a> Smart Cleanup can show Xcode and Simulator categories with risk badges so you confirm before anything is removed.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-docker-mac-disk-space.html">Docker disk space</a>
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Is it safe to delete Xcode DerivedData?</dt>
+              <dd>Yes, after quitting Xcode. DerivedData is rebuildable. The next build is slower while indexes and products regenerate. It does not delete your source repositories.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Should I delete Xcode Archives to free space?</dt>
+              <dd>Treat Archives as keep-by-default, not cache. Each <code>.xcarchive</code> holds the app and dSYMs used to symbolicate crash reports. Remove an archive only if you already have those dSYMs elsewhere.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to clean Xcode?</dt>
+              <dd>No. Xcode developer data lives under your home folder. Do not disable SIP and do not delete anything under <code>/System</code>, <code>/Library</code>, or <code>/usr</code>.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Automate Xcode &amp; developer cleanup with MacOSCleaner</h3>
+            <p>
+              Free gigabytes instantly without memorizing terminal paths. MacOSCleaner safely scans DerivedData, archives, simulator runtimes, iOS device support, and package managers. 100% native Swift 6, zero telemetry, safe Trash-only removal.
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

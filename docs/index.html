@@ -11,7 +11,7 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
   <link rel="preload" as="image" href="static/assets/hero-dashboard.webp" type="image/webp" fetchpriority="high">
-  <link rel="preload" href="static/src/style.css?v=2" as="style">
+  <link rel="preload" href="static/src/style.css?v=3" as="style">
   <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/">
 
   <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
@@ -186,13 +186,13 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <link rel="stylesheet" href="static/src/style.css?v=2">
+  <link rel="stylesheet" href="static/src/style.css?v=3">
 </head>
 <body>
 
 <nav id="main-nav">
   <div class="container">
-    <a class="nav-brand" href="./" aria-label="MacOSCleaner home">
+    <a class="nav-brand" href="index.html" aria-label="MacOSCleaner home">
       <img src="static/assets/logo-96.png" width="40" height="40" alt="">
       MacOSCleaner
     </a>
@@ -786,11 +786,21 @@
           <div class="t-line"><span class="prompt">$</span> sudo xattr -r -c /Applications/MacOSCleaner.app</div>
         </div>
       </div>
-    <div class="reveal" style="grid-column: 1 / -1; margin-top: 32px; text-align: center; border-top: 1px solid var(--line); padding-top: 24px; width: 100%;">
-      <p style="color: var(--text-muted); font-size: 0.95rem;">
-        Enjoying MacOSCleaner? <a href="support.html" style="color: var(--accent); font-weight: 600; text-decoration: none;">Support the project ♥</a> to keep development active and free.
-      </p>
+    <div class="download-support-banner reveal">
+      <div class="download-support-content">
+        <div class="download-support-badge">
+          <span class="cell-icon" aria-hidden="true" style="width: 20px; height: 20px; font-size: 0.75rem;">♥</span>
+          <span>100% Free · Zero Telemetry · Open Source</span>
+        </div>
+        <h3>Help keep MacOSCleaner independent &amp; free</h3>
+        <p>Commercial cleaners charge $40/year subscriptions with aggressive background upsells. MacOSCleaner is built as honest, craft software for macOS. Community donations help fund our <strong>Apple Developer Program ($99/yr)</strong> to officially code-sign and notarize releases — eliminating the <code>sudo xattr</code> Gatekeeper workaround above for everyone.</p>
+      </div>
+      <div class="download-support-actions">
+        <a href="support.html" class="btn btn-primary">Support the project ♥</a>
+        <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener" class="btn btn-secondary">Tip on Ko-fi ↗</a>
+      </div>
     </div>
+  </div>
   </div>
 </section>
 
@@ -802,6 +812,7 @@
 
     <div class="footer-links">
       <a href="about.html">About</a>
+      <a href="about.html#guides">Guides</a>
       <a href="support.html">Support</a>
       <a href="llms.txt">llms.txt</a>
       <a href="llms-full.txt">llms-full.txt</a>
@@ -815,8 +826,6 @@
   </div>
 </footer>
 
-</div>
-
 <!-- Screenshot Modal -->
 <div id="image-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Screenshot Viewer">
   <span class="modal-close" id="modal-close" role="button" tabindex="0" aria-label="Close modal">&times;</span>
@@ -825,6 +834,6 @@
   <button class="modal-btn next" id="modal-next" aria-label="Next screenshot">&#10095;</button>
 </div>
 
-<script src="static/src/script.js?v=2" defer></script>
+<script src="static/src/script.js?v=3" defer></script>
 </body>
 </html>
