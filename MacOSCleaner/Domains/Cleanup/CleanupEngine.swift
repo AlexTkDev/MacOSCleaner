@@ -448,6 +448,7 @@ public actor CleanupEngine {
 
 /// Options controlling which categories are cleaned.
 public struct CleanupOptions: Sendable, Equatable {
+    public var targetCategories: [CleanupCategory]? = nil
     /// When true, includes .DS_Store and other scattered junk files.
     public var cleanDSStore: Bool = false
     /// When true, cleans Maven local repository (~/.m2/repository).
@@ -476,6 +477,7 @@ public struct CleanupOptions: Sendable, Equatable {
     public var cleanTimeMachineSnapshots: Bool = false
 
     public init(
+        targetCategories: [CleanupCategory]? = nil,
         cleanDSStore: Bool = false,
         cleanMaven: Bool = true,
         cleanModCache: Bool = true,
@@ -490,6 +492,7 @@ public struct CleanupOptions: Sendable, Equatable {
         cleanSleepImage: Bool = false,
         cleanTimeMachineSnapshots: Bool = false
     ) {
+        self.targetCategories = targetCategories
         self.cleanDSStore = cleanDSStore
         self.cleanMaven = cleanMaven
         self.cleanModCache = cleanModCache
@@ -507,6 +510,9 @@ public struct CleanupOptions: Sendable, Equatable {
 
     /// Returns ALL categories for scanning (like the shell script always does).
     public func scanCategories() -> [CleanupCategory] {
+        if let targetCategories {
+            return targetCategories
+        }
         return CleanupCategory.allCases
     }
 
@@ -518,6 +524,9 @@ public struct CleanupOptions: Sendable, Equatable {
     /// large-file review items, launch agents/daemons,
     /// privileged helpers, package receipts, internet plugins, project build artifacts.
     public func categories() -> [CleanupCategory] {
+        if let targetCategories {
+            return targetCategories
+        }
         var categories: [CleanupCategory] = [
             .appCaches,
             .packageManagers,
@@ -3120,8 +3129,13 @@ extension CleanupEngine {
         }
         do {
             try Task.checkCancellation()
-            _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/usr/bin/dscacheutil -flushcache; /usr/bin/killall -HUP mDNSResponder")
-            progress?(.log("  ✓ DNS cache flushed successfully"))
+            let flushResult = try? await commandRunner.run(command: "/usr/bin/dscacheutil", arguments: ["-flushcache"])
+            if flushResult?.exitCode == 0 {
+                progress?(.log("  ✓ DNS cache flushed successfully"))
+            } else {
+                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/usr/bin/dscacheutil -flushcache; /usr/bin/killall -HUP mDNSResponder")
+                progress?(.log("  ✓ DNS cache flushed successfully (privileged)"))
+            }
         } catch {
             progress?(.log("  ✗ DNS cache flush failed: \(error.localizedDescription)"))
         }

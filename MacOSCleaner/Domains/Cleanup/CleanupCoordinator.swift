@@ -16,6 +16,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
     private let trashManager: TrashManager
     private let itemManager: CleanupItemManager
     private let notifier: CleanupNotifier
+    private let trashDirectoryURL: URL
     private var currentTask: Task<Void, Never>?
     
     public var state: CleanupState { stateMachine.state }
@@ -38,7 +39,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
         settings: AppSettings,
         trashManager: TrashManager = TrashManager(),
         itemManager: CleanupItemManager,
-        notifier: CleanupNotifier = CleanupNotifier()
+        notifier: CleanupNotifier = CleanupNotifier(),
+        trashDirectoryURL: URL? = nil
     ) {
         self.engine = engine
         self.journal = journal
@@ -46,6 +48,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         self.trashManager = trashManager
         self.itemManager = itemManager
         self.notifier = notifier
+        self.trashDirectoryURL = trashDirectoryURL ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
     }
     
     @MainActor
@@ -233,7 +236,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
                 // Final step: Empty Trash if setting is enabled and Trash was selected (after all moves to Trash)
                 if self.settings.emptyTrashDuringCleanup && isTrashSelected {
-                    let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+                    let trashURL = self.trashDirectoryURL
                     let contentsOfTrash = (try? FileManager.default.contentsOfDirectory(
                         at: trashURL,
                         includingPropertiesForKeys: nil,
@@ -391,7 +394,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
     @MainActor
     private func presentTrashItemsForReview() async {
-        let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = self.trashDirectoryURL
         let trashLabel = "trash_user_label".localized
         guard FileManager.default.fileExists(atPath: trashURL.path),
               let contents = try? FileManager.default.contentsOfDirectory(
@@ -403,7 +406,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         }
 
         for url in contents {
-            let size = FileManager.default.getDirectorySize(url: url)
+            let size = FileManager.default.getPhysicalDirectorySize(url: url)
             guard size > 0 else { continue }
             var isDir: ObjCBool = false
             FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
@@ -426,6 +429,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
     @MainActor
     private func closeRunningApps() async {
+        guard NSClassFromString("XCTestCase") == nil,
+              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+            return
+        }
+
         let appsToClose = NSWorkspace.shared.runningApplications.filter { app in
             app.activationPolicy == .regular &&
             app.bundleIdentifier != Bundle.main.bundleIdentifier &&

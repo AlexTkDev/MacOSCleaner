@@ -14,10 +14,16 @@ public actor TrashManager {
     private let safetyManager: SafetyManager
     private let fileManager: FileManager
     private let bookmarkKey = "com.macoscleaner.trashBookmark"
+    nonisolated public let trashDirectoryURL: URL
     
-    public init(safetyManager: SafetyManager = SafetyManager(), fileManager: FileManager = .default) {
+    public init(
+        safetyManager: SafetyManager = SafetyManager(),
+        fileManager: FileManager = .default,
+        trashDirectoryURL: URL? = nil
+    ) {
         self.safetyManager = safetyManager
         self.fileManager = fileManager
+        self.trashDirectoryURL = trashDirectoryURL ?? fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
     }
     
     @discardableResult
@@ -42,6 +48,33 @@ public actor TrashManager {
         var trashedURLs: [URL] = []
         var failedURLs: [URL] = []
         var missingURLs: [URL] = []
+
+        // If an isolated test trash directory is configured (different from system ~/.Trash), simulate trash by moving into trashDirectoryURL
+        let systemTrashDir = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
+        let isIsolatedTestTrash = trashDirectoryURL.standardizedFileURL != systemTrashDir
+
+        if isIsolatedTestTrash {
+            for url in urls {
+                guard fileManager.fileExists(atPath: url.path) else {
+                    missingURLs.append(url)
+                    continue
+                }
+                let targetURL = trashDirectoryURL.appendingPathComponent(url.lastPathComponent)
+                do {
+                    if fileManager.fileExists(atPath: targetURL.path) {
+                        try fileManager.removeItem(at: targetURL)
+                    }
+                    try fileManager.moveItem(at: url, to: targetURL)
+                    trashedURLs.append(targetURL)
+                } catch {
+                    failedURLs.append(url)
+                }
+            }
+            if trashedURLs.isEmpty, !missingURLs.isEmpty {
+                throw TrashError.trashOperationFailed("Item does not exist")
+            }
+            return trashedURLs
+        }
 
         // 1. Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
         for url in urls {
@@ -80,7 +113,7 @@ public actor TrashManager {
         }
 
         // 2. For items that need elevated permissions, batch them into a single privileged command (1 prompt max)
-        let trashDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashDir = trashDirectoryURL
         let trashRoot = trashDir.path
         let escapedTrashRoot = "'\(trashRoot.replacingOccurrences(of: "'", with: "'\\''"))'"
         let uid = getuid()
@@ -131,19 +164,20 @@ public actor TrashManager {
         var totalFreed: Int64 = 0
         var failedItems: [(url: URL, size: Int64)] = []
 
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
+        let systemTrashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
+        let customTrashURL = trashDirectoryURL.standardizedFileURL
 
         for url in urls {
             do {
                 try Task.checkCancellation()
                 let stdURL = url.standardizedFileURL
                 // Refuse to delete ~/.Trash folder itself — only its contents
-                guard stdURL != trashURL else {
+                guard stdURL != customTrashURL && stdURL != systemTrashURL else {
                     Logger.trash.warning("Refusing to delete ~/.Trash directory itself")
                     continue
                 }
                 guard fileManager.fileExists(atPath: stdURL.path) else { continue }
-                let size = fileManager.getDirectorySize(url: stdURL)
+                let size = fileManager.getPhysicalDirectorySize(url: stdURL)
                 do {
                     try fileManager.removeItem(at: stdURL)
                     totalFreed += size
@@ -180,7 +214,7 @@ public actor TrashManager {
     
     nonisolated public func ensureAccess() async throws {
         let fileManager = FileManager.default
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = trashDirectoryURL
         
         if hasAccess() { return }
         if loadBookmark() { return }
@@ -220,7 +254,7 @@ public actor TrashManager {
     
     nonisolated private func hasAccess() -> Bool {
         let fileManager = FileManager.default
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = trashDirectoryURL
         return (try? fileManager.contentsOfDirectory(atPath: trashURL.path)) != nil
     }
     

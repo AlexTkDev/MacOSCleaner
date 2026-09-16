@@ -12,6 +12,10 @@
 
 .build/
 DerivedData/
+.derivedData/
+**/DerivedData/
+**/.derivedData/
+**/.derived_data/
 
 *.xcworkspace
 !default.xcworkspace

@@ -22,6 +22,12 @@ struct PermissionsView: View {
             .frame(width: 480)
             .fixedSize(horizontal: false, vertical: true)
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            permissionsManager.refresh()
+            if permissionsManager.hasFullDiskAccess {
+                dismiss()
+            }
+        }
     }
 
     // MARK: - Header
