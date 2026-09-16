@@ -76,4 +76,35 @@ final class TrashManagerTests: XCTestCase {
             XCTFail("Expected TrashError/SafetyError, got \(error)")
         }
     }
+
+    func testPermanentlyDeleteSuccess() async throws {
+        let fileURL = tempDirectory.appendingPathComponent("perm_delete_test.txt")
+        guard let data = "hello world".data(using: .utf8) else {
+            XCTFail("Data encoding failed")
+            return
+        }
+        try data.write(to: fileURL)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+
+        let freed = try await trashManager.permanentlyDelete(urls: [fileURL])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertGreaterThan(freed, 0)
+    }
+
+    func testPermanentlyDeleteRefusesTrashFolderItself() async throws {
+        let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let freed = try await trashManager.permanentlyDelete(urls: [trashURL])
+        XCTAssertEqual(freed, 0)
+    }
+
+    func testEmptyTrashWholesaleThrows() async {
+        do {
+            _ = try await trashManager.emptyTrash()
+            XCTFail("Expected wholesale emptyTrash to throw")
+        } catch is TrashError {
+            // Expected
+        } catch {
+            XCTFail("Expected TrashError, got \(error)")
+        }
+    }
 }

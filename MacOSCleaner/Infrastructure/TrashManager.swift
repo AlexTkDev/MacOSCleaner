@@ -122,27 +122,35 @@ public actor TrashManager {
         )
     }
 
-    /// Permanently deletes only the given URLs (typically items just moved into Trash).
+    /// Permanently deletes only the given URLs (typically items just moved into Trash, or contents of ~/.Trash).
     /// Batches any privileged items so authentication is requested at most ONCE.
     @discardableResult
     public func permanentlyDelete(urls: [URL]) async throws -> Int64 {
         try await ensureAccess()
 
         var totalFreed: Int64 = 0
-        var failedURLs: [URL] = []
+        var failedItems: [(url: URL, size: Int64)] = []
+
+        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
 
         for url in urls {
             do {
                 try Task.checkCancellation()
-                guard fileManager.fileExists(atPath: url.path) else { continue }
-                let size = fileManager.getDirectorySize(url: url)
+                let stdURL = url.standardizedFileURL
+                // Refuse to delete ~/.Trash folder itself — only its contents
+                guard stdURL != trashURL else {
+                    Logger.trash.warning("Refusing to delete ~/.Trash directory itself")
+                    continue
+                }
+                guard fileManager.fileExists(atPath: stdURL.path) else { continue }
+                let size = fileManager.getDirectorySize(url: stdURL)
                 do {
-                    try fileManager.removeItem(at: url)
+                    try fileManager.removeItem(at: stdURL)
                     totalFreed += size
-                    Logger.trash.debug("Permanently deleted: \(url.path, privacy: .public) (\(size) bytes)")
+                    Logger.trash.debug("Permanently deleted: \(stdURL.path, privacy: .public) (\(size) bytes)")
                 } catch {
                     if (error as NSError).code == NSFileWriteNoPermissionError || (error as NSError).code == Int(EPERM) || (error as NSError).code == Int(EACCES) {
-                        failedURLs.append(url)
+                        failedItems.append((url: stdURL, size: size))
                     } else {
                         throw error
                     }
@@ -154,15 +162,14 @@ public actor TrashManager {
             }
         }
 
-        if !failedURLs.isEmpty {
-            let escaped = failedURLs.map { "'\($0.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+        if !failedItems.isEmpty {
+            let escaped = failedItems.map { "'\($0.url.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
             do {
                 _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
-                for url in failedURLs {
-                    let size = fileManager.getDirectorySize(url: url)
-                    totalFreed += size
+                for item in failedItems {
+                    totalFreed += item.size
                 }
-                Logger.trash.info("Permanently deleted \(failedURLs.count) privileged item(s) in a single batch")
+                Logger.trash.info("Permanently deleted \(failedItems.count) privileged item(s) in a single batch")
             } catch {
                 Logger.trash.error("Batch privileged delete failed: \(error.localizedDescription, privacy: .public)")
             }

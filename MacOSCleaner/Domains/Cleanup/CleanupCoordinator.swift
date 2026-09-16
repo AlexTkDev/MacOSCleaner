@@ -138,8 +138,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.isLogFlushScheduled = false
                 
                 let trashLabel = "trash_user_label".localized
-                let selectedTrashURLs = self.itemManager.selectedLeafURLs(underParentLabel: trashLabel)
-                if !selectedTrashURLs.isEmpty {
+                let isTrashSelected = self.itemManager.items.first(where: { $0.label == trashLabel })?.isSelected ?? false
+                if self.settings.emptyTrashDuringCleanup && isTrashSelected {
                     try await self.trashManager.requestTrashAccess()
                 }
 
@@ -189,20 +189,6 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     }
                 }
 
-                // Permanently delete only explicitly selected Trash items (never whole ~/.Trash).
-                if !selectedTrashURLs.isEmpty {
-                    self.totalSteps = self.currentStep + 1
-                    self.currentStep += 1
-                    self.stepTitle = "cleanup_emptying_trash".localized
-                    let deletedBytes = try await self.trashManager.permanentlyDelete(urls: selectedTrashURLs)
-                    let deletedMB = Int(deletedBytes / (1024 * 1024))
-                    self.totalFreedMB += deletedMB
-                    self.totalFreedBytes += deletedBytes
-                    if deletedBytes > 0 {
-                        self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
-                    }
-                    records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
-                }
 
                 // Move selected review-only items to Trash (never category-level wipe).
                 let reviewGroups: [(CleanupCategory, String)] = [
@@ -243,6 +229,30 @@ public final class CleanupCoordinator: @unchecked Sendable {
                         status: hadPartialFailure ? "partial" : "success",
                         bytesFreed: freed
                     ))
+                }
+
+                // Final step: Empty Trash if setting is enabled and Trash was selected (after all moves to Trash)
+                if self.settings.emptyTrashDuringCleanup && isTrashSelected {
+                    let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+                    let contentsOfTrash = (try? FileManager.default.contentsOfDirectory(
+                        at: trashURL,
+                        includingPropertiesForKeys: nil,
+                        options: []
+                    )) ?? []
+                    if !contentsOfTrash.isEmpty {
+                        self.totalSteps = self.currentStep + 1
+                        self.currentStep += 1
+                        self.stepTitle = "cleanup_emptying_trash".localized
+                        try await self.trashManager.requestTrashAccess()
+                        let deletedBytes = try await self.trashManager.permanentlyDelete(urls: contentsOfTrash)
+                        let deletedMB = Int(deletedBytes / (1024 * 1024))
+                        self.totalFreedMB += deletedMB
+                        self.totalFreedBytes += deletedBytes
+                        if deletedBytes > 0 {
+                            self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                        }
+                        records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
+                    }
                 }
 
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
@@ -405,12 +415,12 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 isDirectory: isDir.boolValue,
                 category: trashLabel,
                 parentName: trashLabel,
-                isSelected: false
+                isSelected: true
             )
         }
 
         if let idx = itemManager.items.firstIndex(where: { $0.label == trashLabel }) {
-            itemManager.items[idx].isSelected = false
+            itemManager.items[idx].isSelected = true
         }
     }
 
