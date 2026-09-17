@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "已就绪";
 "settings_ai_status_unsupported_device" = "设备硬件不支持";
 "settings_ai_status_not_enabled" = "未在系统设置中开启";
-"settings_ai_status_downloading" = "正在下载模型资源...";
+"settings_ai_status_downloading" = "正在准备模型 (macOS)...";
 "settings_ai_status_unavailable" = "不可用";
 
 "uninstaller_explain_with_ai" = "使用 AI 解释";
@@ -929,3 +929,21 @@
 "uninstaller.evidence.parentDirectory.description" = "在与该应用相关的目录中找到。";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "在 Launch Services 数据库中已注册。";
+
+"dashboard_view_all_history" = "查看全部历史";
+"history_window_title" = "清理历史";
+"history_search_placeholder" = "搜索";
+"history_sort_date" = "日期";
+"history_sort_size" = "大小";
+"history_trigger_manual" = "手动";
+"history_trigger_automatic" = "自动";
+"history_empty_state" = "尚未执行任何清理";
+"history_category_general" = "常规";
+"history_category_media" = "媒体";
+"history_category_caches" = "缓存";
+"history_category_dev" = "开发";
+"category.cloudkit_cache" = "iCloud CloudKit 缓存";
+"category.swiftpm_cache" = "Swift 包管理器缓存";
+"select" = "选择";
+"dashboard_history_empty_hint" = "若要在此处查看清理历史，请对您的 Mac 执行一次维护清理";
+"dashboard_start_cleanup" = "开始清理";

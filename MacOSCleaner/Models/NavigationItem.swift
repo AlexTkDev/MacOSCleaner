@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
     case dashboard = "Dashboard"
@@ -49,6 +50,19 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .startupServices: return "bolt.horizontal"
         case .uninstaller: return "trash"
         case .settings: return "gear"
+        }
+    }
+    
+    var keyboardKey: KeyEquivalent {
+        switch self {
+        case .dashboard: return "1"
+        case .cleanup: return "2"
+        case .diskSpace: return "3"
+        case .duplicates: return "4"
+        case .processes: return "5"
+        case .startupServices: return "6"
+        case .uninstaller: return "7"
+        case .settings: return "8"
         }
     }
 }

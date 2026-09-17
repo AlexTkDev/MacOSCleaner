@@ -13,6 +13,8 @@ class DashboardViewModel: ObservableObject {
     @Published var totalFreedBytes: Int64 = 0
     @Published var cleanupCount: Int = 0
     @Published var recentTransactions: [CleanupTransaction] = []
+    @Published var recentRecords: [CleanupRecord] = []
+    @Published var allRecords: [CleanupRecord] = []
     @Published var systemInfo: SystemInfo = .current
     
     // Disk Categories (Donut Chart)
@@ -23,6 +25,11 @@ class DashboardViewModel: ObservableObject {
     
     init(journal: TransactionJournal) {
         self.journal = journal
+        let url = URL(fileURLWithPath: "/")
+        if let values = try? url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey]) {
+            _totalDiskSpace = Published(initialValue: Int64(values.volumeTotalCapacity ?? 0))
+            _freeDiskSpace = Published(initialValue: Int64(values.volumeAvailableCapacity ?? 0))
+        }
     }
     
     func refresh() async {
@@ -32,9 +39,7 @@ class DashboardViewModel: ObservableObject {
     }
     
     private func fetchDiskUsage() async {
-        let fileManager = FileManager.default
-        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        
+        let url = URL(fileURLWithPath: "/")
         do {
             let values = try url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])
             totalDiskSpace = Int64(values.volumeTotalCapacity ?? 0)
@@ -48,6 +53,9 @@ class DashboardViewModel: ObservableObject {
         do {
             let allTransactions = try await journal.loadAll()
             recentTransactions = Array(allTransactions.reversed().prefix(5))
+            let records = allTransactions.reversed().map { CleanupRecord(transaction: $0) }
+            allRecords = records
+            recentRecords = Array(records.prefix(3))
             totalFreedBytes = allTransactions.reduce(0) { sum, transaction in
                 sum + transaction.operations.reduce(0) { $0 + $1.bytesFreed }
             }

@@ -777,7 +777,7 @@
 "settings_ai_status_ready" = "Listo";
 "settings_ai_status_unsupported_device" = "Dispositivo no compatible";
 "settings_ai_status_not_enabled" = "No activado en Ajustes del Sistema";
-"settings_ai_status_downloading" = "Descargando modelo...";
+"settings_ai_status_downloading" = "Preparando modelo (macOS)...";
 "settings_ai_status_unavailable" = "No disponible";
 
 /* AI Explanations */
@@ -964,3 +964,21 @@
 "settings_project_artifacts_age" = "Antigüedad de artefactos de proyecto";
 "settings_project_artifacts_age_sub" = "Buscar artefactos de compilación no modificados en más de estos días";
 "settings_days_count" = "> %d días";
+
+"dashboard_view_all_history" = "Ver todo el historial";
+"history_window_title" = "Historial de limpieza";
+"history_search_placeholder" = "Buscar";
+"history_sort_date" = "Fecha";
+"history_sort_size" = "Tamaño";
+"history_trigger_manual" = "Manual";
+"history_trigger_automatic" = "Automático";
+"history_empty_state" = "Aún no se ha realizado ninguna limpieza";
+"history_category_general" = "General";
+"history_category_media" = "Multimedia";
+"history_category_caches" = "Cachés";
+"history_category_dev" = "Desarrollo";
+"category.cloudkit_cache" = "Caché de iCloud CloudKit";
+"category.swiftpm_cache" = "Caché de Swift Package Manager";
+"select" = "Seleccionar";
+"dashboard_history_empty_hint" = "Para ver el historial de limpieza aquí, realiza un mantenimiento de tu Mac";
+"dashboard_start_cleanup" = "Iniciar limpieza";

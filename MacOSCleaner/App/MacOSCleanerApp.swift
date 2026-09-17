@@ -85,6 +85,7 @@ struct MacOSCleanerApp: App {
             }
         }
         .windowResizability(.contentMinSize)
+        .defaultSize(width: 1024, height: 520)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("about_title".localized) {
@@ -127,6 +128,13 @@ struct MacOSCleanerApp: App {
                     }
                 }
             }
+            
+            CommandGroup(after: .appInfo) {
+                Button("history_window_title".localized) {
+                    openWindow(id: "cleanup-history")
+                }
+                .keyboardShortcut("y", modifiers: .command)
+            }
         }
         
         Window("about_title".localized, id: "about") {
@@ -140,6 +148,26 @@ struct MacOSCleanerApp: App {
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+        
+        Window("history_window_title".localized, id: "cleanup-history") {
+            CleanupHistoryView(journal: journal)
+        }
+        .windowResizability(.contentMinSize)
+        .defaultPosition(.center)
+        .defaultSize(width: 480, height: 600)
+        
+        Settings {
+            SettingsView(
+                settings: appSettings,
+                permissionsManager: permissionsManager,
+                onForget: {
+                    Task {
+                        try? await journal.clear()
+                    }
+                },
+                availableUpdate: $availableUpdate
+            )
+        }
     }
 }
 

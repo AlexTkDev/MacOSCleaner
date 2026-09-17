@@ -51,10 +51,6 @@ public extension View {
     func glassEffectTransition(_ transition: Any) -> some View {
         self
     }
-    
-    func glassEffectUnion(id: (some Hashable & Sendable)?, namespace: Namespace.ID) -> some View {
-        self
-    }
 }
 
 public struct VisualEffectView: NSViewRepresentable {
@@ -84,7 +80,7 @@ public struct VisualEffectView: NSViewRepresentable {
 // MARK: - macOS 27 Shared Surfaces
 
 public extension View {
-    /// Liquid Glass card surface with macOS 27 rounded chrome (hairline border + soft shadow).
+    /// Liquid Glass card surface with macOS 27 rounded chrome (opaque content + hairline border + soft shadow).
     func glassCard(cornerRadius: CGFloat = 16) -> some View {
         modifier(GlassCardModifier(cornerRadius: cornerRadius))
     }
@@ -93,6 +89,12 @@ public extension View {
     func glassCapsule() -> some View {
         // Explicit Glass type avoids ambiguity between the shim and SwiftUI.Glass (SDK 26+).
         glassEffect(Glass.regular, in: Capsule())
+    }
+    
+    /// Concentric corner container helper (macOS 27+).
+    @ViewBuilder
+    func containerConcentric(cornerRadius: CGFloat = 16) -> some View {
+        self.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 
@@ -103,21 +105,16 @@ private struct GlassCardModifier: ViewModifier {
     private static let borderColor: Color = Color.primary.opacity(0.07)
 
     func body(content: Content) -> some View {
-        Group {
-            if reduceTransparency {
-                content.background(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(Color(NSColor.controlBackgroundColor))
-                )
-            } else {
-                content.glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
-            }
-        }
-        .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Self.borderColor, lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.07), radius: 12, y: 4)
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color(NSColor.controlBackgroundColor))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(Self.borderColor, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.06), radius: 10, y: 3)
     }
 }
 

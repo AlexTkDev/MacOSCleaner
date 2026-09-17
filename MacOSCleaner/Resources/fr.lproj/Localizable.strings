@@ -682,7 +682,7 @@
 "settings_ai_status_ready" = "Prêt";
 "settings_ai_status_unsupported_device" = "Appareil non éligible";
 "settings_ai_status_not_enabled" = "Non activé dans les Réglages Système";
-"settings_ai_status_downloading" = "Téléchargement des ressources du modèle...";
+"settings_ai_status_downloading" = "Préparation du modèle (macOS)...";
 "settings_ai_status_unavailable" = "Indisponible";
 
 "uninstaller_explain_with_ai" = "Expliquer avec l'IA";
@@ -928,3 +928,21 @@
 "uninstaller.evidence.parentDirectory.description" = "Trouvé dans un dossier associé à l'app.";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Enregistré dans la base de données Launch Services.";
+
+"dashboard_view_all_history" = "Afficher tout l'historique";
+"history_window_title" = "Historique du nettoyage";
+"history_search_placeholder" = "Rechercher";
+"history_sort_date" = "Date";
+"history_sort_size" = "Taille";
+"history_trigger_manual" = "Manuel";
+"history_trigger_automatic" = "Automatique";
+"history_empty_state" = "Aucun nettoyage n'a encore été effectué";
+"history_category_general" = "Général";
+"history_category_media" = "Médias";
+"history_category_caches" = "Caches";
+"history_category_dev" = "Développement";
+"category.cloudkit_cache" = "Cache iCloud CloudKit";
+"category.swiftpm_cache" = "Cache Swift Package Manager";
+"select" = "Sélectionner";
+"dashboard_history_empty_hint" = "Effectuez un nettoyage de votre Mac pour afficher l'historique de maintenance ici";
+"dashboard_start_cleanup" = "Démarrer le nettoyage";

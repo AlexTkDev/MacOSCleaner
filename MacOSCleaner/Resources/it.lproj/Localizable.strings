@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "Pronto";
 "settings_ai_status_unsupported_device" = "Dispositivo non idoneo";
 "settings_ai_status_not_enabled" = "Non abilitato nelle Impostazioni di Sistema";
-"settings_ai_status_downloading" = "Download risorse del modello...";
+"settings_ai_status_downloading" = "Preparazione modello (macOS)...";
 "settings_ai_status_unavailable" = "Non disponibile";
 
 "uninstaller_explain_with_ai" = "Spiega con l'AI";
@@ -929,3 +929,21 @@
 "uninstaller.evidence.parentDirectory.description" = "Trovato in una cartella associata all'app.";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Registrato nel database dei Launch Services.";
+
+"dashboard_view_all_history" = "Mostra tutta la cronologia";
+"history_window_title" = "Cronologia pulizia";
+"history_search_placeholder" = "Cerca";
+"history_sort_date" = "Data";
+"history_sort_size" = "Dimensione";
+"history_trigger_manual" = "Manuale";
+"history_trigger_automatic" = "Automatico";
+"history_empty_state" = "Nessuna pulizia ancora eseguita";
+"history_category_general" = "Generale";
+"history_category_media" = "Media";
+"history_category_caches" = "Cache";
+"history_category_dev" = "Sviluppo";
+"category.cloudkit_cache" = "Cache iCloud CloudKit";
+"category.swiftpm_cache" = "Cache Swift Package Manager";
+"select" = "Seleziona";
+"dashboard_history_empty_hint" = "Per visualizzare la cronologia qui, esegui una pulizia del tuo Mac";
+"dashboard_start_cleanup" = "Avvia pulizia";

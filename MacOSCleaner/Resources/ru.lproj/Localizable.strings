@@ -777,7 +777,7 @@
 "settings_ai_status_ready" = "Готов";
 "settings_ai_status_unsupported_device" = "Устройство не поддерживает";
 "settings_ai_status_not_enabled" = "Не включен в системных настройках";
-"settings_ai_status_downloading" = "Скачивание модели...";
+"settings_ai_status_downloading" = "Подготовка модели (macOS)...";
 "settings_ai_status_unavailable" = "Недоступен";
 
 /* AI Explanations */
@@ -965,3 +965,21 @@
 "settings_project_artifacts_age" = "Возраст артефактов проектов";
 "settings_project_artifacts_age_sub" = "Поиск папок сборок, не менявшихся дольше указанного срока";
 "settings_days_count" = "> %d дн.";
+
+"dashboard_view_all_history" = "Просмотреть всю историю";
+"history_window_title" = "История очистки";
+"history_search_placeholder" = "Поиск";
+"history_sort_date" = "Дата";
+"history_sort_size" = "Объем";
+"history_trigger_manual" = "Вручную";
+"history_trigger_automatic" = "Автоматически";
+"history_empty_state" = "Очисток еще не производилось";
+"history_category_general" = "Общая";
+"history_category_media" = "Медиа";
+"history_category_caches" = "Кэши";
+"history_category_dev" = "Разработка";
+"category.cloudkit_cache" = "Кэш iCloud CloudKit";
+"category.swiftpm_cache" = "Кэш Swift Package Manager";
+"select" = "Выбрать";
+"dashboard_history_empty_hint" = "Для того чтобы появилась история очистки, проведите обслуживание своего Mac";
+"dashboard_start_cleanup" = "Начать очистку";

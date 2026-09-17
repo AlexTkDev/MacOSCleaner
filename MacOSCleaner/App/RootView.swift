@@ -6,6 +6,7 @@ import SwiftUI
 
 struct RootView: View {
     @State private var selectedItem: NavigationItem = .dashboard
+    @Namespace private var navNamespace
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
@@ -38,7 +39,7 @@ struct RootView: View {
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
-        .frame(minWidth: 1024, minHeight: 680)
+        .frame(minWidth: 1024, minHeight: 480)
         .environment(\.locale, appSettings.language.locale)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
@@ -87,27 +88,29 @@ struct RootView: View {
     ]
 
     private var topNavigationBar: some View {
-        HStack(spacing: 0) {
-            ForEach(navGroups.indices, id: \.self) { groupIndex in
-                let group = navGroups[groupIndex]
+        GlassEffectContainer(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(navGroups.indices, id: \.self) { groupIndex in
+                    let group = navGroups[groupIndex]
 
-                HStack(spacing: 2) {
-                    ForEach(group, id: \.self) { item in
-                        navButton(for: item)
+                    HStack(spacing: 2) {
+                        ForEach(group, id: \.self) { item in
+                            navButton(for: item)
+                        }
+                    }
+
+                    if groupIndex < navGroups.count - 1 {
+                        Divider()
+                            .frame(height: 18)
+                            .opacity(0.4)
+                            .padding(.horizontal, 4)
                     }
                 }
-
-                if groupIndex < navGroups.count - 1 {
-                    Divider()
-                        .frame(height: 18)
-                        .opacity(0.4)
-                        .padding(.horizontal, 4)
-                }
             }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 3)
+            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 3)
-        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
         .id(appSettings.language)
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
@@ -145,10 +148,12 @@ struct RootView: View {
                     Capsule()
                         .fill(Color.accentColor)
                         .glassEffect(Glass.regular.tint(Color.accentColor).interactive(), in: Capsule())
+                        .glassEffectUnion(id: "navSelection", namespace: navNamespace)
                 }
             }
         }
         .buttonStyle(.plain)
+        .keyboardShortcut(item.keyboardKey, modifiers: .command)
         .help(item.localizedTitle)
     }
 
@@ -157,7 +162,11 @@ struct RootView: View {
     private func contentView(for item: NavigationItem) -> some View {
         switch item {
         case .dashboard:
-            DashboardView(journal: journal)
+            DashboardView(journal: journal, onNavigateToCleanup: {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                    selectedItem = .cleanup
+                }
+            })
         case .cleanup:
             CleanupView(viewModel: cleanupViewModel)
         case .diskSpace:

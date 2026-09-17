@@ -774,7 +774,7 @@
 "settings_ai_status_ready" = "Готовий";
 "settings_ai_status_unsupported_device" = "Пристрій не підтримує";
 "settings_ai_status_not_enabled" = "Не увімкнено в системних параметрах";
-"settings_ai_status_downloading" = "Завантаження моделі...";
+"settings_ai_status_downloading" = "Підготовка моделі (macOS)...";
 "settings_ai_status_unavailable" = "Недоступний";
 
 /* AI Explanations */
@@ -962,3 +962,21 @@
 "settings_project_artifacts_age" = "Вік артефактів проєктів";
 "settings_project_artifacts_age_sub" = "Пошук папок збірок, які не змінювалися довше вказаного терміну";
 "settings_days_count" = "> %d дн.";
+
+"dashboard_view_all_history" = "Переглянути всю історію";
+"history_window_title" = "Історія очищення";
+"history_search_placeholder" = "Пошук";
+"history_sort_date" = "Дата";
+"history_sort_size" = "Обсяг";
+"history_trigger_manual" = "Вручну";
+"history_trigger_automatic" = "Автоматично";
+"history_empty_state" = "Очищень ще не проводилося";
+"history_category_general" = "Загальна";
+"history_category_media" = "Медіа";
+"history_category_caches" = "Кеші";
+"history_category_dev" = "Розробка";
+"category.cloudkit_cache" = "Кеш iCloud CloudKit";
+"category.swiftpm_cache" = "Кеш Swift Package Manager";
+"select" = "Вибрати";
+"dashboard_history_empty_hint" = "Для того щоб з'явилася історія очищення, проведіть обслуговування свого Mac";
+"dashboard_start_cleanup" = "Почати очищення";

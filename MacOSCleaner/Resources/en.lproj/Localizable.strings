@@ -780,7 +780,7 @@
 "settings_ai_status_ready" = "Ready";
 "settings_ai_status_unsupported_device" = "Device Not Eligible";
 "settings_ai_status_not_enabled" = "Not Enabled in System Settings";
-"settings_ai_status_downloading" = "Downloading Model Assets...";
+"settings_ai_status_downloading" = "Preparing Model (macOS)...";
 "settings_ai_status_unavailable" = "Unavailable";
 
 /* AI Explanations */
@@ -966,3 +966,21 @@
 "settings_project_artifacts_age" = "Project Artifacts Age";
 "settings_project_artifacts_age_sub" = "Scan build artifacts not modified in more than this many days";
 "settings_days_count" = "> %d days";
+
+"dashboard_view_all_history" = "View All History";
+"history_window_title" = "Cleanup History";
+"history_search_placeholder" = "Search";
+"history_sort_date" = "Date";
+"history_sort_size" = "Size";
+"history_trigger_manual" = "Manual";
+"history_trigger_automatic" = "Automatic";
+"history_empty_state" = "No cleanups have been performed yet";
+"history_category_general" = "General";
+"history_category_media" = "Media";
+"history_category_caches" = "Caches";
+"history_category_dev" = "Development";
+"category.cloudkit_cache" = "iCloud CloudKit Cache";
+"category.swiftpm_cache" = "Swift Package Manager Cache";
+"select" = "Select";
+"dashboard_history_empty_hint" = "To see your cleanup history here, perform a maintenance cleanup of your Mac";
+"dashboard_start_cleanup" = "Start Cleanup";

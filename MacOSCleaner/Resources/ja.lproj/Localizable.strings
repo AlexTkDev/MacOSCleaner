@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "準備完了";
 "settings_ai_status_unsupported_device" = "非対応デバイス";
 "settings_ai_status_not_enabled" = "システム設定で無効";
-"settings_ai_status_downloading" = "モデルアセットをダウンロード中...";
+"settings_ai_status_downloading" = "モデルを準備中 (macOS)...";
 "settings_ai_status_unavailable" = "利用不可";
 
 "uninstaller_explain_with_ai" = "AI で解説";
@@ -929,3 +929,21 @@
 "uninstaller.evidence.parentDirectory.description" = "アプリに関連するディレクトリ内で見つかりました。";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Launch Services データベースに登録されています。";
+
+"dashboard_view_all_history" = "すべての履歴を表示";
+"history_window_title" = "クリーンアップ履歴";
+"history_search_placeholder" = "検索";
+"history_sort_date" = "日付";
+"history_sort_size" = "サイズ";
+"history_trigger_manual" = "手動";
+"history_trigger_automatic" = "自動";
+"history_empty_state" = "クリーンアップはまだ実行されていません";
+"history_category_general" = "一般";
+"history_category_media" = "メディア";
+"history_category_caches" = "キャッシュ";
+"history_category_dev" = "開発";
+"category.cloudkit_cache" = "iCloud CloudKit キャッシュ";
+"category.swiftpm_cache" = "Swift Package Manager キャッシュ";
+"select" = "選択";
+"dashboard_history_empty_hint" = "クリーンアップ履歴を表示するには、Macのメンテナンスを実行してください";
+"dashboard_start_cleanup" = "クリーンアップを開始";

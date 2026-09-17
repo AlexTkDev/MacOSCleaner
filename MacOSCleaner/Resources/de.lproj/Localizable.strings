@@ -684,7 +684,7 @@
 "settings_ai_status_ready" = "Bereit";
 "settings_ai_status_unsupported_device" = "Gerät nicht unterstützt";
 "settings_ai_status_not_enabled" = "In Systemeinstellungen nicht aktiviert";
-"settings_ai_status_downloading" = "Modell-Ressourcen werden heruntergeladen...";
+"settings_ai_status_downloading" = "Modell wird vorbereitet (macOS)...";
 "settings_ai_status_unavailable" = "Nicht verfügbar";
 
 "uninstaller_explain_with_ai" = "Mit KI erklären";
@@ -930,3 +930,21 @@
 "uninstaller.evidence.parentDirectory.description" = "In einem zugehörigen Ordner gefunden.";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "In der Launch Services Datenbank registriert.";
+
+"dashboard_view_all_history" = "Gesamten Verlauf anzeigen";
+"history_window_title" = "Bereinigungsverlauf";
+"history_search_placeholder" = "Suchen";
+"history_sort_date" = "Datum";
+"history_sort_size" = "Größe";
+"history_trigger_manual" = "Manuell";
+"history_trigger_automatic" = "Automatisch";
+"history_empty_state" = "Bislang wurden keine Bereinigungen durchgeführt";
+"history_category_general" = "Allgemein";
+"history_category_media" = "Medien";
+"history_category_caches" = "Caches";
+"history_category_dev" = "Entwicklung";
+"category.cloudkit_cache" = "iCloud CloudKit Cache";
+"category.swiftpm_cache" = "Swift Package Manager Cache";
+"select" = "Auswählen";
+"dashboard_history_empty_hint" = "Führen Sie eine Systembereinigung durch, damit hier der Bereinigungsverlauf angezeigt wird";
+"dashboard_start_cleanup" = "Bereinigung starten";
