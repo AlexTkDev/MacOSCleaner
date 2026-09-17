@@ -820,6 +820,78 @@ struct CleanupEngineTests {
         #expect(size < 5 * 1024 * 1024, "Must use allocated size, got \(size)")
     }
 
+    @Test("Review-only categories emit isSelected false in dry run")
+    func reviewOnlyCategoriesEmitDeselected() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let backupDir = URL(fileURLWithPath: "\(home)/Library/Application Support/MobileSync/Backup/test-backup")
+        try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+        try "backup data".write(to: backupDir.appendingPathComponent("info.plist"), atomically: true, encoding: .utf8)
+
+        let mailDir = URL(fileURLWithPath: "\(home)/Library/Mail Downloads")
+        try FileManager.default.createDirectory(at: mailDir, withIntermediateDirectories: true)
+        try "mail data".write(to: mailDir.appendingPathComponent("attachment.pdf"), atomically: true, encoding: .utf8)
+
+        let savedStateDir = URL(fileURLWithPath: "\(home)/Library/Saved Application State/com.test.app.savedState")
+        try FileManager.default.createDirectory(at: savedStateDir, withIntermediateDirectories: true)
+        try "state data".write(to: savedStateDir.appendingPathComponent("data.data"), atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        let deselectedCount = ThreadSafeCounter()
+
+        _ = try await engine.run(categories: [.iosBackups, .mailDownloads, .savedAppState], dryRun: true) { event in
+            if case .fileItem(_, _, _, _, _, _, let isSelected) = event {
+                #expect(!isSelected, "Review-only items must have isSelected == false")
+                deselectedCount.increment()
+            }
+        }
+
+        #expect(deselectedCount.value >= 3)
+    }
+
+    @Test("Shared file lists only cleans recent items and preserves favorites")
+    func sharedFileListsPreservesFavorites() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let sflDir = URL(fileURLWithPath: "\(home)/Library/Application Support/com.apple.sharedfilelist")
+        try FileManager.default.createDirectory(at: sflDir, withIntermediateDirectories: true)
+
+        let favFile = sflDir.appendingPathComponent("com.apple.LSSharedFileList.FavoriteItems.sfl3")
+        let recentFile = sflDir.appendingPathComponent("com.apple.LSSharedFileList.RecentDocuments.sfl3")
+        try "favorites".write(to: favFile, atomically: true, encoding: .utf8)
+        try "recent".write(to: recentFile, atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        _ = try await engine.cleanSharedFileLists(dryRun: false, progress: nil)
+
+        #expect(FileManager.default.fileExists(atPath: favFile.path))
+        #expect(!FileManager.default.fileExists(atPath: recentFile.path))
+    }
+
+    @Test("Language caches honors cleanModCache")
+    func languageCachesHonorsCleanModCache() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let goModDir = URL(fileURLWithPath: "\(home)/go/pkg/mod/cache/download")
+        try FileManager.default.createDirectory(at: goModDir, withIntermediateDirectories: true)
+        let testFile = goModDir.appendingPathComponent("test.mod")
+        try "module test".write(to: testFile, atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        _ = try await engine.cleanLanguageCaches(dryRun: false, progress: nil, cleanModCache: false)
+        #expect(FileManager.default.fileExists(atPath: testFile.path))
+
+        _ = try await engine.cleanLanguageCaches(dryRun: false, progress: nil, cleanModCache: true)
+        #expect(!FileManager.default.fileExists(atPath: testFile.path))
+    }
+
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {

@@ -44,7 +44,7 @@ final class AIUserContentCleanupTests: XCTestCase {
         let box = Box()
         let engine = CleanupEngine(fileSystemContext: ctx)
         let results = try await engine.run(categories: [.aiModels], dryRun: true) { event in
-            if case .fileItem(let path, _, _, _, let category, _) = event {
+            if case .fileItem(let path, _, _, _, let category, _, _) = event {
                 XCTAssertEqual(category, "AI Models")
                 box.append(path)
             }

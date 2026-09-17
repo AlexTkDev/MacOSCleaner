@@ -330,6 +330,11 @@
 "cleanup_option_imovie_final_cut_sub" = "Удаляет файлы рендеринга и библиотеки iMovie и Final Cut Pro.";
 "cleanup_option_sleep_image" = "Очистить образ сна";
 "cleanup_option_sleep_image_sub" = "Удаляет файл гибернации (/var/vm/sleepimage). macOS воссоздаст его при следующем сне.";
+"cleanup_option_font_cache" = "Очистить кэш шрифтов";
+"cleanup_option_font_cache_sub" = "Очищает базу шрифтов (atsutil). Для вступления в силу требуется перезагрузка.";
+"cleanup_font_cache_confirm_title" = "Очистить кэш шрифтов?";
+"cleanup_font_cache_confirm_message" = "Очистка кэша шрифтов может нарушить отображение текста в открытых приложениях до перезагрузки Mac.";
+"cleanup_font_cache_confirm_action" = "Очистить (нужна перезагрузка)";
 "cleanup_extended_title" = "Расширенная очистка";
 "cleanup_start_scan" = "Начать сканирование";
 "cleanup_failed" = "Ошибка очистки";

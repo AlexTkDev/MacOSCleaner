@@ -16,6 +16,8 @@ DerivedData/
 **/DerivedData/
 **/.derivedData/
 **/.derived_data/
+**/.derivedData*
+**/DerivedData*
 
 *.xcworkspace
 !default.xcworkspace

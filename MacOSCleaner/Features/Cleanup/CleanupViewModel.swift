@@ -57,6 +57,11 @@ public final class CleanupViewModel {
     }
 
     @MainActor
+    public var isFontCacheSelectedForCleanup: Bool {
+        options.cleanFontCache || itemManager.selectedCleanupCategories(from: options.categories()).contains(.fontCache)
+    }
+
+    @MainActor
     public func executeCleanup() {
         var cleanupOptions = options
         cleanupOptions.projectArtifactsOlderThanDays = settings.projectArtifactsOlderThanDays

@@ -352,4 +352,43 @@ final class SafetyManagerTests: XCTestCase {
         XCTAssertFalse(SafetyManager.isShallowAbsoluteRoot("/opt/homebrew"))
         XCTAssertFalse(SafetyManager.isShallowAbsoluteRoot("/usr/local/bin"))
     }
+
+    func testIDESettingsProtected() {
+        let idePaths = [
+            "\(home)/Projects/my-app/.vscode/settings.json",
+            "\(home)/Projects/my-app/.vscode",
+            "\(home)/Projects/my-app/.idea/workspace.xml",
+            "\(home)/Projects/my-app/.idea",
+            "\(home)/Library/Application Support/Code/User/settings.json",
+            "\(home)/Library/Application Support/Cursor/User/keybindings.json"
+        ]
+
+        for path in idePaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Path \(path) must be protected") { error in
+                guard case SafetyError.protectedPath = error else {
+                    XCTFail("Expected protectedPath for \(path), got \(error)")
+                    return
+                }
+            }
+        }
+    }
+
+    func testFinderSidebarFavoritesProtected() {
+        let favoritePaths = [
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteItems.sfl3",
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteVolumes.sfl3",
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ProjectsItems.sfl3"
+        ]
+
+        for path in favoritePaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Path \(path) must be protected") { error in
+                guard case SafetyError.protectedPath = error else {
+                    XCTFail("Expected protectedPath for \(path), got \(error)")
+                    return
+                }
+            }
+        }
+    }
 }

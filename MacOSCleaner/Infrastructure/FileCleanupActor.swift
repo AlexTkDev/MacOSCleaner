@@ -28,7 +28,7 @@ public actor FileCleanupActor {
         await sizeCache.getSize(for: path)
     }
 
-    func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?, failedCount: Int) {
         try Task.checkCancellation()
         let url = URL(fileURLWithPath: path)
         try fileSystemContext.assertAllowedForMutation(url)
@@ -36,13 +36,13 @@ public actor FileCleanupActor {
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
-            return (0, nil)
+            return (0, nil, 0)
         }
 
         // Do not traverse into symlink directories — leaf symlink is removed as the link itself.
         if safetyManager.isSymlinkDirectory(url) {
             progress?(.log("  \(Self.shortPath(path)) — symlink directory, skipped"))
-            return (0, nil)
+            return (0, nil, 0)
         }
 
         var isDir: ObjCBool = false
@@ -52,29 +52,29 @@ public actor FileCleanupActor {
             let size = Self.physicalSize(of: path, fm: fm)
             if dryRun {
                 progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(size))"))
-                guard size >= Self.minPreviewBytes else { return (0, nil) }
-                return (size, Self.fileItemForPath(path, size: size, isDirectory: false))
+                guard size >= Self.minPreviewBytes else { return (0, nil, 0) }
+                return (size, Self.fileItemForPath(path, size: size, isDirectory: false), 0)
             }
             do {
                 try fm.removeItem(at: url)
             } catch {
                 progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
                 Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
-                return (0, nil)
+                return (0, nil, 1)
             }
             guard !fm.fileExists(atPath: path) else {
                 progress?(.log("  \(Self.shortPath(path)) — still present after delete, not counting"))
-                return (0, nil)
+                return (0, nil, 1)
             }
             progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(size))"))
-            return (size, nil)
+            return (size, nil, 0)
         }
 
         let before = await getDirectorySize(path)
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            guard before >= Self.minPreviewBytes else { return (0, nil) }
-            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
+            guard before >= Self.minPreviewBytes else { return (0, nil, 0) }
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true), 0)
         }
 
         let contents = try fm.contentsOfDirectory(atPath: path)
@@ -119,7 +119,7 @@ public actor FileCleanupActor {
         } else if freed > 0 {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) items, freed \(Self.formatBytes(freed))"))
         }
-        return (freed, nil)
+        return (freed, nil, failedCount)
     }
 
     func removeDirectory(_ path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
@@ -295,7 +295,7 @@ public actor FileCleanupActor {
         var totalFreed: Int64 = 0
         for path in paths {
             try Task.checkCancellation()
-            let (freed, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
+            let (freed, item, _) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
             totalFreed += freed
             if dryRun, let item { emitFileItem(item, category: nil, parentName: nil, progress: progress) }
         }

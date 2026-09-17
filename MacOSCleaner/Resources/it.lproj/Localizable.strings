@@ -320,6 +320,11 @@
 "cleanup_option_imovie_final_cut_sub" = "Rimuove file di rendering e librerie di iMovie/Final Cut Pro.";
 "cleanup_option_sleep_image" = "Pulisci Sleep Image";
 "cleanup_option_sleep_image_sub" = "Rimuove il file di ibernazione del sistema.";
+"cleanup_option_font_cache" = "Pulisci cache dei font";
+"cleanup_option_font_cache_sub" = "Elimina i database dei font (atsutil). Richiede un riavvio.";
+"cleanup_font_cache_confirm_title" = "Cancellare la cache dei font?";
+"cleanup_font_cache_confirm_message" = "La pulizia della cache dei font può danneggiare il rendering del testo nelle applicazioni aperte fino al riavvio del Mac.";
+"cleanup_font_cache_confirm_action" = "Pulisci (riavvio richiesto)";
 "cleanup_extended_title" = "Pulizia estesa";
 "cleanup_start_scan" = "Avvia scansione";
 "cleanup_failed" = "Pulizia fallita";

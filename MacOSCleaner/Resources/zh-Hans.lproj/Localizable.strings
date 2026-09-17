@@ -320,6 +320,11 @@
 "cleanup_option_imovie_final_cut_sub" = "清理 iMovie 和 Final Cut Pro 渲染文件。";
 "cleanup_option_sleep_image" = "清理休眠镜像 (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "删除休眠镜像文件。macOS 下次休眠时会自动重建。";
+"cleanup_option_font_cache" = "清理字体缓存";
+"cleanup_option_font_cache_sub" = "清理字体数据库缓存 (atsutil)。需要重启生效。";
+"cleanup_font_cache_confirm_title" = "确定清理字体缓存？";
+"cleanup_font_cache_confirm_message" = "清理字体缓存可能导致当前打开的应用程序中的文本渲染异常，直到重新启动 Mac。";
+"cleanup_font_cache_confirm_action" = "清理（需要重启）";
 "cleanup_extended_title" = "深度扩展清理";
 "cleanup_start_scan" = "开始扫描";
 "cleanup_failed" = "清理失败";

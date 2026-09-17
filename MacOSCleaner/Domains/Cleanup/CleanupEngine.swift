@@ -31,6 +31,23 @@ public struct CleanupTimeouts: Sendable {
         self.scatteredJunk = scatteredJunk
     }
 
+    public func timeout(for category: CleanupCategory) -> Duration {
+        switch category {
+        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions, .userLogs:
+            return system
+        case .xcode, .iosSimulators, .appCaches, .ideCaches, .flutterDart, .systemCaches, .androidCaches, .gradleMaven, .dotfileCaches, .browserCaches, .chromeExtraCaches, .steamCache, .teamsCache, .adobeCaches, .cloudKitCache, .swiftPMCache, .carthageCache, .photosCache:
+            return full
+        case .scatteredJunk:
+            return scatteredJunk
+        case .orphanedRemnants, .appContainers, .dynamicCacheDiscovery, .largeFiles, .orphanedFiles:
+            return full
+        case .launchDaemons, .privilegedHelpers, .duplicateFiles:
+            return system
+        default:
+            return fast
+        }
+    }
+
     public static let `default` = CleanupTimeouts()
 }
 
@@ -43,7 +60,7 @@ public enum CleanupEngineEvent: Sendable {
     case categoryResult(category: String, label: String, freedMB: Int)
     case preview(label: String, sizeMB: Int, deletable: Bool, parent: String?, description: String?)
     case log(String)
-    case fileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?)
+    case fileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true)
 }
 
 // MARK: - Cleanup Result
@@ -71,30 +88,24 @@ public struct CleanupEngineResult: Sendable {
     ) {
         self.label = label
         self.freedMB = freedMB
-        self.freedBytes = freedBytes ?? Int64(freedMB) * 1024 * 1024
+        self.freedBytes = freedBytes ?? Int64(freedMB * 1024 * 1024)
         self.removedCount = removedCount
         self.skippedCount = skippedCount
         self.failedCount = failedCount
     }
 }
 
-// MARK: - Cleanup Category
+// MARK: - Cleanup Categories
 
-/// Cleanup categories corresponding to shell script steps.
-public enum CleanupCategory: String, CaseIterable, Sendable {
+/// High-level categories available for cleanup.
+public enum CleanupCategory: String, Sendable, CaseIterable, Identifiable {
+    public var id: String { rawValue }
+
     case appCaches = "app_caches"
     case packageManagers = "package_managers"
-    case gradleMaven = "gradle_maven"
-    case flutterDart = "flutter_dart"
-    case xcode = "xcode"
-    case iosSimulators = "ios_simulators"
-    case androidCaches = "android_caches"
-    case androidSDK = "android_sdk"
-    case ideCaches = "ide_caches"
     case browserCaches = "browser_caches"
     case messagingMedia = "messaging_media"
     case docker = "docker"
-    case languageCaches = "language_caches"
     case userLogs = "user_logs"
     case systemCaches = "system_caches"
     case appContainers = "app_containers"
@@ -104,24 +115,32 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
     case orphanedFiles = "orphaned_files"
     case largeFiles = "large_files"
     case dynamicCacheDiscovery = "dynamic_cache_discovery"
-    
-    // New categories
     case timeMachineSnapshots = "time_machine_snapshots"
+
+    // Phase 1 categories
+    case gradleMaven = "gradle_maven"
+    case flutterDart = "flutter_dart"
+    case xcode = "xcode"
+    case iosSimulators = "ios_simulators"
+    case androidCaches = "android_caches"
+    case androidSDK = "android_sdk"
+    case ideCaches = "ide_caches"
+    case languageCaches = "language_caches"
+
+    // Phase 2: User data & system deep clean
     case iosBackups = "ios_backups"
     case mailDownloads = "mail_downloads"
     case savedAppState = "saved_app_state"
     case crashReporter = "crash_reporter"
+    case ideOldVersions = "ide_old_versions"
     case assetsV2 = "assets_v2"
-    case cloudKitCache = "cloud_kit_cache"
-    case swiftPMCache = "swift_pm_cache"
+    case cloudKitCache = "cloudkit_cache"
+    case swiftPMCache = "swiftpm_cache"
     case carthageCache = "carthage_cache"
     case steamCache = "steam_cache"
     case teamsCache = "teams_cache"
     case adobeCaches = "adobe_caches"
     case chromeExtraCaches = "chrome_extra_caches"
-    case ideOldVersions = "ide_old_versions"
-
-    // Phase 3: New categories from fixtures
     case launchAgents = "launch_agents"
     case launchDaemons = "launch_daemons"
     case privilegedHelpers = "privileged_helpers"
@@ -141,7 +160,6 @@ public enum CleanupCategory: String, CaseIterable, Sendable {
     case installerPackages = "installer_packages"
     case dnsFlush = "dns_flush"
     case fontCache = "font_cache"
-    case sleepImage = "sleep_image"
     case duplicateFiles = "duplicate_files"
     case unusedApps = "unused_apps"
     case projectBuildArtifacts = "project_build_artifacts"
@@ -270,7 +288,7 @@ public actor CleanupEngine {
         options: CleanupOptions,
         progress: (@Sendable (CleanupEngineEvent) -> Void)?
     ) async -> [CleanupEngineResult] {
-        let timeout = Self.timeoutForCategory(category)
+        let timeout = timeouts.timeout(for: category)
         let title = Self.titleForCategory(category)
         do {
             return try await withTimeout(timeout) {
@@ -284,7 +302,14 @@ public actor CleanupEngine {
             let reason = isTimeout ? "timed out after \(Int(timeout.components.seconds))s" : error.localizedDescription
             progress?(.log("⚠️ \(title) — \(reason), skipped"))
             Logger.engine.warning("Category \(title) failed: \(reason)")
-            return []
+            return [CleanupEngineResult(
+                label: title,
+                freedMB: 0,
+                freedBytes: 0,
+                removedCount: 0,
+                skippedCount: 1,
+                failedCount: 1
+            )]
         }
     }
 
@@ -348,27 +373,9 @@ public actor CleanupEngine {
         case .installerPackages: return try await cleanInstallerPackages(dryRun: dryRun, progress: progress)
         case .dnsFlush: return try await cleanDNSFlush(dryRun: dryRun, progress: progress)
         case .fontCache: return try await cleanFontCache(dryRun: dryRun, progress: progress)
-        case .sleepImage: return try await cleanSleepImage(dryRun: dryRun, progress: progress)
         case .duplicateFiles: return try await cleanDuplicateFiles(dryRun: dryRun, progress: progress)
         case .unusedApps: return try await cleanUnusedApps(dryRun: dryRun, progress: progress)
         case .projectBuildArtifacts: return try await cleanProjectBuildArtifacts(dryRun: dryRun, progress: progress, olderThanDays: options.projectArtifactsOlderThanDays)
-        }
-    }
-
-    private static func timeoutForCategory(_ category: CleanupCategory) -> Duration {
-        switch category {
-        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions, .userLogs:
-            return .seconds(120)
-        case .xcode, .iosSimulators, .appCaches, .ideCaches, .flutterDart, .systemCaches, .androidCaches, .gradleMaven, .dotfileCaches, .browserCaches, .chromeExtraCaches, .steamCache, .teamsCache, .adobeCaches, .cloudKitCache, .swiftPMCache, .carthageCache, .photosCache:
-            return .seconds(300)
-        case .scatteredJunk:
-            return .seconds(600)
-        case .orphanedRemnants, .appContainers, .dynamicCacheDiscovery, .largeFiles, .orphanedFiles:
-            return .seconds(300)
-        case .launchDaemons, .privilegedHelpers, .sleepImage, .duplicateFiles:
-            return .seconds(120)
-        default:
-            return .seconds(60)
         }
     }
 
@@ -471,10 +478,10 @@ public struct CleanupOptions: Sendable, Equatable {
     public var cleanGarageBandLogic: Bool = false
     /// When true, cleans iMovie / Final Cut render files.
     public var cleanIMovieFinalCut: Bool = false
-    /// When true, removes sleep image (disables hibernation).
-    public var cleanSleepImage: Bool = false
     /// When true, cleans Time Machine local snapshots.
     public var cleanTimeMachineSnapshots: Bool = false
+    /// When true, clears font cache databases (atsutil). Default is false (requires restart/breaks rendering).
+    public var cleanFontCache: Bool = false
 
     public init(
         targetCategories: [CleanupCategory]? = nil,
@@ -489,8 +496,8 @@ public struct CleanupOptions: Sendable, Equatable {
         cleanVoiceMemos: Bool = false,
         cleanGarageBandLogic: Bool = false,
         cleanIMovieFinalCut: Bool = false,
-        cleanSleepImage: Bool = false,
-        cleanTimeMachineSnapshots: Bool = false
+        cleanTimeMachineSnapshots: Bool = false,
+        cleanFontCache: Bool = false
     ) {
         self.targetCategories = targetCategories
         self.cleanDSStore = cleanDSStore
@@ -504,8 +511,8 @@ public struct CleanupOptions: Sendable, Equatable {
         self.cleanVoiceMemos = cleanVoiceMemos
         self.cleanGarageBandLogic = cleanGarageBandLogic
         self.cleanIMovieFinalCut = cleanIMovieFinalCut
-        self.cleanSleepImage = cleanSleepImage
         self.cleanTimeMachineSnapshots = cleanTimeMachineSnapshots
+        self.cleanFontCache = cleanFontCache
     }
 
     /// Returns ALL categories for scanning (like the shell script always does).
@@ -564,8 +571,6 @@ public struct CleanupOptions: Sendable, Equatable {
             .photosCache,
             .garminFitbit,
             .dnsFlush,
-            .fontCache,
-            .duplicateFiles,
             .unusedApps,
         ]
 
@@ -574,6 +579,9 @@ public struct CleanupOptions: Sendable, Equatable {
         }
         if cleanCloudDocs {
             categories.append(.cloudDocs)
+        }
+        if cleanFontCache {
+            categories.append(.fontCache)
         }
         if cleanProjectArtifacts {
             categories.append(.projectBuildArtifacts)
@@ -589,9 +597,6 @@ public struct CleanupOptions: Sendable, Equatable {
         }
         if cleanIMovieFinalCut {
             categories.append(.iMovieFinalCut)
-        }
-        if cleanSleepImage {
-            categories.append(.sleepImage)
         }
 
         return categories
@@ -643,7 +648,7 @@ extension CleanupEngine {
 
 extension CleanupEngine {
 
-    func emitFileItem(_ item: CleanupFileItem?, category: String, parentName: String?, progress: (@Sendable (CleanupEngineEvent) -> Void)?) {
+    func emitFileItem(_ item: CleanupFileItem?, category: String, parentName: String?, isSelected: Bool = true, progress: (@Sendable (CleanupEngineEvent) -> Void)?) {
         guard let item else { return }
         progress?(.fileItem(
             path: item.path,
@@ -651,12 +656,14 @@ extension CleanupEngine {
             modificationDate: item.modificationDate,
             isDirectory: item.isDirectory,
             category: category,
-            parentName: parentName
+            parentName: parentName,
+            isSelected: isSelected
         ))
     }
 
     func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
-        try await fileActor.cleanContents(of: path, dryRun: dryRun, progress: progress)
+        let (freed, item, _) = try await fileActor.cleanContents(of: path, dryRun: dryRun, progress: progress)
+        return (freed, item)
     }
 
     func removeDirectory(_ path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
@@ -715,13 +722,14 @@ extension CleanupEngine {
         for path in paths {
             try Task.checkCancellation()
             do {
-                let (freed, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
+                let (freed, item, failedCount) = try await fileActor.cleanContents(of: path, dryRun: dryRun, progress: progress)
                 if freed > 0 || item != nil {
                     removed += 1
                     totalFreed += freed
-                } else {
+                } else if failedCount == 0 {
                     skipped += 1
                 }
+                failed += failedCount
                 if dryRun { emitFileItem(item, category: label, parentName: nil, progress: progress) }
             } catch is CancellationError {
                 throw CancellationError()
@@ -844,7 +852,7 @@ extension CleanupEngine {
             } else {
                 let before = await getDirectorySize(cacheDir)
                 progress?(.log("  Running: brew cleanup --prune=all -q"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("brew cleanup --prune=all -q")])
+                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("brew cleanup --prune=all -q")], timeout: timeouts.system)
                 let after = await getDirectorySize(cacheDir)
                 let freed = Int(max(0, before - after) / (1024 * 1024))
                 progress?(.log("  Homebrew: freed \(Self.formatBytes(max(0, before - after)))"))
@@ -858,7 +866,7 @@ extension CleanupEngine {
         // npm
         if await commandRunner.commandExists("npm") {
             progress?(.log("  npm detected"))
-            let cachePath = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("npm config get cache 2>/dev/null")]).stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+            let cachePath = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("npm config get cache 2>/dev/null")], timeout: timeouts.fast).stdout.trimmingCharacters(in: .whitespacesAndNewlines)
             let cacheDir = cachePath ?? "\(home)/.npm"
             progress?(.log("  Cache path: \(shortPath(cacheDir))"))
 
@@ -872,15 +880,19 @@ extension CleanupEngine {
             } else {
                 let before = await getDirectorySize(cacheDir)
                 progress?(.log("  Running: npm cache clean --force"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("npm cache clean --force 2>/dev/null")])
+                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("npm cache clean --force 2>/dev/null")], timeout: timeouts.system)
                 let after = await getDirectorySize(cacheDir)
                 var freed = Int(max(0, before - after) / (1024 * 1024))
-                // Fallback: manual cleanup if npm didn't free space
+                // Fallback: manual cleanup via FileCleanupActor if npm didn't free space
                 if freed == 0 && before > 0 {
                     progress?(.log("  npm cache clean didn't free space, trying manual cleanup..."))
-                    _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("find \"\(cacheDir)\" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true")])
-                    let after2 = await getDirectorySize(cacheDir)
-                    freed = Int(max(0, before - after2) / (1024 * 1024))
+                    let cacheURL = URL(fileURLWithPath: cacheDir)
+                    if (try? safetyManager.validate(url: cacheURL)) != nil {
+                        let (cleanedFreed, _) = try await cleanContents(of: cacheDir, dryRun: false, progress: progress)
+                        freed = Int(cleanedFreed / (1024 * 1024))
+                    } else {
+                        progress?(.log("  npm cache path failed safety validation, skipping manual cleanup"))
+                    }
                 }
                 progress?(.log("  npm: freed \(Self.formatBytes(max(0, before - after)))"))
                 progress?(.result(label: "npm cache", freedMB: freed))
@@ -1313,7 +1325,7 @@ extension CleanupEngine {
 
         let (cf, ci) = try await cleanContents(of: "\(home)/Library/Developer/CoreSimulator/Caches", dryRun: dryRun, progress: progress)
         freed += cf
-        if dryRun { emitFileItem(ci, category: "iOS Simulators", parentName: nil, progress: progress) }
+        if dryRun { emitFileItem(ci, category: "iOS Simulators", parentName: nil, isSelected: false, progress: progress) }
 
         if await commandRunner.commandExists("xcrun") {
             let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "xcrun simctl list devices 2>/dev/null | grep -c 'unavailable' || echo 0"])
@@ -1378,10 +1390,10 @@ extension CleanupEngine {
                 let tmpPath = "\(devicesPath)/\(device)/data/tmp"
                 let (f1, i1) = try await cleanContents(of: cachesPath, dryRun: dryRun, progress: progress)
                 freed += f1
-                if dryRun { emitFileItem(i1, category: "iOS Simulators", parentName: nil, progress: progress) }
+                if dryRun { emitFileItem(i1, category: "iOS Simulators", parentName: nil, isSelected: false, progress: progress) }
                 let (f2, i2) = try await cleanContents(of: tmpPath, dryRun: dryRun, progress: progress)
                 freed += f2
-                if dryRun { emitFileItem(i2, category: "iOS Simulators", parentName: nil, progress: progress) }
+                if dryRun { emitFileItem(i2, category: "iOS Simulators", parentName: nil, isSelected: false, progress: progress) }
             }
         }
 
@@ -1475,7 +1487,7 @@ extension CleanupEngine {
                 let dir = "\(sdkPath)/build-tools/\(version)"
                 let (f, item) = try await removeDirectory(dir, dryRun: dryRun, progress: progress)
                 freed += f
-                if dryRun { emitFileItem(item, category: "Android SDK", parentName: nil, progress: progress) }
+                if dryRun { emitFileItem(item, category: "Android SDK", parentName: nil, isSelected: false, progress: progress) }
             }
         }
 
@@ -1500,7 +1512,7 @@ extension CleanupEngine {
                 let dir = "\(sdkPath)/platforms/\(version)"
                 let (f, item) = try await removeDirectory(dir, dryRun: dryRun, progress: progress)
                 freed += f
-                if dryRun { emitFileItem(item, category: "Android SDK", parentName: nil, progress: progress) }
+                if dryRun { emitFileItem(item, category: "Android SDK", parentName: nil, isSelected: false, progress: progress) }
             }
         }
 
@@ -1803,14 +1815,14 @@ extension CleanupEngine {
                 progress?(.log("  Total reclaimable: ~\(totalReclaimableMB) MB"))
                 progress?(.result(label: "Docker reclaimable space", freedMB: totalReclaimableMB))
                 let dockerRoot = dockerHost.hasPrefix("unix://") ? dockerHost.replacingOccurrences(of: "unix://", with: "") : "/var/lib/docker"
-                emitFileItem(CleanupFileItem(path: dockerRoot, sizeBytes: Int64(totalReclaimableMB) * 1024 * 1024, modificationDate: nil, isDirectory: true), category: "Docker", parentName: nil, progress: progress)
+                emitFileItem(CleanupFileItem(path: dockerRoot, sizeBytes: Int64(totalReclaimableMB) * 1024 * 1024, modificationDate: nil, isDirectory: true), category: "Docker", parentName: nil, isSelected: false, progress: progress)
             } else {
                 progress?(.log("  Nothing reclaimable"))
                 progress?(.log("Docker: nothing reclaimable"))
             }
             return [CleanupEngineResult(label: "Docker", freedMB: totalReclaimableMB)]
         } else {
-            let pruneCommand = "docker -H \(dockerHost) system prune -af --volumes 2>/dev/null"
+            let pruneCommand = "docker -H \(dockerHost) system prune -af 2>/dev/null"
             progress?(.log("  Running: \(pruneCommand)"))
             _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", pruneCommand])
             progress?(.log("  Docker: freed ~\(totalReclaimableMB) MB"))
@@ -1869,8 +1881,22 @@ extension CleanupEngine {
     // MARK: 13. Language Caches
 
     func cleanLanguageCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanModCache: Bool = false) async throws -> [CleanupEngineResult] {
-        _ = cleanModCache
-        return try await cleanFromEmbeddedPaths(.languageCaches, label: "Language caches", dryRun: dryRun, progress: progress)
+        var results = try await cleanFromEmbeddedPaths(.languageCaches, label: "Language caches", dryRun: dryRun, progress: progress)
+        if cleanModCache {
+            let home = fileSystemContext.homePath
+            let goModPath = "\(home)/go/pkg/mod"
+            if fm.fileExists(atPath: goModPath) {
+                let (gf, gi) = try await cleanContents(of: goModPath, dryRun: dryRun, progress: progress)
+                if dryRun { emitFileItem(gi, category: "Language caches", parentName: "Go Module Cache", progress: progress) }
+                let mb = Int(gf / (1024 * 1024))
+                if !results.isEmpty {
+                    results[0] = CleanupEngineResult(label: results[0].label, freedMB: results[0].freedMB + mb, failedCount: results[0].failedCount)
+                } else {
+                    results.append(CleanupEngineResult(label: "Language caches", freedMB: mb))
+                }
+            }
+        }
+        return results
     }
 
     // MARK: 14. User Logs
@@ -2005,7 +2031,7 @@ extension CleanupEngine {
         for await batch in scanner.scanParallel(
             roots: scanDirs,
             config: .init(
-                excludedPrefixes: ["/Library/", "/.Trash/", "/.git/"],
+                excludedPrefixes: ["/Library/", "/.Trash/", "/.git/", "/.vscode/", "/.idea/"],
                 maxDepth: nil,
                 batchSize: 1000,
                 yieldInterval: .seconds(2)
@@ -2018,6 +2044,11 @@ extension CleanupEngine {
 
             for entry in batch {
                 scannedCount += 1
+
+                if entry.path.contains("/.vscode/") || entry.path.contains("/.idea/")
+                    || entry.path.hasSuffix("/.vscode") || entry.path.hasSuffix("/.idea") {
+                    continue
+                }
 
                 if entry.name == ".DS_Store" {
                     if cleanDSStore {
@@ -2416,7 +2447,12 @@ extension CleanupEngine {
         }
 
         let availableBefore = (try? URL(fileURLWithPath: "/").resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity ?? 0
-        let purgeBytes = max(10_000_000_000, Int64(purgeableMB) * 1024 * 1024)
+        let purgeBytes = Int64(purgeableMB) * 1024 * 1024
+        guard purgeBytes > 0 else {
+            progress?(.log("  No purgeable snapshot space"))
+            progress?(.result(label: "Time Machine Snapshots", freedMB: 0))
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0)]
+        }
 
         do {
             try Task.checkCancellation()
@@ -2442,7 +2478,7 @@ extension CleanupEngine {
 
         let backupDir = "\(home)/Library/Application Support/MobileSync/Backup"
         let (freed, item) = try await cleanContents(of: backupDir, dryRun: dryRun, progress: progress)
-        if dryRun { emitFileItem(item, category: "iOS Backups", parentName: nil, progress: progress) }
+        if dryRun { emitFileItem(item, category: "iOS Backups", parentName: nil, isSelected: false, progress: progress) }
 
         let mb = Int(freed / (1024 * 1024))
         progress?(.result(label: "iOS Backups", freedMB: mb))
@@ -2464,7 +2500,7 @@ extension CleanupEngine {
         for path in paths {
             let (f, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
             freed += f
-            if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: nil, progress: progress) }
+            if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: nil, isSelected: false, progress: progress) }
         }
 
         // Enhanced: Mail Attachments from cleanup.json
@@ -2475,7 +2511,7 @@ extension CleanupEngine {
                 let attachmentsPath = "\(mailDir)/\(account)/Attachments"
                 let (f, item) = try await cleanContents(of: attachmentsPath, dryRun: dryRun, progress: progress)
                 freed += f
-                if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: "Mail Attachments", progress: progress) }
+                if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: "Mail Attachments", isSelected: false, progress: progress) }
             }
         }
 
@@ -2491,7 +2527,7 @@ extension CleanupEngine {
         progress?(.log("Scanning saved application state..."))
 
         let (freed, item) = try await cleanContents(of: "\(home)/Library/Saved Application State", dryRun: dryRun, progress: progress)
-        if dryRun { emitFileItem(item, category: "Saved Application State", parentName: nil, progress: progress) }
+        if dryRun { emitFileItem(item, category: "Saved Application State", parentName: nil, isSelected: false, progress: progress) }
 
         let mb = Int(freed / (1024 * 1024))
         progress?(.result(label: "Saved Application State", freedMB: mb))
@@ -2811,12 +2847,32 @@ extension CleanupEngine {
 
     func cleanSharedFileLists(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         let home = fileSystemContext.homePath
-        progress?(.log("Scanning shared file lists..."))
-        let (freed, item) = try await cleanContents(of: "\(home)/Library/Application Support/com.apple.sharedfilelist", dryRun: dryRun, progress: progress)
-        if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, progress: progress) }
+        progress?(.log("Scanning shared file lists (recent items only)..."))
+        let dir = "\(home)/Library/Application Support/com.apple.sharedfilelist"
+        guard fm.fileExists(atPath: dir) else {
+            return [CleanupEngineResult(label: "Shared File Lists", freedMB: 0)]
+        }
+
+        let safePrefixes = [
+            "com.apple.LSSharedFileList.RecentDocuments",
+            "com.apple.LSSharedFileList.RecentApplications",
+            "com.apple.LSSharedFileList.RecentServers",
+            "com.apple.LSSharedFileList.RecentHosts"
+        ]
+
+        var freed: Int64 = 0
+        let entries = (try? fm.contentsOfDirectory(atPath: dir)) ?? []
+        for entry in entries {
+            let isSafe = safePrefixes.contains { entry.hasPrefix($0) }
+            guard isSafe else { continue }
+            let fullPath = "\(dir)/\(entry)"
+            let (f, item) = try await removeFile(fullPath, dryRun: dryRun, progress: progress)
+            freed += f
+            if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, progress: progress) }
+        }
         let mb = Int(freed / (1024 * 1024))
         progress?(.result(label: "Shared File Lists", freedMB: mb))
-        return [CleanupEngineResult(label: "Shared File Lists", freedMB: mb)]
+        return [CleanupEngineResult(label: "Shared File Lists", freedMB: mb, freedBytes: freed)]
     }
 
     // MARK: 42. Cloud Docs
@@ -3163,33 +3219,6 @@ extension CleanupEngine {
         return [CleanupEngineResult(label: "Font Cache", freedMB: 0)]
     }
 
-    // MARK: 51. Sleep Image
-
-    func cleanSleepImage(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        progress?(.log("Checking sleep image..."))
-        let size = await getDirectorySize("/var/vm/sleepimage")
-        if size > 0 {
-            progress?(.log("  Sleep image: \(Self.formatBytes(size))"))
-            if dryRun {
-                progress?(.log("  Would disable hibernation and remove sleep image"))
-                emitFileItem(CleanupFileItem(path: "/var/vm/sleepimage", sizeBytes: size, modificationDate: nil, isDirectory: false), category: "Sleep Image", parentName: nil, progress: progress)
-                progress?(.result(label: "Sleep Image", freedMB: Int(size / (1024 * 1024))))
-                return [CleanupEngineResult(label: "Sleep Image", freedMB: Int(size / (1024 * 1024)))]
-            }
-            let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "sudo pmset hibernatemode 0; sudo rm /var/vm/sleepimage"])
-            if result?.exitCode == 0 {
-                progress?(.log("  Sleep image removed, hibernation disabled"))
-                progress?(.result(label: "Sleep Image", freedMB: Int(size / (1024 * 1024))))
-                return [CleanupEngineResult(label: "Sleep Image", freedMB: Int(size / (1024 * 1024)))]
-            } else {
-                progress?(.log("  Failed to remove sleep image"))
-            }
-        } else {
-            progress?(.log("  No sleep image found"))
-        }
-        progress?(.result(label: "Sleep Image", freedMB: 0))
-        return [CleanupEngineResult(label: "Sleep Image", freedMB: 0)]
-    }
 
     // MARK: 52. Duplicate Files (scanning only — stub)
 

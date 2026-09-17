@@ -320,6 +320,11 @@
 "cleanup_option_imovie_final_cut_sub" = "レンダリングファイルやライブラリを削除します。";
 "cleanup_option_sleep_image" = "スリープ画像を消去";
 "cleanup_option_sleep_image_sub" = "ハイバネーション用ファイルを削除します。";
+"cleanup_option_font_cache" = "フォントキャッシュを消去";
+"cleanup_option_font_cache_sub" = "フォントデータベース（atsutil）を削除します。再起動が必要です。";
+"cleanup_font_cache_confirm_title" = "フォントキャッシュを消去しますか？";
+"cleanup_font_cache_confirm_message" = "フォントキャッシュを消去すると、Macを再起動するまで開いているアプリのテキスト表示が崩れる可能性があります。";
+"cleanup_font_cache_confirm_action" = "消去（再起動が必要）";
 "cleanup_extended_title" = "拡張クリーンアップ";
 "cleanup_start_scan" = "スキャン開始";
 "cleanup_failed" = "クリーンアップ失敗";

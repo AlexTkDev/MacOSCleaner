@@ -6,6 +6,7 @@ public struct CleanupView: View {
     @State private var showCopiedHint = false
     @State private var scrollTaskBox = ScrollTaskBox()
     @State private var isExtendedOptionsExpanded = false
+    @State private var showingFontCacheAlert = false
     
     public init(viewModel: CleanupViewModel) {
         self.viewModel = viewModel
@@ -151,9 +152,9 @@ public struct CleanupView: View {
                                     value: $vm.options.cleanIMovieFinalCut
                                 )
                                 optionToggle(
-                                    title: "cleanup_option_sleep_image".localized,
-                                    subtitle: "cleanup_option_sleep_image_sub".localized,
-                                    value: $vm.options.cleanSleepImage
+                                    title: "cleanup_option_font_cache".localized,
+                                    subtitle: "cleanup_option_font_cache_sub".localized,
+                                    value: $vm.options.cleanFontCache
                                 )
                             }
                             .padding(.leading, 20)
@@ -770,7 +771,13 @@ public struct CleanupView: View {
                 .glassButtonStyle()
                 .keyboardShortcut(.cancelAction)
                 
-                Button(action: { viewModel.executeCleanup() }) {
+                Button(action: {
+                    if viewModel.isFontCacheSelectedForCleanup {
+                        showingFontCacheAlert = true
+                    } else {
+                        viewModel.executeCleanup()
+                    }
+                }) {
                     HStack(spacing: 6) {
                         Image(systemName: "sparkles")
                         Text("cleanup_now".localized)
@@ -782,6 +789,14 @@ public struct CleanupView: View {
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
                 .disabled(viewModel.selectedSizeBytes == 0)
+                .alert("cleanup_font_cache_confirm_title".localized, isPresented: $showingFontCacheAlert) {
+                    Button("cleanup_font_cache_confirm_action".localized, role: .destructive) {
+                        viewModel.executeCleanup()
+                    }
+                    Button("cancel".localized, role: .cancel) {}
+                } message: {
+                    Text("cleanup_font_cache_confirm_message".localized)
+                }
             }
         }
         .padding(.horizontal, 20)

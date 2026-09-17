@@ -47,7 +47,12 @@ final class LocalizationCompletenessTests: XCTestCase {
         "settings_days_count",
         "disk_analyzer_items_count",
         "disk_analyzer_quick_look",
-        "disk_analyzer_open_folder"
+        "disk_analyzer_open_folder",
+        "cleanup_option_font_cache",
+        "cleanup_option_font_cache_sub",
+        "cleanup_font_cache_confirm_title",
+        "cleanup_font_cache_confirm_message",
+        "cleanup_font_cache_confirm_action"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

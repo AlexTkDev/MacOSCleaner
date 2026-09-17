@@ -441,6 +441,44 @@ public struct SafetyManager: Sendable {
             return path
         }
 
+        // Project settings and IDE configurations (e.g. .vscode/settings.json, .idea/...)
+        let lowerPath = path.lowercased()
+        if lowerPath.contains("/.vscode/") || lowerPath.hasSuffix("/.vscode")
+            || lowerPath.contains("/.idea/") || lowerPath.hasSuffix("/.idea") {
+            return path
+        }
+
+        // Shared file lists (Finder sidebar favorites, etc.)
+        if lowerPath.contains("/com.apple.sharedfilelist/") {
+            let sflName = URL(fileURLWithPath: path).lastPathComponent.lowercased()
+            let safeSFLNames: Set<String> = [
+                "com.apple.lssharedfilelist.recentdocuments.sfl3",
+                "com.apple.lssharedfilelist.recentapplications.sfl3",
+                "com.apple.lssharedfilelist.recentservers.sfl3",
+                "com.apple.lssharedfilelist.recenthosts.sfl3",
+            ]
+            if !safeSFLNames.contains(sflName) {
+                return path
+            }
+        }
+
+        // IDE user configuration (VS Code, Cursor, Windsurf, Zed, etc.)
+        let protectedIDEParents = [
+            "/application support/code/user/",
+            "/application support/code - insiders/user/",
+            "/application support/cursor/user/",
+            "/application support/windsurf/user/",
+            "/application support/ai.opencode.desktop/user/",
+            "/.config/zed/",
+            "/application support/dev.zed.zed/",
+        ]
+        if protectedIDEParents.contains(where: { lowerPath.contains($0) }) {
+            // Under User/, only workspaceStorage is a cleanable cache; settings, keybindings, snippets are protected
+            if !lowerPath.contains("/user/workspacestorage/") && !lowerPath.hasSuffix("/user/workspacestorage") {
+                return path
+            }
+        }
+
         guard path.contains("/Application Support/") else { return nil }
         var basename = URL(fileURLWithPath: path).lastPathComponent.lowercased()
         for suffix in ["-journal", "-wal", "-shm"] where basename.hasSuffix(suffix) {
@@ -466,6 +504,7 @@ public struct SafetyManager: Sendable {
             "\(homeLower)/workspace/", "\(homeLower)/code/",
         ]
         guard roots.contains(where: { lower.hasPrefix($0) }) else { return false }
+        if lower.contains("/.vscode") || lower.contains("/.idea") { return false }
 
         let name = URL(fileURLWithPath: lower).lastPathComponent
         let artifactNames: Set<String> = [

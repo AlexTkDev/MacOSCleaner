@@ -320,6 +320,11 @@
 "cleanup_option_imovie_final_cut_sub" = "Entfernt Renderdateien und Mediatheken von iMovie/Final Cut Pro.";
 "cleanup_option_sleep_image" = "Sleep-Image bereinigen";
 "cleanup_option_sleep_image_sub" = "Entfernt die Ruhezustandsdatei.";
+"cleanup_option_font_cache" = "Schriftarten-Cache bereinigen";
+"cleanup_option_font_cache_sub" = "Löscht Schriftarten-Datenbanken (atsutil). Ein Neustart ist erforderlich.";
+"cleanup_font_cache_confirm_title" = "Schriftarten-Cache bereinigen?";
+"cleanup_font_cache_confirm_message" = "Das Löschen des Schriftarten-Caches kann die Textdarstellung in geöffneten Anwendungen bis zum Neustart beeinträchtigen.";
+"cleanup_font_cache_confirm_action" = "Bereinigen (Neustart nötig)";
 "cleanup_extended_title" = "Erweiterte Bereinigung";
 "cleanup_start_scan" = "Scan starten";
 "cleanup_failed" = "Bereinigung fehlgeschlagen";

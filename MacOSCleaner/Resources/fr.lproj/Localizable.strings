@@ -320,6 +320,11 @@
 "cleanup_option_imovie_final_cut_sub" = "Supprime les fichiers de rendu et bibliothèques iMovie/Final Cut Pro.";
 "cleanup_option_sleep_image" = "Nettoyer l'image de veille (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "Supprime le fichier d'hibernation.";
+"cleanup_option_font_cache" = "Vider le cache des polices";
+"cleanup_option_font_cache_sub" = "Supprime les bases de données de polices (atsutil). Redémarrage requis.";
+"cleanup_font_cache_confirm_title" = "Vider le cache des polices ?";
+"cleanup_font_cache_confirm_message" = "La suppression du cache des polices peut dégrader l'affichage du texte dans les applications ouvertes jusqu'au redémarrage du Mac.";
+"cleanup_font_cache_confirm_action" = "Vider (redémarrage requis)";
 "cleanup_extended_title" = "Nettoyage étendu";
 "cleanup_start_scan" = "Démarrer l'analyse";
 "cleanup_failed" = "Échec du nettoyage";
