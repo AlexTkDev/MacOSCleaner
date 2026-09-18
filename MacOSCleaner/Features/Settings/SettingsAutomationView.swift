@@ -67,13 +67,17 @@ struct SettingsAutomationView: View {
                             "settings_open_shortcuts_title".localized,
                             subtitle: "settings_open_shortcuts_sub".localized
                         ) {
-                            Button("settings_launch_shortcuts_button".localized) {
+                            Button {
                                 if let url = URL(string: "shortcuts://") {
                                     NSWorkspace.shared.open(url)
                                 }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "arrow.up.forward.app")
+                                    Text("settings_launch_shortcuts_button".localized)
+                                }
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
+                            .prominentGlassButtonStyle(tint: .accentColor)
                         }
                     }
                 }
@@ -88,21 +92,29 @@ struct SettingsAutomationView: View {
                     HStack(alignment: .top) {
                         SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
                         Spacer(minLength: 8)
-                        Button("siri_add_command_button".localized) {
+                        Button {
                             isAddCommandSheetPresented = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus")
+                                Text("siri_add_command_button".localized)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: .accentColor)
                         .fixedSize()
                         .layoutPriority(1)
                     }
                     VStack(alignment: .leading, spacing: 8) {
                         SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                        Button("siri_add_command_button".localized) {
+                        Button {
                             isAddCommandSheetPresented = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus")
+                                Text("siri_add_command_button".localized)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: .accentColor)
                     }
                 }
             },

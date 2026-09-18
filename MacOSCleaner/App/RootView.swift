@@ -128,7 +128,7 @@ struct RootView: View {
                 ForEach(navGroups.indices, id: \.self) { groupIndex in
                     let group = navGroups[groupIndex]
 
-                    HStack(spacing: 2) {
+                    HStack(spacing: 4) {
                         ForEach(group, id: \.self) { item in
                             navButton(for: item)
                         }
@@ -136,22 +136,22 @@ struct RootView: View {
 
                     if groupIndex < navGroups.count - 1 {
                         Divider()
-                            .frame(height: 18)
-                            .opacity(0.4)
-                            .padding(.horizontal, 4)
+                            .frame(height: 20)
+                            .opacity(0.35)
+                            .padding(.horizontal, 8)
                     }
                 }
             }
-            .padding(.horizontal, 5)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
             .glassEffect(Glass.regular, in: Capsule())
             .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
         }
         .id(appSettings.language)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 12)
-        .padding(.top, 4)
-        .padding(.bottom, 6)
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
     }
 
     @ViewBuilder
@@ -162,7 +162,7 @@ struct RootView: View {
                 selectedItem = item
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: item.systemImage)
                     .font(.system(size: 15, weight: .medium))
                     .frame(width: 22, height: 22)
@@ -174,9 +174,9 @@ struct RootView: View {
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }
-            .padding(.horizontal, isSelected ? 12 : 9)
+            .padding(.horizontal, isSelected ? 16 : 14)
             .padding(.vertical, 6)
-            .frame(minWidth: isSelected ? nil : 40, minHeight: 32)
+            .frame(minWidth: isSelected ? nil : 52, minHeight: 34)
             .contentShape(Capsule())
             .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
             .background {

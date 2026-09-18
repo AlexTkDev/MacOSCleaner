@@ -55,6 +55,7 @@ public struct CustomSiriCommandEditSheet: View {
                 Button("cancel_action".localized) {
                     dismiss()
                 }
+                .secondaryGlassButtonStyle()
                 .keyboardShortcut(.escape, modifiers: [])
 
                 Spacer()
@@ -70,7 +71,7 @@ public struct CustomSiriCommandEditSheet: View {
                     onSave(cmd)
                     dismiss()
                 }
-                .buttonStyle(.borderedProminent)
+                .prominentGlassButtonStyle(tint: .accentColor)
                 .disabled(phrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .keyboardShortcut(.defaultAction)
             }
