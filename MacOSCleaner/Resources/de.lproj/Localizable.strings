@@ -685,6 +685,14 @@
 "settings_ai_status_unsupported_device" = "Gerät nicht unterstützt";
 "settings_ai_status_not_enabled" = "In Systemeinstellungen nicht aktiviert";
 "settings_ai_status_downloading" = "Modell-Ressourcen werden heruntergeladen...";
+"settings_ai_status_preparing" = "Modell wird vorbereitet...";
+"settings_ai_status_unsupported_language" = "Sprache nicht unterstützt";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence unterstützt die aktuelle Systemsprache derzeit nicht. Eine unterstützte Sprache (z. B. Englisch) ist in den Systemeinstellungen erforderlich.";
+"settings_ai_hint_preparing" = "macOS initialisiert das Modell im Hintergrund. Schließen Sie den Mac an den Strom an und prüfen Sie den Status in den Systemeinstellungen.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence ist deaktiviert. Aktivieren Sie es in den macOS-Systemeinstellungen.";
+"settings_ai_hint_unsupported_device" = "Dieser Mac unterstützt Apple Intelligence nicht. Ein Apple Silicon M1 Chip oder neuer ist erforderlich.";
+"settings_ai_open_system_settings" = "Systemeinstellungen öffnen…";
+"settings_ai_refresh_status" = "Status aktualisieren";
 "settings_ai_status_unavailable" = "Nicht verfügbar";
 
 "uninstaller_explain_with_ai" = "Mit KI erklären";

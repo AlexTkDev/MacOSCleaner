@@ -781,6 +781,14 @@
 "settings_ai_status_unsupported_device" = "Device Not Eligible";
 "settings_ai_status_not_enabled" = "Not Enabled in System Settings";
 "settings_ai_status_downloading" = "Downloading Model Assets...";
+"settings_ai_status_preparing" = "Preparing Model...";
+"settings_ai_status_unsupported_language" = "Language Not Supported";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence does not currently support the active system language. A supported language (such as English) is required in macOS System Settings.";
+"settings_ai_hint_preparing" = "macOS is initializing model assets in the background. Connect your Mac to power and check progress in System Settings.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence is disabled. Turn it on in macOS System Settings.";
+"settings_ai_hint_unsupported_device" = "This Mac does not support Apple Intelligence. An Apple Silicon M1 chip or later is required.";
+"settings_ai_open_system_settings" = "Open System Settings…";
+"settings_ai_refresh_status" = "Refresh Status";
 "settings_ai_status_unavailable" = "Unavailable";
 
 /* AI Explanations */

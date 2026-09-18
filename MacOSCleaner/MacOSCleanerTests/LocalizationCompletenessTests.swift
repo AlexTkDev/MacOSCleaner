@@ -64,7 +64,15 @@ final class LocalizationCompletenessTests: XCTestCase {
         "history_category_general",
         "history_category_media",
         "history_category_caches",
-        "history_category_dev"
+        "history_category_dev",
+        "settings_ai_status_preparing",
+        "settings_ai_status_unsupported_language",
+        "settings_ai_hint_unsupported_language",
+        "settings_ai_hint_preparing",
+        "settings_ai_hint_not_enabled",
+        "settings_ai_hint_unsupported_device",
+        "settings_ai_open_system_settings",
+        "settings_ai_refresh_status"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

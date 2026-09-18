@@ -777,7 +777,15 @@
 "settings_ai_status_ready" = "Готов";
 "settings_ai_status_unsupported_device" = "Устройство не поддерживает";
 "settings_ai_status_not_enabled" = "Не включен в системных настройках";
-"settings_ai_status_downloading" = "Скачивание модели...";
+"settings_ai_status_downloading" = "Скачивание ресурсов модели...";
+"settings_ai_status_preparing" = "Подготовка модели...";
+"settings_ai_status_unsupported_language" = "Язык не поддерживается";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence пока не поддерживает текущий системный язык. Для работы модели требуется поддерживаемый язык (например, английский) в Системных настройках.";
+"settings_ai_hint_preparing" = "macOS инициализирует компоненты модели в фоновом режиме. Подключите Mac к питанию и проверьте статус в Системных настройках.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence отключен. Включите его в Системных настройках macOS.";
+"settings_ai_hint_unsupported_device" = "Этот Mac не поддерживает Apple Intelligence. Требуется чип Apple Silicon M1 или новее.";
+"settings_ai_open_system_settings" = "Системные настройки…";
+"settings_ai_refresh_status" = "Обновить статус";
 "settings_ai_status_unavailable" = "Недоступен";
 
 /* AI Explanations */

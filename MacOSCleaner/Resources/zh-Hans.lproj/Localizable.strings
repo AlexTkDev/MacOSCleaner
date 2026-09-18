@@ -675,6 +675,14 @@
 "settings_ai_status_unsupported_device" = "设备硬件不支持";
 "settings_ai_status_not_enabled" = "未在系统设置中开启";
 "settings_ai_status_downloading" = "正在下载模型资源...";
+"settings_ai_status_preparing" = "正在准备模型...";
+"settings_ai_status_unsupported_language" = "语言不受支持";
+"settings_ai_hint_unsupported_language" = "Apple 智能目前不支持当前系统语言。需要在系统设置中使用受支持的语言（如英语）。";
+"settings_ai_hint_preparing" = "macOS 正在后台初始化模型。请将 Mac 连接电源并在系统设置中确认状态。";
+"settings_ai_hint_not_enabled" = "Apple 智能已停用。请在 macOS 系统设置中将其开启。";
+"settings_ai_hint_unsupported_device" = "此 Mac 不支持 Apple 智能。需要 Apple 芯片 M1 或更高版本。";
+"settings_ai_open_system_settings" = "打开系统设置…";
+"settings_ai_refresh_status" = "刷新状态";
 "settings_ai_status_unavailable" = "不可用";
 
 "uninstaller_explain_with_ai" = "使用 AI 解释";
