@@ -33,10 +33,9 @@ struct AnimatedScanView: View {
                 Button(action: onCancel) {
                     Text("cancel".localized)
                         .fontWeight(.medium)
-                        .frame(width: 120, height: 32)
+                        .frame(width: 120)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
+                .secondaryGlassButtonStyle()
             }
         }
         .onAppear {

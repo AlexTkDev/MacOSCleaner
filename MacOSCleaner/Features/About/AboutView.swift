@@ -94,8 +94,7 @@ struct AboutView: View {
                 Spacer()
             }
             .padding(12)
-            .glassEffect(.regular.tint(.purple.opacity(0.2)))
-            .cornerRadius(12)
+            .glassEffect(Glass.regular.tint(.purple), in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }

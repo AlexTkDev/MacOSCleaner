@@ -58,6 +58,7 @@ public struct DiskAnalyzerView: View {
                         .lineLimit(1)
                 }
             }
+            .secondaryGlassButtonStyle()
 
             Spacer()
 
@@ -82,10 +83,13 @@ public struct DiskAnalyzerView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.primary.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+            )
 
             // Scan Action Button
             Button(action: { viewModel.selectFolderAndScan() }) {
@@ -94,7 +98,7 @@ public struct DiskAnalyzerView: View {
                     Text("disk_analyzer_scan".localized)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
     }
     
@@ -172,16 +176,14 @@ public struct DiskAnalyzerView: View {
                         .font(.caption.monospaced().weight(.semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(Color.accentColor.opacity(0.12))
+                        .glassEffect(Glass.regular.tint(.accentColor), in: Capsule())
                         .foregroundColor(.accentColor)
-                        .clipShape(Capsule())
                 }
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(Color.primary.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 10))
     }
     
     private var scanningView: some View {
@@ -263,8 +265,16 @@ public struct DiskAnalyzerView: View {
             .padding(4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
     }
 }
 

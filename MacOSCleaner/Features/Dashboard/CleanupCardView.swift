@@ -21,18 +21,19 @@ public struct CleanupCardView: View {
     public var body: some View {
         HStack(spacing: 12) {
             Image(systemName: record.category.iconName)
-                .font(.system(size: 16, weight: .regular))
-                .foregroundColor(.secondary)
-                .frame(width: 24, height: 24)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.accentColor)
+                .frame(width: 28, height: 28)
+                .glassEffect(Glass.regular.tint(.accentColor), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(dateString)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
                     .lineLimit(1)
                 
                 Text(timeString)
-                    .font(.system(size: 11, weight: .regular))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
@@ -40,7 +41,7 @@ public struct CleanupCardView: View {
             Spacer(minLength: 8)
             
             Text(record.formattedSize)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.green)
                 .lineLimit(1)
         }
@@ -48,13 +49,25 @@ public struct CleanupCardView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.6))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.white.opacity(0.04))
+                )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
         )
+        .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 3)
     }
 }
 

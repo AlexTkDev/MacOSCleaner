@@ -264,6 +264,7 @@
 "startup_scanning" = "Analyse des services...";
 "startup_no_agents" = "Aucun agent de démarrage";
 "startup_no_agents_sub" = "Aucun agent trouvé dans ~/Library/LaunchAgents.";
+"startup_category_empty" = "Aucun service dans cette catégorie";
 "startup_scan_failed" = "Échec de l'analyse";
 "startup_status_loaded" = "Chargé";
 "startup_status_unloaded" = "Non chargé";

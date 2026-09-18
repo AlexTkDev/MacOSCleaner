@@ -264,6 +264,7 @@
 "startup_scanning" = "正在扫描服务...";
 "startup_no_agents" = "无开机启动项";
 "startup_no_agents_sub" = "未在 ~/Library/LaunchAgents 中找到后台服务。";
+"startup_category_empty" = "该分类下没有服务";
 "startup_scan_failed" = "扫描失败";
 "startup_status_loaded" = "已加载";
 "startup_status_unloaded" = "未加载";

@@ -264,6 +264,7 @@
 "startup_scanning" = "Dienste werden gescannt...";
 "startup_no_agents" = "Keine Autostart-Dienste";
 "startup_no_agents_sub" = "Keine Dienste in ~/Library/LaunchAgents gefunden.";
+"startup_category_empty" = "Keine Dienste in dieser Kategorie";
 "startup_scan_failed" = "Scan fehlgeschlagen";
 "startup_status_loaded" = "Geladen";
 "startup_status_unloaded" = "Nicht geladen";

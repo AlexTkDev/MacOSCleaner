@@ -184,8 +184,7 @@ public struct CleanupView: View {
                         .frame(maxWidth: 280)
                         .frame(height: 32)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .prominentGlassButtonStyle()
                 
                 Spacer()
             }
@@ -275,10 +274,9 @@ public struct CleanupView: View {
             Button(action: { viewModel.reset() }) {
                 Text("try_again".localized)
                     .fontWeight(.semibold)
-                    .frame(width: 150, height: 32)
+                    .frame(width: 150)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
@@ -369,10 +367,9 @@ public struct CleanupView: View {
             Button(action: { viewModel.reset() }) {
                 Text("done".localized)
                     .fontWeight(.semibold)
-                    .frame(width: 150, height: 32)
+                    .frame(width: 150)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .prominentGlassButtonStyle(tint: .accentColor)
             .padding(.bottom, 40)
         }
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
@@ -413,8 +410,7 @@ public struct CleanupView: View {
                     .fontWeight(.semibold)
                     .frame(width: 150)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
@@ -454,7 +450,7 @@ public struct CleanupView: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 14)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+            .background(.ultraThinMaterial)
 
             Divider()
 
@@ -502,7 +498,7 @@ public struct CleanupView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                .background(.ultraThinMaterial)
                 .overlay(
                     Rectangle()
                         .frame(height: 1)
@@ -785,8 +781,7 @@ public struct CleanupView: View {
                     }
                     .padding(.horizontal, 8)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .prominentGlassButtonStyle()
                 .keyboardShortcut(.defaultAction)
                 .disabled(viewModel.selectedSizeBytes == 0)
                 .alert("cleanup_font_cache_confirm_title".localized, isPresented: $showingFontCacheAlert) {

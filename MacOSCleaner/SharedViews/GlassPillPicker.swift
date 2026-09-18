@@ -54,18 +54,43 @@ struct GlassPillPicker<T: Hashable>: View {
                     }
                     .padding(.horizontal, horizontalPadding)
                     .padding(.vertical, 5)
-                    .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
+                    .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
                     .background {
                         if isSelected {
                             Capsule()
-                                .fill(Color.accentColor)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.accentColor.opacity(0.88),
+                                            Color.accentColor.opacity(0.72)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .strokeBorder(
+                                            LinearGradient(
+                                                stops: [
+                                                    .init(color: Color.white.opacity(0.50), location: 0.0),
+                                                    .init(color: Color.accentColor.opacity(0.5), location: 0.5),
+                                                    .init(color: Color.white.opacity(0.12), location: 1.0)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
+                                .shadow(color: Color.accentColor.opacity(0.35), radius: 6, x: 0, y: 2)
                         }
                     }
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(4)
-        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
+        .padding(3)
+        .glassEffect(Glass.regular, in: Capsule())
     }
 }

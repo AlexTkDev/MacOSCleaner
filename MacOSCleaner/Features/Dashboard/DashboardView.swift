@@ -112,13 +112,25 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 36)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(nsColor: .controlBackgroundColor).opacity(0.6))
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(Color.white.opacity(0.04))
+                            )
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.20), Color.white.opacity(0.06)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
                     )
+                    .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
             } else {
                 HStack(spacing: 12) {
                     ForEach(viewModel.recentRecords) { record in
@@ -161,16 +173,18 @@ struct StatRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(color)
-                .frame(width: 32)
+                .frame(width: 32, height: 32)
+                .glassEffect(Glass.regular.tint(color), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Text(value)
                     .font(.headline)
+                    .foregroundColor(.primary)
             }
             Spacer()
         }
@@ -236,17 +250,19 @@ struct SystemInfoItem: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.accentColor)
-                .frame(width: 32)
+                .frame(width: 30, height: 30)
+                .glassEffect(Glass.regular.tint(.accentColor), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Text(value)
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundColor(.primary)
             }
         }
     }

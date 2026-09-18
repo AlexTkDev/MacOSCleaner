@@ -264,6 +264,7 @@
 "startup_scanning" = "Scansione servizi...";
 "startup_no_agents" = "Nessun servizio all'avvio";
 "startup_no_agents_sub" = "Nessun agente trovato in ~/Library/LaunchAgents.";
+"startup_category_empty" = "Nessun servizio in questa categoria";
 "startup_scan_failed" = "Scansione fallita";
 "startup_status_loaded" = "Caricato";
 "startup_status_unloaded" = "Non caricato";

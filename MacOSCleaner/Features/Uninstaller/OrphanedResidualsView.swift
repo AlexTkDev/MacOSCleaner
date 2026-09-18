@@ -209,7 +209,7 @@ public struct OrphanedResidualsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.2))
+            .background(.ultraThinMaterial)
 
             Divider()
 
@@ -266,7 +266,7 @@ public struct OrphanedResidualsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.4))
+            .background(.ultraThinMaterial)
         }
     }
 
@@ -281,11 +281,14 @@ public struct OrphanedResidualsView: View {
             Text(title)
                 .font(.caption2)
                 .fontWeight(isSelected ? .bold : .medium)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 9)
                 .padding(.vertical, 4)
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.85))
                 .background(
-                    Capsule().fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.12))
+                    Capsule().fill(isSelected ? Color.accentColor : Color.black.opacity(0.35))
+                )
+                .overlay(
+                    Capsule().strokeBorder(isSelected ? Color.white.opacity(0.2) : Color.white.opacity(0.08), lineWidth: 0.8)
                 )
         }
         .buttonStyle(.plain)

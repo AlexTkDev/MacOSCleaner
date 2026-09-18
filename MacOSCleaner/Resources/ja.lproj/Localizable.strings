@@ -264,6 +264,7 @@
 "startup_scanning" = "サービスをスキャン中...";
 "startup_no_agents" = "スタートアップサービスはありません";
 "startup_no_agents_sub" = "~/Library/LaunchAgents にエージェントは見つかりませんでした。";
+"startup_category_empty" = "このカテゴリにはサービスがありません";
 "startup_scan_failed" = "スキャン失敗";
 "startup_status_loaded" = "ロード済み";
 "startup_status_unloaded" = "未ロード";

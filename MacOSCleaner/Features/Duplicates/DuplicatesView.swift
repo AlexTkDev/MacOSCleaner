@@ -62,7 +62,7 @@ public struct DuplicatesView: View {
                         .lineLimit(1)
                 }
             }
-
+            .secondaryGlassButtonStyle()
 
             // Search filter
             HStack {
@@ -79,9 +79,8 @@ public struct DuplicatesView: View {
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-            .cornerRadius(8)
+            .padding(.vertical, 5)
+            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
 
             Spacer()
 
@@ -101,7 +100,7 @@ public struct DuplicatesView: View {
                 } label: {
                     Label("duplicate_smart_select".localized, systemImage: "wand.and.stars")
                 }
-    
+                .secondaryGlassButtonStyle()
             }
 
             // Scan / Cancel Button
@@ -109,12 +108,12 @@ public struct DuplicatesView: View {
                 Button("cancel".localized) {
                     viewModel.cancelScan()
                 }
-                .buttonStyle(.bordered)
+                .secondaryGlassButtonStyle()
             } else {
                 Button("duplicate_start_scan".localized) {
                     viewModel.startScan()
                 }
-                .buttonStyle(.borderedProminent)
+                .prominentGlassButtonStyle(tint: .accentColor)
             }
         }
     }
@@ -149,7 +148,7 @@ public struct DuplicatesView: View {
             Button("duplicate_start_scan".localized) {
                 viewModel.startScan()
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
             .padding(.top, 8)
             Spacer()
         }
@@ -190,12 +189,7 @@ public struct DuplicatesView: View {
             }
         }
         .padding(12)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.4))
-        .cornerRadius(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
-        )
+        .glassCard(cornerRadius: 12)
     }
 
     private func duplicateItemRow(group: DuplicateGroup, item: DuplicateFileItem) -> some View {
@@ -263,14 +257,20 @@ public struct DuplicatesView: View {
                     Text("duplicate_move_to_trash".localized)
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
+            .prominentGlassButtonStyle(tint: .red)
             .disabled(viewModel.totalSelectedCount == 0 || viewModel.isTrashing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
-        .cornerRadius(10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
     }
 
     private func selectPresetFolder(_ url: URL) {

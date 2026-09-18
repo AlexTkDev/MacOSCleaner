@@ -55,118 +55,148 @@ public struct CleanupHistoryView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            // Header / Search & Filter bar
-            HStack(spacing: 12) {
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 13))
-                    
-                    TextField("history_search_placeholder".localized, text: $searchText)
-                        .textFieldStyle(.plain)
-                        .font(.system(size: 13))
-                    
-                    if !searchText.isEmpty {
-                        Button {
-                            searchText = ""
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                                .font(.system(size: 12))
-                        }
-                        .buttonStyle(.plain)
-                    }
+        ZStack {
+            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
+                .opacity(0.85)
+                .background(Color.black.opacity(0.20))
+                .ignoresSafeArea()
+            
+            // Subtle ambient lighting
+            GeometryReader { proxy in
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.08))
+                        .frame(width: 260, height: 260)
+                        .blur(radius: 60)
+                        .offset(x: proxy.size.width * 0.2, y: -60)
                 }
-                .padding(.horizontal, 8)
+            }
+            .allowsHitTesting(false)
+            
+            VStack(spacing: 0) {
+                // Header / Search & Filter bar
+                HStack(spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 13))
+                        
+                        TextField("history_search_placeholder".localized, text: $searchText)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 13))
+                        
+                        if !searchText.isEmpty {
+                            Button {
+                                searchText = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 12))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                    )
+                    
+                    Menu {
+                        ForEach(HistorySortOption.allCases) { option in
+                            Button {
+                                sortOption = option
+                            } label: {
+                                HStack {
+                                    Text(option.localizedTitle)
+                                    if sortOption == option {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(sortOption.localizedTitle)
+                                .font(.system(size: 12, weight: .medium))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                        }
+                    }
+                    .secondaryGlassButtonStyle()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+                
+                // Subheader: Sort direction toggle
+                HStack {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            sortAscending.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(sortOption.localizedTitle)
+                                .font(.system(size: 12, weight: .medium))
+                            Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { inside in
+                        if inside {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 16)
                 .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.8))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
-                )
                 
-                Picker("", selection: $sortOption) {
-                    ForEach(HistorySortOption.allCases) { option in
-                        Text(option.localizedTitle).tag(option)
-                    }
-                }
-                .pickerStyle(.menu)
-                .frame(width: 100)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 8)
-            
-            // Subheader: Sort direction toggle
-            HStack {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        sortAscending.toggle()
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(sortOption.localizedTitle)
-                            .font(.system(size: 12, weight: .medium))
-                        Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                    .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-                .onHover { inside in
-                    if inside {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
-                    }
-                }
+                Divider()
+                    .opacity(0.15)
                 
-                Spacer()
-                
-                Image(systemName: "line.3.horizontal.decrease.circle")
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            
-            Divider()
-                .opacity(0.15)
-            
-            // Content List
-            if isLoading {
-                ProgressView()
+                // Content List
+                if isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if filteredAndSortedRecords.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "clock")
+                            .font(.system(size: 36))
+                            .foregroundColor(.secondary.opacity(0.5))
+                        
+                        Text("history_empty_state".localized)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if filteredAndSortedRecords.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "clock")
-                        .font(.system(size: 36))
-                        .foregroundColor(.secondary.opacity(0.5))
-                    
-                    Text("history_empty_state".localized)
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(filteredAndSortedRecords) { record in
-                            HistoryRowView(record: record)
-                            Divider()
-                                .overlay(Color.white.opacity(0.05))
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(filteredAndSortedRecords) { record in
+                                HistoryRowView(record: record)
+                                Divider()
+                                    .overlay(Color.white.opacity(0.05))
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }
         .frame(minWidth: 450, idealWidth: 480, minHeight: 550, idealHeight: 600)
-        .background(Color(nsColor: .windowBackgroundColor))
         .navigationTitle("history_window_title".localized)
         .task {
             await loadRecords()
@@ -202,10 +232,18 @@ public struct HistoryRowView: View {
     
     public var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: record.category.iconName)
-                .font(.system(size: 18, weight: .regular))
-                .foregroundColor(.secondary)
-                .frame(width: 28, height: 28)
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(Color.accentColor.opacity(0.22), lineWidth: 0.5)
+                    )
+                Image(systemName: record.category.iconName)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.accentColor)
+            }
+            .frame(width: 30, height: 30)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(dateString)
@@ -228,8 +266,12 @@ public struct HistoryRowView: View {
                     .lineLimit(1)
                 
                 Text(record.trigger.localizedTitle)
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(Capsule())
                     .lineLimit(1)
             }
         }

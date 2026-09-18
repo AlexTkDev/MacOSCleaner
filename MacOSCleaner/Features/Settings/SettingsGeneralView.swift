@@ -120,9 +120,7 @@ struct SettingsGeneralView: View {
                         Button(String(format: "update.available".localized, update.version)) {
                             UpdatePromptController.open(update)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.orange)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: .orange)
                     } else {
                         Button(hasCheckedForUpdates ? "update.up_to_date".localized : "update.check".localized) {
                             Task {
@@ -132,9 +130,7 @@ struct SettingsGeneralView: View {
                                 isCheckingForUpdates = false
                             }
                         }
-                        .buttonStyle(.bordered)
-                        .tint(hasCheckedForUpdates ? .green : .accentColor)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: hasCheckedForUpdates ? .green : .accentColor)
                     }
                 }
             }
@@ -197,20 +193,17 @@ struct SettingsGeneralView: View {
         Button("settings_open_privacy_settings".localized) {
             permissionsManager.openFullDiskAccessSettings()
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.small)
+        .prominentGlassButtonStyle(tint: .accentColor)
 
         Button("settings_check_status".localized) {
             permissionsManager.refresh()
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .secondaryGlassButtonStyle()
 
         Button("settings_permission_guide".localized) {
             showInstructionSheet = true
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .secondaryGlassButtonStyle()
     }
 
     private var notificationsCard: some View {
@@ -255,8 +248,7 @@ struct SettingsGeneralView: View {
                                 Button("settings_open_settings".localized) {
                                     NotificationManager.shared.openNotificationSettings()
                                 }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .secondaryGlassButtonStyle()
                                 .fixedSize()
                                 .layoutPriority(1)
                             }
@@ -267,8 +259,7 @@ struct SettingsGeneralView: View {
                                 Button("settings_open_settings".localized) {
                                     NotificationManager.shared.openNotificationSettings()
                                 }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .secondaryGlassButtonStyle()
                             }
                         }
                     }
@@ -323,8 +314,7 @@ struct SettingsGeneralView: View {
                                                 systemImage: touchIDCommandCopied ? "checkmark" : "doc.on.doc"
                                             )
                                         }
-                                        .buttonStyle(.bordered)
-                                        .controlSize(.small)
+                                        .secondaryGlassButtonStyle()
 
                                         Button {
                                             maintenanceService.refreshTouchIDStatus()
@@ -334,8 +324,7 @@ struct SettingsGeneralView: View {
                                                 systemImage: "arrow.clockwise"
                                             )
                                         }
-                                        .buttonStyle(.bordered)
-                                        .controlSize(.small)
+                                        .secondaryGlassButtonStyle()
                                     }
                                 }
                             }
@@ -375,8 +364,7 @@ struct SettingsGeneralView: View {
                                 }
                                 .frame(minWidth: 140)
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.regular)
+                            .prominentGlassButtonStyle(tint: .accentColor)
                             .disabled(maintenanceService.isReindexingSpotlight)
                         }
                     }

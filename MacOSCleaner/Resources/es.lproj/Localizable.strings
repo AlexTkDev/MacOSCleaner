@@ -269,6 +269,7 @@
 "startup_scanning" = "Escaneando servicios...";
 "startup_no_agents" = "Sin agentes de inicio";
 "startup_no_agents_sub" = "No se encontraron agentes en ~/Library/LaunchAgents.";
+"startup_category_empty" = "No hay servicios en esta categoría";
 "startup_scan_failed" = "Escaneo fallido";
 "startup_status_loaded" = "Cargado";
 "startup_status_unloaded" = "Descargado";

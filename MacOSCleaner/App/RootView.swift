@@ -20,6 +20,38 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
+            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
+                .ignoresSafeArea()
+
+            Color(NSColor.windowBackgroundColor).opacity(0.85)
+                .ignoresSafeArea()
+
+            Color.black.opacity(0.20)
+                .ignoresSafeArea()
+
+            GeometryReader { proxy in
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.08))
+                        .blur(radius: 140)
+                        .frame(width: proxy.size.width * 0.75, height: proxy.size.height * 0.75)
+                        .position(x: proxy.size.width * 0.18, y: proxy.size.height * 0.12)
+
+                    Circle()
+                        .fill(Color.purple.opacity(0.06))
+                        .blur(radius: 160)
+                        .frame(width: proxy.size.width * 0.65, height: proxy.size.height * 0.65)
+                        .position(x: proxy.size.width * 0.85, y: proxy.size.height * 0.85)
+
+                    Circle()
+                        .fill(Color.cyan.opacity(0.03))
+                        .blur(radius: 120)
+                        .frame(width: proxy.size.width * 0.45, height: proxy.size.height * 0.45)
+                        .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.5)
+                }
+            }
+            .ignoresSafeArea()
+
             VStack(spacing: 0) {
                 topNavigationBar
                 
@@ -110,9 +142,10 @@ struct RootView: View {
                     }
                 }
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 3)
-            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 5)
+            .padding(.vertical, 4)
+            .glassEffect(Glass.regular, in: Capsule())
+            .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
         }
         .id(appSettings.language)
         .frame(maxWidth: .infinity)
@@ -136,21 +169,45 @@ struct RootView: View {
                 // Compact on all locales: label only for the selected item.
                 if isSelected {
                     Text(item.localizedTitle)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }
-            .padding(.horizontal, isSelected ? 10 : 9)
+            .padding(.horizontal, isSelected ? 12 : 9)
             .padding(.vertical, 6)
             .frame(minWidth: isSelected ? nil : 40, minHeight: 32)
-            .contentShape(Rectangle())
-            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
+            .contentShape(Capsule())
+            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
             .background {
                 if isSelected {
                     Capsule()
-                        .fill(Color.accentColor)
-                        .glassEffect(Glass.regular.tint(Color.accentColor).interactive(), in: Capsule())
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.accentColor.opacity(0.88),
+                                    Color.accentColor.opacity(0.72)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: Color.white.opacity(0.50), location: 0.0),
+                                            .init(color: Color.accentColor.opacity(0.5), location: 0.5),
+                                            .init(color: Color.white.opacity(0.12), location: 1.0)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: Color.accentColor.opacity(0.35), radius: 6, x: 0, y: 2)
                         .glassEffectUnion(id: "navSelection", namespace: navNamespace)
                 }
             }

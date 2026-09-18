@@ -262,7 +262,8 @@ struct UninstallerView: View {
                     }
                 }
                 .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
-                .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                .background(reduceTransparency ? Color(NSColor.controlBackgroundColor) : Color.clear)
+                .background(.ultraThinMaterial)
                 
                 Divider()
                 
@@ -860,12 +861,34 @@ struct UninstallerView: View {
                                 )
                             }
                         }
+                        .padding(3)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(Color.black.opacity(0.32))
+                        )
                         .glassCard(cornerRadius: 10)
                     } label: {
-                        Label(tier.displayKey.localized, systemImage: tierIcon(tier))
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(tierColor(tier))
+                        HStack(spacing: 6) {
+                            Image(systemName: tierIcon(tier))
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(tier.displayKey.localized)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                            Text("(\(files.count))")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .foregroundColor(tierColor(tier))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.35))
+                                .overlay(
+                                    Capsule()
+                                        .strokeBorder(tierColor(tier).opacity(0.30), lineWidth: 0.8)
+                                )
+                        )
                     }
                 }
             }
@@ -904,9 +927,27 @@ struct UninstallerView: View {
     private func developerComponentsSection(_ app: UninstallerService.AppInfo) -> some View {
         let displayComps = displayedDeveloperComponents(for: app)
         return VStack(alignment: .leading, spacing: 6) {
-            Label("uninstaller_developer_components".localized, systemImage: "wrench.adjustable")
-                .font(.caption)
-                .fontWeight(.semibold)
+            HStack(spacing: 6) {
+                Image(systemName: "wrench.adjustable")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("uninstaller_developer_components".localized)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Text("(\(displayComps.count))")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .foregroundColor(.purple)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.35))
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(Color.purple.opacity(0.30), lineWidth: 0.8)
+                    )
+            )
 
             VStack(spacing: 1) {
                 ForEach(Array(displayComps.enumerated()), id: \.element.id) { index, component in
@@ -951,7 +992,7 @@ struct UninstallerView: View {
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .glassEffect(.regular.tint(.purple))
+                    .glassEffect(Glass.regular.tint(.purple), in: RoundedRectangle(cornerRadius: 8))
                 }
             }
 
@@ -1200,7 +1241,10 @@ struct RelatedFileRow: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+        )
     }
 
     private func generateAIExplanation() {

@@ -269,6 +269,7 @@
 "startup_scanning" = "Сканирование служб...";
 "startup_no_agents" = "Нет агентов автозапуска";
 "startup_no_agents_sub" = "Агенты в папке ~/Library/LaunchAgents не найдены.";
+"startup_category_empty" = "В этой категории сервисов нет";
 "startup_scan_failed" = "Ошибка сканирования";
 "startup_status_loaded" = "Загружен";
 "startup_status_unloaded" = "Выгружен";

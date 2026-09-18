@@ -112,8 +112,12 @@ public struct DiskRingsChartView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.primary.opacity(0.04))
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
             )
         }
     }
@@ -151,8 +155,8 @@ public struct DiskRingsChartView: View {
                             .foregroundColor(.primary)
                             .transition(.opacity)
                         Text("dashboard_used".localized)
-                            .font(.system(size: 9))
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.9))
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                             .frame(maxWidth: centerHoleRadius * 1.7)
@@ -244,7 +248,7 @@ public struct DiskRingsChartView: View {
                 
                 Text(item.formattedValue)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.secondary.opacity(0.95))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -253,12 +257,12 @@ public struct DiskRingsChartView: View {
         .padding(.vertical, 6)
         .opacity(isDimmed ? 0.4 : 1.0)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isHovered ? item.color.opacity(0.18) : Color.primary.opacity(0.04))
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isHovered ? item.color.opacity(0.22) : Color.white.opacity(0.06))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isHovered ? item.color.opacity(0.5) : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(isHovered ? item.color.opacity(0.65) : Color.white.opacity(0.09), lineWidth: 1)
         )
         .contentShape(Rectangle())
         .onHover { isHover in

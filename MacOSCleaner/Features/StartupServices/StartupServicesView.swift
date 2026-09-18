@@ -22,6 +22,8 @@ public struct StartupServicesView: View {
                     errorView(error)
                 } else if viewModel.services.isEmpty {
                     emptyView
+                } else if viewModel.filteredServices.isEmpty {
+                    categoryEmptyView
                 } else {
                     serviceList
                 }
@@ -69,6 +71,8 @@ public struct StartupServicesView: View {
             )
         }
         .padding(.horizontal, 4)
+        .padding(.vertical, 3)
+        .glassEffect(Glass.regular, in: Capsule())
     }
 
     private func filterButton(
@@ -78,44 +82,59 @@ public struct StartupServicesView: View {
         icon: String? = nil,
         color: Color? = nil
     ) -> some View {
-        Button(action: {
+        let isSelected = viewModel.filter == tag
+        let buttonColor = color ?? Color.accentColor
+        return Button(action: {
             withAnimation(.easeInOut(duration: 0.2)) {
                 viewModel.filter = tag
             }
         }) {
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 if let icon, let color {
                     Image(systemName: icon)
                         .font(.system(size: 10))
-                        .foregroundColor(color)
+                        .foregroundColor(isSelected ? .white : color)
                 }
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
                 Text("\(count)")
-                    .font(.system(size: 10, weight: .bold))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(
-                        Capsule()
-                            .fill(viewModel.filter == tag
-                                  ? (color ?? Color.accentColor).opacity(0.2)
-                                  : Color.secondary.opacity(0.1))
-                    )
+                    .font(.system(size: 11, weight: .bold))
+                    .opacity(isSelected ? 0.9 : 0.6)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(viewModel.filter == tag
-                          ? (color ?? Color.accentColor).opacity(0.1)
-                          : Color.clear)
-            )
-            .overlay(
-                Capsule()
-                    .stroke(viewModel.filter == tag
-                            ? (color ?? Color.accentColor).opacity(0.3)
-                            : Color.clear, lineWidth: 1)
-            )
+            .padding(.vertical, 5)
+            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    buttonColor.opacity(0.88),
+                                    buttonColor.opacity(0.72)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: Color.white.opacity(0.50), location: 0.0),
+                                            .init(color: buttonColor.opacity(0.5), location: 0.5),
+                                            .init(color: Color.white.opacity(0.12), location: 1.0)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: buttonColor.opacity(0.35), radius: 6, x: 0, y: 2)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -155,6 +174,27 @@ public struct StartupServicesView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var categoryEmptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: viewModel.filter?.icon ?? "tray")
+                .font(.system(size: 64, weight: .thin))
+                .foregroundColor(viewModel.filter?.color ?? .secondary)
+                .opacity(0.6)
+            VStack(spacing: 8) {
+                Text("startup_category_empty".localized)
+                    .font(.headline)
+                if let filter = viewModel.filter {
+                    Text(filter.helpText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private func errorView(_ error: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
@@ -172,7 +212,7 @@ public struct StartupServicesView: View {
             Button("try_again".localized) {
                 Task { await viewModel.scan() }
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -227,8 +267,7 @@ struct ServiceRow: View {
                 Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
                     onToggle()
                 }
-                .buttonStyle(.bordered)
-                .tint(service.isEnabled ? .red : .accentColor)
+                .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
                 .controlSize(.small)
             }
             

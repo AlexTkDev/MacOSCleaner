@@ -118,17 +118,8 @@ public struct GlassOverlayView: View {
                 .background(Color.primary.opacity(0.015))
             }
             .frame(width: 440)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(NSColor.windowBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.8))
-                    .glassEffect()
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.25), radius: 24, y: 12)
+            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 16))
+            .shadow(color: Color.black.opacity(0.35), radius: 24, y: 12)
         }
     }
     
@@ -166,16 +157,7 @@ public struct GlassOverlayView: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
         .frame(width: 320)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.75))
-                .glassEffect()
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(toast.type.color.opacity(0.15), lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.12), radius: 10, y: 4)
+        .glassEffect(Glass.regular.tint(toast.type.color), in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.20), radius: 12, y: 5)
     }
 }
