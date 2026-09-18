@@ -85,7 +85,6 @@ struct MacOSCleanerApp: App {
             }
         }
         .windowResizability(.contentMinSize)
-        .defaultSize(width: 1024, height: 520)
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("about_title".localized) {

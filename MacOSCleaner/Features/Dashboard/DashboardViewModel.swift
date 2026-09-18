@@ -25,11 +25,6 @@ class DashboardViewModel: ObservableObject {
     
     init(journal: TransactionJournal) {
         self.journal = journal
-        let url = URL(fileURLWithPath: "/")
-        if let values = try? url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey]) {
-            _totalDiskSpace = Published(initialValue: Int64(values.volumeTotalCapacity ?? 0))
-            _freeDiskSpace = Published(initialValue: Int64(values.volumeAvailableCapacity ?? 0))
-        }
     }
     
     func refresh() async {
@@ -39,7 +34,9 @@ class DashboardViewModel: ObservableObject {
     }
     
     private func fetchDiskUsage() async {
-        let url = URL(fileURLWithPath: "/")
+        let fileManager = FileManager.default
+        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        
         do {
             let values = try url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])
             totalDiskSpace = Int64(values.volumeTotalCapacity ?? 0)

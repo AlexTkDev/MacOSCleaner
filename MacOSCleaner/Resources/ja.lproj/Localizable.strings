@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "準備完了";
 "settings_ai_status_unsupported_device" = "非対応デバイス";
 "settings_ai_status_not_enabled" = "システム設定で無効";
-"settings_ai_status_downloading" = "モデルを準備中 (macOS)...";
+"settings_ai_status_downloading" = "モデルアセットをダウンロード中...";
 "settings_ai_status_unavailable" = "利用不可";
 
 "uninstaller_explain_with_ai" = "AI で解説";

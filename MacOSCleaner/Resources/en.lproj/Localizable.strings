@@ -780,7 +780,7 @@
 "settings_ai_status_ready" = "Ready";
 "settings_ai_status_unsupported_device" = "Device Not Eligible";
 "settings_ai_status_not_enabled" = "Not Enabled in System Settings";
-"settings_ai_status_downloading" = "Preparing Model (macOS)...";
+"settings_ai_status_downloading" = "Downloading Model Assets...";
 "settings_ai_status_unavailable" = "Unavailable";
 
 /* AI Explanations */

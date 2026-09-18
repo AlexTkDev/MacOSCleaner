@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "Pronto";
 "settings_ai_status_unsupported_device" = "Dispositivo não suportado";
 "settings_ai_status_not_enabled" = "Não ativado nos Ajustes do Sistema";
-"settings_ai_status_downloading" = "Preparando modelo (macOS)...";
+"settings_ai_status_downloading" = "Baixando recursos do modelo...";
 "settings_ai_status_unavailable" = "Indisponível";
 
 "uninstaller_explain_with_ai" = "Explicar com IA";

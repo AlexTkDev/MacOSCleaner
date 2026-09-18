@@ -194,7 +194,7 @@ struct SettingsAutomationView: View {
                 case .appleIntelligenceNotEnabled:
                     StatusPill("settings_ai_status_not_enabled".localized, iconName: "exclamationmark.circle.fill", style: .warning)
                 case .modelNotReady:
-                    StatusPill("settings_ai_status_downloading".localized, iconName: "clock.arrow.circlepath", style: .info)
+                    StatusPill("settings_ai_status_downloading".localized, iconName: "arrow.down.circle.fill", style: .info)
                 @unknown default:
                     StatusPill("settings_ai_status_unavailable".localized, iconName: "xmark.circle.fill", style: .error)
                 }

@@ -6,27 +6,24 @@ struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
     @State private var showHistorySheet = false
     private let journal: TransactionJournal
-    private let onNavigateToCleanup: (() -> Void)?
     
-    init(journal: TransactionJournal, onNavigateToCleanup: (() -> Void)? = nil) {
+    init(journal: TransactionJournal) {
         self.journal = journal
-        self.onNavigateToCleanup = onNavigateToCleanup
         _viewModel = StateObject(wrappedValue: DashboardViewModel(journal: journal))
     }
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 24) {
+                HStack(spacing: 20) {
                     diskUsageCard
                     rightColumn
                 }
-                .fixedSize(horizontal: false, vertical: true)
                 
                 recentOperationsSection
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 16)
+            .padding(.bottom, 20)
             .padding(.top, 8)
         }
         .sheet(isPresented: $showHistorySheet) {
@@ -37,73 +34,40 @@ struct DashboardView: View {
         }
     }
     
-    // Right column: Stats + System Info stacked
+    // Right column: Stats + System Info stacked (Compact width to give diskUsageCard maximum space)
     private var rightColumn: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             statsCard
             systemInfoCard
         }
-        .frame(width: 240)
+        .frame(width: 260)
     }
     
-    private var diskCardHeader: some View {
-        HStack(alignment: .center) {
-            HStack(spacing: 8) {
-                Image(systemName: "internaldrive.fill")
-                    .font(.title3)
-                    .foregroundColor(.accentColor)
-                
-                Text("dashboard_disk_usage".localized)
-                    .font(.headline)
-            }
+    private var systemInfoCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("dashboard_system_info".localized, systemImage: "info.circle")
+                .font(.headline)
             
-            Spacer()
-            
-            HStack(spacing: 12) {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("dashboard_free".localized)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text(viewModel.freeDiskSpace.formattedByteCount())
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                }
-                
-                Divider()
-                    .frame(height: 20)
-                
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("dashboard_total".localized)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text(viewModel.totalDiskSpace.formattedByteCount())
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                }
+            VStack(alignment: .leading, spacing: 10) {
+                SystemInfoItem(title: "dashboard_model".localized, value: viewModel.systemInfo.model, icon: "laptopcomputer")
+                SystemInfoItem(title: "dashboard_os_version".localized, value: viewModel.systemInfo.osVersion, icon: "info.circle")
+                SystemInfoItem(title: "dashboard_processor".localized, value: viewModel.systemInfo.processor, icon: "cpu")
+                SystemInfoItem(title: "dashboard_memory".localized, value: viewModel.systemInfo.memory, icon: "memorychip")
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.primary.opacity(0.04))
-            )
         }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
     }
     
     private var diskUsageCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            diskCardHeader
-            
+        VStack(alignment: .leading, spacing: 16) {
             if viewModel.isCategoriesLoading {
                 VStack(spacing: 12) {
-                    Spacer(minLength: 0)
-                    LiquidGlassLoaderView(size: 36)
+                    LiquidGlassLoaderView(size: 48)
                     Text("disk_analyzer_scanning".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -112,80 +76,41 @@ struct DashboardView: View {
                     totalUsed: viewModel.usedDiskSpace,
                     totalDisk: viewModel.totalDiskSpace
                 )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxHeight: .infinity)
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .frame(maxHeight: .infinity)
         .glassCard()
     }
     
     private var statsCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             Label("dashboard_statistics".localized, systemImage: "chart.bar")
                 .font(.headline)
             
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 StatRow(title: "dashboard_total_freed".localized, value: viewModel.totalFreedBytes.formattedByteCount(), icon: "trash")
                 StatRow(title: "dashboard_cleanups".localized, value: "\(viewModel.cleanupCount)", icon: "arrow.counterclockwise")
                 StatRow(title: "dashboard_status".localized, value: "dashboard_healthy".localized, icon: "checkmark.circle", color: .green)
             }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
-    }
-    
-    private var systemInfoCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("dashboard_system_info".localized, systemImage: "info.circle")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 6) {
-                SystemInfoItem(title: "dashboard_model".localized, value: viewModel.systemInfo.model, icon: "laptopcomputer")
-                SystemInfoItem(title: "dashboard_os_version".localized, value: viewModel.systemInfo.osVersion, icon: "info.circle")
-                SystemInfoItem(title: "dashboard_processor".localized, value: viewModel.systemInfo.processor, icon: "cpu")
-                SystemInfoItem(title: "dashboard_memory".localized, value: viewModel.systemInfo.memory, icon: "memorychip")
-            }
-        }
-        .padding(12)
+        .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
     
     private var recentOperationsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             Label("dashboard_recent_operations".localized, systemImage: "clock")
                 .font(.headline)
             
             if viewModel.recentRecords.isEmpty {
-                Button {
-                    onNavigateToCleanup?()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 15))
-                            .foregroundColor(.accentColor)
-                        
-                        Text("dashboard_history_empty_hint".localized)
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: 4) {
-                            Text("dashboard_start_cleanup".localized)
-                                .font(.system(size: 12, weight: .semibold))
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                        .foregroundColor(.accentColor)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("history_empty_state".localized)
+                    .foregroundColor(.secondary)
+                    .font(.system(size: 13))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 36)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(nsColor: .controlBackgroundColor).opacity(0.6))
@@ -194,15 +119,6 @@ struct DashboardView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
                     )
-                }
-                .buttonStyle(.plain)
-                .onHover { inside in
-                    if inside {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
-                    }
-                }
             } else {
                 HStack(spacing: 12) {
                     ForEach(viewModel.recentRecords) { record in
@@ -230,7 +146,7 @@ struct DashboardView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 2)
+                .padding(.top, 4)
             }
         }
     }

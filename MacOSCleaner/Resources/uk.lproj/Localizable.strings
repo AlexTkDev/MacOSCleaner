@@ -774,7 +774,7 @@
 "settings_ai_status_ready" = "Готовий";
 "settings_ai_status_unsupported_device" = "Пристрій не підтримує";
 "settings_ai_status_not_enabled" = "Не увімкнено в системних параметрах";
-"settings_ai_status_downloading" = "Підготовка моделі (macOS)...";
+"settings_ai_status_downloading" = "Завантаження моделі...";
 "settings_ai_status_unavailable" = "Недоступний";
 
 /* AI Explanations */

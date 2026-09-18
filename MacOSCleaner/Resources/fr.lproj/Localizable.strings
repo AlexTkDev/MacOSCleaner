@@ -682,7 +682,7 @@
 "settings_ai_status_ready" = "Prêt";
 "settings_ai_status_unsupported_device" = "Appareil non éligible";
 "settings_ai_status_not_enabled" = "Non activé dans les Réglages Système";
-"settings_ai_status_downloading" = "Préparation du modèle (macOS)...";
+"settings_ai_status_downloading" = "Téléchargement des ressources du modèle...";
 "settings_ai_status_unavailable" = "Indisponible";
 
 "uninstaller_explain_with_ai" = "Expliquer avec l'IA";

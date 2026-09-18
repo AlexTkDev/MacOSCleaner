@@ -53,7 +53,6 @@ final class LocalizationCompletenessTests: XCTestCase {
         "cleanup_font_cache_confirm_title",
         "cleanup_font_cache_confirm_message",
         "cleanup_font_cache_confirm_action",
-        "dashboard_recent_operations",
         "dashboard_view_all_history",
         "history_window_title",
         "history_search_placeholder",
@@ -65,12 +64,7 @@ final class LocalizationCompletenessTests: XCTestCase {
         "history_category_general",
         "history_category_media",
         "history_category_caches",
-        "history_category_dev",
-        "select",
-        "category.cloudkit_cache",
-        "category.swiftpm_cache",
-        "dashboard_history_empty_hint",
-        "dashboard_start_cleanup"
+        "history_category_dev"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

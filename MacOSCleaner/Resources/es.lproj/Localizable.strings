@@ -777,7 +777,7 @@
 "settings_ai_status_ready" = "Listo";
 "settings_ai_status_unsupported_device" = "Dispositivo no compatible";
 "settings_ai_status_not_enabled" = "No activado en Ajustes del Sistema";
-"settings_ai_status_downloading" = "Preparando modelo (macOS)...";
+"settings_ai_status_downloading" = "Descargando modelo...";
 "settings_ai_status_unavailable" = "No disponible";
 
 /* AI Explanations */

@@ -23,6 +23,10 @@ public struct DiskRingsChartView: View {
         usedCategoryItems.sorted { $0.bytes > $1.bytes }
     }
     
+    private var freeDisk: Int64 {
+        max(0, totalDisk - totalUsed)
+    }
+    
     private var usedPercent: Int {
         guard totalDisk > 0 else { return 0 }
         return Int((Double(totalUsed) / Double(totalDisk)) * 100)
@@ -44,19 +48,21 @@ public struct DiskRingsChartView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 14) {
+            cardHeader
+            
             Spacer(minLength: 0)
             
-            HStack(alignment: .center, spacing: 16) {
+            HStack(alignment: .center, spacing: 24) {
                 legendGrid
-                    .frame(width: 200)
+                    .frame(width: 250)
                 
-                Spacer(minLength: 8)
+                Spacer()
                 
                 ringsChart
-                    .frame(width: 200, height: 200)
+                    .frame(width: 270, height: 270)
                 
-                Spacer(minLength: 8)
+                Spacer()
             }
             
             Spacer(minLength: 0)
@@ -64,16 +70,64 @@ public struct DiskRingsChartView: View {
         .frame(maxHeight: .infinity)
     }
     
+    // MARK: - Card Header
+    
+    private var cardHeader: some View {
+        HStack(alignment: .center) {
+            HStack(spacing: 8) {
+                Image(systemName: "internaldrive.fill")
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                
+                Text("dashboard_disk_usage".localized)
+                    .font(.headline)
+            }
+            
+            Spacer()
+            
+            HStack(spacing: 12) {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("dashboard_free".localized)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(freeDisk.formattedByteCount())
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+                
+                Divider()
+                    .frame(height: 20)
+                
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("dashboard_total".localized)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(totalDisk.formattedByteCount())
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.primary.opacity(0.04))
+            )
+        }
+    }
+    
     // MARK: - Rings Chart
     
     private var ringsChart: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let centerHoleRadius: CGFloat = 24
+            let centerHoleRadius: CGFloat = 28
             let availableRadius = (size / 2) - centerHoleRadius
             let ringCount = CGFloat(max(1, sortedItems.count))
-            let spacing: CGFloat = 2.5
-            let ringWidth = max(8, min(24, (availableRadius - spacing * ringCount) / ringCount))
+            let spacing: CGFloat = 3.0
+            let ringWidth = max(10, min(30, (availableRadius - spacing * ringCount) / ringCount))
             
             ZStack {
                 // Center Interactive Text
@@ -81,7 +135,7 @@ public struct DiskRingsChartView: View {
                     if let hovered = hoveredItem {
                         let pctString = formattedCategoryPercent(for: hovered.bytes)
                         Text(pctString)
-                            .font(.system(size: 19, weight: .bold, design: .rounded))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(hovered.color)
                             .transition(.opacity)
                         Text(hovered.label)
@@ -89,11 +143,11 @@ public struct DiskRingsChartView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
-                            .frame(maxWidth: centerHoleRadius * 1.8)
+                            .frame(maxWidth: centerHoleRadius * 1.7)
                             .transition(.opacity)
                     } else {
                         Text("\(usedPercent)%")
-                            .font(.system(size: 19, weight: .bold, design: .rounded))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                             .transition(.opacity)
                         Text("dashboard_used".localized)
@@ -101,7 +155,7 @@ public struct DiskRingsChartView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
-                            .frame(maxWidth: centerHoleRadius * 1.8)
+                            .frame(maxWidth: centerHoleRadius * 1.7)
                             .transition(.opacity)
                     }
                 }

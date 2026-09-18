@@ -39,7 +39,7 @@ struct RootView: View {
             
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
-        .frame(minWidth: 1024, minHeight: 480)
+        .frame(minWidth: 1024, minHeight: 680)
         .environment(\.locale, appSettings.language.locale)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
@@ -162,11 +162,7 @@ struct RootView: View {
     private func contentView(for item: NavigationItem) -> some View {
         switch item {
         case .dashboard:
-            DashboardView(journal: journal, onNavigateToCleanup: {
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
-                    selectedItem = .cleanup
-                }
-            })
+            DashboardView(journal: journal)
         case .cleanup:
             CleanupView(viewModel: cleanupViewModel)
         case .diskSpace:

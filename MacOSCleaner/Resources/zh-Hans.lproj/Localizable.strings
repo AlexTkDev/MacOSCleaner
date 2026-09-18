@@ -674,7 +674,7 @@
 "settings_ai_status_ready" = "已就绪";
 "settings_ai_status_unsupported_device" = "设备硬件不支持";
 "settings_ai_status_not_enabled" = "未在系统设置中开启";
-"settings_ai_status_downloading" = "正在准备模型 (macOS)...";
+"settings_ai_status_downloading" = "正在下载模型资源...";
 "settings_ai_status_unavailable" = "不可用";
 
 "uninstaller_explain_with_ai" = "使用 AI 解释";
