@@ -5,6 +5,7 @@ public struct RunScheduledCleanupIntent: AppIntent, Sendable {
     public static let title: LocalizedStringResource = "Run Scheduled Cleanup"
     public static let description = IntentDescription("Executes automated non-interactive background cleanup for Automator workflows and macOS schedules.")
     public static let openAppWhenRun: Bool = false
+    public static var authenticationPolicy: IntentAuthenticationPolicy { .requiresAuthentication }
 
     @Parameter(title: "Dry Run Mode", default: false)
     public var dryRun: Bool

@@ -52,4 +52,10 @@ final class AppIntentsTests: XCTestCase {
 
         XCTAssertNotNil(result, "Intent should return dialog even when disabled")
     }
+
+    func test_intents_haveAuthenticationPolicy() {
+        XCTAssertEqual(CleanCategoryIntent.authenticationPolicy, .requiresAuthentication)
+        XCTAssertEqual(CleanDeveloperCachesIntent.authenticationPolicy, .requiresAuthentication)
+        XCTAssertEqual(RunScheduledCleanupIntent.authenticationPolicy, .requiresAuthentication)
+    }
 }

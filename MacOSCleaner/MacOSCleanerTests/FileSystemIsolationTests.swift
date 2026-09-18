@@ -151,7 +151,7 @@ final class FileSystemIsolationTests: XCTestCase {
         let previewPaths = PathBox()
         let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         _ = try await engine.run(categories: [.oldBackups], dryRun: true) { event in
-            if case .fileItem(let path, _, _, _, _, _, _) = event {
+            if case .fileItem(let path, _, _, _, _, _, _, _) = event {
                 previewPaths.append(path)
             }
         }

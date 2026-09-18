@@ -27,6 +27,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
     public var path: String?
     public var modificationDate: Date?
     public var category: String?
+    public var isCommandBacked: Bool
 
     public init(
         id: UUID = UUID(),
@@ -40,7 +41,8 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
         children: [CleanupPreviewItem] = [],
         path: String? = nil,
         modificationDate: Date? = nil,
-        category: String? = nil
+        category: String? = nil,
+        isCommandBacked: Bool = false
     ) {
         self.id = id
         self.label = label
@@ -54,6 +56,7 @@ public struct CleanupPreviewItem: Identifiable, Sendable, Equatable {
         self.path = path
         self.modificationDate = modificationDate
         self.category = category
+        self.isCommandBacked = isCommandBacked
     }
 
     public static func == (lhs: CleanupPreviewItem, rhs: CleanupPreviewItem) -> Bool {

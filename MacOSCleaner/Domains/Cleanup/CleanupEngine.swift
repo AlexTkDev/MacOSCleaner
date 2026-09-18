@@ -60,7 +60,7 @@ public enum CleanupEngineEvent: Sendable {
     case categoryResult(category: String, label: String, freedMB: Int)
     case preview(label: String, sizeMB: Int, deletable: Bool, parent: String?, description: String?)
     case log(String)
-    case fileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true)
+    case fileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true, isCommandBacked: Bool = false)
 }
 
 // MARK: - Cleanup Result
@@ -227,9 +227,10 @@ public actor CleanupEngine {
         var pending = Array(categories.enumerated())
         var completedCount = 0
 
-        await withTaskGroup(of: (Int, String, [CleanupEngineResult]).self) { group in
+        return try await CleanupEngine.$currentSelectedPaths.withValue(options.selectedPaths) {
+            await withTaskGroup(of: (Int, String, [CleanupEngineResult]).self) { group in
 
-            for (index, category) in pending.prefix(maxConcurrency) {
+                for (index, category) in pending.prefix(maxConcurrency) {
                 let title = Self.titleForCategory(category)
                 group.addTask {
                     let wrappedProgress: (@Sendable (CleanupEngineEvent) -> Void)? = { event in
@@ -281,6 +282,7 @@ public actor CleanupEngine {
 
         return results
     }
+}
 
     private func runCategoryWithTimeout(
         _ category: CleanupCategory,
@@ -455,7 +457,11 @@ public actor CleanupEngine {
 
 /// Options controlling which categories are cleaned.
 public struct CleanupOptions: Sendable, Equatable {
+    public static let `default` = CleanupOptions()
+
     public var targetCategories: [CleanupCategory]? = nil
+    /// explicitly selected paths (or pseudo-paths) to clean. nil = clean everything.
+    public var selectedPaths: Set<String>? = nil
     /// When true, includes .DS_Store and other scattered junk files.
     public var cleanDSStore: Bool = false
     /// When true, cleans Maven local repository (~/.m2/repository).
@@ -485,6 +491,7 @@ public struct CleanupOptions: Sendable, Equatable {
 
     public init(
         targetCategories: [CleanupCategory]? = nil,
+        selectedPaths: Set<String>? = nil,
         cleanDSStore: Bool = false,
         cleanMaven: Bool = true,
         cleanModCache: Bool = true,
@@ -500,6 +507,7 @@ public struct CleanupOptions: Sendable, Equatable {
         cleanFontCache: Bool = false
     ) {
         self.targetCategories = targetCategories
+        self.selectedPaths = selectedPaths
         self.cleanDSStore = cleanDSStore
         self.cleanMaven = cleanMaven
         self.cleanModCache = cleanModCache
@@ -644,11 +652,17 @@ extension CleanupEngine {
     }
 }
 
+// MARK: - Task Locals
+
+extension CleanupEngine {
+    @TaskLocal static var currentSelectedPaths: Set<String>? = nil
+}
+
 // MARK: - FileManager Helpers
 
 extension CleanupEngine {
 
-    func emitFileItem(_ item: CleanupFileItem?, category: String, parentName: String?, isSelected: Bool = true, progress: (@Sendable (CleanupEngineEvent) -> Void)?) {
+    func emitFileItem(_ item: CleanupFileItem?, category: String, parentName: String?, isSelected: Bool = true, isCommandBacked: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)?) {
         guard let item else { return }
         progress?(.fileItem(
             path: item.path,
@@ -657,11 +671,15 @@ extension CleanupEngine {
             isDirectory: item.isDirectory,
             category: category,
             parentName: parentName,
-            isSelected: isSelected
+            isSelected: isSelected,
+            isCommandBacked: isCommandBacked
         ))
     }
 
     func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+        if !dryRun, let selected = CleanupEngine.currentSelectedPaths, !selected.contains(path) {
+            return (0, nil)
+        }
         let (freed, item, _) = try await fileActor.cleanContents(of: path, dryRun: dryRun, progress: progress)
         return (freed, item)
     }
@@ -687,7 +705,14 @@ extension CleanupEngine {
     }
 
     func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
-        try await fileActor.cleanContentsParallel(paths, dryRun: dryRun, progress: progress)
+        let pathsToClean: [String]
+        if !dryRun, let selected = CleanupEngine.currentSelectedPaths {
+            pathsToClean = paths.filter { selected.contains($0) }
+        } else {
+            pathsToClean = paths
+        }
+        guard !pathsToClean.isEmpty else { return 0 }
+        return try await fileActor.cleanContentsParallel(pathsToClean, dryRun: dryRun, progress: progress)
     }
 
     /// Absolute existing paths from EmbeddedCleanupPaths (+ GeneratedCleanupPaths merge).
@@ -713,7 +738,10 @@ extension CleanupEngine {
     ) async throws -> [CleanupEngineResult] {
         // EmbeddedCleanupPaths merges only GeneratedCleanupPaths.cachePaths —
         // shared / app_data / user_content never enter this executor.
-        let paths = resolvedEmbeddedPaths(for: category)
+        var paths = resolvedEmbeddedPaths(for: category)
+        if !dryRun, let selected = CleanupEngine.currentSelectedPaths {
+            paths = paths.filter { selected.contains($0) }
+        }
         progress?(.log("Scanning \(label) (\(paths.count) paths)..."))
         var totalFreed: Int64 = 0
         var removed = 0
@@ -850,14 +878,19 @@ extension CleanupEngine {
                 results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: sizeMB))
                 emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
-                let before = await getDirectorySize(cacheDir)
-                progress?(.log("  Running: brew cleanup --prune=all -q"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("brew cleanup --prune=all -q")], timeout: timeouts.system)
-                let after = await getDirectorySize(cacheDir)
-                let freed = Int(max(0, before - after) / (1024 * 1024))
-                progress?(.log("  Homebrew: freed \(Self.formatBytes(max(0, before - after)))"))
-                progress?(.result(label: "Homebrew cache", freedMB: freed))
-                results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: freed))
+                if let selected = CleanupEngine.currentSelectedPaths, !selected.contains(cacheDir) {
+                    progress?(.log("  skipped (not selected)"))
+                    results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: 0, skippedCount: 1))
+                } else {
+                    let before = await getDirectorySize(cacheDir)
+                    progress?(.log("  Running: brew cleanup --prune=all -q"))
+                    _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("brew cleanup --prune=all -q")], timeout: timeouts.system)
+                    let after = await getDirectorySize(cacheDir)
+                    let freed = Int(max(0, before - after) / (1024 * 1024))
+                    progress?(.log("  Homebrew: freed \(Self.formatBytes(max(0, before - after)))"))
+                    progress?(.result(label: "Homebrew cache", freedMB: freed))
+                    results.append(CleanupEngineResult(label: "Homebrew cache", freedMB: freed))
+                }
             }
         } else {
             progress?(.log("  Homebrew not found, skipped"))
@@ -917,14 +950,19 @@ extension CleanupEngine {
                 results.append(CleanupEngineResult(label: "yarn cache", freedMB: sizeMB))
                 emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
-                let before = await getDirectorySize(cacheDir)
-                progress?(.log("  Running: yarn cache clean"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("yarn cache clean 2>/dev/null")])
-                let after = await getDirectorySize(cacheDir)
-                let freed = Int(max(0, before - after) / (1024 * 1024))
-                progress?(.log("  yarn: freed \(Self.formatBytes(max(0, before - after)))"))
-                progress?(.result(label: "yarn cache", freedMB: freed))
-                results.append(CleanupEngineResult(label: "yarn cache", freedMB: freed))
+                if let selected = CleanupEngine.currentSelectedPaths, !selected.contains(cacheDir) {
+                    progress?(.log("  skipped (not selected)"))
+                    results.append(CleanupEngineResult(label: "yarn cache", freedMB: 0, skippedCount: 1))
+                } else {
+                    let before = await getDirectorySize(cacheDir)
+                    progress?(.log("  Running: yarn cache clean"))
+                    _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("yarn cache clean 2>/dev/null")])
+                    let after = await getDirectorySize(cacheDir)
+                    let freed = Int(max(0, before - after) / (1024 * 1024))
+                    progress?(.log("  yarn: freed \(Self.formatBytes(max(0, before - after)))"))
+                    progress?(.result(label: "yarn cache", freedMB: freed))
+                    results.append(CleanupEngineResult(label: "yarn cache", freedMB: freed))
+                }
             }
         } else {
             progress?(.log("  yarn not found, skipped"))
@@ -945,14 +983,19 @@ extension CleanupEngine {
                 results.append(CleanupEngineResult(label: "pnpm store", freedMB: sizeMB))
                 emitFileItem(CleanupFileItem(path: storeDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
-                let before = await getDirectorySize(storeDir)
-                progress?(.log("  Running: pnpm store prune"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("pnpm store prune 2>/dev/null")])
-                let after = await getDirectorySize(storeDir)
-                let freed = Int(max(0, before - after) / (1024 * 1024))
-                progress?(.log("  pnpm: freed \(Self.formatBytes(max(0, before - after)))"))
-                progress?(.result(label: "pnpm store", freedMB: freed))
-                results.append(CleanupEngineResult(label: "pnpm store", freedMB: freed))
+                if let selected = CleanupEngine.currentSelectedPaths, !selected.contains(storeDir) {
+                    progress?(.log("  skipped (not selected)"))
+                    results.append(CleanupEngineResult(label: "pnpm store", freedMB: 0, skippedCount: 1))
+                } else {
+                    let before = await getDirectorySize(storeDir)
+                    progress?(.log("  Running: pnpm store prune"))
+                    _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("pnpm store prune 2>/dev/null")])
+                    let after = await getDirectorySize(storeDir)
+                    let freed = Int(max(0, before - after) / (1024 * 1024))
+                    progress?(.log("  pnpm: freed \(Self.formatBytes(max(0, before - after)))"))
+                    progress?(.result(label: "pnpm store", freedMB: freed))
+                    results.append(CleanupEngineResult(label: "pnpm store", freedMB: freed))
+                }
             }
         } else {
             progress?(.log("  pnpm not found, skipped"))
@@ -972,14 +1015,19 @@ extension CleanupEngine {
                 results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: sizeMB))
                 emitFileItem(CleanupFileItem(path: cacheDir, sizeBytes: sizeBytes, modificationDate: nil, isDirectory: true), category: "Package managers", parentName: nil, progress: progress)
             } else {
-                let before = await getDirectorySize(cacheDir)
-                progress?(.log("  Running: pod cache clean --all"))
-                _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("pod cache clean --all 2>/dev/null")])
-                let after = await getDirectorySize(cacheDir)
-                let freed = Int(max(0, before - after) / (1024 * 1024))
-                progress?(.log("  CocoaPods: freed \(Self.formatBytes(max(0, before - after)))"))
-                progress?(.result(label: "CocoaPods cache", freedMB: freed))
-                results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: freed))
+                if let selected = CleanupEngine.currentSelectedPaths, !selected.contains(cacheDir) {
+                    progress?(.log("  skipped (not selected)"))
+                    results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: 0, skippedCount: 1))
+                } else {
+                    let before = await getDirectorySize(cacheDir)
+                    progress?(.log("  Running: pod cache clean --all"))
+                    _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", withUserPath("pod cache clean --all 2>/dev/null")])
+                    let after = await getDirectorySize(cacheDir)
+                    let freed = Int(max(0, before - after) / (1024 * 1024))
+                    progress?(.log("  CocoaPods: freed \(Self.formatBytes(max(0, before - after)))"))
+                    progress?(.result(label: "CocoaPods cache", freedMB: freed))
+                    results.append(CleanupEngineResult(label: "CocoaPods cache", freedMB: freed))
+                }
             }
         } else {
             progress?(.log("  CocoaPods not found, skipped"))
@@ -1810,11 +1858,12 @@ extension CleanupEngine {
             }
         }
 
+        let dockerRoot = dockerHost.hasPrefix("unix://") ? dockerHost.replacingOccurrences(of: "unix://", with: "") : "/var/lib/docker"
+
         if dryRun {
             if totalReclaimableMB > 0 {
                 progress?(.log("  Total reclaimable: ~\(totalReclaimableMB) MB"))
                 progress?(.result(label: "Docker reclaimable space", freedMB: totalReclaimableMB))
-                let dockerRoot = dockerHost.hasPrefix("unix://") ? dockerHost.replacingOccurrences(of: "unix://", with: "") : "/var/lib/docker"
                 emitFileItem(CleanupFileItem(path: dockerRoot, sizeBytes: Int64(totalReclaimableMB) * 1024 * 1024, modificationDate: nil, isDirectory: true), category: "Docker", parentName: nil, isSelected: false, progress: progress)
             } else {
                 progress?(.log("  Nothing reclaimable"))
@@ -1822,6 +1871,10 @@ extension CleanupEngine {
             }
             return [CleanupEngineResult(label: "Docker", freedMB: totalReclaimableMB)]
         } else {
+            if let selected = CleanupEngine.currentSelectedPaths, !selected.contains(dockerRoot) {
+                progress?(.log("  skipped (not selected)"))
+                return [CleanupEngineResult(label: "Docker", freedMB: 0, skippedCount: 1)]
+            }
             let pruneCommand = "docker -H \(dockerHost) system prune -af 2>/dev/null"
             progress?(.log("  Running: \(pruneCommand)"))
             _ = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", pruneCommand])
@@ -2436,8 +2489,13 @@ extension CleanupEngine {
             for snap in snapshots {
                 progress?(.log("  ⊘ \(snap.name)"))
             }
+            emitFileItem(CleanupFileItem(path: "command://tmutil/thin", sizeBytes: Int64(purgeableMB) * 1024 * 1024, modificationDate: nil, isDirectory: false), category: "Time Machine Snapshots", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
             progress?(.result(label: "Time Machine Snapshots", freedMB: purgeableMB))
             return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: purgeableMB)]
+        }
+
+        if let selected = CleanupEngine.currentSelectedPaths, !selected.contains("command://tmutil/thin") {
+            return [CleanupEngineResult(label: "Time Machine Snapshots", freedMB: 0, skippedCount: 1)]
         }
 
         if snapshots.isEmpty {
@@ -3180,8 +3238,12 @@ extension CleanupEngine {
         progress?(.log("Flushing DNS cache..."))
         if dryRun {
             progress?(.log("  Would run: dscacheutil -flushcache && killall -HUP mDNSResponder"))
+            emitFileItem(CleanupFileItem(path: "command://dns/flush", sizeBytes: 0, modificationDate: nil, isDirectory: false), category: "DNS Cache", parentName: nil, isSelected: true, isCommandBacked: true, progress: progress)
             progress?(.result(label: "DNS Cache", freedMB: 0))
             return [CleanupEngineResult(label: "DNS Cache", freedMB: 0)]
+        }
+        if let selected = CleanupEngine.currentSelectedPaths, !selected.contains("command://dns/flush") {
+            return [CleanupEngineResult(label: "DNS Cache", freedMB: 0, skippedCount: 1)]
         }
         do {
             try Task.checkCancellation()
@@ -3206,8 +3268,12 @@ extension CleanupEngine {
         if dryRun {
             progress?(.log("  Would run: sudo atsutil databases -remove"))
             progress?(.log("  Requires restart to take effect"))
+            emitFileItem(CleanupFileItem(path: "command://font/cache-clear", sizeBytes: 0, modificationDate: nil, isDirectory: false), category: "Font Cache", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
             progress?(.result(label: "Font Cache", freedMB: 0))
             return [CleanupEngineResult(label: "Font Cache", freedMB: 0)]
+        }
+        if let selected = CleanupEngine.currentSelectedPaths, !selected.contains("command://font/cache-clear") {
+            return [CleanupEngineResult(label: "Font Cache", freedMB: 0, skippedCount: 1)]
         }
         let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "sudo atsutil databases -remove"])
         if result?.exitCode == 0 {
@@ -3265,6 +3331,7 @@ extension CleanupEngine {
             for (name, path, lastUsed) in unusedApps {
                 let dateStr = lastUsed.map { fmtDate($0) } ?? "unknown"
                 progress?(.log("  \(name) — last used: \(dateStr) [\(shortPath(path))]"))
+                emitFileItem(CleanupFileItem(path: path, sizeBytes: 0, modificationDate: lastUsed, isDirectory: true), category: "Unused Apps", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
             }
         }
         progress?(.log("  Found \(unusedApps.count) potentially unused apps"))

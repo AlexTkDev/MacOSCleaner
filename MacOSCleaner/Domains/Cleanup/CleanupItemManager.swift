@@ -38,9 +38,9 @@ public final class CleanupItemManager {
 
     // MARK: - File Item Append (new hierarchical flow)
 
-    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true) {
+    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true, isCommandBacked: Bool = false) {
         let normalizedPath = Self.normalizePath(path)
-        let sizeMB = max(1, Int(sizeBytes / (1024 * 1024)))
+        let sizeMB = Int(sizeBytes / (1024 * 1024))
         let risk = Self.determineRisk(for: normalizedPath)
 
         let newItem = CleanupPreviewItem(
@@ -52,7 +52,8 @@ public final class CleanupItemManager {
             isDeletable: true,
             path: normalizedPath,
             modificationDate: modificationDate,
-            category: category
+            category: category,
+            isCommandBacked: isCommandBacked
         )
 
         let targetParent = parentName ?? category
@@ -88,6 +89,18 @@ public final class CleanupItemManager {
             guard child.isSelected, let path = child.path else { return nil }
             return NormalizedPath.url((path as NSString).expandingTildeInPath)
         }
+    }
+
+    public func allSelectedPaths() -> Set<String> {
+        var paths = Set<String>()
+        for parent in items {
+            for child in parent.children {
+                if child.isSelected, let p = child.path {
+                    paths.insert(p)
+                }
+            }
+        }
+        return paths
     }
 
     public func setSelection(underParentLabel label: String, isSelected: Bool) {
@@ -176,10 +189,16 @@ public final class CleanupItemManager {
     }
 
     public func selectedCleanupCategories(from categories: [CleanupCategory]) -> [CleanupCategory] {
-        let selectedLabels = Set(items.filter { Self.selectedSizeBytes(for: $0) > 0 }.map(\.label))
+        let selectedLabels = Set(items.filter { item in
+            if item.children.isEmpty {
+                return item.isSelected
+            } else {
+                return item.children.contains(where: \.isSelected)
+            }
+        }.map(\.label))
 
         return categories.filter { category in
-            !category.previewLabels.isDisjoint(with: selectedLabels) || !hasPreviewItem(for: category)
+            !category.previewLabels.isDisjoint(with: selectedLabels)
         }
     }
 
@@ -248,18 +267,15 @@ public final class CleanupItemManager {
     }
 
     private static func normalizePath(_ path: String) -> String {
-        NormalizedPath.key(NormalizedPath.url((path as NSString).expandingTildeInPath))
+        if path.hasPrefix("command://") {
+            return path
+        }
+        return NormalizedPath.key(NormalizedPath.url((path as NSString).expandingTildeInPath))
     }
 
     private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
         var seenPaths = Set<String>()
         return selectedSizeBytes(for: item, seenPaths: &seenPaths)
-    }
-
-    private func hasPreviewItem(for category: CleanupCategory) -> Bool {
-        items.contains { item in
-            category.previewLabels.contains(item.label)
-        }
     }
 
     static func shortLabel(from path: String) -> String {

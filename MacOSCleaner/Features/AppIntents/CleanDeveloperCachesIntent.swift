@@ -21,6 +21,7 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
     public static let title: LocalizedStringResource = "Clean Developer Caches"
     public static let description = IntentDescription("Cleans Xcode DerivedData, Homebrew, package managers, and Docker caches.")
     public static let openAppWhenRun: Bool = false
+    public static var authenticationPolicy: IntentAuthenticationPolicy { .requiresAuthentication }
 
     @Parameter(title: "Target Component", default: .all)
     public var target: DeveloperCacheTarget

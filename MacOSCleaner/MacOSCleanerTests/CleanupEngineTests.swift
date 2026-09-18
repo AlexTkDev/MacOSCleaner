@@ -842,7 +842,7 @@ struct CleanupEngineTests {
         let deselectedCount = ThreadSafeCounter()
 
         _ = try await engine.run(categories: [.iosBackups, .mailDownloads, .savedAppState], dryRun: true) { event in
-            if case .fileItem(_, _, _, _, _, _, let isSelected) = event {
+            if case .fileItem(_, _, _, _, _, _, let isSelected, _) = event {
                 #expect(!isSelected, "Review-only items must have isSelected == false")
                 deselectedCount.increment()
             }
@@ -928,5 +928,24 @@ private final class ThreadSafeArray<Value>: @unchecked Sendable {
 
     func append(_ value: Value) {
         lock.withLock { _items.append(value) }
+    }
+}
+
+// MARK: - Selected Paths Filter Tests
+
+extension CleanupEngineTests {
+    @Test("selectedPaths respects explicitly passed options")
+    func selectedPathsFiltersCommandBackedItems() async throws {
+        let engine = CleanupEngine()
+        var options = CleanupOptions.default
+        options.selectedPaths = ["command://font/cache-clear"] // Only font cache selected
+        
+        let results = try await engine.run(categories: [.fontCache, .timeMachineSnapshots], dryRun: false, options: options)
+        
+        // Time Machine wasn't in selectedPaths so it should be skipped
+        let tmResult = results.first { $0.label == "Time Machine Snapshots" }
+        #expect(tmResult != nil)
+        #expect(tmResult!.skippedCount == 1)
+        #expect(tmResult!.freedMB == 0)
     }
 }

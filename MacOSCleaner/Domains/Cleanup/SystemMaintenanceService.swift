@@ -19,7 +19,6 @@ public final class SystemMaintenanceService {
     public private(set) var errorMessage: String? = nil
 
     private let pamSudoLocalPath = "/private/etc/pam.d/sudo_local"
-    private let pamSudoLocalTemplatePath = "/private/etc/pam.d/sudo_local.template"
 
     public init() {
         refreshTouchIDStatus()
@@ -46,54 +45,6 @@ public final class SystemMaintenanceService {
             }
         }
         return false
-    }
-
-    public func setTouchIDForSudo(enabled: Bool) async throws {
-        errorMessage = nil
-
-        let currentContent = (try? String(contentsOfFile: pamSudoLocalPath, encoding: .utf8))
-            ?? (try? String(contentsOfFile: pamSudoLocalTemplatePath, encoding: .utf8))
-
-        let content: String
-        if enabled {
-            if let current = currentContent {
-                if current.contains("pam_tid.so") {
-                    content = current.replacingOccurrences(
-                        of: #"^[#\s]*(auth\s+sufficient\s+pam_tid\.so)"#,
-                        with: "auth       sufficient     pam_tid.so",
-                        options: .regularExpression
-                    )
-                } else {
-                    content = "auth       sufficient     pam_tid.so\n" + current
-                }
-            } else {
-                content = "# sudo_local: local PAM configuration for sudo\nauth       sufficient     pam_tid.so\n"
-            }
-        } else {
-            if let current = currentContent {
-                content = current.replacingOccurrences(
-                    of: #"^(auth\s+sufficient\s+pam_tid\.so)"#,
-                    with: "#$1",
-                    options: .regularExpression
-                )
-            } else {
-                content = "# sudo_local: local PAM configuration for sudo\n#auth       sufficient     pam_tid.so\n"
-            }
-        }
-
-        // Encode content in Base64 to avoid any quoting, newline, or temp-file sandbox issues
-        let base64 = Data(content.utf8).base64EncodedString()
-        let command = "/bin/chmod 644 \(pamSudoLocalPath) 2>/dev/null || true; /bin/echo '\(base64)' | /usr/bin/base64 -d | /usr/bin/tee \(pamSudoLocalPath) > /dev/null; /bin/chmod 444 \(pamSudoLocalPath); /usr/sbin/chown root:wheel \(pamSudoLocalPath)"
-
-        do {
-            _ = try await PrivilegedTaskRunner.runAsAdmin(command: command)
-            refreshTouchIDStatus()
-            Logger.maintenance.info("Touch ID for sudo set to \(enabled)")
-        } catch {
-            self.errorMessage = error.localizedDescription
-            Logger.maintenance.error("Failed to set Touch ID for sudo: \(error.localizedDescription, privacy: .public)")
-            throw error
-        }
     }
 
     public func rebuildSpotlightIndex() async throws {

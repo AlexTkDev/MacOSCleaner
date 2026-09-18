@@ -15,7 +15,7 @@ extension CleanupCategory {
     }
 
     public var previewLabels: Set<String> {
-        var labels: Set<String> = [localizedTitle]
+        var labels: Set<String> = [localizedTitle, rawValue]
 
         switch self {
         case .appCaches:

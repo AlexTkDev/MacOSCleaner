@@ -17,11 +17,17 @@ public actor PrivilegedTaskRunner {
     /// - Returns: The stdout output of the command.
     /// - Throws: An error if execution fails or user cancels the password prompt.
     public static func runAsAdmin(command: String) async throws -> String {
+        try Task.checkCancellation()
         return try await Task.detached {
-            // Escape double quotes and backslashes in the command
+            try Task.checkCancellation()
+            // Escape special shell characters in the command
             let escapedCommand = command
                 .replacingOccurrences(of: "\\", with: "\\\\")
                 .replacingOccurrences(of: "\"", with: "\\\"")
+                .replacingOccurrences(of: "$", with: "\\$")
+                .replacingOccurrences(of: "`", with: "\\`")
+                .replacingOccurrences(of: "\r", with: "")
+                .replacingOccurrences(of: "\n", with: " ")
             
             let scriptSource = "do shell script \"\(escapedCommand)\" with administrator privileges"
             guard let appleScript = NSAppleScript(source: scriptSource) else {

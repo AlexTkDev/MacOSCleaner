@@ -153,8 +153,12 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 }
                 var records: [OperationRecord] = []
                 var hadPartialFailure = false
+                
+                var runOptions = options
+                runOptions.selectedPaths = self.itemManager.allSelectedPaths()
+                FileManager.clearSizeCache()
 
-                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: options) { [weak self] event in
+                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: runOptions) { [weak self] event in
                     guard let self else { return }
                     Task { @MainActor in
                         self.handleEngineEvent(event)
@@ -444,10 +448,16 @@ public final class CleanupCoordinator: @unchecked Sendable {
             app.terminate()
         }
 
-        do {
+        let timeoutTask = Task {
             try await Task.sleep(for: .seconds(3))
-        } catch {
-            Logger.coordinator.warning("Sleep interrupted during app termination")
+        }
+
+        while !timeoutTask.isCancelled {
+            if appsToClose.allSatisfy({ $0.isTerminated }) {
+                timeoutTask.cancel()
+                break
+            }
+            try? await Task.sleep(for: .milliseconds(250))
         }
 
         let safetyPolicy = ProcessSafetyPolicy()
@@ -499,7 +509,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         case .log(let message):
             self.pendingLogs.append(message)
             self.scheduleLogFlushIfNeeded()
-        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName, let isSelected):
+        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName, let isSelected, let isCommandBacked):
             let localizedCategory = CleanupCategory.localizedGroupTitle(for: category)
             let effectiveParent = parentName.map { CleanupCategory.localizedGroupTitle(for: $0) } ?? localizedCategory
             self.itemManager.appendFileItem(
@@ -509,7 +519,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 isDirectory: isDirectory,
                 category: localizedCategory,
                 parentName: effectiveParent,
-                isSelected: isSelected
+                isSelected: isSelected,
+                isCommandBacked: isCommandBacked
             )
         }
     }

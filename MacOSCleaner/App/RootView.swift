@@ -61,6 +61,9 @@ struct RootView: View {
             permissionsManager.refresh()
             permissionsManager.showGuidanceIfNeeded()
             presentUpdateIfReady()
+            if appSettings.autoScanOnStartup && cleanupViewModel.state == .idle {
+                cleanupViewModel.startScan()
+            }
         }
         .onChange(of: availableUpdate) { _, _ in
             presentUpdateIfReady()

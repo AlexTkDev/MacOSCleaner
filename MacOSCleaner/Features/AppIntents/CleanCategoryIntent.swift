@@ -42,6 +42,7 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
     public static let title: LocalizedStringResource = "Clean Specific Category"
     public static let description = IntentDescription("Cleans a specific category of files like caches, logs, or uninstaller leftovers.")
     public static let openAppWhenRun: Bool = false
+    public static var authenticationPolicy: IntentAuthenticationPolicy { .requiresAuthentication }
 
     @Parameter(title: "Category", default: .userLogs)
     public var category: CategoryIntentTarget
