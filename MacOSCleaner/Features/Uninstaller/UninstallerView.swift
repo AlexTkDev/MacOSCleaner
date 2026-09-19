@@ -849,8 +849,8 @@ struct UninstallerView: View {
                             }
                         )
                     ) {
-                        VStack(spacing: 1) {
-                            ForEach(files) { file in
+                        VStack(spacing: 0) {
+                            ForEach(Array(files.enumerated()), id: \.element.id) { index, file in
                                 RelatedFileRow(
                                     file: file,
                                     appName: app.name,
@@ -859,14 +859,13 @@ struct UninstallerView: View {
                                     versionBadge: versionBadgeText(for: file.url, in: app),
                                     onToggle: { toggleSelection(file, in: app) }
                                 )
+                                if index < files.count - 1 {
+                                    Divider()
+                                        .opacity(0.2)
+                                }
                             }
                         }
-                        .padding(3)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.black.opacity(0.32))
-                        )
-                        .glassCard(cornerRadius: 10)
+                        .glassCard(cornerRadius: 12)
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: tierIcon(tier))
@@ -874,21 +873,8 @@ struct UninstallerView: View {
                             Text(tier.displayKey.localized)
                                 .font(.caption)
                                 .fontWeight(.semibold)
-                            Text("(\(files.count))")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
                         }
                         .foregroundColor(tierColor(tier))
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(Color.black.opacity(0.35))
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(tierColor(tier).opacity(0.30), lineWidth: 0.8)
-                                )
-                        )
                     }
                 }
             }
@@ -931,25 +917,12 @@ struct UninstallerView: View {
                 Image(systemName: "wrench.adjustable")
                     .font(.system(size: 11, weight: .semibold))
                 Text("uninstaller_developer_components".localized)
-                    .font(.caption)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
-                Text("(\(displayComps.count))")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
             }
-            .foregroundColor(.purple)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(Color.black.opacity(0.35))
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(Color.purple.opacity(0.30), lineWidth: 0.8)
-                    )
-            )
+            .foregroundColor(.primary)
 
-            VStack(spacing: 1) {
+            VStack(spacing: 0) {
                 ForEach(Array(displayComps.enumerated()), id: \.element.id) { index, component in
                     HStack {
                         Toggle("", isOn: Binding(
@@ -962,9 +935,9 @@ struct UninstallerView: View {
 
                         Image(systemName: "shippingbox")
                             .foregroundColor(.purple)
-                            .font(.caption)
+                            .font(.system(size: 13))
 
-                        VStack(alignment: .leading, spacing: 1) {
+                        VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 4) {
                                 Text(component.title)
                                     .font(.subheadline)
@@ -990,11 +963,17 @@ struct UninstallerView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .glassEffect(Glass.regular.tint(.purple), in: RoundedRectangle(cornerRadius: 8))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
+
+                    if index < displayComps.count - 1 {
+                        Divider()
+                            .opacity(0.2)
+                    }
                 }
             }
+            .glassCard(cornerRadius: 12)
 
             HStack {
                 Text("uninstaller_developer_components_description".localized)
@@ -1239,12 +1218,9 @@ struct RelatedFileRow: View {
                 .padding(.bottom, 4)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color.white.opacity(0.04))
-        )
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
     }
 
     private func generateAIExplanation() {

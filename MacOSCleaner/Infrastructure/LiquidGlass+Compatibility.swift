@@ -218,13 +218,17 @@ private struct GlassCardModifier: ViewModifier {
                     ZStack {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(.regularMaterial)
-                        
+
+                        // Subtle dark tint to reduce contrast with window background
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(Color.black.opacity(0.08))
+
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.10),
-                                        Color.white.opacity(0.02)
+                                        Color.white.opacity(0.08),
+                                        Color.white.opacity(0.01)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing

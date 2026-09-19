@@ -114,31 +114,33 @@ struct RootView: View {
         )
     }
 
-    // MARK: - Navigation Groups
-    private let navGroups: [[NavigationItem]] = [
-        [.dashboard],
-        [.cleanup, .diskSpace, .duplicates, .uninstaller],
-        [.processes, .startupServices],
-        [.settings]
+    // MARK: - Navigation Items
+    private let navItems: [NavigationItem] = [
+        .dashboard, .cleanup, .diskSpace, .duplicates, .uninstaller,
+        .processes, .startupServices, .settings
     ]
 
     private var topNavigationBar: some View {
         GlassEffectContainer(spacing: 0) {
             HStack(spacing: 0) {
-                ForEach(navGroups.indices, id: \.self) { groupIndex in
-                    let group = navGroups[groupIndex]
+                ForEach(navItems.indices, id: \.self) { index in
+                    navButton(for: navItems[index])
 
-                    HStack(spacing: 4) {
-                        ForEach(group, id: \.self) { item in
-                            navButton(for: item)
-                        }
-                    }
-
-                    if groupIndex < navGroups.count - 1 {
-                        Divider()
-                            .frame(height: 20)
-                            .opacity(0.35)
-                            .padding(.horizontal, 8)
+                    if index < navItems.count - 1 {
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.04),
+                                        Color.white.opacity(0.28),
+                                        Color.white.opacity(0.04)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(width: 1, height: 18)
+                            .padding(.horizontal, 6)
                     }
                 }
             }
