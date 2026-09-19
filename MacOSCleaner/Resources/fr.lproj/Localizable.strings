@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Voulez-vous vraiment placer les %ld fichiers doublons sélectionnés (%@) dans la Corbeille ?";
 "duplicate_trash_completed" = "%ld fichiers (%@) déplacés avec succès dans la Corbeille";
 "duplicate_trash_failed" = "Échec du déplacement vers la Corbeille : %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Doublon";
+"duplicate_copies_count" = "%ld copies";
+"duplicate_no_selection" = "Sélectionnez un groupe de doublons";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Analyseur de disque";

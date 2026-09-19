@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "¿Está seguro de mover %ld duplicados (%@) a la Papelera?";
 "duplicate_trash_completed" = "Se movieron %ld archivos (%@) a la Papelera";
 "duplicate_trash_failed" = "Error al mover a la Papelera: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplicado";
+"duplicate_copies_count" = "%ld copias";
+"duplicate_no_selection" = "Seleccionar un grupo de duplicados";
 
 // Disk Analyzer Screen
 "menu_disk_space" = "Analizador de disco";

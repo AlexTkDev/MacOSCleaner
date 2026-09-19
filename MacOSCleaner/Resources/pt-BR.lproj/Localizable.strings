@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Tem certeza de que deseja mover %ld arquivos duplicados (%@) para o Lixo?";
 "duplicate_trash_completed" = "%ld arquivos (%@) movidos com sucesso para o Lixo";
 "duplicate_trash_failed" = "Falha ao mover arquivos para o Lixo: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplicata";
+"duplicate_copies_count" = "%ld cópias";
+"duplicate_no_selection" = "Selecione um grupo de duplicatas";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Análise de Disco";

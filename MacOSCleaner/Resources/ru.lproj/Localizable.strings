@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Вы уверены, что хотите переместить %ld выбранных дубликатов (%@) в Корзину?";
 "duplicate_trash_completed" = "Успешно перемещено %ld файлов (%@) в Корзину";
 "duplicate_trash_failed" = "Не удалось переместить файлы в Корзину: %@";
+"duplicate_badge_original" = "Оригинал";
+"duplicate_badge_duplicate" = "Дубликат";
+"duplicate_copies_count" = "%ld копии";
+"duplicate_no_selection" = "Выберите группу дубликатов";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Анализатор диска";

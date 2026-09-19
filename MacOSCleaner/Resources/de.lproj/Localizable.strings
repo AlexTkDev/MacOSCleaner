@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Möchten Sie %ld ausgewählte Duplikate (%@) wirklich in den Papierkorb verschieben?";
 "duplicate_trash_completed" = "%ld Dateien (%@) erfolgreich in den Papierkorb verschoben";
 "duplicate_trash_failed" = "Fehler beim Verschieben in den Papierkorb: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplikat";
+"duplicate_copies_count" = "%ld Kopien";
+"duplicate_no_selection" = "Duplikatgruppe auswählen";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Speicherplatz-Analyse";

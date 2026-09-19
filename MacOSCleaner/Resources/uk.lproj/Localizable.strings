@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Ви впевнені, що бажаєте перемістити %ld обраних дублікатів (%@) до Смітника?";
 "duplicate_trash_completed" = "Успішно переміщено %ld файлів (%@) до Смітника";
 "duplicate_trash_failed" = "Не вдалося перемістити файли до Смітника: %@";
+"duplicate_badge_original" = "Оригінал";
+"duplicate_badge_duplicate" = "Дублікат";
+"duplicate_copies_count" = "%ld копії";
+"duplicate_no_selection" = "Виберіть групу дублікатів";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Аналізатор диска";

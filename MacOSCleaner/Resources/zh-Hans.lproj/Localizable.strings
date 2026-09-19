@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "确定要将所选的 %ld 个重复文件 (%@) 移至废纸篓吗？";
 "duplicate_trash_completed" = "已成功将 %ld 个文件 (%@) 移至废纸篓";
 "duplicate_trash_failed" = "移至废纸篓失败：%@";
+"duplicate_badge_original" = "原件";
+"duplicate_badge_duplicate" = "副本";
+"duplicate_copies_count" = "%ld 个副本";
+"duplicate_no_selection" = "选择重复项组";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "磁盘分析";

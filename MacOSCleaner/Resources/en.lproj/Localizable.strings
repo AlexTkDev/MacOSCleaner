@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Are you sure you want to move %ld selected duplicate files (%@) to Trash?";
 "duplicate_trash_completed" = "Successfully moved %ld files (%@) to Trash";
 "duplicate_trash_failed" = "Failed to move files to Trash: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplicate";
+"duplicate_copies_count" = "%ld copies";
+"duplicate_no_selection" = "Select a duplicate group";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Disk Analyzer";

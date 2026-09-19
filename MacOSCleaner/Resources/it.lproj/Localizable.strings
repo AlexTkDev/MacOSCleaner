@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "Sei sicuro di voler spostare %ld file duplicati (%@) nel Cestino?";
 "duplicate_trash_completed" = "%ld file (%@) spostati con successo nel Cestino";
 "duplicate_trash_failed" = "Impossibile spostare i file nel Cestino: %@";
+"duplicate_badge_original" = "Originale";
+"duplicate_badge_duplicate" = "Duplicato";
+"duplicate_copies_count" = "%ld copie";
+"duplicate_no_selection" = "Seleziona un gruppo di duplicati";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Analisi disco";

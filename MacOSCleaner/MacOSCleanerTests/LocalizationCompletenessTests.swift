@@ -72,7 +72,11 @@ final class LocalizationCompletenessTests: XCTestCase {
         "settings_ai_hint_not_enabled",
         "settings_ai_hint_unsupported_device",
         "settings_ai_open_system_settings",
-        "settings_ai_refresh_status"
+        "settings_ai_refresh_status",
+        "duplicate_badge_original",
+        "duplicate_badge_duplicate",
+        "duplicate_copies_count",
+        "duplicate_no_selection"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

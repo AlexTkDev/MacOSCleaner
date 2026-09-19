@@ -92,6 +92,10 @@
 "duplicate_trash_confirm_message" = "選択した %ld 個の重複ファイル (%@) をゴミ箱へ移動してもよろしいですか？";
 "duplicate_trash_completed" = "%ld 個のファイル (%@) をゴミ箱へ移動しました";
 "duplicate_trash_failed" = "ゴミ箱への移動に失敗しました: %@";
+"duplicate_badge_original" = "オリジナル";
+"duplicate_badge_duplicate" = "複製";
+"duplicate_copies_count" = "%ld個のコピー";
+"duplicate_no_selection" = "重複グループを選択";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "ディスク分析";
