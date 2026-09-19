@@ -306,6 +306,12 @@
 "cleanup_cleaning" = "Limpando...";
 "cleanup_ready" = "Pronto para limpar";
 "cleanup_ready_sub" = "Escaneie seu sistema para encontrar arquivos temporários seguros.";
+"cleanup_base_section_title" = "LIMPEZA BÁSICA (PADRÃO)";
+"cleanup_base_system_cache" = "Cache do Sistema";
+"cleanup_base_app_logs" = "Logs de Aplicativos";
+"cleanup_base_browser_cache" = "Cache do Navegador";
+"cleanup_base_trash" = "Lixo (se ativado nos ajustes)";
+"cleanup_badge_password" = "Senha";
 "cleanup_additional_options" = "Opções adicionais de limpeza";
 "cleanup_option_ds_store" = "Limpar arquivos .DS_Store";
 "cleanup_option_ds_store_sub" = "Remove arquivos de metadados gerados pelo sistema.";

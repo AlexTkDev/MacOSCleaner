@@ -317,6 +317,12 @@
 "cleanup_cleaning" = "Cleaning Up...";
 "cleanup_ready" = "Ready to Clean";
 "cleanup_ready_sub" = "Scan your system to find safe-to-remove caches and temporary files.";
+"cleanup_base_section_title" = "BASE CLEANUP (DEFAULT)";
+"cleanup_base_system_cache" = "System Cache";
+"cleanup_base_app_logs" = "App Logs";
+"cleanup_base_browser_cache" = "Browser Cache";
+"cleanup_base_trash" = "Trash (if enabled in settings)";
+"cleanup_badge_password" = "Password";
 "cleanup_additional_options" = "Additional Cleanup Options";
 "cleanup_option_ds_store" = "Clean .DS_Store files";
 "cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";

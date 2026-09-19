@@ -76,7 +76,13 @@ final class LocalizationCompletenessTests: XCTestCase {
         "duplicate_badge_original",
         "duplicate_badge_duplicate",
         "duplicate_copies_count",
-        "duplicate_no_selection"
+        "duplicate_no_selection",
+        "cleanup_base_section_title",
+        "cleanup_base_system_cache",
+        "cleanup_base_app_logs",
+        "cleanup_base_browser_cache",
+        "cleanup_base_trash",
+        "cleanup_badge_password"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

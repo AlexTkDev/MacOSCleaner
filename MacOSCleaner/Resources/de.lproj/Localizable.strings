@@ -306,6 +306,12 @@
 "cleanup_cleaning" = "Bereinigung läuft...";
 "cleanup_ready" = "Bereit zur Bereinigung";
 "cleanup_ready_sub" = "Scannen Sie Ihr System nach sicheren temporären Dateien.";
+"cleanup_base_section_title" = "STANDARD-BEREINIGUNG (STANDARD)";
+"cleanup_base_system_cache" = "Systemcache";
+"cleanup_base_app_logs" = "App-Protokolle";
+"cleanup_base_browser_cache" = "Browser-Cache";
+"cleanup_base_trash" = "Papierkorb (wenn in Einstellungen aktiviert)";
+"cleanup_badge_password" = "Passwort";
 "cleanup_additional_options" = "Zusätzliche Bereinigungsoptionen";
 "cleanup_option_ds_store" = ".DS_Store Dateien löschen";
 "cleanup_option_ds_store_sub" = "Entfernt vom System erstellte Metadaten-Dateien.";

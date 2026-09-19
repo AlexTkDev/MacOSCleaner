@@ -306,6 +306,12 @@
 "cleanup_cleaning" = "クリーンアップ中...";
 "cleanup_ready" = "クリーンアップの準備完了";
 "cleanup_ready_sub" = "削除可能な一時ファイルをスキャンします。";
+"cleanup_base_section_title" = "基本クリーンアップ（デフォルト）";
+"cleanup_base_system_cache" = "システムキャッシュ";
+"cleanup_base_app_logs" = "アプリログ";
+"cleanup_base_browser_cache" = "ブラウザキャッシュ";
+"cleanup_base_trash" = "ゴミ箱（設定で有効な場合）";
+"cleanup_badge_password" = "パスワード";
 "cleanup_additional_options" = "追加のクリーンアップオプション";
 "cleanup_option_ds_store" = ".DS_Store ファイルを消去";
 "cleanup_option_ds_store_sub" = "システム生成のメタデータファイルを削除します。";

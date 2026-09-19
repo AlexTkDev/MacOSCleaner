@@ -313,6 +313,12 @@
 "cleanup_cleaning" = "Очищення...";
 "cleanup_ready" = "Готовий до очищення";
 "cleanup_ready_sub" = "Просканируйте систему для пошуку безпечних до видалення файлів кешу та тимчасових файлів.";
+"cleanup_base_section_title" = "БАЗОВЕ ОЧИЩЕННЯ (ЗА ЗАМОВЧУВАННЯМ)";
+"cleanup_base_system_cache" = "Системний кеш";
+"cleanup_base_app_logs" = "Логи програм";
+"cleanup_base_browser_cache" = "Кеш браузерів";
+"cleanup_base_trash" = "Смітник (якщо увімкнено у налаштуваннях)";
+"cleanup_badge_password" = "Пароль";
 "cleanup_additional_options" = "Додаткові параметри";
 "cleanup_option_ds_store" = "Видалити файли .DS_Store";
 "cleanup_option_ds_store_sub" = "Видаляє згенеровані системою файли метаданих з каталогів.";
