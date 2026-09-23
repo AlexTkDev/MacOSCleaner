@@ -2013,11 +2013,23 @@ extension CleanupEngine {
 
         for containersPath in containerDirs {
             guard fm.fileExists(atPath: containersPath) else { continue }
-            let containers = try? fm.contentsOfDirectory(atPath: containersPath)
-            let containerCount = (containers ?? []).count
+            let containers: [String]
+            do {
+                containers = try fm.contentsOfDirectory(atPath: containersPath)
+            } catch {
+                let ns = error as NSError
+                if (ns.domain == NSPOSIXErrorDomain && (ns.code == Int(EPERM) || ns.code == Int(EACCES)))
+                    || (ns.domain == NSCocoaErrorDomain && (ns.code == NSFileReadNoPermissionError || ns.code == NSFileWriteNoPermissionError)) {
+                    progress?(.log("  \(shortPath(containersPath)) — access denied by macOS (Full Disk Access required)"))
+                } else {
+                    progress?(.log("  \(shortPath(containersPath)) — read failed: \(error.localizedDescription)"))
+                }
+                continue
+            }
+            let containerCount = containers.count
             progress?(.log("  Found \(containerCount) containers in \(shortPath(containersPath))"))
             var scannedCount = 0
-            for container in (containers ?? []) {
+            for container in containers {
                 try Task.checkCancellation()
                 // Skip Apple system containers
                 if container.hasPrefix("com.apple.") || container.hasPrefix("group.com.apple.") {
@@ -2559,18 +2571,6 @@ extension CleanupEngine {
             let (f, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
             freed += f
             if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: nil, isSelected: false, progress: progress) }
-        }
-
-        // Enhanced: Mail Attachments from cleanup.json
-        let mailDir = "\(home)/Library/Mail"
-        if fm.fileExists(atPath: mailDir) {
-            let mailAccounts = (try? fm.contentsOfDirectory(atPath: mailDir)) ?? []
-            for account in mailAccounts {
-                let attachmentsPath = "\(mailDir)/\(account)/Attachments"
-                let (f, item) = try await cleanContents(of: attachmentsPath, dryRun: dryRun, progress: progress)
-                freed += f
-                if dryRun { emitFileItem(item, category: "Mail Downloads", parentName: "Mail Attachments", isSelected: false, progress: progress) }
-            }
         }
 
         let mb = Int(freed / (1024 * 1024))

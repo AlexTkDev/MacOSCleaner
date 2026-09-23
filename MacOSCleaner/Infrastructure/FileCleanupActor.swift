@@ -31,8 +31,8 @@ public actor FileCleanupActor {
     func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?, failedCount: Int) {
         try Task.checkCancellation()
         let url = URL(fileURLWithPath: path)
-        try fileSystemContext.assertAllowedForMutation(url)
         try safetyManager.validate(url: url)
+        try fileSystemContext.assertAllowedForMutation(url)
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
@@ -77,7 +77,19 @@ public actor FileCleanupActor {
             return (before, Self.fileItemForPath(path, size: before, isDirectory: true), 0)
         }
 
-        let contents = try fm.contentsOfDirectory(atPath: path)
+        let contents: [String]
+        do {
+            contents = try fm.contentsOfDirectory(atPath: path)
+        } catch {
+            let nsError = error as NSError
+            if (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+                || (nsError.domain == NSCocoaErrorDomain && (nsError.code == NSFileReadNoPermissionError || nsError.code == NSFileWriteNoPermissionError)) {
+                progress?(.log("  \(Self.shortPath(path)) — access denied by macOS (Full Disk Access required)"))
+            } else {
+                progress?(.log("  \(Self.shortPath(path)) — read failed: \(error.localizedDescription)"))
+            }
+            return (0, nil, 1)
+        }
         var removedCount = 0
         var failedCount = 0
         let runningBundle = Bundle.main.bundlePath
@@ -203,9 +215,37 @@ public actor FileCleanupActor {
         var freed: Int64 = 0
         var removedCount = 0
 
-        let contents = try fm.contentsOfDirectory(atPath: path)
+        let contents: [String]
+        do {
+            contents = try fm.contentsOfDirectory(atPath: path)
+        } catch {
+            let nsError = error as NSError
+            if (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+                || (nsError.domain == NSCocoaErrorDomain && (nsError.code == NSFileReadNoPermissionError || nsError.code == NSFileWriteNoPermissionError)) {
+                progress?(.log("  \(Self.shortPath(path)) — access denied by macOS (Full Disk Access required)"))
+            } else {
+                progress?(.log("  \(Self.shortPath(path)) — read failed: \(error.localizedDescription)"))
+            }
+            return (0, nil)
+        }
+
+        let runningBundle = Bundle.main.bundlePath
         for item in contents {
+            try Task.checkCancellation()
             let itemURL = URL(fileURLWithPath: path).appendingPathComponent(item)
+            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                continue
+            }
+            if safetyManager.isSymlinkDirectory(itemURL) {
+                continue
+            }
+            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
+                continue
+            }
+            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
+                continue
+            }
+
             let attrs = try? fm.attributesOfItem(atPath: itemURL.path)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
                 var isDir: ObjCBool = false
@@ -251,10 +291,14 @@ public actor FileCleanupActor {
         var removedCount = 0
 
         guard let enumerator = fm.enumerator(atPath: path) else { return (0, nil) }
+        let runningBundle = Bundle.main.bundlePath
         while let item = enumerator.nextObject() as? String {
             try Task.checkCancellation()
             let itemPath = "\(path)/\(item)"
             let itemURL = URL(fileURLWithPath: itemPath)
+            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                continue
+            }
             let shouldExclude = FileManager.shouldExclude(url: itemURL)
             if shouldExclude {
                 var isDir: ObjCBool = false
@@ -262,6 +306,17 @@ public actor FileCleanupActor {
                 if isDir.boolValue { enumerator.skipDescendants() }
                 continue
             }
+            if safetyManager.isSymlinkDirectory(itemURL) {
+                enumerator.skipDescendants()
+                continue
+            }
+            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
+                continue
+            }
+            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
+                continue
+            }
+
             let attrs = try? fm.attributesOfItem(atPath: itemPath)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
                 let size = Self.physicalSize(of: itemPath, fm: fm)

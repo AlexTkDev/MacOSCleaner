@@ -348,7 +348,6 @@ public enum EmbeddedCleanupPaths {
     public static let mailDownloads: [CleanupPath] = [
         CleanupPath(path: "~/Library/Mail Downloads", category: .mailDownloads),
         CleanupPath(path: "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads", category: .mailDownloads),
-        CleanupPath(path: "~/Library/Mail/*/Attachments", category: .mailDownloads),
     ]
 
     // MARK: - Launch Agents (NEW)

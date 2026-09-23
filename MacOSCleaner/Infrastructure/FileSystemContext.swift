@@ -11,7 +11,7 @@ public struct FileSystemContext: Sendable {
     public init(
         homeDirectory: URL,
         allowedRoots: [URL]? = nil,
-        enforceAllowedRoots: Bool = false
+        enforceAllowedRoots: Bool = true
     ) {
         let home = homeDirectory.resolvingSymlinksInPath().standardizedFileURL
         self.homeDirectory = home
@@ -19,19 +19,24 @@ public struct FileSystemContext: Sendable {
         if let allowedRoots {
             self.allowedRoots = allowedRoots.map { $0.resolvingSymlinksInPath().standardizedFileURL }
         } else {
+            let temp = FileManager.default.temporaryDirectory.resolvingSymlinksInPath().standardizedFileURL
             self.allowedRoots = [
                 home,
-                URL(fileURLWithPath: "/Library", isDirectory: true),
-                URL(fileURLWithPath: "/private/tmp", isDirectory: true),
-                URL(fileURLWithPath: "/tmp", isDirectory: true).resolvingSymlinksInPath(),
-                URL(fileURLWithPath: "/usr/local", isDirectory: true),
-                URL(fileURLWithPath: "/opt/homebrew", isDirectory: true),
+                URL(fileURLWithPath: "/Library", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                URL(fileURLWithPath: "/private/tmp", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                URL(fileURLWithPath: "/tmp", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                URL(fileURLWithPath: "/usr/local", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                URL(fileURLWithPath: "/opt/homebrew", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                temp,
             ]
         }
     }
 
     public static var production: FileSystemContext {
-        FileSystemContext(homeDirectory: FileManager.default.homeDirectoryForCurrentUser)
+        FileSystemContext(
+            homeDirectory: FileManager.default.homeDirectoryForCurrentUser,
+            enforceAllowedRoots: true
+        )
     }
 
     /// UUID temp root for tests — all destructive work must stay under this root.
@@ -51,10 +56,15 @@ public struct FileSystemContext: Sendable {
     public var homePath: String { homeDirectory.path }
 
     public func isInsideAllowedRoots(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
+        let stdPath = url.standardizedFileURL.path
+        let resolvedPath = url.resolvingSymlinksInPath().standardizedFileURL.path
         return allowedRoots.contains { root in
-            let rootPath = root.path
-            return path == rootPath || path.hasPrefix(rootPath + "/")
+            let rootStd = root.standardizedFileURL.path
+            let rootResolved = root.resolvingSymlinksInPath().standardizedFileURL.path
+            return stdPath == rootStd || stdPath.hasPrefix(rootStd + "/") ||
+                   resolvedPath == rootResolved || resolvedPath.hasPrefix(rootResolved + "/") ||
+                   stdPath == rootResolved || stdPath.hasPrefix(rootResolved + "/") ||
+                   resolvedPath == rootStd || resolvedPath.hasPrefix(rootStd + "/")
         }
     }
 

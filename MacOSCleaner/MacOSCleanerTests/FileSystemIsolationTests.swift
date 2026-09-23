@@ -163,4 +163,20 @@ final class FileSystemIsolationTests: XCTestCase {
         XCTAssertFalse(paths.contains(where: { $0.hasPrefix(backupsPrefix) }))
         XCTAssertTrue(FileManager.default.fileExists(atPath: keep.path))
     }
+
+    func test_productionEnforcesAllowedRoots() {
+        let prod = FileSystemContext.production
+        XCTAssertTrue(prod.enforceAllowedRoots)
+        let allowedPaths = prod.allowedRoots.map(\.path)
+        XCTAssertFalse(allowedPaths.contains("/Users"), "Allowed roots must never include wholesale /Users")
+        XCTAssertTrue(allowedPaths.contains(FileManager.default.homeDirectoryForCurrentUser.resolvingSymlinksInPath().path))
+    }
+
+    func test_cleanupPathExpanderDoesNotExpandForeignUsers() throws {
+        let home = fileSystemContext.homePath
+        let matches = CleanupPathExpander.expand("/Users/*", home: home)
+        for match in matches {
+            XCTAssertEqual(match, NormalizedPath.string(home), "Glob on /Users/* must never expand to foreign user profiles")
+        }
+    }
 }
