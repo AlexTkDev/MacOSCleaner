@@ -31,18 +31,16 @@ public extension ByteCountFormatter {
 
 public extension Int64 {
     func formattedByteCount(style: ByteCountFormatStyle.Style = .file, forceGB: Bool = false) -> String {
+        let locale = LanguageManager.shared.currentLocale
         if forceGB {
-            let formatter = ByteCountFormatter.makeLocalized(countStyle: style == .memory ? .memory : .file)
-            formatter.allowedUnits = .useGB
-            return formatter.string(fromByteCount: self)
+            return self.formatted(.byteCount(style: style, allowedUnits: [.gb]).locale(locale))
         }
         if abs(self) < 1000 {
-            let isRussian = LanguageManager.shared.currentLocale.language.languageCode?.identifier == "ru" ||
-                            LanguageManager.shared.currentLocale.language.languageCode?.identifier == "uk"
+            let isRussian = locale.language.languageCode?.identifier == "ru" ||
+                            locale.language.languageCode?.identifier == "uk"
             let unit = isRussian ? "Б" : "B"
             return "\(self) \(unit)"
         }
-        let locale = LanguageManager.shared.currentLocale
         return self.formatted(.byteCount(style: style).locale(locale))
     }
 }

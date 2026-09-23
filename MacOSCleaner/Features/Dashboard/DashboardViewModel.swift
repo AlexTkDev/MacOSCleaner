@@ -28,6 +28,7 @@ class DashboardViewModel: ObservableObject {
     }
     
     func refresh() async {
+        systemInfo = .current
         await fetchDiskUsage()
         await fetchHistory()
         await fetchCategoryData()

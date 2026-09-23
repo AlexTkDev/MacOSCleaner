@@ -77,10 +77,7 @@ public struct CleanupRecord: Identifiable, Codable, Sendable, Equatable {
     }
     
     public var formattedSize: String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useGB, .useMB]
-        formatter.countStyle = .file
-        return "+\(formatter.string(fromByteCount: freedBytes))"
+        "+\(freedBytes.formattedByteCount())"
     }
 }
 

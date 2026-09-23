@@ -7,13 +7,23 @@ import XCTest
 final class CleanupHistoryTests: XCTestCase {
     
     func testCleanupRecordFormattedSize() {
+        LanguageManager.testingLock.lock()
+        defer {
+            LanguageManager.shared.setLanguage(.english)
+            LanguageManager.testingLock.unlock()
+        }
+
+        LanguageManager.shared.setLanguage(.english)
         let recordMB = CleanupRecord(freedBytes: 500 * 1024 * 1024)
         XCTAssertTrue(recordMB.formattedSize.hasPrefix("+"))
-        XCTAssertTrue(recordMB.formattedSize.contains("MB") || recordMB.formattedSize.contains("МБ"))
+        XCTAssertTrue(recordMB.formattedSize.contains("MB"))
         
         let recordGB = CleanupRecord(freedBytes: Int64(17.28 * 1024 * 1024 * 1024))
         XCTAssertTrue(recordGB.formattedSize.hasPrefix("+"))
-        XCTAssertTrue(recordGB.formattedSize.contains("GB") || recordGB.formattedSize.contains("ГБ"))
+        XCTAssertTrue(recordGB.formattedSize.contains("GB"))
+
+        LanguageManager.shared.setLanguage(.russian)
+        XCTAssertTrue(recordGB.formattedSize.contains("ГБ"))
     }
     
     func testCleanupRecordMappingFromTransaction() {

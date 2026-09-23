@@ -55,7 +55,7 @@ public struct DuplicateGroup: Identifiable, Sendable, Hashable {
     }
 
     public var formattedSize: String {
-        ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        size.formattedByteCount()
     }
 
     public var files: [DuplicateFileItem] {

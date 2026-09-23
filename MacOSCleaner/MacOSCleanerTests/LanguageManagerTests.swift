@@ -81,4 +81,18 @@ final class LanguageManagerTests: XCTestCase {
         let formatted = template.localizedWithArgs("Alex")
         XCTAssertEqual(formatted, "Hello Alex")
     }
+
+    func testFormattedByteCountRespectsLanguage() {
+        let gigabytes: Int64 = 17 * 1024 * 1024 * 1024
+        LanguageManager.shared.setLanguage(.english)
+        XCTAssertTrue(gigabytes.formattedByteCount().contains("GB"))
+
+        LanguageManager.shared.setLanguage(.russian)
+        XCTAssertTrue(gigabytes.formattedByteCount().contains("ГБ"))
+
+        LanguageManager.shared.setLanguage(.french)
+        XCTAssertTrue(gigabytes.formattedByteCount().contains("Go"))
+
+        LanguageManager.shared.setLanguage(.english)
+    }
 }
