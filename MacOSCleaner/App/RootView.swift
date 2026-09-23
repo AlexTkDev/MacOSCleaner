@@ -72,7 +72,7 @@ struct RootView: View {
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
         .frame(minWidth: 1024, minHeight: 680)
-        .environment(\.locale, appSettings.language.locale)
+        .applyAppLanguage(appSettings.language)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }

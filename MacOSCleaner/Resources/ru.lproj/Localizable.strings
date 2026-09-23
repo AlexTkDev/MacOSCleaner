@@ -178,6 +178,10 @@
 "language.chinese_simplified" = "Китайский (упрощенный)";
 "language.italian" = "Итальянский";
 "language.portuguese_brazil" = "Португальский (Бразилия)";
+"language.arabic" = "Арабский";
+"language.chinese_traditional" = "Китайский (традиционный)";
+"language.korean" = "Корейский";
+"language.polish" = "Польский";
 
 /* Settings View */
 "menu_settings" = "Настройки";
@@ -658,7 +662,7 @@
 "uninstaller.evidence.bundleIDExact.title" = "Совпадение Bundle ID";
 "uninstaller.evidence.bundleIDExact.description" = "Имя совпадает с идентификатором пакета приложения.";
 "uninstaller.evidence.bundleIDPrefix.title" = "Префикс Bundle ID";
-"uninstaller.evidence.bundleIDPrefix.description" = "Имя начинается с идентификатора пакета приложения.";
+"uninstaller.evidence.bundleIDPrefix.description" = "Имя начинается с «%@».";
 "uninstaller.evidence.appNameExact.title" = "Совпадение имени приложения";
 "uninstaller.evidence.appNameExact.description" = "Имя совпадает с названием приложения.";
 "uninstaller.evidence.appNamePrefix.title" = "Префикс имени приложения";
@@ -674,7 +678,7 @@
 "uninstaller.evidence.vendorName.title" = "Имя вендора";
 "uninstaller.evidence.vendorName.description" = "Файл принадлежит тому же разработчику.";
 "uninstaller.evidence.teamID.title" = "Совпадение Team ID";
-"uninstaller.evidence.teamID.description" = "Подписано той же командой Apple Developer.";
+"uninstaller.evidence.teamID.description" = "Подписано командой %@, как и приложение.";
 "uninstaller.evidence.developerSignature.title" = "Подпись разработчика";
 "uninstaller.evidence.developerSignature.description" = "Подписано тем же сертификатом разработчика.";
 "uninstaller.evidence.launchAgent.title" = "Launch Agent";
@@ -700,7 +704,7 @@
 "uninstaller.evidence.spotlight.title" = "Индекс Spotlight";
 "uninstaller.evidence.spotlight.description" = "Найдено через поиск Spotlight.";
 "uninstaller.evidence.spotlightBundleAttr.title" = "Атрибут пакета Spotlight";
-"uninstaller.evidence.spotlightBundleAttr.description" = "Метаданные Spotlight ссылаются на пакет приложения.";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Метаданные Spotlight указывают идентификатор пакета «%@».";
 "uninstaller.evidence.spotlightCreator.title" = "Создатель Spotlight";
 "uninstaller.evidence.spotlightCreator.description" = "Метаданные создателя Spotlight совпадают.";
 "uninstaller.evidence.fileContent.title" = "Содержимое файла";

@@ -27,6 +27,10 @@ public actor AIExplanationService {
         case .chineseSimplified: return "Simplified Chinese"
         case .italian: return "Italian"
         case .portugueseBrazil: return "Brazilian Portuguese"
+        case .arabic: return "Arabic"
+        case .chineseTraditional: return "Traditional Chinese"
+        case .korean: return "Korean"
+        case .polish: return "Polish"
         }
     }
     

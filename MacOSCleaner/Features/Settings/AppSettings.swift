@@ -10,10 +10,19 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
     case japanese = "ja"
     case french = "fr"
     case chineseSimplified = "zh-Hans"
+    case chineseTraditional = "zh-Hant"
     case italian = "it"
     case portugueseBrazil = "pt-BR"
+    case arabic = "ar"
+    case korean = "ko"
+    case polish = "pl"
 
     public var id: String { rawValue }
+
+    /// Mirrors the locale's character direction so SwiftUI flips leading/trailing for Arabic.
+    public var layoutDirection: LayoutDirection {
+        locale.language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight
+    }
 
     public var displayName: String {
         switch self {
@@ -27,7 +36,18 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
         case .chineseSimplified: return "language.chinese_simplified".localized
         case .italian: return "language.italian".localized
         case .portugueseBrazil: return "language.portuguese_brazil".localized
+        case .arabic: return "language.arabic".localized
+        case .chineseTraditional: return "language.chinese_traditional".localized
+        case .korean: return "language.korean".localized
+        case .polish: return "language.polish".localized
         }
+    }
+}
+
+extension View {
+    func applyAppLanguage(_ language: AppLanguage) -> some View {
+        environment(\.locale, language.locale)
+            .environment(\.layoutDirection, language.layoutDirection)
     }
 }
 

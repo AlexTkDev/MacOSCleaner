@@ -178,6 +178,10 @@
 "language.chinese_simplified" = "Chino (Simplificado)";
 "language.italian" = "Italiano";
 "language.portuguese_brazil" = "Portugués (Brasil)";
+"language.arabic" = "Árabe";
+"language.chinese_traditional" = "Chino (Tradicional)";
+"language.korean" = "Coreano";
+"language.polish" = "Polaco";
 
 // Settings View
 "menu_settings" = "Ajustes";

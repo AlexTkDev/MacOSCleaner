@@ -1,0 +1,1009 @@
+/* Common */
+"welcome_msg" = "다시 오신 것을 환영합니다!";
+"app_title" = "클리너";
+"sidebar_select_item" = "사이드바에서 항목을 선택하세요";
+"sidebar_section_tools" = "정리";
+"sidebar_section_system" = "시스템";
+"close" = "닫기";
+"cancel_description" = "사용자가 작업을 취소했습니다.";
+"reset" = "재설정";
+"cancel" = "취소";
+"done" = "완료";
+"try_again" = "다시 시도";
+"error" = "오류";
+"version" = "버전";
+"size" = "크기";
+"last_used" = "최근 사용";
+
+/* Siri & Automator Settings */
+"settings_siri_section_title" = "Siri 및 Automator 통합";
+"settings_siri_toggle_title" = "Siri 통합 사용";
+"settings_siri_toggle_description" = "Siri 음성 명령과 앱 단축어로 정리를 제어할 수 있습니다.";
+"settings_automator_toggle_title" = "단축어 및 Automator 작업 흐름";
+"settings_automator_toggle_description" = "Automator, 단축어 앱, 예약에서 정리 동작을 실행할 수 있습니다.";
+"settings_siri_instruction_title" = "macOS에서 설정하는 방법";
+"settings_siri_instruction_body" = "Shortcuts.app를 연 다음 사이드바에서 MacOSCleaner를 선택하세요. Siri, 단축어, Automator에서 쓸 수 있는 동작이 모두 나열됩니다.";
+"settings_open_shortcuts_button" = "Shortcuts.app 열기";
+"settings_active_commands_header" = "사용 중인 Siri 및 단축어 명령";
+"settings_cmd_developer_caches" = "개발자 캐시 정리 (DerivedData, Homebrew, Docker)";
+"settings_cmd_storage_status" = "디스크 저장 공간 상태 확인";
+"settings_cmd_clean_category" = "특정 카테고리 정리 (캐시, 로그 등)";
+"settings_cmd_scheduled_cleanup" = "예약된 정리 실행 (Automator)";
+"siri_phrase_developer_caches" = "개발자 캐시 정리해 줘";
+"siri_phrase_storage_status" = "여유 공간이 얼마나 되나요";
+"siri_phrase_clean_category" = "시스템 캐시 정리해 줘";
+"siri_phrase_scheduled_cleanup" = "예약된 정리 실행해 줘";
+
+/* Custom Siri Commands Editor */
+"siri_add_command_button" = "명령 추가";
+"siri_add_command_title" = "새 Siri 명령";
+"siri_edit_command_title" = "Siri 명령 편집";
+"siri_command_name_label" = "명령 제목";
+"siri_command_phrase_label" = "Siri 음성 문구";
+"siri_command_category_label" = "동작 / 카테고리";
+"siri_no_commands_empty" = "추가된 사용자 설정 명령이 없습니다";
+"siri_new_command_default" = "새 Siri 명령";
+"settings_cmd_category_user_logs" = "사용자 로그";
+"settings_cmd_category_app_caches" = "앱 캐시";
+"settings_cmd_category_system_caches" = "시스템 캐시";
+"settings_cmd_category_browser_caches" = "브라우저 캐시";
+"settings_cmd_category_orphaned_remnants" = "고아 잔여 파일";
+"cancel_action" = "취소";
+"save_action" = "저장";
+"edit_action" = "편집";
+
+/* Sidebar / Navigation Menu */
+"menu_startup_vendors" = "시작 공급업체";
+
+/* Duplicate Finder Screen */
+"menu_duplicates" = "중복 파일 찾기";
+"duplicate_title" = "중복 파일 찾기";
+"duplicates_subtitle" = "동일한 파일을 찾아 제거하여 공간을 확보합니다.";
+"duplicate_start_scan" = "중복 항목 스캔";
+"duplicate_folder_home" = "홈 디렉터리";
+"duplicate_folder_downloads" = "다운로드";
+"duplicate_folder_documents" = "문서";
+"duplicate_folder_custom" = "폴더 선택…";
+"duplicate_search_placeholder" = "중복 항목 필터…";
+"duplicate_smart_select" = "스마트 선택";
+"duplicate_select_keep_oldest" = "가장 오래된 복사본 유지";
+"duplicate_select_keep_newest" = "가장 최근 복사본 유지";
+"duplicate_select_all" = "모두 선택";
+"duplicate_deselect_all" = "모두 선택 해제";
+"duplicate_scanning_start" = "중복 스캐너를 초기화하는 중…";
+"duplicate_scan_completed" = "스캔 완료: 중복 그룹 %ld개 발견";
+"duplicate_scan_cancelled" = "스캔이 취소됨";
+"duplicate_scan_failed" = "스캔 실패: %@";
+"duplicate_stage_collecting" = "파일 수집 중 (스캔 %ld개)…";
+"duplicate_stage_size_filtering" = "크기별로 후보 파일을 거르는 중…";
+"duplicate_stage_header_hashing" = "파일 헤더 해시 계산 중 (%ld/%ld)…";
+"duplicate_stage_full_hashing" = "SHA-256 서명 계산 중 (%ld/%ld)…";
+"duplicate_stage_completed" = "중복 분석 완료";
+"duplicate_empty_title" = "중복 파일을 찾지 못했습니다";
+"duplicate_empty_subtitle" = "동일한 파일을 스캔하고 디스크 공간을 회수할 폴더를 선택하세요.";
+"duplicate_group_title" = "동일한 파일 %ld개 (각 %@)";
+"duplicate_group_wasted" = "회수 가능 %@";
+"duplicate_reveal_in_finder" = "Finder에서 보기";
+"duplicate_selected_summary" = "제거할 파일 %ld개 선택됨";
+"duplicate_selected_reclaim" = "회수할 전체 공간 %@";
+"duplicate_move_to_trash" = "휴지통으로 이동";
+"duplicate_trash_confirm_title" = "선택한 중복 파일을 휴지통으로 옮길까요?";
+"duplicate_trash_confirm_action" = "휴지통으로 이동";
+"duplicate_trash_confirm_message" = "선택한 중복 파일 %ld개(%@)를 휴지통으로 옮길까요?";
+"duplicate_trash_completed" = "파일 %ld개(%@)를 휴지통으로 옮겼습니다";
+"duplicate_trash_failed" = "휴지통으로 옮기지 못했습니다: %@";
+"duplicate_badge_original" = "원본";
+"duplicate_badge_duplicate" = "중복";
+"duplicate_copies_count" = "복사본 %ld개";
+"duplicate_no_selection" = "중복 그룹을 선택하세요";
+
+/* Disk Analyzer Screen */
+"menu_disk_space" = "디스크 분석";
+"disk_analyzer_title" = "디스크 공간 분석";
+"disk_space_subtitle" = "디스크 공간 분포를 분석하고 큰 파일을 찾습니다.";
+"disk_analyzer_scan" = "폴더 스캔";
+"disk_analyzer_scanning" = "스캔 중…";
+"disk_analyzer_back" = "뒤로";
+"disk_analyzer_delete_confirm" = "선택한 항목을 휴지통으로 옮길까요?";
+"delete_action" = "삭제";
+"disk_analyzer_show_in_finder" = "Finder에서 보기";
+"disk_analyzer_move_to_trash" = "휴지통으로 이동";
+"disk_analyzer_select_folder" = "스캔할 폴더 선택";
+"disk_analyzer_empty" = "폴더가 비어 있거나 아직 스캔하지 않았습니다";
+"disk_analyzer_no_permissions" = "이 폴더에 대한 접근 권한이 없습니다";
+"folder" = "폴더";
+"disk_analyzer_category_empty" = "'%@' 카테고리에서 파일을 찾지 못했습니다";
+"disk_analyzer_category_all" = "전체";
+"disk_analyzer_category_video" = "비디오";
+"disk_analyzer_category_audio" = "오디오";
+"disk_analyzer_category_photo" = "사진";
+"disk_analyzer_category_apps" = "앱";
+"disk_analyzer_category_docs" = "문서";
+"disk_analyzer_category_archives" = "아카이브";
+"disk_analyzer_items_count" = "항목 %d개";
+"disk_analyzer_quick_look" = "훑어보기";
+"disk_analyzer_open_folder" = "폴더 열기";
+
+
+/* About View */
+"about_title" = "MacOS Cleaner 정보";
+"menu_donate" = "후원…";
+"about_donate" = "후원 / 프로젝트 지원";
+"about_version" = "버전 %@";
+"about_developer" = "개발: AlexTkDev";
+"about_problem_link" = "앱에 문제가 있으면 여기에서 알려 주세요";
+"about_linkedin" = "LinkedIn 프로필";
+"about_website" = "웹사이트";
+"about_star_github" = "GitHub에서 별표 주기 ⭐";
+"settings_about_star_github" = "GitHub에서 별표 주기 ⭐";
+"about_copyright" = "© 2026 AlexTkDev. All rights reserved.";
+"about_orcid" = "ORCID 0009-0002-8907-5406";
+
+/* Dashboard View */
+"menu_dashboard" = "대시보드";
+"dashboard_title" = "대시보드";
+"dashboard_subtitle" = "시스템 및 저장 공간 상태 개요입니다.";
+"dashboard_system_info" = "시스템 정보";
+"dashboard_model" = "모델";
+"dashboard_os_version" = "OS 버전";
+"dashboard_processor" = "프로세서";
+"dashboard_memory" = "메모리";
+"dashboard_disk_usage" = "디스크 사용량";
+"dashboard_used" = "사용됨";
+"dashboard_free" = "여유";
+"dashboard_total" = "전체";
+"dashboard_statistics" = "통계";
+"dashboard_total_freed" = "총 확보 공간";
+"dashboard_cleanups" = "정리 횟수";
+"dashboard_status" = "상태";
+"dashboard_healthy" = "정상";
+"dashboard_recent_operations" = "최근 작업";
+"dashboard_no_recent_operations" = "최근 작업 없음";
+"dashboard_radar_caches" = "캐시";
+"dashboard_radar_logs" = "로그";
+"dashboard_radar_dev" = "개발";
+"dashboard_radar_apps" = "앱";
+"dashboard_radar_media" = "미디어";
+"dashboard_radar_other" = "기타";
+"dashboard_radar_tooltip_format" = "%@: %@";
+
+/* Language Names */
+"language.english" = "영어";
+"language.russian" = "러시아어";
+"language.ukrainian" = "우크라이나어";
+"language.spanish" = "스페인어";
+"language.german" = "독일어";
+"language.japanese" = "일본어";
+"language.french" = "프랑스어";
+"language.chinese_simplified" = "중국어(간체)";
+"language.italian" = "이탈리아어";
+"language.portuguese_brazil" = "포르투갈어(브라질)";
+"language.arabic" = "아랍어";
+"language.chinese_traditional" = "중국어(번체)";
+"language.korean" = "한국어";
+"language.polish" = "폴란드어";
+
+/* Settings View */
+"menu_settings" = "설정";
+"settings_title" = "설정";
+"settings_subtitle" = "앱 환경설정";
+"settings_general" = "일반";
+"settings_language" = "언어";
+"settings_theme" = "테마";
+"theme_system" = "시스템";
+"theme_light" = "라이트";
+"theme_dark" = "다크";
+"settings_notifications" = "알림";
+"settings_tooltips" = "도움말";
+"settings_auto_scan" = "시동 시 자동 스캔";
+"settings_processes" = "프로세스";
+"settings_refresh_interval" = "새로 고침 간격";
+"settings_sort_by" = "정렬 기준";
+"settings_startup" = "시동";
+"settings_trash_deletion" = "휴지통과 삭제";
+"settings_empty_trash_during_cleanup" = "정리 중 휴지통 비우기";
+"settings_bypass_trash_on_uninstall" = "제거 시 휴지통 건너뛰기";
+"settings_empty_trash_immediately" = "휴지통 즉시 비우기";
+"settings_advanced" = "고급";
+"settings_show_related" = "제거 도구에서 관련 파일 표시";
+"settings_skip_expert" = "제거 도구에서 전문가 모드 건너뛰기";
+"settings_data" = "데이터";
+"settings_forget_everything" = "모두 지우기";
+"settings_forget_description" = "저장된 데이터를 모두 지우고 설정을 기본값으로 되돌립니다.";
+"settings_reset_button" = "모든 설정 재설정";
+
+/* Uninstaller Scan Mode */
+"settings_uninstaller" = "제거 도구";
+"scan_mode" = "스캔 모드";
+"scan_mode.safe" = "안전";
+"scan_mode.balanced" = "균형";
+"scan_mode.balanced.default" = "기본";
+"scan_mode.safe.desc" = "번들 ID, 앱 이름 또는 패키지 영수증으로 높은 신뢰도로 일치하는 파일만 찾습니다. Spotlight를 사용하지 않습니다. 공유 파일을 제거할 위험이 가장 낮습니다.";
+"scan_mode.balanced.desc" = "Spotlight(mdfind), 확장 경로, 가능한 모든 일치를 포함한 전체 스캔입니다. 비표준 위치의 잔여 파일까지 더 많이 찾습니다. 꼼꼼한 정리에 권장됩니다.";
+
+/* Update Checker */
+"update.check" = "업데이트 확인";
+"update.available" = "버전 %@ 사용 가능";
+"update.download" = "GitHub에서 다운로드";
+"update.up_to_date" = "최신 상태";
+"update.up_to_date_message" = "최신 버전의 앱을 사용하고 있습니다.";
+"update.releases_label" = "릴리즈:";
+"update.website_label" = "웹사이트:";
+"update.checking" = "확인 중…";
+"update_sheet_title" = "업데이트 사용 가능";
+"update_sheet_subtitle" = "더 새로운 버전의 MacOS Cleaner를 다운로드할 수 있습니다.";
+"update_sheet_current" = "현재";
+"update_sheet_latest" = "최신";
+"update.download_dmg" = "DMG 다운로드";
+"update.view_releases" = "릴리즈 보기";
+"update.dismiss_later" = "나중에";
+"update.dismiss_version" = "이 버전은 다시 알리지 않기";
+
+/* Settings Tooltips */
+"settings_tooltip_language" = "앱 인터페이스 언어를 선택합니다.";
+
+/* Notification Status */
+"settings_notifications_status" = "알림 상태";
+"settings_notifications_granted" = "허용됨";
+"settings_notifications_denied" = "거부됨 (시스템 설정 열기)";
+"settings_notifications_not_determined" = "요청하지 않음";
+"settings_open_notification_settings" = "알림 설정 열기";
+"settings_tooltip_theme" = "앱의 시각적 모양을 선택합니다. 시스템은 macOS 설정을 따릅니다.";
+"settings_tooltip_notifications" = "스캔과 정리가 끝나면 시스템 알림을 표시합니다.";
+"settings_tooltip_tooltips" = "인터페이스 요소 위에 포인터를 올리면 도움말을 표시합니다.";
+"settings_tooltip_auto_scan" = "앱을 실행하면 정리할 항목 스캔을 자동으로 시작합니다.";
+"settings_tooltip_refresh_interval" = "프로세스 목록을 새로 고치는 간격입니다. 수동은 자동 새로 고침을 끕니다.";
+"settings_tooltip_sort_by" = "프로세스 목록의 기본 정렬 순서입니다.";
+"settings_tooltip_empty_trash" = "켜면 정리 과정에서 시스템 휴지통을 비웁니다. 안전을 위해 기본적으로 꺼져 있습니다.";
+"settings_tooltip_bypass_trash" = "앱과 관련 파일을 제거할 때 휴지통으로 옮기지 않고 영구 삭제합니다. 주의: 제거를 되돌릴 수 없습니다.";
+"settings_tooltip_show_related" = "제거 도구에서 각 앱의 관련 파일(캐시, 환경설정, 로그) 목록을 표시합니다.";
+"settings_tooltip_empty_trash_immediately" = "항목을 휴지통으로 옮긴 뒤 즉시 비웁니다. 정리를 되돌릴 수 없게 됩니다.";
+"settings_tooltip_skip_expert" = "전문가 모드의 파일 선택 단계를 건너뛰고 관련 파일을 모두 선택한 채 앱을 바로 제거합니다.";
+"settings_tooltip_forget" = "저장된 환경설정을 모두 제거하고 초기 설정으로 되돌립니다.";
+
+/* Settings Reset Dialog */
+"settings_reset_confirm_title" = "모든 설정을 재설정할까요?";
+"settings_reset_confirm_button" = "모두 재설정";
+"settings_reset_confirm_message" = "저장된 데이터를 모두 지우고 모든 설정을 기본값으로 되돌립니다. 이 작업은 취소할 수 없습니다.";
+
+/* Trash & Deletion Warning */
+"settings_trash_warning" = "이 설정은 삭제를 되돌릴 수 없게 합니다. 휴지통을 건너뛰거나 즉시 비운 파일은 복구할 수 없습니다.";
+
+/* Startup Services View */
+"menu_startup_services" = "시동 서비스";
+"startup_title" = "시동 서비스";
+"startup_subtitle" = "자동으로 시작되는 에이전트를 관리합니다.";
+"startup_refresh" = "목록 새로 고침";
+"startup_scanning" = "서비스 스캔 중…";
+"startup_no_agents" = "시동 에이전트 없음";
+"startup_no_agents_sub" = "~/Library/LaunchAgents에서 에이전트를 찾지 못했습니다.";
+"startup_category_empty" = "이 카테고리에 서비스가 없습니다";
+"startup_scan_failed" = "스캔 실패";
+"startup_status_loaded" = "로드됨";
+"startup_status_unloaded" = "언로드됨";
+"startup_disable" = "끄기";
+"startup_enable" = "켜기";
+
+/* Startup Categories */
+"startup_category_user" = "내 서비스";
+"startup_category_third_party" = "타사";
+"startup_category_system" = "시스템";
+
+/* Startup Filters */
+"startup_filter_all" = "전체";
+
+/* Startup Category Help */
+"startup_help_user" = "~/Library/의 사용자 서비스입니다. 꺼도 안전합니다.";
+"startup_help_third_party" = "/Library/의 타사 서비스입니다. 주의해서 끌 수 있습니다.";
+"startup_help_system" = "Apple 시스템 서비스입니다. 끄지 않는 것이 좋습니다.";
+
+/* Startup Vendor Settings */
+"settings_startup_vendors" = "시스템 공급업체";
+"startup_vendors_title" = "시스템 공급업체";
+"startup_vendors_description" = "시스템 서비스로 간주할 레이블 접두사입니다.";
+"startup_vendors_description_sub" = "이 접두사가 있는 서비스는 시스템으로 표시되며 끄지 않는 것이 좋습니다.";
+"startup_vendors_current" = "현재 접두사";
+"startup_vendors_reset" = "재설정";
+"startup_vendors_empty" = "추가된 접두사 없음";
+"startup_vendors_protected" = "보호됨";
+"startup_vendors_placeholder" = "com.vendor.";
+"startup_vendors_error_no_dot" = "접두사에 마침표가 있어야 합니다";
+"startup_vendors_error_duplicate" = "이 접두사는 이미 있습니다";
+
+/* Cleanup View */
+"menu_cleanup" = "정리";
+"cleanup_title" = "정리";
+"cleanup_subtitle" = "캐시, 로그, 시스템 정크를 안전하게 정리합니다.";
+"cleanup_scanning" = "시스템 스캔 중…";
+"cleanup_clean" = "시스템이 깨끗합니다";
+"cleanup_clean_sub" = "스캔에서 불필요한 파일을 찾지 못했습니다.";
+"cleanup_rescan" = "다시 스캔";
+"cleanup_cleaning" = "정리 중…";
+"cleanup_ready" = "정리 준비됨";
+"cleanup_ready_sub" = "안전하게 제거할 수 있는 캐시와 임시 파일을 찾으려면 시스템을 스캔하세요.";
+"cleanup_base_section_title" = "기본 정리 (기본값)";
+"cleanup_base_system_cache" = "시스템 캐시";
+"cleanup_base_app_logs" = "앱 로그";
+"cleanup_base_browser_cache" = "브라우저 캐시";
+"cleanup_base_trash" = "휴지통 (설정에서 켠 경우)";
+"cleanup_badge_password" = "암호";
+"cleanup_additional_options" = "추가 정리 옵션";
+"cleanup_option_ds_store" = ".DS_Store 파일 정리";
+"cleanup_option_ds_store_sub" = "디렉터리에 시스템이 만든 메타데이터 파일을 제거합니다.";
+"cleanup_option_maven" = "Maven 저장소 정리 (~/.m2/repository)";
+"cleanup_option_maven_sub" = "내려받은 Maven 의존성을 제거합니다. 다음 빌드 때 다시 받습니다.";
+"cleanup_option_modcache" = "Go 모듈 캐시 정리 (GOMODCACHE)";
+"cleanup_option_modcache_sub" = "내려받은 Go 모듈을 제거합니다. 다음 빌드 때 다시 받습니다.";
+"cleanup_option_projects" = "프로젝트의 .dart_tool 정리";
+"cleanup_option_projects_sub" = "~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos의 Flutter/Dart 프로젝트 캐시를 제거합니다.";
+"cleanup_option_cloud_docs" = "iCloud 문서 정리";
+"cleanup_option_cloud_docs_sub" = "iCloud 문서 캐시를 제거합니다. 문서는 필요할 때 iCloud에서 다시 받습니다.";
+"cleanup_option_voice_memos" = "음성 메모 정리";
+"cleanup_option_voice_memos_sub" = "보관함에서 음성 메모 녹음을 제거합니다.";
+"cleanup_option_garageband_logic" = "GarageBand / Logic 정리";
+"cleanup_option_garageband_logic_sub" = "GarageBand와 Logic Pro 프로젝트 파일 및 캐시를 제거합니다.";
+"cleanup_option_imovie_final_cut" = "iMovie / Final Cut 정리";
+"cleanup_option_imovie_final_cut_sub" = "iMovie와 Final Cut Pro 렌더 파일 및 보관함을 제거합니다.";
+"cleanup_option_sleep_image" = "잠자기 이미지 정리";
+"cleanup_option_sleep_image_sub" = "최대 절전 이미지 파일을 제거합니다. 다음에 잠들면 macOS가 다시 만듭니다.";
+"cleanup_option_font_cache" = "서체 캐시 지우기";
+"cleanup_option_font_cache_sub" = "서체 데이터베이스 캐시(atsutil)를 지웁니다. 적용하려면 시스템을 재시동해야 합니다.";
+"cleanup_font_cache_confirm_title" = "서체 캐시를 지울까요?";
+"cleanup_font_cache_confirm_message" = "서체 캐시를 지우면 Mac을 재시동할 때까지 열려 있는 앱의 텍스트와 서체 렌더링이 깨질 수 있습니다.";
+"cleanup_font_cache_confirm_action" = "지우기, 재시동 필요";
+"cleanup_extended_title" = "확장 정리";
+"cleanup_start_scan" = "스캔 시작";
+"cleanup_failed" = "정리 실패";
+"cleanup_failed_default" = "정리 중 오류가 발생했습니다.";
+"cleanup_script_logs" = "스크립트 로그:";
+"cleanup_complete" = "정리 완료";
+"cleanup_complete_sub" = "디스크 공간 %@를 확보했습니다.";
+"cleanup_summary" = "삭제한 항목 요약";
+"cleanup_skipped" = "정리할 수 없음";
+"cleanup_selected" = "선택됨: %@";
+"cleanup_hide_logs" = "로그 가리기";
+"cleanup_show_logs" = "로그 보기";
+"cleanup_copy" = "복사";
+"cleanup_copy_logs" = "로그 복사";
+"cleanup_now" = "지금 정리";
+"cleanup_manual_instructions" = "수동 정리 안내";
+"cleanup_scan_results" = "스캔 결과";
+"cleanup_scan_results_sub" = "제거할 항목을 선택한 다음 ‘지금 정리’를 클릭하세요.";
+"cleanup_recommended" = "제거 권장";
+"cleanup_deselect_all" = "모두 선택 해제";
+"cleanup_select_all" = "모두 선택";
+"cleanup_show_all_count" = "모두 보기 (%lld개 더)";
+"cleanup_debug_log" = "디버그 로그 (%lld줄)";
+ 
+/* Cleanup Notifications */
+"cleanup_scan_complete_title" = "스캔 완료";
+"cleanup_scan_complete_body" = "정리할 파일 %@를 찾았습니다.";
+"cleanup_emptying_trash" = "휴지통 비우는 중…";
+"cleanup_complete_title" = "정리 완료";
+"cleanup_complete_body" = "%@를 확보했습니다.";
+
+/* Trash */
+"trash_user_label" = "사용자 휴지통";
+"trash_user_description" = "시스템 휴지통의 내용입니다. 삭제한 파일이 들어 있습니다.";
+"trash_access_prompt_message" = "스캔과 정리를 허용하려면 휴지통 폴더를 선택하세요. (이미 선택되어 있으니 ‘접근 허용’만 클릭하세요)";
+"trash_access_prompt_button" = "접근 허용";
+
+/* Uninstaller View */
+"menu_uninstaller" = "제거 도구";
+"uninstaller_title" = "제거 도구";
+"uninstaller_subtitle" = "앱과 남은 파일을 완전히 제거합니다.";
+"uninstaller_search" = "앱 검색";
+"uninstaller_reload" = "앱 다시 불러오기";
+"uninstaller_confirm_perm_delete" = "영구 삭제할까요?";
+"uninstaller_confirm_move_trash" = "휴지통으로 옮길까요?";
+"uninstaller_delete_permanently" = "영구 삭제";
+"uninstaller_move_trash" = "휴지통으로 이동";
+"uninstaller_uninstall_app_warning_perm" = "%@ 및 관련 파일 %lld개를 영구 삭제합니다. 이 작업은 취소할 수 없습니다.";
+"uninstaller_uninstall_app_warning_trash" = "%@ 및 관련 파일 %lld개를 휴지통으로 옮깁니다.";
+"uninstaller_drag_drop" = "스캔하려면 .app을 여기로 드래그하세요";
+"uninstaller_or_select" = "또는 목록에서 선택";
+"uninstaller_unknown_bundle" = "알 수 없는 번들 ID";
+"uninstaller_expert_mode" = "전문가 모드";
+"uninstaller_select_files" = "(관련 파일 선택)";
+"uninstaller_action_info_perm" = "영구적인 작업";
+"uninstaller_action_info_perm_sub" = "파일이 휴지통을 거치지 않고 영구 삭제됩니다.";
+"uninstaller_action_info_trash" = "되돌릴 수 있는 작업";
+"uninstaller_action_info_trash_sub" = "파일이 휴지통으로 이동하며 복원할 수 있습니다.";
+"uninstaller_space_reclaim" = "회수할 전체 공간: %@";
+"uninstaller_button_uninstall" = "앱 제거";
+"uninstaller_uninstalling" = "제거 중…";
+"uninstaller_uninstalling_app" = "%@ 제거 중…";
+"uninstaller_uninstalling_sub" = "앱 파일을 제거하는 동안 잠시 기다리세요…";
+"uninstaller_related_files_count" = "관련 파일 %lld개 발견";
+"uninstaller_developer_components" = "관련 개발자 데이터";
+"uninstaller_developer_components_description" = "이 항목은 스마트 정리에서 관리하세요.";
+"uninstaller_open_cleanup" = "스마트 정리 열기";
+"uninstaller_expert_tip" = "전문가 모드에서는 캐시와 환경설정 같은 잔여 파일을 골라 제거할 수 있습니다.";
+"uninstaller_cleanup_items" = "정리 항목";
+"uninstaller_scanning_apps" = "앱 스캔 중…";
+"uninstaller.deep_scanning_progress" = "잔여 파일 스캔 중: 앱 %d/%d…";
+"uninstaller.analyzing" = "분석 중…";
+"uninstaller_complete_title" = "제거 완료";
+"uninstaller_complete_body" = "앱 %@이(가) 제거되었습니다.";
+"uninstaller_versions_badge" = "버전 %d개";
+"uninstaller_multiple_versions_found" = "이 앱의 버전 %d개를 찾았습니다";
+"uninstaller_version_title" = "버전 %@";
+"uninstaller_delete_this_version" = "이 버전 삭제";
+"uninstaller_all_versions_tab" = "모든 버전 (%d)";
+"uninstaller_uninstall_version_warning_trash" = "%2$@의 버전 %1$@ 및 관련 파일(%3$lld개)을 휴지통으로 옮깁니다.";
+"uninstaller_uninstall_version_warning_perm" = "%2$@의 버전 %1$@ 및 관련 파일(%3$lld개)을 영구 삭제합니다.";
+"uninstaller_version_deleted_body" = "%2$@의 버전 %1$@이(가) 제거되었습니다.";
+"uninstaller_versions" = "버전";
+"shared_data_warning" = "이 데이터는 다른 앱(예: Android SDK, AVD)과 공유됩니다. 삭제하면 다른 IDE에 영향을 줄 수 있습니다.";
+
+/* Uninstaller Leftovers */
+"uninstaller_tab_apps" = "앱";
+"uninstaller_tab_leftovers" = "잔여 파일";
+"uninstaller_leftovers_hero_title" = "남은 파일 스캔";
+"uninstaller_leftovers_hero_subtitle" = "제거된 앱이 남긴 캐시, 환경설정, 지원 파일을 찾아 제거합니다.";
+"uninstaller_start_leftover_scan" = "잔여 파일 스캔";
+"uninstaller_scanning_leftovers" = "남은 파일 스캔 중…";
+"uninstaller_no_leftovers_title" = "잔여 파일 없음";
+"uninstaller_no_leftovers_subtitle" = "시스템에 고아 앱 잔여 파일이 없습니다.";
+"uninstaller_leftovers_found_count" = "잔여 항목 %lld개 발견";
+"uninstaller_filter_all" = "전체";
+"uninstaller_clean_selected_leftovers" = "선택 항목을 휴지통으로 이동";
+"uninstaller_confirm_trash_leftovers_title" = "선택한 잔여 파일을 휴지통으로 옮길까요?";
+"uninstaller_confirm_trash_leftovers_message" = "선택한 잔여 파일 %lld개(%@)를 휴지통으로 옮길까요?";
+"uninstaller_post_leftovers_title" = "잔여 파일 감지됨";
+"uninstaller_post_leftovers_subtitle" = "«%@» 제거 후 다음 잔여 파일이 감지되었습니다. 제거할 항목을 선택하세요.";
+"uninstaller_evidence_card_title" = "근거 및 신뢰도";
+"uninstaller_evidence_why_flagged" = "왜 표시되었나요?";
+"uninstaller_leftovers_cleaned_notification" = "잔여 항목 %lld개 정리 (%@ 확보)";
+"uninstaller_show_in_finder" = "Finder에서 보기";
+
+/* Processes View */
+"menu_processes" = "프로세스";
+"processes_title" = "프로세스";
+"processes_subtitle" = "실행 중인 시스템 프로세스를 관리합니다.";
+"processes_search" = "프로세스 검색…";
+"processes_scanning" = "프로세스 스캔 중…";
+"processes_terminate" = "종료";
+"processes_force_kill" = "강제 종료";
+"processes_protected" = "보호됨";
+"processes_refresh" = "목록 새로 고침";
+"processes_confirm_terminate" = "프로세스를 종료할까요?";
+"processes_confirm_terminate_message" = "%@(PID %lld)을(를) 종료할까요?";
+"processes_confirm_force" = "강제 종료할까요?";
+"processes_confirm_force_message" = "강제 종료하면 데이터가 손실될 수 있습니다. %@(PID %lld)을(를) 종료할까요?";
+"processes_no_results" = "일치하는 프로세스가 없습니다.";
+"processes_no_processes" = "프로세스 없음";
+"processes_no_processes_sub" = "실행 중인 프로세스가 감지되지 않았습니다.";
+"processes_scan_failed" = "스캔 실패";
+"processes_manage_blacklist" = "차단 목록 관리";
+"processes_manage_whitelist" = "허용 목록 관리";
+"processes_tooltip_blacklist" = "언제든지 종료할 수 있는 프로세스입니다. Docker나 OrbStack 같은 무거운 앱을 추가하세요";
+"processes_tooltip_whitelist" = "절대 종료하면 안 되는 프로세스입니다. 중요한 앱을 실수로 종료하지 않도록 보호합니다";
+"processes_tooltip_refresh" = "실행 중인 프로세스 목록을 새로 고칩니다";
+"processes_section_user" = "내 프로세스";
+"processes_section_system" = "시스템 프로세스";
+"processes_badge_blacklist" = "차단 목록 (%lld)";
+"processes_badge_whitelist" = "허용 목록 (%lld)";
+"processes_blacklist_title" = "차단 목록";
+"processes_blacklist_placeholder" = "차단할 프로세스 이름…";
+"processes_whitelist_title" = "허용 목록";
+"processes_whitelist_placeholder" = "보호할 프로세스 이름…";
+"add" = "추가";
+
+/* Permissions */
+"permissions_title" = "권한 필요";
+"permissions_subtitle" = "MacOSCleaner가 정리하려면 시스템 폴더 접근이 필요합니다.";
+"permissions_fda_description" = "~/Library/Caches, ~/Library/Application Support 및 기타 시스템 폴더에 접근하는 데 필요합니다.";
+"permissions_instructions_title" = "전체 디스크 접근 권한을 허용하는 방법:";
+"permissions_step1" = "아래의 ‘시스템 설정 열기’를 클릭하세요.";
+"permissions_step2" = "목록에서 MacOSCleaner를 찾으세요.";
+"permissions_step3" = "스위치를 켬으로 전환하세요.";
+"permissions_step4" = "MacOSCleaner로 돌아와 ‘상태 확인’을 클릭하세요.";
+"permissions_open_settings" = "시스템 설정 열기";
+"permissions_check_status" = "상태 확인";
+"permissions_dismiss_temp" = "나중에 알림";
+"permissions_dismiss_permanent" = "다시 표시하지 않기";
+"permissions_warning_title" = "계속할까요?";
+"permissions_warning_message" = "전체 디스크 접근 권한이 없으면 불필요한 파일을 많이 찾고 정리할 수 없습니다. 정리 품질이 크게 떨어집니다.";
+"permissions_warning_confirm" = "허용 안 함";
+"permissions_status_granted" = "허용됨";
+"permissions_status_required" = "필요";
+"permissions_window_title" = "권한";
+
+/* Settings Permissions */
+"settings_permissions" = "권한";
+"settings_fda_description" = "시스템 캐시와 앱 데이터를 정리하는 데 필요합니다.";
+"settings_open_settings" = "설정 열기";
+"settings_check_permissions" = "권한 확인";
+"settings_show_permission_guide" = "전체 디스크 접근 권한 허용";
+
+/* Format strings */
+"dashboard_used_percent_format" = "%lld%%";
+"dashboard_freed_prefix" = "+%@";
+"cleanup_mb_format" = "%lld MB";
+
+/* Process format strings */
+"processes_view_mode_grouped" = "그룹";
+"processes_view_mode_flat" = "평면";
+"processes_selected_count" = "%lld개 선택됨";
+"processes_process_count" = "프로세스 %lld개";
+"process_pid_format" = "PID %lld";
+"process_cpu_format" = "%.1f%%";
+"process_uptime_hours_format" = "%lld시간 %lld분";
+"process_uptime_minutes_format" = "%lld분";
+
+/* Common */
+"version_unknown" = "해당 없음";
+
+/* Operation Risk */
+"risk.safe" = "안전";
+"risk.moderate" = "보통";
+"risk.dangerous" = "위험";
+"risk.protected" = "보호됨";
+
+/* Cleanup Dev Badge */
+"cleanup_dev_badge" = "DEV";
+
+/* Refresh Interval (Settings -> Processes) */
+"refresh_manual" = "수동";
+"refresh_5s" = "5초마다";
+"refresh_10s" = "10초마다";
+"refresh_30s" = "30초마다";
+
+/* Sort By (Settings -> Processes) */
+"sort_cpu" = "CPU 사용량";
+"sort_memory" = "메모리 사용량";
+"sort_name" = "이름";
+"sort_threads" = "스레드 수";
+
+/* Cleanup Category Names */
+"category.app_caches" = "사용자 앱 캐시";
+"category.package_managers" = "패키지 관리자";
+"category.gradle_maven" = "Gradle + Maven";
+"category.flutter_dart" = "Flutter / Dart";
+"category.xcode" = "Xcode";
+"category.ios_simulators" = "iOS 시뮬레이터";
+"category.android_caches" = "Android 캐시";
+"category.android_sdk" = "Android SDK";
+"category.ide_caches" = "IDE / Electron 캐시";
+"category.browser_caches" = "브라우저 캐시";
+"category.messaging_media" = "메시지 / 미디어";
+"category.docker" = "Docker";
+"category.language_caches" = "언어 캐시";
+"category.user_logs" = "사용자 로그";
+"category.system_caches" = "시스템 캐시";
+"category.app_containers" = "앱 컨테이너";
+"category.dotfile_caches" = "점 파일 캐시";
+"category.scattered_junk" = "흩어진 정크";
+"category.orphaned_remnants" = "고아 잔여 파일";
+"category.orphaned_files" = "고아 파일";
+"category.large_files" = "큰 파일";
+"category.dynamic_cache_discovery" = "동적 캐시 탐색";
+"category.time_machine_snapshots" = "Time Machine 스냅샷";
+"category.ios_backups" = "iOS 백업";
+"category.mail_downloads" = "Mail 다운로드";
+"category.saved_app_state" = "저장된 앱 상태";
+"category.crash_reporter" = "충돌 리포터";
+"category.assets_v2" = "AssetsV2 / iWork 템플릿";
+"category.cloud_kit_cache" = "iCloud CloudKit 캐시";
+"category.swift_pm_cache" = "Swift Package Manager 캐시";
+"category.carthage_cache" = "Carthage 캐시";
+"category.steam_cache" = "Steam 캐시";
+"category.teams_cache" = "Microsoft Teams 캐시";
+"category.adobe_caches" = "Adobe 캐시";
+"category.chrome_extra_caches" = "Chrome 추가 캐시";
+"category.ide_old_versions" = "이전 IDE 버전";
+"category.launch_agents" = "런치 에이전트";
+"category.launch_daemons" = "런치 데몬";
+"category.privileged_helpers" = "권한 있는 도우미 도구";
+"category.pkg_receipts" = "패키지 영수증";
+"category.internet_plugins" = "인터넷 플러그인";
+"category.shared_file_lists" = "공유 파일 목록";
+"category.cloud_docs" = "클라우드 문서";
+"category.photos_cache" = "사진 캐시";
+"category.voice_memos" = "음성 메모";
+"category.garage_band_logic" = "GarageBand / Logic Pro";
+"category.imovie_final_cut" = "iMovie / Final Cut";
+"category.garmin_fitbit" = "Garmin / Fitbit";
+"category.old_backups" = "오래된 백업";
+"category.ai_models" = "AI 모델 및 LLM 데이터";
+"category.installer_packages" = "설치 패키지";
+"category.dns_flush" = "DNS 캐시";
+"category.font_cache" = "서체 캐시";
+"category.sleep_image" = "잠자기 이미지";
+"category.duplicate_files" = "중복 파일";
+"category.unused_apps" = "사용하지 않는 앱";
+"category.project_build_artifacts" = "프로젝트 빌드 산출물";
+
+/* Process View - Missing Keys */
+"view_mode" = "보기 모드";
+"sort_by" = "정렬 기준";
+"cancel_selection" = "선택 취소";
+"select_multiple" = "여러 개 선택";
+"select_all" = "모두 선택";
+"deselect_all" = "모두 선택 해제";
+"terminate_selected" = "선택 항목 종료";
+"force_kill_selected" = "선택 항목 강제 종료";
+"processes_terminate_all" = "모두 종료";
+"processes_force_kill_all" = "모두 강제 종료";
+"process.unknown" = "알 수 없음";
+
+/* Uninstaller - Scan Progress */
+"uninstaller.progress.discovering" = "앱 찾는 중…";
+"uninstaller.progress.complete" = "스캔 완료";
+
+/* Uninstaller - Confidence Tiers */
+"uninstaller.tier.ignore" = "무시";
+"uninstaller.tier.possible" = "가능성 있음";
+"uninstaller.tier.very_likely" = "매우 가능성 높음";
+"uninstaller.tier.guaranteed" = "확실함";
+
+/* Developer Components */
+"developer.android_sdk" = "Android SDK";
+"developer.android_data" = "Android 데이터 및 가상 기기";
+"developer.gradle_cache" = "Gradle 캐시";
+"developer.xcode_derived_data" = "Xcode Derived Data";
+"developer.ios_simulators" = "iOS 시뮬레이터";
+"developer.flutter_cache" = "Flutter 캐시";
+"developer.docker" = "Docker";
+"developer.homebrew" = "Homebrew";
+
+/* Evidence Categories */
+"uninstaller.evidence_category.identity" = "신원 일치";
+"uninstaller.evidence_category.signature" = "코드 서명";
+"uninstaller.evidence_category.system" = "시스템 통합";
+"uninstaller.evidence_category.metadata" = "파일 메타데이터";
+"uninstaller.evidence_category.content" = "내용 분석";
+"uninstaller.evidence_category.graph" = "그래프 전파";
+"uninstaller.evidence_category.launch_services" = "Launch Services";
+
+/* Evidence Descriptions */
+"uninstaller.evidence.bundleIDExact.title" = "번들 ID 일치";
+"uninstaller.evidence.bundleIDExact.description" = "이름이 앱의 번들 식별자와 일치합니다.";
+"uninstaller.evidence.bundleIDPrefix.title" = "번들 ID 접두사";
+"uninstaller.evidence.bundleIDPrefix.description" = "이름이 '%@'(으)로 시작합니다.";
+"uninstaller.evidence.appNameExact.title" = "앱 이름 일치";
+"uninstaller.evidence.appNameExact.description" = "이름이 앱 이름과 일치합니다.";
+"uninstaller.evidence.appNamePrefix.title" = "앱 이름 접두사";
+"uninstaller.evidence.appNamePrefix.description" = "이름이 앱 이름으로 시작합니다.";
+"uninstaller.evidence.executableName.title" = "실행 파일 이름";
+"uninstaller.evidence.executableName.description" = "이름이 앱의 실행 파일과 일치합니다.";
+"uninstaller.evidence.frameworkName.title" = "프레임워크 이름";
+"uninstaller.evidence.frameworkName.description" = "앱이 사용하는 프레임워크 파일입니다.";
+"uninstaller.evidence.xpcServiceName.title" = "XPC 서비스";
+"uninstaller.evidence.xpcServiceName.description" = "앱이 사용하는 XPC 서비스 파일입니다.";
+"uninstaller.evidence.plugInName.title" = "플러그인 이름";
+"uninstaller.evidence.plugInName.description" = "앱이 사용하는 플러그인 파일입니다.";
+"uninstaller.evidence.vendorName.title" = "공급업체 이름";
+"uninstaller.evidence.vendorName.description" = "같은 공급업체의 파일입니다.";
+"uninstaller.evidence.teamID.title" = "팀 ID 일치";
+"uninstaller.evidence.teamID.description" = "팀 %@이(가) 서명했으며 앱과 일치합니다.";
+"uninstaller.evidence.developerSignature.title" = "개발자 서명";
+"uninstaller.evidence.developerSignature.description" = "같은 개발자 인증서로 서명되었습니다.";
+"uninstaller.evidence.launchAgent.title" = "런치 에이전트";
+"uninstaller.evidence.launchAgent.description" = "앱이 등록한 런치 에이전트입니다.";
+"uninstaller.evidence.launchDaemon.title" = "런치 데몬";
+"uninstaller.evidence.launchDaemon.description" = "앱이 등록한 런치 데몬입니다.";
+"uninstaller.evidence.loginItem.title" = "로그인 항목";
+"uninstaller.evidence.loginItem.description" = "앱이 등록한 로그인 항목입니다.";
+"uninstaller.evidence.appGroup.title" = "앱 그룹";
+"uninstaller.evidence.appGroup.description" = "앱의 그룹 컨테이너에 속합니다.";
+"uninstaller.evidence.container.title" = "앱 컨테이너";
+"uninstaller.evidence.container.description" = "앱 샌드박스 컨테이너입니다.";
+"uninstaller.evidence.extension.title" = "앱 확장";
+"uninstaller.evidence.extension.description" = "앱이 등록한 앱 확장입니다.";
+"uninstaller.evidence.xpcConnection.title" = "XPC 연결";
+"uninstaller.evidence.xpcConnection.description" = "앱이 사용하는 XPC 연결입니다.";
+"uninstaller.evidence.packageReceipt.title" = "패키지 영수증";
+"uninstaller.evidence.packageReceipt.description" = "패키지 영수증으로 등록되었습니다.";
+"uninstaller.evidence.knownCatalog.title" = "알려진 잔여 파일";
+"uninstaller.evidence.knownCatalog.description" = "이 앱의 선별된 잔여 파일 카탈로그에 있습니다.";
+"uninstaller.evidence.plistContent.title" = "plist 내용";
+"uninstaller.evidence.plistContent.description" = "속성 목록에 앱 이름 또는 번들 ID가 있습니다.";
+"uninstaller.evidence.spotlight.title" = "Spotlight 인덱스";
+"uninstaller.evidence.spotlight.description" = "Spotlight 검색으로 찾았습니다.";
+"uninstaller.evidence.spotlightBundleAttr.title" = "Spotlight 번들 속성";
+"uninstaller.evidence.spotlightBundleAttr.description" = "Spotlight 메타데이터가 번들 식별자 '%@'을(를) 보고합니다.";
+"uninstaller.evidence.spotlightCreator.title" = "Spotlight 생성자";
+"uninstaller.evidence.spotlightCreator.description" = "Spotlight 생성자 메타데이터가 일치합니다.";
+"uninstaller.evidence.fileContent.title" = "파일 내용";
+"uninstaller.evidence.fileContent.description" = "파일 내용이 앱을 참조합니다.";
+"uninstaller.evidence.electronCache.title" = "Electron 캐시";
+"uninstaller.evidence.electronCache.description" = "Electron 기반 앱 캐시입니다.";
+"uninstaller.evidence.jetBrainsConfig.title" = "JetBrains 구성";
+"uninstaller.evidence.jetBrainsConfig.description" = "JetBrains IDE 구성입니다.";
+"uninstaller.evidence.flutterBuild.title" = "Flutter 빌드";
+"uninstaller.evidence.flutterBuild.description" = "Flutter 빌드 산출물입니다.";
+"uninstaller.evidence.parentDirectory.title" = "상위 디렉터리";
+"uninstaller.evidence.parentDirectory.description" = "앱과 관련된 디렉터리에서 찾았습니다.";
+"uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
+"uninstaller.evidence.launchServicesRegistered.description" = "Launch Services 데이터베이스에 등록되어 있습니다.";
+
+/* Permissions - Missing Access Descriptions */
+"permissions.full_disk_access" = "전체 디스크 접근 권한";
+"permissions.accessibility" = "손쉬운 사용";
+"permissions.automation" = "자동화 (Apple Events)";
+"permissions.trash_access" = "휴지통 접근";
+"permissions.notification_provisional" = "임시";
+"permissions.notification_ephemeral" = "일시적";
+"permissions.unknown_status" = "알 수 없음";
+
+/* Process Categories */
+"process.category.applications" = "앱";
+"process.category.launch_agents" = "런치 에이전트";
+"process.category.launch_daemons" = "런치 데몬";
+"process.category.system" = "시스템";
+
+/* Uninstaller - Additional UI */
+"uninstaller.scanning_deep" = "정밀 스캔 중…";
+"uninstaller.why_this_file" = "이 파일인 이유";
+"uninstaller.related_files" = "관련 파일";
+"uninstaller.developer_artifacts" = "개발자 산출물";
+"uninstaller.progress.developer_components" = "개발자 구성 요소 확인 중…";
+"uninstaller.footer.summary" = "파일 %lld개 선택 (%@개 등급)";
+"uninstaller.metadata.difficulty" = "제거 난이도";
+"uninstaller.metadata.difficulty.critical" = "매우 높음";
+"uninstaller.metadata.difficulty.high" = "높음";
+"uninstaller.metadata.difficulty.medium" = "중간";
+"uninstaller.metadata.difficulty.low" = "낮음";
+"uninstaller.metadata.parent_suite" = "제품군";
+"uninstaller.metadata.known_issues" = "알려진 문제";
+"uninstaller.shared_component" = "공유";
+"uninstaller.shared_component.help" = "다른 앱과 공유됩니다. 기본적으로 선택되지 않습니다. 공유 데이터를 제거할 때만 켜세요.";
+"uninstaller.shared_help.microsoft" = "Microsoft Office 제품군(Word, Excel, PowerPoint, Outlook)의 공유 구성 요소";
+"uninstaller.shared_help.google" = "Google Update 서비스(Chrome, Google Drive, Earth)의 공유 구성 요소";
+"uninstaller.shared_help.adobe" = "Adobe Creative Cloud 제품군(Photoshop, Illustrator, Premiere)의 공유 구성 요소";
+"uninstaller.shared_help.jetbrains" = "JetBrains IDE(IntelliJ IDEA, PyCharm, WebStorm, CLion)의 공유 구성 요소";
+"uninstaller.shared_help.android" = "공유 Android 개발 데이터 (Android Studio, IntelliJ IDEA, Gradle)";
+"uninstaller.shared_help.apple_developer" = "공유 Apple Developer 도구 (Xcode, Command Line Tools, Simulator)";
+
+/* Format Helpers */
+"format_bytes_b" = "%lld B";
+"format_bytes_kb" = "%.1f KB";
+"format_bytes_mb" = "%.1f MB";
+"format_bytes_gb" = "%.2f GB";
+
+/* Process Block Reasons */
+"process_block_pid_format" = "PID %lld은(는) 시스템에 필수적인 프로세스입니다";
+"process_block_whitelist_name_format" = "%@은(는) 허용 목록에 있습니다 (보호됨)";
+"process_block_whitelist_bundle_format" = "%@은(는) 허용 목록에 있습니다 (보호됨)";
+"process_block_protected_format" = "%@은(는) 보호된 시스템 프로세스입니다";
+"process_block_no_path_format" = "%@에 경로 정보가 없습니다. 주의해서 진행하세요";
+
+/* Error Messages */
+"error_ps_failed_format" = "프로세스 목록을 가져오지 못했습니다: %@";
+"error_operation_blocked_format" = "%@을(를) 종료할 수 없습니다: %@";
+"error_kill_failed_format" = "%@ 종료 실패 (종료 코드 %lld): %@";
+"error_timeout" = "작업 시간이 초과되었습니다";
+"error_safety_violation_format" = "안전 위반: %@";
+"error_command_failed_format" = "명령 실패: %@";
+"error_invalid_transition_format" = "%@에서 %@으(로)의 전환이 잘못되었습니다";
+
+/* OS Version */
+"os_version_format" = "macOS %lld.%lld.%lld";
+
+/* Uninstaller Tooltips */
+"uninstaller_show_in_finder" = "Finder에서 보기";
+"uninstaller_used_by" = "%@에서 사용";
+
+/* Apple Intelligence settings */
+"settings_ai_title" = "Apple Intelligence";
+"settings_enable_ai" = "로컬 AI 설명 사용";
+"settings_tooltip_enable_ai" = "기기 내 언어 모델로 관련 파일과 시동 서비스를 설명합니다.";
+"settings_ai_status" = "AI 상태";
+"settings_ai_status_disabled" = "꺼짐";
+"settings_ai_status_ready" = "준비됨";
+"settings_ai_status_unsupported_device" = "지원되지 않는 기기";
+"settings_ai_status_not_enabled" = "시스템 설정에서 켜지지 않음";
+"settings_ai_status_downloading" = "모델 자산 다운로드 중…";
+"settings_ai_status_preparing" = "모델 준비 중…";
+"settings_ai_status_unsupported_language" = "지원되지 않는 언어";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence는 현재 사용 중인 시스템 언어를 지원하지 않습니다. macOS 시스템 설정에서 지원 언어(예: 영어)가 필요합니다.";
+"settings_ai_hint_preparing" = "macOS가 백그라운드에서 모델 자산을 초기화하고 있습니다. Mac을 전원에 연결하고 시스템 설정에서 진행 상황을 확인하세요.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence가 꺼져 있습니다. macOS 시스템 설정에서 켜세요.";
+"settings_ai_hint_unsupported_device" = "이 Mac은 Apple Intelligence를 지원하지 않습니다. Apple Silicon M1 칩 이상이 필요합니다.";
+"settings_ai_open_system_settings" = "시스템 설정 열기…";
+"settings_ai_refresh_status" = "상태 새로 고침";
+"settings_ai_status_unavailable" = "사용할 수 없음";
+
+/* AI Explanations */
+"uninstaller_explain_with_ai" = "AI로 설명";
+"uninstaller_ai_explaining" = "설명 생성 중…";
+"uninstaller_ai_failed" = "AI를 사용할 수 없거나 설명을 생성하지 못했습니다.";
+
+"cleanup_option_tm_snapshots" = "Time Machine 스냅샷";
+"cleanup_option_tm_snapshots_sub" = "지울 수 있는 공간을 확보하려고 로컬 APFS 스냅샷을 안전하게 삭제합니다 (암호 필요).";
+
+/* New Settings Redesign */
+"settings_category_overview" = "개요";
+"settings_category_general" = "일반";
+"settings_category_permissions" = "권한";
+"settings_category_cleanup" = "정리";
+"settings_category_automation" = "Siri 및 AI";
+"settings_category_ai" = "Apple Intelligence";
+"settings_category_processes" = "프로세스";
+"settings_category_advanced" = "고급";
+"settings_category_about" = "정보";
+"settings_category_danger_zone" = "위험 구역";
+
+"settings_overview_subtitle" = "네이티브 macOS 클리너 및 최적화 도구";
+"settings_overview_auto_scan" = "자동 스캔";
+"settings_overview_scan_at_launch" = "실행 시 스캔";
+"settings_quick_actions" = "빠른 작업";
+"settings_quick_actions_sub" = "자주 쓰는 관리 작업";
+"settings_quick_action_check_updates" = "업데이트 확인";
+"settings_quick_action_check_updates_sub" = "GitHub 릴리즈 확인";
+"settings_quick_action_update_available" = "업데이트 사용 가능!";
+"settings_quick_action_permissions_sub" = "디스크 접근 및 휴지통 관리";
+"settings_quick_action_shortcuts_siri" = "단축어 및 Siri";
+"settings_quick_action_shortcuts_siri_sub" = "자동화 구성";
+"settings_quick_action_advanced_sub" = "디버그 및 진단";
+"settings_system_status" = "시스템 상태";
+"settings_system_status_sub" = "앱 상태 및 지표";
+"settings_system_status_db" = "앱 데이터베이스";
+
+"settings_appearance_language" = "모양 및 언어";
+"settings_appearance_language_sub" = "앱 인터페이스 개인 설정";
+"settings_language_sub" = "인터페이스 표시 언어";
+"settings_theme_sub" = "색상 구성";
+"settings_tooltips_sub" = "가리키면 표시되는 도움말";
+"settings_system_maintenance_title" = "시스템 유지 관리";
+"settings_system_maintenance_sub" = "macOS용 시스템 최적화";
+"settings_touchid_sudo_title" = "sudo용 Touch ID";
+"settings_touchid_sudo_sub" = "Touch ID로 sudo 명령 인증 허용 (/etc/pam.d/sudo_local)";
+"settings_touchid_sudo_unsupported" = "이 Mac에서는 Touch ID를 사용할 수 없습니다";
+"settings_touchid_sudo_enabled" = "켜짐";
+"settings_touchid_sudo_copy_cmd" = "터미널 명령 복사";
+"settings_touchid_sudo_copied" = "복사됨!";
+"settings_touchid_sudo_check_status" = "상태 확인";
+"settings_touchid_sudo_hint" = "이 명령을 터미널에 붙여넣고 실행하면 sudo에 Touch ID를 사용할 수 있습니다. SIP 때문에 앱이 /etc/pam.d/에 직접 쓸 수 없습니다.";
+"settings_spotlight_reindex_title" = "Spotlight 인덱스 재구축";
+"settings_spotlight_reindex_sub" = "검색 오류와 저장 공간 계산을 고치려고 검색 인덱스 재구축을 강제합니다 (mdutil -E /)";
+"settings_spotlight_reindex_button" = "인덱스 재구축";
+"settings_spotlight_reindexing" = "재구축 중…";
+"settings_spotlight_reindex_success" = "Spotlight 재색인이 시작되었습니다";
+"settings_software_updates" = "소프트웨어 업데이트";
+"settings_software_updates_sub" = "버전 확인";
+"settings_current_version" = "현재 버전";
+
+"settings_permissions_sub" = "시스템 접근 권한";
+"settings_permissions_overall" = "전체 권한 상태";
+"settings_permissions_overall_sub" = "시스템 캐시와 앱 잔여 파일을 스캔하는 데 필요합니다";
+"settings_fda_title" = "전체 디스크 접근 권한 (FDA)";
+"settings_fda_body" = "전체 디스크 접근 권한으로 MacOSCleaner가 고아 시스템 파일, Xcode 파생 데이터, 앱 로그를 안전하게 찾을 수 있습니다.";
+"settings_open_privacy_settings" = "개인정보 보호 설정 열기";
+"settings_check_status" = "상태 확인";
+"settings_permission_guide" = "안내";
+"settings_notifications_enable" = "알림 사용";
+"settings_notifications_enable_sub" = "정리가 끝나거나 큰 정크가 쌓이면 알림을 받습니다";
+"settings_notifications_denied_body" = "시스템 설정에서 알림이 거부되었습니다";
+"status_granted" = "허용됨";
+"status_attention" = "확인 필요";
+"status_required" = "필요";
+"status_disabled" = "꺼짐";
+
+"settings_scan_config" = "스캔 구성";
+"settings_scan_config_sub" = "제거 도구 및 정크 검색 옵션";
+"settings_scan_mode_sub" = "고아 파일 스캔 깊이";
+"settings_auto_scan_sub" = "앱을 실행하면 정크 스캔을 자동으로 시작합니다";
+"settings_show_related_sub" = "제거 도구에 구성 및 캐시 파일 포함";
+"settings_deletion_behavior" = "삭제 및 휴지통 동작";
+"settings_deletion_behavior_sub" = "안전한 휴지통 처리 규칙";
+"settings_trash_safety_note" = "휴지통 안전 설정은 파일의 영구 삭제에 영향을 줍니다.";
+"settings_empty_trash_cleanup_sub" = "정크를 정리한 뒤 시스템 휴지통을 자동으로 비웁니다";
+"settings_bypass_trash_sub" = "제거된 앱 잔여 파일을 휴지통으로 옮기지 않고 영구 삭제합니다";
+"settings_empty_trash_immediately_sub" = "모든 작업에서 휴지통 완충을 건너뜁니다";
+
+"settings_automation_title" = "Siri 및 단축어";
+"settings_automation_sub" = "시스템 음성 및 작업 흐름 자동화";
+"settings_enable_siri_sub" = "Siri 문구로 정리 작업을 실행합니다";
+"settings_enable_shortcuts_sub" = "macOS 단축어에서 MacOSCleaner AppIntents를 허용합니다";
+"settings_open_shortcuts_title" = "macOS 단축어 열기";
+"settings_open_shortcuts_sub" = "시스템 단축어 앱에서 작업 흐름을 관리합니다";
+"settings_launch_shortcuts_button" = "단축어 앱 실행";
+"settings_custom_siri_commands" = "사용자 설정 Siri 명령";
+"settings_custom_siri_commands_sub" = "음성 문구 트리거";
+"settings_no_custom_commands" = "구성된 사용자 설정 Siri 명령이 없습니다.";
+
+"settings_ai_sub" = "스마트 정리 추천을 위한 로컬 AI 모델";
+"settings_enable_ai_sub" = "FoundationModels로 시스템 파일을 로컬에서 분석합니다";
+"settings_ai_readiness" = "모델 준비 상태";
+"settings_ai_readiness_sub" = "기기 내 AI 엔진 사용 가능 여부";
+"settings_ai_capabilities" = "사용 가능한 기능";
+"settings_ai_capabilities_sub" = "스마트 기능과 완전한 온디바이스 개인정보 보호";
+"settings_ai_feat_smart_cleanup" = "스마트 정리";
+"settings_ai_feat_smart_cleanup_sub" = "위험 기반 캐시 분류 및 순위";
+"settings_ai_feat_recs" = "지능형 추천";
+"settings_ai_feat_recs_sub" = "활동 기반 잔여 파일 제거 제안";
+"settings_ai_feat_duplicates" = "중복 파일 찾기";
+"settings_ai_feat_duplicates_sub" = "동일한 파일의 의미 기반 그룹화";
+"settings_ai_feat_privacy" = "개인정보 보호";
+"settings_ai_feat_privacy_sub" = "모든 AI 처리는 Apple Silicon NPU에서 로컬로 실행됩니다";
+"settings_ai_feat_voice" = "Siri 음성 제어";
+"settings_ai_feat_voice_sub" = "음성 명령으로 시스템 유지 관리 작업을 실행합니다";
+"settings_ai_feat_shortcuts" = "자동화 스크립트";
+"settings_ai_feat_shortcuts_sub" = "macOS 단축어와 깊이 통합됩니다";
+
+"settings_processes_title" = "프로세스 모니터 설정";
+"settings_processes_sub" = "CPU 및 메모리 백그라운드 스캐너 구성";
+"settings_refresh_interval_sub" = "프로세스 폴링 빈도";
+"settings_sort_option_title" = "기본 정렬 옵션";
+"settings_sort_option_sub" = "리소스 사용량으로 활성 백그라운드 프로세스를 정렬합니다";
+
+"settings_advanced_dev_title" = "개발자 및 고급";
+"settings_advanced_dev_sub" = "확장 진단 및 스캔 매개변수";
+"settings_show_related_app_files" = "관련 앱 파일 표시";
+"settings_show_related_app_files_sub" = "검색 결과에 숨겨진 plist와 컨테이너 폴더를 포함합니다";
+"settings_debug_mode" = "디버그 모드";
+"settings_debug_mode_sub" = "정리 중 자세한 로그를 표시합니다";
+"settings_startup_vendors_sub" = "알려진 시동 백그라운드 항목 공급업체를 관리합니다";
+
+"settings_about_tagline" = "macOS 26+용으로 설계되었습니다. Swift 6, SwiftUI, Liquid Glass로 만들었습니다.";
+"settings_about_resources" = "리소스 및 지원";
+"settings_about_resources_sub" = "공식 링크 및 릴리즈 문서";
+"settings_about_github" = "GitHub 저장소 (소스 코드)";
+"settings_about_github_releases" = "GitHub 저장소 (릴리즈)";
+"settings_about_wiki" = "문서 및 위키";
+"settings_about_wiki_sub" = "앱 사용에 대한 자세한 안내";
+"settings_about_report_issue" = "문제 신고";
+"settings_about_report_issue_sub" = "버그 신고 및 기능 요청";
+"settings_about_website" = "웹사이트";
+"settings_about_orcid" = "ORCID";
+
+/* Privacy & Safety (About) */
+"settings_privacy_safety_title" = "개인정보 보호 및 안전 🛡️";
+"settings_privacy_safety_sub" = "핵심 시스템 보호 및 데이터 개인정보 보호 보장";
+"settings_privacy_item_1_title" = "100% 비공개";
+"settings_privacy_item_1_desc" = "원격 측정, 분석, 사용 추적, 원격 로깅이 없습니다. 모든 작업은 기기에서 완전히 오프라인으로 실행됩니다.";
+"settings_privacy_item_2_title" = "최소한의 네트워크";
+"settings_privacy_item_2_desc" = "유일한 네트워크 사용은 시작 시 또는 수동으로 공개 GitHub Releases API에서 업데이트를 확인하는 것입니다 (버전 및 DMG 자산 URL). 원격 측정은 없습니다.";
+"settings_privacy_item_3_title" = "안전한 휴지통 복구";
+"settings_privacy_item_3_desc" = "디스크 분석과 앱 제거 도구는 trashItem(at:)으로 파일을 휴지통에 옮깁니다. 기본적으로 복구할 수 있습니다.";
+"settings_privacy_item_4_title" = "스마트 정리 확인";
+"settings_privacy_item_4_desc" = "명시적으로 확인한 뒤에 선택한 캐시와 임시 데이터를 제거합니다.";
+"settings_privacy_item_5_title" = "SafetyManager 보호";
+"settings_privacy_item_5_desc" = "/System, /usr, /bin, ~/.ssh 및 기타 중요 경로 접근을 차단합니다.";
+"settings_privacy_item_6_title" = "ProcessSafetyPolicy";
+"settings_privacy_item_6_desc" = "시스템에 필수적인 프로세스를 실수로 종료하지 않도록 보호합니다.";
+"settings_privacy_item_7_title" = "선택적 영구 삭제";
+"settings_privacy_item_7_desc" = "영구 삭제와 자동 휴지통 비우기는 선택 사항이며 UI에 분명히 표시됩니다.";
+"settings_privacy_item_8_title" = "앱을 부드럽게 종료";
+"settings_privacy_item_8_desc" = "정리 전에 앱을 닫습니다 (정상 종료 후 3초 뒤 강제 종료).";
+"settings_privacy_item_9_title" = "전체 디스크 접근 권한";
+"settings_privacy_item_9_desc" = "완전한 스캔을 위해 시작 시 전체 디스크 접근 권한을 요청합니다.";
+"settings_about_privacy_policy_sub" = "100% 로컬, 원격 측정 없음";
+"settings_about_acknowledgements" = "감사의 말";
+"settings_about_acknowledgements_sub" = "오픈 소스 라이브러리 및 프레임워크";
+
+"settings_danger_zone_title" = "위험 구역";
+"settings_danger_zone_sub" = "되돌릴 수 없는 앱 작업";
+"settings_reset_all_title" = "모든 앱 설정 재설정";
+"settings_reset_all_sub" = "모든 환경설정, 사용자 설정 Siri 명령, 캐시를 초기 설정으로 되돌립니다.";
+"settings_reset_action_button" = "데이터 및 환경설정 재설정";
+
+"settings_search_prompt" = "설정 검색…";
+"settings_search_results_title" = "«%@» 검색 결과";
+"settings_search_no_results" = "설정을 찾지 못했습니다";
+"settings_search_no_results_sub" = "'휴지통', 'FDA', 'AI', '테마' 같은 용어로 검색해 보세요";
+
+"settings_project_artifacts_age" = "프로젝트 산출물 보관 기간";
+"settings_project_artifacts_age_sub" = "이 일수보다 오래 수정되지 않은 빌드 산출물을 스캔합니다";
+"settings_days_count" = "> %d일";
+
+"dashboard_view_all_history" = "전체 기록 보기";
+"history_window_title" = "정리 기록";
+"history_search_placeholder" = "검색";
+"history_sort_date" = "날짜";
+"history_sort_size" = "크기";
+"history_trigger_manual" = "수동";
+"history_trigger_automatic" = "자동";
+"history_empty_state" = "아직 수행한 정리가 없습니다";
+"history_category_general" = "일반";
+"history_category_media" = "미디어";
+"history_category_caches" = "캐시";
+"history_category_dev" = "개발";
+"category.cloudkit_cache" = "iCloud CloudKit 캐시";
+"category.swiftpm_cache" = "Swift Package Manager 캐시";
+"select" = "선택";
+"dashboard_history_empty_hint" = "여기에서 정리 기록을 보려면 Mac 유지 관리 정리를 실행하세요";
+"dashboard_start_cleanup" = "정리 시작";

@@ -138,18 +138,24 @@ struct MacOSCleanerApp: App {
         
         Window("about_title".localized, id: "about") {
             AboutView(availableUpdate: availableUpdate)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
         
         Window("permissions_window_title".localized, id: "permissions") {
             PermissionsView(permissionsManager: permissionsManager)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
         
         Window("history_window_title".localized, id: "cleanup-history") {
             CleanupHistoryView(journal: journal)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
         }
         .windowResizability(.contentMinSize)
         .defaultPosition(.center)
@@ -166,6 +172,8 @@ struct MacOSCleanerApp: App {
                 },
                 availableUpdate: $availableUpdate
             )
+            .applyAppLanguage(appSettings.language)
+            .id(appSettings.language)
         }
     }
 }
