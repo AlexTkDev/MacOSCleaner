@@ -104,6 +104,18 @@ public actor UninstallerService {
         }
     }
 
+    public struct OrphanCleanupResult: Sendable {
+        public let freed: Int64
+        public let succeededItems: [OrphanItem]
+        public let failedItems: [OrphanItem]
+
+        public init(freed: Int64, succeededItems: [OrphanItem], failedItems: [OrphanItem]) {
+            self.freed = freed
+            self.succeededItems = succeededItems
+            self.failedItems = failedItems
+        }
+    }
+
     public struct AppInfo: Identifiable, Sendable, Hashable {
         public let id: UUID
         public var url: URL
@@ -445,12 +457,15 @@ public actor UninstallerService {
             let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
                 ? .normal : .safe
 
+            let isConfig = Self.isApplicationConfigurationPath(node.url.path)
+            let isSelectedByDefault = isConfig ? false : (assessment.tier >= .veryLikely)
+
             let file = RelatedFile(
                 url: node.url,
-                // possible = review-only; veryLikely+ preselected
-                isSelected: assessment.tier >= .veryLikely,
+                // App configuration/settings are optional (unselected by default); others preselected if veryLikely+
+                isSelected: isSelectedByDefault,
                 size: fileSize,
-                deletionRisk: risk,
+                deletionRisk: isConfig ? .normal : risk,
                 evidence: assessment.evidence,
                 confidence: assessment.tier
             )
@@ -502,8 +517,7 @@ public actor UninstallerService {
             return file
         }
 
-        // Shared components (Keystone, MAU, …): preselected for Google Chrome; user may deselect.
-        let isChrome = identity.bundleID.lowercased() == "com.google.chrome" || identity.appName.lowercased().contains("chrome")
+        // Shared components (Keystone, MAU, …): optional, never preselected by default
         var existing = Set(result.map { NormalizedPath.key($0.url) })
         for url in collection.sharedPaths {
             let standardized = NormalizedPath.canonicalize(url)
@@ -516,7 +530,7 @@ public actor UninstallerService {
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
-                isSelected: isChrome,
+                isSelected: false,
                 size: fileSize,
                 deletionRisk: .shared,
                 evidence: [],
@@ -549,14 +563,19 @@ public actor UninstallerService {
 
     public func deepScanAll(apps: [AppInfo]) async -> [AppInfo] {
         await withTaskGroup(of: AppInfo?.self, returning: [AppInfo].self) { group in
-            for app in apps {
-                group.addTask {
-                    try? await self.deepScan(app)
-                }
+            let maxConcurrency = 8
+            var iterator = apps.makeIterator()
+            var submitted = 0
+            while submitted < maxConcurrency, let app = iterator.next() {
+                group.addTask { try? await self.deepScan(app) }
+                submitted += 1
             }
             var results: [AppInfo] = []
             for await result in group {
                 if let result { results.append(result) }
+                if let nextApp = iterator.next() {
+                    group.addTask { try? await self.deepScan(nextApp) }
+                }
             }
             return results
         }
@@ -584,59 +603,198 @@ public actor UninstallerService {
         return try await scanner.scanOrphans()
     }
 
-    public func removeOrphanedResiduals(_ items: [OrphanItem], bypassTrash: Bool = false) async throws -> Int64 {
-        let shouldBypass = bypassTrash
-        var freed: Int64 = 0
-        for item in items {
+    public static func isApplicationConfigurationPath(_ path: String) -> Bool {
+        let lower = path.lowercased()
+        if lower.contains("/preferences/") && (lower.hasSuffix(".plist") || lower.hasSuffix(".json")) {
+            return true
+        }
+        if lower.contains("/.config/") {
+            return true
+        }
+        if lower.contains("/application support/jetbrains/") && (lower.contains("/options") || lower.contains("/config")) {
+            return true
+        }
+        if lower.contains("/application support/code/user") || lower.contains("/application support/cursor/user") {
+            return true
+        }
+        if lower.contains("/application support/") && (lower.hasSuffix("/config") || lower.hasSuffix("/settings.json")) {
+            return true
+        }
+        return false
+    }
+
+    private func bootoutLaunchdService(at path: String) async {
+        guard (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") else { return }
+        let domain = path.contains("LaunchDaemons") ? "system" : "gui/\(getuid())"
+        let bootout = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", domain, path])
+        if bootout?.exitCode == 0 {
+            Logger.uninstaller.debug("launchctl bootout: \(path, privacy: .public)")
+        } else {
             do {
-                if shouldBypass {
-                    try safetyManager.validate(url: item.url, policy: .uninstall)
-                    try FileManager.default.removeItem(at: item.url)
-                } else {
-                    try await trashManager.trashItem(at: item.url)
-                }
-                freed += item.sizeBytes
+                _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
+                Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
             } catch {
-                Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
+                Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }
         }
-        return freed
+    }
+
+    private func terminateRunningApp(_ app: AppInfo) async {
+        let appBundleURL = app.url.standardizedFileURL
+        let bundleID = app.bundleID?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let runningApps = await MainActor.run {
+            NSWorkspace.shared.runningApplications.filter { running in
+                if running.processIdentifier == ProcessInfo.processInfo.processIdentifier { return false }
+                if let bundleID, !bundleID.isEmpty, running.bundleIdentifier == bundleID {
+                    return true
+                }
+                if let runningURL = running.bundleURL?.standardizedFileURL, runningURL == appBundleURL {
+                    return true
+                }
+                return false
+            }
+        }
+
+        guard !runningApps.isEmpty else { return }
+        Logger.uninstaller.info("Terminating \(runningApps.count) running instance(s) of '\(app.name, privacy: .public)'")
+
+        for running in runningApps {
+            running.terminate()
+        }
+
+        let start = Date()
+        while Date().timeIntervalSince(start) < 3.0 {
+            if runningApps.allSatisfy({ $0.isTerminated }) { break }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+
+        for running in runningApps where !running.isTerminated {
+            Logger.uninstaller.warning("Force terminating '\(app.name, privacy: .public)' (PID: \(running.processIdentifier))")
+            running.forceTerminate()
+        }
+    }
+
+    @discardableResult
+    public func removeOrphanedResiduals(_ items: [OrphanItem], bypassTrash: Bool = false) async throws -> OrphanCleanupResult {
+        guard !items.isEmpty else {
+            return OrphanCleanupResult(freed: 0, succeededItems: [], failedItems: [])
+        }
+
+        // 1. Modern launchctl bootout for any orphaned LaunchDaemons / LaunchAgents plists
+        for item in items {
+            await bootoutLaunchdService(at: item.url.path)
+        }
+
+        var succeeded: [OrphanItem] = []
+        var failed: [OrphanItem] = []
+        var freed: Int64 = 0
+
+        if bypassTrash {
+            var privilegedItems: [OrphanItem] = []
+            for item in items {
+                do {
+                    try safetyManager.validate(url: item.url, policy: .uninstall)
+                    try fileManager.removeItem(at: item.url)
+                    succeeded.append(item)
+                    freed += item.sizeBytes
+                    Logger.uninstaller.debug("Removed orphan: \(item.url.path, privacy: .public)")
+                } catch {
+                    if Self.isPermissionError(error) {
+                        privilegedItems.append(item)
+                    } else {
+                        failed.append(item)
+                        Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
+                    }
+                }
+            }
+
+            if !privilegedItems.isEmpty {
+                let escaped = privilegedItems.map { "'\($0.url.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+                do {
+                    _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                    for item in privilegedItems {
+                        if !fileManager.fileExists(atPath: item.url.path) {
+                            succeeded.append(item)
+                            freed += item.sizeBytes
+                        } else {
+                            failed.append(item)
+                        }
+                    }
+                    Logger.uninstaller.info("Privileged removal completed for \(privilegedItems.count) orphan item(s)")
+                } catch {
+                    Logger.uninstaller.error("Privileged removal failed for orphans: \(error.localizedDescription)")
+                    failed.append(contentsOf: privilegedItems)
+                }
+            }
+        } else {
+            let urls = items.map(\.url)
+            do {
+                _ = try await trashManager.trashItems(urls: urls, policy: .uninstall)
+            } catch {
+                Logger.uninstaller.error("Batch trashItems encountered an error: \(error.localizedDescription)")
+            }
+
+            for item in items {
+                if !fileManager.fileExists(atPath: item.url.path) {
+                    succeeded.append(item)
+                    freed += item.sizeBytes
+                } else {
+                    failed.append(item)
+                    Logger.uninstaller.warning("Orphan file still exists on disk: \(item.url.path, privacy: .public)")
+                }
+            }
+        }
+
+        return OrphanCleanupResult(freed: freed, succeededItems: succeeded, failedItems: failed)
     }
 
     public func removeLeftovers(_ items: [LeftoverItem], bypassTrash: Bool = false) async throws -> Int64 {
-        let shouldBypass = bypassTrash
-        var freed: Int64 = 0
-        for item in items {
-            do {
-                if shouldBypass {
-                    try safetyManager.validate(url: item.url, policy: .uninstall)
-                    try FileManager.default.removeItem(at: item.url)
-                } else {
-                    try await trashManager.trashItem(at: item.url)
-                }
-                freed += item.sizeBytes
-            } catch {
-                Logger.uninstaller.error("Failed to remove leftover \(item.url.path): \(error.localizedDescription)")
-            }
-        }
-        return freed
+        let urls = items.map(\.url)
+        return try await removeLeftovers(urls: urls, bypassTrash: bypassTrash)
     }
 
     public func removeLeftovers(urls: [URL], bypassTrash: Bool = false) async throws -> Int64 {
-        let shouldBypass = bypassTrash
         var freed: Int64 = 0
-        for url in urls {
-            do {
-                let size = FileManager.default.getDirectorySize(url: url)
-                if shouldBypass {
+        if bypassTrash {
+            var privilegedPaths: [String] = []
+            for url in urls {
+                do {
+                    let size = FileManager.default.getDirectorySize(url: url)
                     try safetyManager.validate(url: url, policy: .uninstall)
-                    try FileManager.default.removeItem(at: url)
-                } else {
-                    try await trashManager.trashItem(at: url)
+                    try fileManager.removeItem(at: url)
+                    freed += size
+                } catch {
+                    if Self.isPermissionError(error) {
+                        privilegedPaths.append(url.path)
+                    } else {
+                        Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
+                    }
                 }
-                freed += size
+            }
+            if !privilegedPaths.isEmpty {
+                let escaped = privilegedPaths.map { "'\($0.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+                do {
+                    _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                    for path in privilegedPaths {
+                        if !fileManager.fileExists(atPath: path) {
+                            freed += FileManager.default.getDirectorySize(url: URL(fileURLWithPath: path))
+                        }
+                    }
+                } catch {
+                    Logger.uninstaller.error("Privileged removal failed for leftovers: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            do {
+                _ = try await trashManager.trashItems(urls: urls, policy: .uninstall)
             } catch {
-                Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
+                Logger.uninstaller.error("Trash leftovers failed: \(error.localizedDescription)")
+            }
+            for url in urls {
+                if !fileManager.fileExists(atPath: url.path) {
+                    freed += FileManager.default.getDirectorySize(url: url)
+                }
             }
         }
         return freed
@@ -657,6 +815,9 @@ public actor UninstallerService {
         }
 
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
+
+        // 1. Quit running app before bootout & deletion
+        await terminateRunningApp(app)
 
         let relatedTargets = app.relatedFiles
             .filter(\.isSelected)
@@ -679,23 +840,9 @@ public actor UninstallerService {
             Logger.uninstaller.warning("Failed to save snapshot: \(error.localizedDescription, privacy: .public)")
         }
 
+        // 2. Bootout helpers and daemons before deletion
         for file in app.relatedFiles where file.isSelected {
-            let path = file.url.path
-            if (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") {
-                // bootout is the modern reliable unload; fall back to legacy unload
-                let domain = path.contains("LaunchDaemons") ? "system" : "gui/\(getuid())"
-                let bootout = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", domain, path])
-                if bootout?.exitCode == 0 {
-                    Logger.uninstaller.debug("launchctl bootout: \(path, privacy: .public)")
-                } else {
-                    do {
-                        _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
-                        Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
-                    } catch {
-                        Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-                    }
-                }
-            }
+            await bootoutLaunchdService(at: file.url.path)
         }
 
         var trashedURLs: [URL] = []

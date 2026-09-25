@@ -255,4 +255,70 @@ final class UninstallerServiceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: finderTrashFile.path),
                       "Finder trash files must never be touched")
     }
+
+    func testIsApplicationConfigurationPath() {
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Preferences/com.example.app.plist"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/.config/nvim/init.vim"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/JetBrains/IntelliJIdea2024.1/options/other.xml"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/Code/User/settings.json"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/Cursor/User/settings.json"))
+        // Caches and logs are NOT configurations
+        XCTAssertFalse(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Caches/com.example.app"))
+        XCTAssertFalse(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Logs/com.example.app.log"))
+    }
+
+    func testRemoveOrphanedResiduals_returnsStructuredResult() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let trashDir = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let trash = TrashManager(safetyManager: safety, trashDirectoryURL: trashDir)
+        let testService = UninstallerService(safetyManager: safety, trashManager: trash)
+
+        let orphanFile = ctx.homeDirectory.appendingPathComponent("Library/Caches/orphan.cache")
+        try FileManager.default.createDirectory(at: orphanFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "orphan_data".data(using: .utf8)!.write(to: orphanFile)
+
+        let orphanItem = OrphanItem(
+            url: orphanFile,
+            name: "Orphan",
+            bundleID: "com.example.orphan",
+            sizeBytes: 11,
+            category: "Caches",
+            isSelected: true
+        )
+
+        let result = try await testService.removeOrphanedResiduals([orphanItem], bypassTrash: false)
+        XCTAssertEqual(result.succeededItems.count, 1)
+        XCTAssertEqual(result.failedItems.count, 0)
+        XCTAssertEqual(result.freed, 11)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: orphanFile.path))
+    }
+
+    func testAppNameMatchesFileName_twoLetterNames() {
+        // VLC (3 chars)
+        let vlcMatch = EvidenceProbe.appNameMatchesFileName("VLC", appName: "VLC")
+        XCTAssertTrue(vlcMatch.exact)
+
+        // Arc (3 chars)
+        let arcMatch = EvidenceProbe.appNameMatchesFileName("Arc", appName: "Arc")
+        XCTAssertTrue(arcMatch.exact)
+
+        // Go (2 chars)
+        let goMatch = EvidenceProbe.appNameMatchesFileName("Go", appName: "Go")
+        XCTAssertTrue(goMatch.exact)
+
+        // Zed (3 chars)
+        let zedMatch = EvidenceProbe.appNameMatchesFileName("zed", appName: "Zed")
+        XCTAssertTrue(zedMatch.exact)
+
+        // 1 char name like "R" should NOT match via appNameMatchesFileName
+        let rMatch = EvidenceProbe.appNameMatchesFileName("R", appName: "R")
+        XCTAssertFalse(rMatch.exact)
+    }
 }

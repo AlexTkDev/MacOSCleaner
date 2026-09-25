@@ -59,10 +59,9 @@ public enum ConfidenceEngine {
             }
         }
 
-        // App-matching diagnostic reports and updaters (e.g. Chrome Helper diag, xcodebuild diag, OpenCode updater)
-        let hasAppOrExecEvidence = evidence.contains(.appNameExact) || evidence.contains(.appNamePrefix)
-            || evidence.contains(.executableName) || evidence.contains(.bundleIDExact) || evidence.contains(.bundleIDPrefix)
-        if hasAppOrExecEvidence && score >= 30 {
+        // App-matching diagnostic reports and updaters (exact app name, exact bundle ID or bundle ID prefix only)
+        let hasExactOrPrefixEvidence = evidence.contains(.appNameExact) || evidence.contains(.bundleIDExact) || evidence.contains(.bundleIDPrefix)
+        if hasExactOrPrefixEvidence && score >= 30 {
             if tier == .possible {
                 tier = .veryLikely
             }

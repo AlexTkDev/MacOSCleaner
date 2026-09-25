@@ -442,6 +442,7 @@
 "uninstaller_evidence_card_title" = "匹配依據與置信度";
 "uninstaller_evidence_why_flagged" = "為什麼標記此檔案？";
 "uninstaller_leftovers_cleaned_notification" = "已清理 %lld 項殘留檔案 (釋放 %@)";
+"orphaned_cleanup_failed_count" = "未能刪除 %lld 項殘留檔案。";
 "uninstaller_show_in_finder" = "在訪達中顯示";
 
 /* Processes View */

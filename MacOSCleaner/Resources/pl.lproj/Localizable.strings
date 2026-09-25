@@ -455,6 +455,7 @@
 "uninstaller_evidence_card_title" = "Dowody i pewność";
 "uninstaller_evidence_why_flagged" = "Dlaczego to oznaczono?";
 "uninstaller_leftovers_cleaned_notification" = "Wyczyszczono pozostałości: %lld (zwolniono %@)";
+"orphaned_cleanup_failed_count" = "Nie udało się usunąć %lld pozostałości.";
 "uninstaller_show_in_finder" = "Pokaż w Finderze";
 
 /* Processes View */

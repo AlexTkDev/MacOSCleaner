@@ -21,6 +21,7 @@ public actor CandidateCollector {
     private let receiptsDirectory: URL
     private let tmpScanDirectory: URL
     private let fileSystemContext: FileSystemContext
+    private let lsRegisterCache: LSRegisterCache
 
     private static let homeResidualDenyList: Set<String> = [
         ".ssh", ".gnupg", ".Trash", ".trash", ".CFUserTextEncoding",
@@ -35,12 +36,14 @@ public actor CandidateCollector {
         darwinCacheDirectory: URL? = nil,
         receiptsDirectory: URL? = nil,
         tmpScanDirectory: URL? = nil,
-        fileSystemContext: FileSystemContext = .production
+        fileSystemContext: FileSystemContext = .production,
+        lsRegisterCache: LSRegisterCache = .shared
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
         self.homebrewCellarDirectories = homebrewCellarDirectories
         self.fileSystemContext = fileSystemContext
+        self.lsRegisterCache = lsRegisterCache
         if let darwinCacheDirectory {
             self.darwinUserDirectories = [darwinCacheDirectory.resolvingSymlinksInPath()]
         } else {
@@ -235,7 +238,7 @@ public actor CandidateCollector {
         }
 
         // 9. Epic Games-specific
-        if identity.bundleID == "com.epicgames.EpicGamesLauncher" || identity.appName.lowercased().contains("epic") {
+        if identity.bundleID.lowercased().hasPrefix("com.epicgames.") {
             let epicPaths = [
                 NormalizedPath.joinHome(home, "Library/Application Support/Epic"),
                 NormalizedPath.joinHome(home, "Library/Application Support/Epic Games Launcher"),
@@ -248,7 +251,6 @@ public actor CandidateCollector {
         // 10. Unity-specific
         if identity.bundleID.lowercased().hasPrefix("com.unity3d.") || identity.appName == "Unity Hub" {
             let unityPaths = [
-                NormalizedPath.joinHome(home, "Library/Application Support/Unity"),
                 NormalizedPath.joinHome(home, "Library/Application Support/Unity Hub"),
                 NormalizedPath.joinHome(home, ".local/share/unity3d"),
             ]
@@ -265,8 +267,6 @@ public actor CandidateCollector {
             identity.appName.lowercased().contains("snitch")
         if isNetworkExt {
             let nePaths = [
-                "/Library/SystemExtensions",
-                "/Library/StagedExtensions",
                 NormalizedPath.joinHome(home, "Library/Application Support/Little Snitch"),
                 NormalizedPath.joinHome(home, "Library/Application Support/NordVPN"),
             ]
@@ -350,7 +350,7 @@ public actor CandidateCollector {
 
         // Prefix-only app name or username-prefixed (<username>-<appName>-*), never bare contains.
         let appName = identity.appName.lowercased()
-        if appName.count >= 4 {
+        if appName.count >= 2 {
             if lower.hasPrefix(appName + "-") || lower.hasPrefix(appName + ".") || lower.hasPrefix(appName + "_") {
                 return true
             }
@@ -383,7 +383,7 @@ public actor CandidateCollector {
                 found.insert(NormalizedPath.canonicalize(item))
                 continue
             }
-            if sanitizedApp.count >= 4, stem.contains(sanitizedApp) || lower.contains(sanitizedApp) {
+            if sanitizedApp.count >= 2, stem == sanitizedApp || stem.hasPrefix(sanitizedApp + ".") || stem.hasPrefix(sanitizedApp + "_") || stem.hasPrefix(sanitizedApp + "-") {
                 found.insert(NormalizedPath.canonicalize(item))
             }
         }
@@ -462,7 +462,7 @@ public actor CandidateCollector {
             guard fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue else {
                 continue
             }
-            if appName.count >= 4, lower.contains(appName) {
+            if appName.count >= 2, EvidenceProbe.wordBoundaryMatch(lower, appName) {
                 // Descend into name-matching project folders (e.g. MacOSCleaner-Polish/…).
                 found.formUnion(
                     await scanTmpDir(item, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
@@ -541,20 +541,8 @@ public actor CandidateCollector {
     }
 
     private func collectFromLSRegister(identity: AppIdentity) async -> Set<URL> {
-        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
-        guard fileManager.fileExists(atPath: lsregister),
-              let result = try? await commandRunner.run(command: lsregister, arguments: ["-dump"]) else { return [] }
-
-        let bundleIDLower = identity.bundleID.lowercased()
-        var found = Set<URL>()
-        for line in result.stdout.components(separatedBy: .newlines) {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            guard trimmed.hasPrefix("path:") else { continue }
-            let path = String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespaces)
-            guard path.lowercased().contains(bundleIDLower) else { continue }
-            found.insert(NormalizedPath.url(path))
-        }
-        return found
+        let runner = (commandRunner as? CommandRunner) ?? CommandRunner()
+        return await lsRegisterCache.paths(matching: identity.bundleID, commandRunner: runner)
     }
 
     /// Sibling `.app` bundles in configured Homebrew Cellar directories that share
@@ -601,13 +589,22 @@ public actor CandidateCollector {
     /// Files recorded in installer receipts for packages whose id matches the bundle ID.
     /// Paths inside the app bundle are skipped — the bundle is removed as a whole anyway.
     private func collectPkgutilReceiptPaths(identity: AppIdentity) async -> Set<URL> {
-        guard !identity.bundleID.isEmpty, !identity.bundleID.hasPrefix("unknown.") else { return [] }
+        let bundleID = identity.bundleID.lowercased()
+        guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown.") else { return [] }
+
+        let receiptFiles = collectReceiptFiles(identity: identity)
+        let receiptStems = Set(receiptFiles.map { ($0.deletingPathExtension().lastPathComponent).lowercased() })
 
         var packageIDs: Set<String> = [identity.bundleID]
         if let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--pkgs"]) {
             for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
-                if line == identity.bundleID || line.hasPrefix(identity.bundleID + ".") {
+                let lowerLine = line.lowercased()
+                if lowerLine == bundleID {
                     packageIDs.insert(line)
+                } else if lowerLine.hasPrefix(bundleID + ".") {
+                    if receiptStems.isEmpty || receiptStems.contains(lowerLine) || receiptStems.contains(where: { lowerLine.hasPrefix($0) }) {
+                        packageIDs.insert(line)
+                    }
                 }
             }
         }
@@ -799,7 +796,8 @@ public actor CandidateCollector {
 
     /// Shared vendor folder names that must not match as residuals by themselves.
     private static let sharedMegaVendors: Set<String> = [
-        "Google", "Microsoft", "Adobe", "Oracle", "Apple",
+        "Google", "Microsoft", "Adobe", "Oracle", "Apple", "Docker", "Unity",
+        "google", "microsoft", "adobe", "oracle", "apple", "docker", "unity",
     ]
 
     private static let residualNameSuffixes: Set<String> = [
@@ -1042,7 +1040,15 @@ public actor CandidateCollector {
         let home = fileSystemContext.homePath
         let names = Set([identity.appName, identity.executableName].filter { !$0.isEmpty })
         for name in names {
-            queries.append(("kMDItemFSName == '\(mdfindEscape(name))*'cd", NormalizedPath.joinHome(home, "Library")))
+            if name.count < 4 {
+                let escaped = mdfindEscape(name)
+                let query = "kMDItemFSName == '\(escaped)'cd || kMDItemFSName == '\(escaped).*'cd"
+                queries.append((query, NormalizedPath.joinHome(home, "Library/Application Support")))
+                queries.append((query, NormalizedPath.joinHome(home, "Library/Caches")))
+                queries.append((query, NormalizedPath.joinHome(home, "Library/Preferences")))
+            } else {
+                queries.append(("kMDItemFSName == '\(mdfindEscape(name))*'cd", NormalizedPath.joinHome(home, "Library")))
+            }
         }
 
         var urls = Set<URL>()

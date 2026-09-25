@@ -20,6 +20,8 @@ public struct OrphanedResidualsView: View {
     @State private var showingConfirmation = false
     @State private var isCleaning = false
     @State private var scanTask: Task<Void, Never>? = nil
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert = false
 
     public init(service: UninstallerService, settings: AppSettings) {
         self.service = service
@@ -77,11 +79,18 @@ public struct OrphanedResidualsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .confirmationDialog(
-            "uninstaller_confirm_trash_leftovers_title".localized,
+            settings.bypassTrashOnUninstall
+                ? "uninstaller_confirm_perm_delete".localized
+                : "uninstaller_confirm_trash_leftovers_title".localized,
             isPresented: $showingConfirmation,
             titleVisibility: .visible
         ) {
-            Button("uninstaller_move_trash".localized, role: .destructive) {
+            Button(
+                settings.bypassTrashOnUninstall
+                    ? "uninstaller_delete_permanently".localized
+                    : "uninstaller_move_trash".localized,
+                role: .destructive
+            ) {
                 performCleaning()
             }
             Button("cancel".localized, role: .cancel) { }
@@ -91,6 +100,13 @@ public struct OrphanedResidualsView: View {
                 Int64(selectedItems.count),
                 ByteCountFormatter.localizedString(fromByteCount: selectedSizeBytes, countStyle: .file)
             ))
+        }
+        .alert("error".localized, isPresented: $showingErrorAlert) {
+            Button("ok".localized, role: .cancel) { }
+        } message: {
+            if let errorMessage {
+                Text(errorMessage)
+            }
         }
     }
 
@@ -458,27 +474,36 @@ public struct OrphanedResidualsView: View {
         Task {
             defer { isCleaning = false }
             do {
-                let freed = try await service.removeOrphanedResiduals(
+                let result = try await service.removeOrphanedResiduals(
                     targets,
                     bypassTrash: settings.bypassTrashOnUninstall
                 )
                 
                 await MainActor.run {
-                    let removedIDs = Set(targets.map(\.id))
+                    let removedIDs = Set(result.succeededItems.map(\.id))
                     self.items.removeAll { removedIDs.contains($0.id) }
                     
-                    if settings.showNotifications {
+                    if !result.failedItems.isEmpty {
+                        self.errorMessage = String(format: "orphaned_cleanup_failed_count".localized, Int64(result.failedItems.count))
+                        self.showingErrorAlert = true
+                    }
+                    
+                    if settings.showNotifications, !result.succeededItems.isEmpty {
                         let title = "uninstaller_complete_title".localized
                         let body = String(
                             format: "uninstaller_leftovers_cleaned_notification".localized,
-                            Int64(targets.count),
-                            ByteCountFormatter.localizedString(fromByteCount: freed, countStyle: .file)
+                            Int64(result.succeededItems.count),
+                            ByteCountFormatter.localizedString(fromByteCount: result.freed, countStyle: .file)
                         )
                         NotificationManager.shared.sendNotification(title: title, body: body)
                     }
                 }
             } catch {
                 Logger.orphanView.error("Cleaning failed: \(error.localizedDescription, privacy: .public)")
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.showingErrorAlert = true
+                }
             }
         }
     }

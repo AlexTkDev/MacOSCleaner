@@ -457,6 +457,7 @@
 "uninstaller_evidence_card_title" = "Evidencias y confianza";
 "uninstaller_evidence_why_flagged" = "¿Por qué se detectó este archivo?";
 "uninstaller_leftovers_cleaned_notification" = "Se limpiaron %lld archivos residuales (%@ liberados)";
+"orphaned_cleanup_failed_count" = "No se pudieron eliminar %lld archivos residuales.";
 
 // Processes View
 "menu_processes" = "Procesos";

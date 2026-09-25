@@ -456,6 +456,7 @@
 "uninstaller_evidence_card_title" = "Подтверждения и уверенность";
 "uninstaller_evidence_why_flagged" = "Почему этот файл найден?";
 "uninstaller_leftovers_cleaned_notification" = "Удалено %lld остаточных файлов (освобождено %@)";
+"orphaned_cleanup_failed_count" = "Не удалось удалить остаточные файлы (%lld).";
 "uninstaller_show_in_finder" = "Показать в Finder";
 
 /* Processes View */

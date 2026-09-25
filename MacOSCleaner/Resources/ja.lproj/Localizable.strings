@@ -442,6 +442,7 @@
 "uninstaller_evidence_card_title" = "検出根拠と信頼度";
 "uninstaller_evidence_why_flagged" = "このファイルが検出された理由";
 "uninstaller_leftovers_cleaned_notification" = "%lld 件の残存ファイルを削除しました (%@ を解放)";
+"orphaned_cleanup_failed_count" = "%lld 件の残存ファイルを削除できませんでした。";
 "uninstaller_show_in_finder" = "Finderで表示";
 
 /* Processes View */

@@ -442,6 +442,7 @@
 "uninstaller_evidence_card_title" = "Nachweise & Vertrauen";
 "uninstaller_evidence_why_flagged" = "Warum wurde diese Datei erkannt?";
 "uninstaller_leftovers_cleaned_notification" = "%lld Restdatei(en) bereinigt (%@ freigegeben)";
+"orphaned_cleanup_failed_count" = "%lld Restdatei(en) konnten nicht entfernt werden.";
 "uninstaller_show_in_finder" = "Im Finder anzeigen";
 
 /* Processes View */

@@ -455,6 +455,7 @@
 "uninstaller_evidence_card_title" = "الأدلة والثقة";
 "uninstaller_evidence_why_flagged" = "لماذا وُسم هذا؟";
 "uninstaller_leftovers_cleaned_notification" = "تم تنظيف %lld عنصرًا متبقيًا (تم تحرير %@)";
+"orphaned_cleanup_failed_count" = "فشل حذف %lld من العناصر المتبقية.";
 "uninstaller_show_in_finder" = "إظهار في Finder";
 
 /* Processes View */

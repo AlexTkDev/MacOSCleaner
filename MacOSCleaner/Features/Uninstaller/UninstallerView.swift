@@ -169,8 +169,10 @@ struct UninstallerView: View {
         } message: {
             if let app = selectedApp {
                 let count = app.relatedFiles.filter(\.isSelected).count + app.developerComponents.filter(\.isSelected).count
+                let sizeToReclaim = settings.showRelatedFiles ? app.totalSize : app.size
+                let formattedSize = ByteCountFormatter.localizedString(fromByteCount: sizeToReclaim, countStyle: .file)
                 if settings.bypassTrashOnUninstall {
-                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)))
+                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)) + " (\(formattedSize))")
                 } else {
                     Text(String(format: "uninstaller_uninstall_app_warning_trash".localized, app.name, Int64(count)))
                 }
@@ -197,8 +199,10 @@ struct UninstallerView: View {
         } message: {
             if let versionApp = versionToUninstall, let parentApp = selectedApp {
                 let count = versionApp.relatedFiles.filter(\.isSelected).count + versionApp.developerComponents.filter(\.isSelected).count
+                let sizeToReclaim = settings.showRelatedFiles ? versionApp.totalSize : versionApp.size
+                let formattedSize = ByteCountFormatter.localizedString(fromByteCount: sizeToReclaim, countStyle: .file)
                 if settings.bypassTrashOnUninstall {
-                    Text(String(format: "uninstaller_uninstall_version_warning_perm".localized, versionApp.version, parentApp.name, Int64(count)))
+                    Text(String(format: "uninstaller_uninstall_version_warning_perm".localized, versionApp.version, parentApp.name, Int64(count)) + " (\(formattedSize))")
                 } else {
                     Text(String(format: "uninstaller_uninstall_version_warning_trash".localized, versionApp.version, parentApp.name, Int64(count)))
                 }

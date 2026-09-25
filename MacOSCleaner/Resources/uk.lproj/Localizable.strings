@@ -453,6 +453,7 @@
 "uninstaller_evidence_card_title" = "Підтвердження та впевненість";
 "uninstaller_evidence_why_flagged" = "Чому цей файл знайдено?";
 "uninstaller_leftovers_cleaned_notification" = "Видалено %lld залишкових файлів (звільнено %@)";
+"orphaned_cleanup_failed_count" = "Не вдалося видалити залишкові файли (%lld).";
 "uninstaller_show_in_finder" = "Показати у Finder";
 
 /* Processes View */

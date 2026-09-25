@@ -455,6 +455,7 @@
 "uninstaller_evidence_card_title" = "근거 및 신뢰도";
 "uninstaller_evidence_why_flagged" = "왜 표시되었나요?";
 "uninstaller_leftovers_cleaned_notification" = "잔여 항목 %lld개 정리 (%@ 확보)";
+"orphaned_cleanup_failed_count" = "잔여 항목 %lld개를 제거하지 못했습니다.";
 "uninstaller_show_in_finder" = "Finder에서 보기";
 
 /* Processes View */

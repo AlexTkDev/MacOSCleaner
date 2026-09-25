@@ -442,6 +442,7 @@
 "uninstaller_evidence_card_title" = "Prove e affidabilità";
 "uninstaller_evidence_why_flagged" = "Perché questo file è stato rilevato?";
 "uninstaller_leftovers_cleaned_notification" = "%lld elementi residui ripuliti (%@ liberati)";
+"orphaned_cleanup_failed_count" = "Impossibile rimuovere %lld elementi residui.";
 "uninstaller_show_in_finder" = "Mostra nel Finder";
 
 /* Processes View */
