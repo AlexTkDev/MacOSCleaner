@@ -1009,3 +1009,9 @@
 "select" = "Выбрать";
 "dashboard_history_empty_hint" = "Для того чтобы появилась история очистки, проведите обслуживание своего Mac";
 "dashboard_start_cleanup" = "Начать очистку";
+
+"startup_show_in_finder" = "Показать в Finder";
+"startup_delete_service" = "Удалить службу";
+"startup_delete_confirm_title" = "Удалить службу автозагрузки?";
+"startup_delete_confirm_message" = "Вы уверены, что хотите удалить «%@»?\nФайл: %@\nСлужба будет выгружена и остановлена, а её plist-файл перемещён в Корзину.";
+"startup_delete_action" = "Переместить в Корзину";

@@ -1010,3 +1010,9 @@
 "select" = "تحديد";
 "dashboard_history_empty_hint" = "لترى سجل التنظيف هنا، نفّذ تنظيف صيانة لجهاز Mac";
 "dashboard_start_cleanup" = "بدء التنظيف";
+
+"startup_show_in_finder" = "إظهار في Finder";
+"startup_delete_service" = "حذف الخدمة";
+"startup_delete_confirm_title" = "هل تريد حذف خدمة بدء التشغيل؟";
+"startup_delete_confirm_message" = "هل أنت متأكد من رغبتك في حذف '%@'؟\nالملف: %@\nسيتم إيقاف الخدمة ونقل ملف plist الخاص بها إلى سلة المهملات.";
+"startup_delete_action" = "نقل إلى سلة المهملات";

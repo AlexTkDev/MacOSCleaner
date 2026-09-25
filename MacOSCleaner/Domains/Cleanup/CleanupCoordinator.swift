@@ -438,10 +438,29 @@ public final class CleanupCoordinator: @unchecked Sendable {
             return
         }
 
+        let safetyPolicy = ProcessSafetyPolicy()
         let appsToClose = NSWorkspace.shared.runningApplications.filter { app in
-            app.activationPolicy == .regular &&
-            app.bundleIdentifier != Bundle.main.bundleIdentifier &&
-            !(app.bundleIdentifier ?? "").hasPrefix("com.apple.")
+            guard app.activationPolicy == .regular,
+                  app.bundleIdentifier != Bundle.main.bundleIdentifier,
+                  !(app.bundleIdentifier ?? "").hasPrefix("com.apple.") else {
+                return false
+            }
+            let process = RunningProcess(
+                pid: app.processIdentifier,
+                name: app.localizedName ?? "Unknown",
+                path: app.bundleURL?.path,
+                user: nil,
+                cpuPercent: 0,
+                memoryBytes: 0,
+                threadCount: 0,
+                startTime: nil,
+                parentPID: 0,
+                bundleID: app.bundleIdentifier
+            )
+            if case .blocked = safetyPolicy.isKillable(process) {
+                return false
+            }
+            return true
         }
 
         for app in appsToClose {
@@ -460,7 +479,6 @@ public final class CleanupCoordinator: @unchecked Sendable {
             try? await Task.sleep(for: .milliseconds(250))
         }
 
-        let safetyPolicy = ProcessSafetyPolicy()
         for app in appsToClose {
             if !app.isTerminated {
                 let process = RunningProcess(

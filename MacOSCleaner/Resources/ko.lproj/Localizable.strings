@@ -1010,3 +1010,9 @@
 "select" = "선택";
 "dashboard_history_empty_hint" = "여기에서 정리 기록을 보려면 Mac 유지 관리 정리를 실행하세요";
 "dashboard_start_cleanup" = "정리 시작";
+
+"startup_show_in_finder" = "Finder에서 보기";
+"startup_delete_service" = "서비스 삭제";
+"startup_delete_confirm_title" = "시작 서비스를 삭제하겠습니까?";
+"startup_delete_confirm_message" = "'%@'을(를) 삭제하시겠습니까?\n파일: %@\n서비스가 중지되고 plist 파일이 휴지통으로 이동합니다.";
+"startup_delete_action" = "휴지통으로 이동";

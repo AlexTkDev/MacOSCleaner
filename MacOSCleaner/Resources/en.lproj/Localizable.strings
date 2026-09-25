@@ -1010,3 +1010,9 @@
 "select" = "Select";
 "dashboard_history_empty_hint" = "To see your cleanup history here, perform a maintenance cleanup of your Mac";
 "dashboard_start_cleanup" = "Start Cleanup";
+
+"startup_show_in_finder" = "Show in Finder";
+"startup_delete_service" = "Delete Service";
+"startup_delete_confirm_title" = "Delete Startup Service?";
+"startup_delete_confirm_message" = "Are you sure you want to delete '%@'?\nFile: %@\nThis will stop the service and move its property list to the Trash.";
+"startup_delete_action" = "Move to Trash";

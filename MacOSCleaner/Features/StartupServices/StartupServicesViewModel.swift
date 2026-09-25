@@ -57,4 +57,15 @@ public final class StartupServicesViewModel {
             lastError = error.localizedDescription
         }
     }
+
+    @MainActor
+    public func delete(service: StartupService) async {
+        lastError = nil
+        do {
+            try await manager.delete(service: service)
+            services = try await manager.scan()
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
 }

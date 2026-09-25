@@ -50,15 +50,21 @@ public struct ProcessSafetyPolicy: Sendable {
     public func isKillable(_ process: RunningProcess) -> KillPermission {
         let name = process.name
 
-        if process.pid <= 1 {
+        if process.pid <= 1 || process.pid == ProcessInfo.processInfo.processIdentifier {
             return .blocked(reason: String(format: "process_block_pid_format".localized, process.pid))
         }
 
-        if userWhitelist.contains(name) {
+        if let ownBundleID = Bundle.main.bundleIdentifier,
+           let procBundleID = process.bundleID,
+           procBundleID == ownBundleID {
+            return .blocked(reason: "Cannot terminate macOS Cleaner itself")
+        }
+
+        if userBlacklist.contains(name) {
             return .blocked(reason: String(format: "process_block_whitelist_name_format".localized, name))
         }
 
-        if let bundleID = process.bundleID, userWhitelist.contains(bundleID) {
+        if let bundleID = process.bundleID, userBlacklist.contains(bundleID) {
             return .blocked(reason: String(format: "process_block_whitelist_bundle_format".localized, bundleID))
         }
 
@@ -66,11 +72,11 @@ public struct ProcessSafetyPolicy: Sendable {
             return .blocked(reason: String(format: "process_block_protected_format".localized, name))
         }
 
-        if userBlacklist.contains(name) {
+        if userWhitelist.contains(name) {
             return .allowed
         }
 
-        if let bundleID = process.bundleID, userBlacklist.contains(bundleID) {
+        if let bundleID = process.bundleID, userWhitelist.contains(bundleID) {
             return .allowed
         }
 

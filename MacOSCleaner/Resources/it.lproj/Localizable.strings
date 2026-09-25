@@ -973,3 +973,9 @@
 "select" = "Seleziona";
 "dashboard_history_empty_hint" = "Per visualizzare la cronologia qui, esegui una pulizia del tuo Mac";
 "dashboard_start_cleanup" = "Avvia pulizia";
+
+"startup_show_in_finder" = "Mostra nel Finder";
+"startup_delete_service" = "Elimina servizio";
+"startup_delete_confirm_title" = "Eliminare il servizio di avvio?";
+"startup_delete_confirm_message" = "Sei sicuro di voler eliminare \"%@\"?\nFile: %@\nIl servizio verrà interrotto e il file plist verrà spostato nel Cestino.";
+"startup_delete_action" = "Sposta nel Cestino";

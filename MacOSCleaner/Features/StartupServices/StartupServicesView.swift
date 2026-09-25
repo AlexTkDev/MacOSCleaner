@@ -3,6 +3,7 @@ import SwiftUI
 public struct StartupServicesView: View {
     let settings: AppSettings
     @State private var viewModel = StartupServicesViewModel()
+    @State private var serviceToDelete: StartupService? = nil
 
     public var body: some View {
         GlassEffectContainer {
@@ -36,6 +37,25 @@ public struct StartupServicesView: View {
                 }
                 .help("startup_refresh".localized)
             }
+        }
+        .alert(
+            "startup_delete_confirm_title".localized,
+            isPresented: Binding(
+                get: { serviceToDelete != nil },
+                set: { if !$0 { serviceToDelete = nil } }
+            ),
+            presenting: serviceToDelete
+        ) { service in
+            Button("cancel".localized, role: .cancel) {
+                serviceToDelete = nil
+            }
+            Button("startup_delete_action".localized, role: .destructive) {
+                let target = service
+                serviceToDelete = nil
+                Task { await viewModel.delete(service: target) }
+            }
+        } message: { service in
+            Text(String(format: "startup_delete_confirm_message".localized, service.name, service.path))
         }
         .onAppear {
             if settings.enableAI {
@@ -148,9 +168,16 @@ public struct StartupServicesView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.filteredServices) { service in
-                    ServiceRow(service: service, settings: settings) {
-                        Task { await viewModel.toggle(service: service) }
-                    }
+                    ServiceRow(
+                        service: service,
+                        settings: settings,
+                        onToggle: {
+                            Task { await viewModel.toggle(service: service) }
+                        },
+                        onDelete: {
+                            serviceToDelete = service
+                        }
+                    )
                     if service.id != viewModel.filteredServices.last?.id {
                         Divider().padding(.leading, 120)
                     }
@@ -227,6 +254,7 @@ struct ServiceRow: View {
     let service: StartupService
     let settings: AppSettings
     let onToggle: () -> Void
+    let onDelete: () -> Void
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
@@ -268,6 +296,47 @@ struct ServiceRow: View {
                 }
                 .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
                 .controlSize(.small)
+                .disabled(service.category == .system)
+
+                Button {
+                    let url = URL(fileURLWithPath: service.path)
+                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                } label: {
+                    Image(systemName: "folder")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("startup_show_in_finder".localized)
+
+                if service.category != .system {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13))
+                            .foregroundColor(.red.opacity(0.85))
+                    }
+                    .buttonStyle(.plain)
+                    .help("startup_delete_service".localized)
+                }
+            }
+            .contextMenu {
+                Button {
+                    let url = URL(fileURLWithPath: service.path)
+                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                } label: {
+                    Label("startup_show_in_finder".localized, systemImage: "folder")
+                }
+
+                if service.category != .system {
+                    Divider()
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Label("startup_delete_service".localized, systemImage: "trash")
+                    }
+                }
             }
             
             if isExpanded {

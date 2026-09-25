@@ -973,3 +973,9 @@
 "select" = "選択";
 "dashboard_history_empty_hint" = "クリーンアップ履歴を表示するには、Macのメンテナンスを実行してください";
 "dashboard_start_cleanup" = "クリーンアップを開始";
+
+"startup_show_in_finder" = "Finderで表示";
+"startup_delete_service" = "サービスを削除";
+"startup_delete_confirm_title" = "スタートアップサービスを削除しますか？";
+"startup_delete_confirm_message" = "「%@」を削除してもよろしいですか？\nファイル: %@\nサービスを停止し、plistファイルをゴミ箱に移動します。";
+"startup_delete_action" = "ゴミ箱に入れる";

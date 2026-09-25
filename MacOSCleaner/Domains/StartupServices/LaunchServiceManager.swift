@@ -9,6 +9,7 @@ public enum LaunchServiceError: Error {
 public actor LaunchServiceManager {
     private let commandRunner: CommandRunner
     private let fileManager: FileManager
+    private let trashManager: TrashManager
     private let searchPaths: [String]
 
     private static let vendorPrefixesKey = "startupSystemVendorPrefixes"
@@ -26,10 +27,12 @@ public actor LaunchServiceManager {
     public init(
         commandRunner: CommandRunner = CommandRunner(),
         fileManager: FileManager = .default,
-        searchPaths: [String]? = nil
+        searchPaths: [String]? = nil,
+        trashManager: TrashManager? = nil
     ) {
         self.commandRunner = commandRunner
         self.fileManager = fileManager
+        self.trashManager = trashManager ?? TrashManager()
 
         if let searchPaths = searchPaths {
             self.searchPaths = searchPaths
@@ -197,11 +200,46 @@ public actor LaunchServiceManager {
         }
     }
 
+    public func delete(service: StartupService) async throws {
+        guard service.category != .system, !service.path.hasPrefix("/System/") else {
+            throw SafetyError.protectedPath(service.path)
+        }
+
+        let uid = getuid()
+        let label = service.id
+
+        // Unload/bootout service prior to removing plist
+        let bootoutResult = try? await commandRunner.run(
+            command: "/bin/launchctl",
+            arguments: ["bootout", "gui/\(uid)/\(label)"]
+        )
+        if bootoutResult == nil || bootoutResult?.exitCode != 0 {
+            _ = try? await commandRunner.run(
+                command: "/bin/launchctl",
+                arguments: ["unload", "-w", service.path]
+            )
+        }
+        if service.path.hasPrefix("/Library/LaunchDaemons") {
+            _ = try? await commandRunner.run(
+                command: "/bin/launchctl",
+                arguments: ["bootout", "system/\(label)"]
+            )
+        }
+        try await stopService(label, path: service.path)
+
+        // Trash the plist file with .uninstall policy
+        let plistURL = URL(fileURLWithPath: service.path)
+        try await trashManager.trashItem(at: plistURL, policy: .uninstall)
+    }
+
     private func stopService(_ label: String, path: String) async throws {
         let needsPrivileges = path.hasPrefix("/Library/LaunchDaemons")
 
         if needsPrivileges {
-            let script = "do shell script \"/bin/launchctl stop \(label)\" with administrator privileges"
+            let escapedLabel = label
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "\"", with: "\\\"")
+            let script = "do shell script \"/bin/launchctl stop \\\"\(escapedLabel)\\\"\" with administrator privileges"
             _ = try? await commandRunner.run(command: "/usr/bin/osascript", arguments: ["-e", script])
         } else {
             do {
@@ -221,10 +259,15 @@ public actor LaunchServiceManager {
     }
 
     public func removeVendorPrefix(_ prefix: String) {
+        guard prefix != "com.apple." else { return }
         systemVendorPrefixes = systemVendorPrefixes.filter { $0 != prefix }
     }
 
     public func setSystemVendorPrefixes(_ prefixes: [String]) {
-        systemVendorPrefixes = prefixes
+        var updated = prefixes
+        if !updated.contains("com.apple.") {
+            updated.append("com.apple.")
+        }
+        systemVendorPrefixes = updated
     }
 }

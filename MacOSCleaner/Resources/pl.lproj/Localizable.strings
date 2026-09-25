@@ -1010,3 +1010,9 @@
 "select" = "Wybierz";
 "dashboard_history_empty_hint" = "Aby zobaczyć tutaj historię czyszczenia, wykonaj konserwacyjne czyszczenie Maca";
 "dashboard_start_cleanup" = "Rozpocznij czyszczenie";
+
+"startup_show_in_finder" = "Pokaż w Finderze";
+"startup_delete_service" = "Usuń usługę";
+"startup_delete_confirm_title" = "Usunąć usługę startową?";
+"startup_delete_confirm_message" = "Czy na pewno chcesz usunąć „%@”?\nPlik: %@\nUsługa zostanie zatrzymana, a jej plik plist zostanie przeniesiony do Kosza.";
+"startup_delete_action" = "Przenieś do Kosza";

@@ -973,3 +973,9 @@
 "select" = "選擇";
 "dashboard_history_empty_hint" = "若要在此處檢視清理歷史，請對您的 Mac 執行一次維護清理";
 "dashboard_start_cleanup" = "開始清理";
+
+"startup_show_in_finder" = "在 Finder 中顯示";
+"startup_delete_service" = "刪除服務";
+"startup_delete_confirm_title" = "刪除啟動服務？";
+"startup_delete_confirm_message" = "確定要刪除「%@」嗎？\n檔案：%@\n服務將會停止，其 plist 檔案將移至垃圾桶。";
+"startup_delete_action" = "移至垃圾桶";

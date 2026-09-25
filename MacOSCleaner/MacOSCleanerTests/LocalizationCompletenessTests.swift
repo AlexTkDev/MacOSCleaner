@@ -82,7 +82,12 @@ final class LocalizationCompletenessTests: XCTestCase {
         "cleanup_base_app_logs",
         "cleanup_base_browser_cache",
         "cleanup_base_trash",
-        "cleanup_badge_password"
+        "cleanup_badge_password",
+        "startup_show_in_finder",
+        "startup_delete_service",
+        "startup_delete_confirm_title",
+        "startup_delete_confirm_message",
+        "startup_delete_action"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

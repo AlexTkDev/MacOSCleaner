@@ -974,3 +974,9 @@
 "select" = "Auswählen";
 "dashboard_history_empty_hint" = "Führen Sie eine Systembereinigung durch, damit hier der Bereinigungsverlauf angezeigt wird";
 "dashboard_start_cleanup" = "Bereinigung starten";
+
+"startup_show_in_finder" = "Im Finder anzeigen";
+"startup_delete_service" = "Dienst löschen";
+"startup_delete_confirm_title" = "Autostart-Dienst löschen?";
+"startup_delete_confirm_message" = "Möchten Sie „%@“ wirklich löschen?\nDatei: %@\nDer Dienst wird beendet und die plist-Datei in den Papierkorb verschoben.";
+"startup_delete_action" = "In den Papierkorb legen";

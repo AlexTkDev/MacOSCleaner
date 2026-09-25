@@ -1006,3 +1006,9 @@
 "select" = "Вибрати";
 "dashboard_history_empty_hint" = "Для того щоб з'явилася історія очищення, проведіть обслуговування свого Mac";
 "dashboard_start_cleanup" = "Почати очищення";
+
+"startup_show_in_finder" = "Показати у Finder";
+"startup_delete_service" = "Видалити службу";
+"startup_delete_confirm_title" = "Видалити службу автозапуску?";
+"startup_delete_confirm_message" = "Ви впевнені, що хочете видалити «%@»?\nФайл: %@\nСлужбу буде зупинено, а її plist-файл переміщено до Смітника.";
+"startup_delete_action" = "Перемістити у Смітник";

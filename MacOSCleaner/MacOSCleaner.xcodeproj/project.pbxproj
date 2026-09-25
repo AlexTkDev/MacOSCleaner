@@ -164,6 +164,7 @@
 		AB21541119CB5D1B48CB2786 /* WeightABTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE18494B602F06C4A577ABB /* WeightABTests.swift */; };
 		AB238D2B717AED4D59708DD7 /* Arc.json in Resources */ = {isa = PBXBuildFile; fileRef = DA8B28911DC4508EB90A34A5 /* Arc.json */; };
 		AB62F80D9F4D205F5DFE4851 /* CleanupIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54ECA599C22CEE8383F2077D /* CleanupIntegrationTests.swift */; };
+		AC922718EE33F46E58AC0E06 /* ProcessSafetyPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8296F97DE5AB8F5060C4C696 /* ProcessSafetyPolicyTests.swift */; };
 		ACA52C8CF526BCFFC6B5824C /* EvidenceProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = C950BCC1062A364886439405 /* EvidenceProbe.swift */; };
 		ADE0E2089B2A00FB56D8B068 /* CleanupItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B55A53EA10B7C9A1308221 /* CleanupItemManager.swift */; };
 		AEA91CD04EACACE4AB9C75B6 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BC06C9BBE41099A9D54344 /* AppIdentity.swift */; };
@@ -404,6 +405,7 @@
 		817EB9AE4524A850962213CB /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		819ADC9829C5F0EE5A2142A2 /* AIUserContentCleanupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIUserContentCleanupTests.swift; sourceTree = "<group>"; };
 		829209F31C2C64485ADD1F74 /* DiskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskItem.swift; sourceTree = "<group>"; };
+		8296F97DE5AB8F5060C4C696 /* ProcessSafetyPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessSafetyPolicyTests.swift; sourceTree = "<group>"; };
 		8329098CAFECCA528C771F2F /* Unity.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Unity.json; sourceTree = "<group>"; };
 		8526E6E523335A441DE17858 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
 		85C35053258520D48B455CF1 /* CleanupHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupHistoryTests.swift; sourceTree = "<group>"; };
@@ -674,6 +676,7 @@
 				D694D1ECD87105CC67BA55C1 /* PlistAnalyzerTests.swift */,
 				F26F6770FD70ABF80ADDB3D2 /* PrivateCatalogLoaderTests.swift */,
 				20E198DF7B9109A1D7D13338 /* ProblematicAppsTests.swift */,
+				8296F97DE5AB8F5060C4C696 /* ProcessSafetyPolicyTests.swift */,
 				230649540105FBDF7CE4FDF6 /* RealWorldValidationTests.swift */,
 				AD2D7518461432F2431138CF /* RegistryPathsTests.swift */,
 				CAA2BC762F643159A5EE7AA7 /* RetryPolicyTests.swift */,
@@ -1223,6 +1226,7 @@
 				66773DCDEB6DDD828C28ECB3 /* PlistAnalyzerTests.swift in Sources */,
 				D3F350B7A1D63625E68FFC11 /* PrivateCatalogLoaderTests.swift in Sources */,
 				726D2AB56BC7F27C7BA1332B /* ProblematicAppsTests.swift in Sources */,
+				AC922718EE33F46E58AC0E06 /* ProcessSafetyPolicyTests.swift in Sources */,
 				07337BBA7A5B8BEB5557019A /* RealWorldValidationTests.swift in Sources */,
 				463FC342724658A6B4A4B832 /* RegistryPathsTests.swift in Sources */,
 				D5EB7139957B403064AFD099 /* RetryPolicyTests.swift in Sources */,

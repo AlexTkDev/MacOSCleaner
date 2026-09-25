@@ -973,3 +973,9 @@
 "select" = "选择";
 "dashboard_history_empty_hint" = "若要在此处查看清理历史，请对您的 Mac 执行一次维护清理";
 "dashboard_start_cleanup" = "开始清理";
+
+"startup_show_in_finder" = "在访达中显示";
+"startup_delete_service" = "删除服务";
+"startup_delete_confirm_title" = "删除启动服务？";
+"startup_delete_confirm_message" = "确定要删除“%@”吗？\n文件：%@\n服务将被停止，其 plist 文件将移至废纸篓。";
+"startup_delete_action" = "移至废纸篓";

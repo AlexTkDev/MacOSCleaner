@@ -972,3 +972,9 @@
 "select" = "Sélectionner";
 "dashboard_history_empty_hint" = "Effectuez un nettoyage de votre Mac pour afficher l'historique de maintenance ici";
 "dashboard_start_cleanup" = "Démarrer le nettoyage";
+
+"startup_show_in_finder" = "Afficher dans le Finder";
+"startup_delete_service" = "Supprimer le service";
+"startup_delete_confirm_title" = "Supprimer le service de démarrage ?";
+"startup_delete_confirm_message" = "Voulez-vous vraiment supprimer « %@ » ?\nFichier : %@\nLe service sera arrêté et son fichier plist sera placé dans la corbeille.";
+"startup_delete_action" = "Placer dans la corbeille";

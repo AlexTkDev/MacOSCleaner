@@ -1008,3 +1008,9 @@
 "select" = "Seleccionar";
 "dashboard_history_empty_hint" = "Para ver el historial de limpieza aquí, realiza un mantenimiento de tu Mac";
 "dashboard_start_cleanup" = "Iniciar limpieza";
+
+"startup_show_in_finder" = "Mostrar en el Finder";
+"startup_delete_service" = "Eliminar servicio";
+"startup_delete_confirm_title" = "¿Eliminar servicio de inicio?";
+"startup_delete_confirm_message" = "¿Seguro que desea eliminar '%@'?\nArchivo: %@\nEl servicio se detendrá y su archivo plist se trasladará a la Papelera.";
+"startup_delete_action" = "Mover al basurero";
