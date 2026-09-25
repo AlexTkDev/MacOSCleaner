@@ -171,7 +171,9 @@ struct SettingsGeneralView: View {
                     ) {
                         StatusPill(
                             permissionsManager.hasFullDiskAccess ? "status_granted".localized : "status_required".localized,
-                            style: permissionsManager.hasFullDiskAccess ? .success : .error
+                            iconName: permissionsManager.hasFullDiskAccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
+                            style: permissionsManager.hasFullDiskAccess ? .success : .error,
+                            size: .small
                         )
                     }
 
