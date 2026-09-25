@@ -47,6 +47,7 @@
 		2E38FD4A6C11C4E5E11FF511 /* TerminalRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7479AAE9D83844B12D74B02 /* TerminalRule.swift */; };
 		2EFB638B382F68A4A21CD7AB /* EvidenceExplanationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF2C09A741A9F06D78858A0C /* EvidenceExplanationTests.swift */; };
 		2FBBF85D96918E09A80C5939 /* DeveloperComponentsDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AD2376BA6F50A27A67E4736 /* DeveloperComponentsDetector.swift */; };
+		309512D5B9444B9BCF812039 /* EmptyTrashIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF62EE88671BDA4B43F107F0 /* EmptyTrashIntent.swift */; };
 		31B9F1688720FBE10F8F3B46 /* MicrosoftOffice.json in Resources */ = {isa = PBXBuildFile; fileRef = D1E2968239F9E780D1928B58 /* MicrosoftOffice.json */; };
 		329DBA7EA718B80A63BFC447 /* UpdateAvailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B1981E3586CD4B1638B2FCF /* UpdateAvailableView.swift */; };
 		32D15D3B2B3404DE9662CEA5 /* EvidenceCategoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2854706813F7B138A3E1A17C /* EvidenceCategoryTests.swift */; };
@@ -514,6 +515,7 @@
 		EB19DF68D3A880EDC0DE961F /* KarabinerElementsRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarabinerElementsRule.swift; sourceTree = "<group>"; };
 		EB8F8A1333721100D80BF6EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		EF575E357E0DB8213EF681E2 /* AppIntentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentsTests.swift; sourceTree = "<group>"; };
+		EF62EE88671BDA4B43F107F0 /* EmptyTrashIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyTrashIntent.swift; sourceTree = "<group>"; };
 		EFB823E397459E29F026EFB6 /* LittleSnitch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = LittleSnitch.json; sourceTree = "<group>"; };
 		F107148C0A34FAB65F2D6093 /* ProbeCaches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeCaches.swift; sourceTree = "<group>"; };
 		F26F6770FD70ABF80ADDB3D2 /* PrivateCatalogLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateCatalogLoaderTests.swift; sourceTree = "<group>"; };
@@ -728,6 +730,7 @@
 			children = (
 				D5BDB61F81453375702396EA /* CleanCategoryIntent.swift */,
 				3E40E1E5FD48896B7537879C /* CleanDeveloperCachesIntent.swift */,
+				EF62EE88671BDA4B43F107F0 /* EmptyTrashIntent.swift */,
 				CAB97CBC44CD5A5FE9BCD2B9 /* GetStorageStatusIntent.swift */,
 				24AF2398FDC64924F7F5C76C /* MacOSCleanerShortcuts.swift */,
 				D2590405F8262EBA8B4A1135 /* RunScheduledCleanupIntent.swift */,
@@ -1302,6 +1305,7 @@
 				538ACA8962099BFC748E72B6 /* DuplicatesViewModel.swift in Sources */,
 				C50AEB6F8125492F79A73313 /* ElectronRule.swift in Sources */,
 				0034381EEDFEBD9342599AB4 /* EmbeddedCleanupPaths.swift in Sources */,
+				309512D5B9444B9BCF812039 /* EmptyTrashIntent.swift in Sources */,
 				E5D6516EE60805E6141E10F9 /* EpicGamesRule.swift in Sources */,
 				2994E7C0CD0AB5AA8E3FD4D8 /* Evidence.swift in Sources */,
 				D5883737207237A630360049 /* EvidenceExplanation.swift in Sources */,

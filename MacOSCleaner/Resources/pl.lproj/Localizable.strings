@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "Sprawdź stan miejsca na dysku";
 "settings_cmd_clean_category" = "Wyczyść wybraną kategorię (pamięci podręczne, dzienniki itd.)";
 "settings_cmd_scheduled_cleanup" = "Uruchom zaplanowane czyszczenie (Automator)";
+"settings_cmd_empty_trash" = "Opróżnij Kosz";
 "siri_phrase_developer_caches" = "Wyczyść pamięci podręczne deweloperskie";
 "siri_phrase_storage_status" = "Ile jest wolnego miejsca";
 "siri_phrase_clean_category" = "Wyczyść systemowe pamięci podręczne";
 "siri_phrase_scheduled_cleanup" = "Uruchom zaplanowane czyszczenie";
+"siri_phrase_empty_trash" = "Opróżnij Kosz";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Dodaj polecenie";

@@ -43,6 +43,11 @@ public struct CleanupView: View {
                 }
             }
         }
+        .onAppear {
+            if viewModel.settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Cleanup")
+            }
+        }
     }
     
     @ViewBuilder
@@ -971,6 +976,7 @@ struct CleanupFileRow: View {
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
 
@@ -1022,20 +1028,15 @@ struct CleanupFileRow: View {
                     .help("uninstaller_show_in_finder".localized)
                 }
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable, let path = item.path {
-                    Button {
+                if let path = item.path {
+                    AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
                         withAnimation(.spring()) {
                             isExpanded.toggle()
                         }
                         if isExpanded && aiExplanation.isEmpty && !isGenerating {
                             generateAIExplanation(path: path)
                         }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
                 }
 
                 Text(item.sizeBytes.formattedByteCount())
@@ -1051,6 +1052,10 @@ struct CleanupFileRow: View {
                         Image(systemName: "sparkles")
                             .foregroundColor(.purple)
                             .font(.caption)
+                        
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
                         
                         if isGenerating {
                             HStack(spacing: 8) {
@@ -1084,7 +1089,7 @@ struct CleanupFileRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainCleanupFile(
+                let stream = try await AIExplanationService.shared.explainCleanupFileStream(
                     fileName: item.label,
                     filePath: path,
                     category: item.category ?? "Cache/Temporary Data",
@@ -1093,7 +1098,23 @@ struct CleanupFileRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = item.category ?? item.label
                     self.isGenerating = false
                 }
             } catch {

@@ -12,6 +12,7 @@ struct ProcessRow: View {
     @State private var appIcon: NSImage?
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
     @State private var showForceKill = false
@@ -125,20 +126,13 @@ struct ProcessRow: View {
                     }
                 }
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
 
                 if case .blocked(let reason) = permission {
@@ -164,6 +158,10 @@ struct ProcessRow: View {
                         Image(systemName: "sparkles")
                             .foregroundColor(.purple)
                             .font(.caption)
+                        
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
                         
                         if isGenerating {
                             HStack(spacing: 8) {
@@ -222,7 +220,7 @@ struct ProcessRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainProcess(
+                let stream = try await AIExplanationService.shared.explainProcessStream(
                     processName: process.name,
                     pid: process.pid,
                     filePath: process.path ?? "Unknown path",
@@ -233,7 +231,23 @@ struct ProcessRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = "\(process.name) (\(process.memoryFormatted), CPU: \(String(format: "%.1f", process.cpuPercent))%)"
                     self.isGenerating = false
                 }
             } catch {

@@ -36,5 +36,26 @@ public struct MacOSCleanerShortcuts: AppShortcutsProvider {
             shortTitle: "Clean Files",
             systemImageName: "trash.fill"
         )
+        AppShortcut(
+            intent: RunScheduledCleanupIntent(),
+            phrases: [
+                "Run scheduled cleanup in \(.applicationName)",
+                "Start background clean with \(.applicationName)",
+                "Запусти очистку в \(.applicationName)",
+                "Фоновая очистка в \(.applicationName)"
+            ],
+            shortTitle: "Run Scheduled Cleanup",
+            systemImageName: "clock.arrow.2.circlepath"
+        )
+        AppShortcut(
+            intent: EmptyTrashIntent(),
+            phrases: [
+                "Empty Trash in \(.applicationName)",
+                "Empty Bin with \(.applicationName)",
+                "Очисти корзину в \(.applicationName)"
+            ],
+            shortTitle: "Empty Trash",
+            systemImageName: "trash"
+        )
     }
 }

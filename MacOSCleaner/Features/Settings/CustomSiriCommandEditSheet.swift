@@ -19,7 +19,8 @@ public struct CustomSiriCommandEditSheet: View {
             ("browserCaches", "settings_cmd_category_browser_caches".localized),
             ("orphanedRemnants", "settings_cmd_category_orphaned_remnants".localized),
             ("storage_status", "settings_cmd_storage_status".localized),
-            ("scheduled_cleanup", "settings_cmd_scheduled_cleanup".localized)
+            ("scheduled_cleanup", "settings_cmd_scheduled_cleanup".localized),
+            ("trash", "cleanup_base_trash".localized)
         ]
     }
 
@@ -48,6 +49,10 @@ public struct CustomSiriCommandEditSheet: View {
                         Text(cat.label).tag(cat.key)
                     }
                 }
+
+                Text("siri_shortcuts_static_note".localized.isEmpty || "siri_shortcuts_static_note".localized == "siri_shortcuts_static_note" ? "Siri phrases are registered via macOS App Shortcuts. In Shortcuts app, you can customize your personal trigger phrases." : "siri_shortcuts_static_note".localized)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
             .formStyle(.grouped)
 
@@ -66,6 +71,7 @@ public struct CustomSiriCommandEditSheet: View {
                         title: title.isEmpty ? "siri_new_command_default".localized : title,
                         phrase: phrase,
                         categoryRawValue: selectedCategory,
+                        settingKey: commandToEdit?.settingKey,
                         isEnabled: commandToEdit?.isEnabled ?? true
                     )
                     onSave(cmd)

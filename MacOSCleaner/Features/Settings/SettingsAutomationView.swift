@@ -157,6 +157,9 @@ struct SettingsAutomationView: View {
                                 .buttonStyle(.plain)
 
                                 Button {
+                                    if let key = cmd.settingKey {
+                                        UserDefaults.standard.set(false, forKey: key)
+                                    }
                                     settings.customSiriCommands.removeAll(where: { $0.id == cmd.id })
                                 } label: {
                                     Image(systemName: "trash")
@@ -172,9 +175,9 @@ struct SettingsAutomationView: View {
         )
     }
 
-    private var isCurrentLocaleSupportedByAI: Bool {
-        SystemLanguageModel.default.supportsLocale(Locale.current) ||
-        SystemLanguageModel.default.supportsLocale(LanguageManager.shared.currentLocale)
+    private var isSystemLocaleSupportedByAI: Bool {
+        let systemLocale = Locale(identifier: Locale.preferredLanguages.first ?? Locale.current.identifier)
+        return SystemLanguageModel.default.supportsLocale(systemLocale)
     }
 
     private var aiToggleCard: some View {
@@ -223,7 +226,7 @@ struct SettingsAutomationView: View {
                     case .appleIntelligenceNotEnabled:
                         StatusPill("settings_ai_status_not_enabled".localized, iconName: "exclamationmark.circle.fill", style: .warning)
                     case .modelNotReady:
-                        if !isCurrentLocaleSupportedByAI {
+                        if !isSystemLocaleSupportedByAI {
                             StatusPill("settings_ai_status_unsupported_language".localized, iconName: "globe.badge.chevron.backward", style: .warning)
                         } else {
                             StatusPill("settings_ai_status_preparing".localized, iconName: "clock.arrow.circlepath", style: .info)
@@ -263,7 +266,7 @@ struct SettingsAutomationView: View {
             case .appleIntelligenceNotEnabled:
                 return "settings_ai_hint_not_enabled".localized
             case .modelNotReady:
-                if !isCurrentLocaleSupportedByAI {
+                if !isSystemLocaleSupportedByAI {
                     return "settings_ai_hint_unsupported_language".localized
                 } else {
                     return "settings_ai_hint_preparing".localized

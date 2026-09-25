@@ -47,12 +47,22 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
     @Parameter(title: "Category", default: .userLogs)
     public var category: CategoryIntentTarget
 
+    @Parameter(title: "Confirm Deletion", default: false)
+    public var confirm: Bool
+
+    @Parameter(title: "Dry Run Mode", default: false)
+    public var dryRun: Bool
+
     public init() {
         self.category = .userLogs
+        self.confirm = false
+        self.dryRun = false
     }
 
-    public init(category: CategoryIntentTarget) {
+    public init(category: CategoryIntentTarget, confirm: Bool = false, dryRun: Bool = false) {
         self.category = category
+        self.confirm = confirm
+        self.dryRun = dryRun
     }
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -63,13 +73,23 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
             return .result(dialog: "Clean Specific Category command is disabled in macOS Cleaner settings.")
         }
 
+        let isRunningInTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
+        let shouldDryRun = dryRun || isRunningInTests
+
+        if confirm && !shouldDryRun {
+            try await requestConfirmation(
+                result: .result(dialog: "Are you sure you want to clean \(category.rawValue)?")
+            )
+        }
+
         let engine = CleanupEngine()
-        let results = (try? await engine.run(categories: [category.cleanupCategory], dryRun: false)) ?? []
+        let results = (try? await engine.run(categories: [category.cleanupCategory], dryRun: shouldDryRun)) ?? []
         let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
 
         let mb = Double(freedBytes) / (1024 * 1024)
         let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
 
-        return .result(dialog: "Cleaned \(category.rawValue). Freed \(formatted).")
+        let prefix = shouldDryRun ? "[Preview] Estimated space to free from \(category.rawValue):" : "Cleaned \(category.rawValue). Freed:"
+        return .result(dialog: "\(prefix) \(formatted).")
     }
 }

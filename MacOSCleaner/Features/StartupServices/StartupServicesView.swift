@@ -37,7 +37,12 @@ public struct StartupServicesView: View {
                 .help("startup_refresh".localized)
             }
         }
-        .onAppear { Task { await viewModel.scan() } }
+        .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Startup")
+            }
+            Task { await viewModel.scan() }
+        }
     }
 
     private var filterPicker: some View {
@@ -225,6 +230,7 @@ struct ServiceRow: View {
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
 
@@ -246,20 +252,13 @@ struct ServiceRow: View {
 
                 Spacer()
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
 
                 StatusBadge(isEnabled: service.isEnabled)
@@ -278,6 +277,10 @@ struct ServiceRow: View {
                         Image(systemName: "sparkles")
                             .foregroundColor(.purple)
                             .font(.caption)
+                        
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
                         
                         if isGenerating {
                             HStack(spacing: 8) {
@@ -312,7 +315,7 @@ struct ServiceRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainStartupService(
+                let stream = try await AIExplanationService.shared.explainStartupServiceStream(
                     serviceName: service.name,
                     filePath: service.path,
                     category: service.category.displayName,
@@ -321,7 +324,23 @@ struct ServiceRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = service.category.displayName
                     self.isGenerating = false
                 }
             } catch {

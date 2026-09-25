@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "معرفة حالة مساحة القرص";
 "settings_cmd_clean_category" = "تنظيف فئة محددة (ذاكرات مؤقتة، سجلات، وغيرها)";
 "settings_cmd_scheduled_cleanup" = "تشغيل التنظيف المجدول (Automator)";
+"settings_cmd_empty_trash" = "إفراغ سلة المهملات";
 "siri_phrase_developer_caches" = "نظّف ذاكرات المطور المؤقتة";
 "siri_phrase_storage_status" = "كم المساحة المتاحة";
 "siri_phrase_clean_category" = "نظّف ذاكرات النظام المؤقتة";
 "siri_phrase_scheduled_cleanup" = "شغّل التنظيف المجدول";
+"siri_phrase_empty_trash" = "أفرغ سلة المهملات";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "إضافة أمر";

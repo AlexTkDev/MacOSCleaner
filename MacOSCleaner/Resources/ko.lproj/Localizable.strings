@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "디스크 저장 공간 상태 확인";
 "settings_cmd_clean_category" = "특정 카테고리 정리 (캐시, 로그 등)";
 "settings_cmd_scheduled_cleanup" = "예약된 정리 실행 (Automator)";
+"settings_cmd_empty_trash" = "휴지통 비우기";
 "siri_phrase_developer_caches" = "개발자 캐시 정리해 줘";
 "siri_phrase_storage_status" = "여유 공간이 얼마나 되나요";
 "siri_phrase_clean_category" = "시스템 캐시 정리해 줘";
 "siri_phrase_scheduled_cleanup" = "예약된 정리 실행해 줘";
+"siri_phrase_empty_trash" = "휴지통 비워줘";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "명령 추가";

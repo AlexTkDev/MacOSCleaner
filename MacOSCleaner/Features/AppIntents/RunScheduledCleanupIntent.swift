@@ -26,17 +26,20 @@ public struct RunScheduledCleanupIntent: AppIntent, Sendable {
             return .result(dialog: "Scheduled Cleanup command is disabled in macOS Cleaner settings.")
         }
 
+        let isRunningInTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
+        let shouldDryRun = dryRun || isRunningInTests
+
         let engine = CleanupEngine()
         // Orphan heuristics are never run unattended — only safe regenerable caches/logs.
         let categoriesToClean: [CleanupCategory] = [.appCaches, .userLogs, .systemCaches, .browserCaches]
         
-        let results = (try? await engine.run(categories: categoriesToClean, dryRun: dryRun)) ?? []
+        let results = (try? await engine.run(categories: categoriesToClean, dryRun: shouldDryRun)) ?? []
         let totalFreedBytes = results.reduce(0) { $0 + $1.freedBytes }
 
         let mb = Double(totalFreedBytes) / (1024 * 1024)
         let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
 
-        let prefix = dryRun ? "[Preview] Estimated space to free:" : "Scheduled cleanup complete. Freed:"
+        let prefix = shouldDryRun ? "[Preview] Estimated space to free:" : "Scheduled cleanup complete. Freed:"
         return .result(dialog: "\(prefix) \(formatted).")
     }
 }

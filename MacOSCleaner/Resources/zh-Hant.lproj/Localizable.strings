@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "獲取磁碟儲存狀態";
 "settings_cmd_clean_category" = "清理指定分類 (快取、日誌等)";
 "settings_cmd_scheduled_cleanup" = "執行計劃清理 (Automator)";
+"settings_cmd_empty_trash" = "清倒垃圾桶";
 "siri_phrase_developer_caches" = "清理開發者快取";
 "siri_phrase_storage_status" = "還有多少可用空間";
 "siri_phrase_clean_category" = "清理系統快取";
 "siri_phrase_scheduled_cleanup" = "執行計劃清理";
+"siri_phrase_empty_trash" = "清倒垃圾桶";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "新增指令";

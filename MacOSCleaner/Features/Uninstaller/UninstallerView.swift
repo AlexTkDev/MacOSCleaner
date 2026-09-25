@@ -134,6 +134,9 @@ struct UninstallerView: View {
             )
         }
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Application")
+            }
             if allApps.isEmpty {
                 loadApps()
             }
@@ -1102,6 +1105,7 @@ struct RelatedFileRow: View {
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
 
@@ -1161,20 +1165,13 @@ struct RelatedFileRow: View {
 
                 Spacer()
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
 
                 Button {
@@ -1198,6 +1195,10 @@ struct RelatedFileRow: View {
                         Image(systemName: "sparkles")
                             .foregroundColor(.purple)
                             .font(.caption)
+                        
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
                         
                         if isGenerating {
                             HStack(spacing: 8) {
@@ -1232,14 +1233,13 @@ struct RelatedFileRow: View {
         errorMessage = nil
         
         let lang = settings.language
+        let evidenceStrings = file.evidence.map { evidence -> String in
+            let explanation = EvidenceExplanations.explanation(for: evidence, args: appName)
+            return "\(explanation.title): \(explanation.description)"
+        }
         Task {
             do {
-                let evidenceStrings = file.evidence.map { evidence -> String in
-                    let explanation = EvidenceExplanations.explanation(for: evidence, args: appName)
-                    return "\(explanation.title): \(explanation.description)"
-                }
-                
-                let result = try await AIExplanationService.shared.explainRelation(
+                let stream = try await AIExplanationService.shared.explainRelationStream(
                     appName: appName,
                     filePath: file.url.path,
                     evidence: evidenceStrings,
@@ -1248,7 +1248,24 @@ struct RelatedFileRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = evidenceStrings.first ?? file.url.lastPathComponent
                     self.isGenerating = false
                 }
             } catch {
@@ -1354,21 +1371,13 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                             .minimumScaleFactor(0.6)
                             .fixedSize(horizontal: false, vertical: true)
                         
-                        if settings.enableAI && AIExplanationService.shared.isAvailable {
-                            Button {
-                                withAnimation(.spring()) {
-                                    isExpanded.toggle()
-                                }
-                                if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                                    generateAIExplanation()
-                                }
-                            } label: {
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(isExpanded ? .purple : .secondary)
-                                    .font(.title3)
+                        AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                            withAnimation(.spring()) {
+                                isExpanded.toggle()
                             }
-                            .buttonStyle(.plain)
-                            .help("uninstaller_explain_with_ai".localized)
+                            if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                                generateAIExplanation()
+                            }
                         }
                     }
                     
@@ -1429,7 +1438,7 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
         
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainApp(
+                let stream = try await AIExplanationService.shared.explainAppStream(
                     appName: app.name,
                     bundleID: app.bundleID ?? "Unknown",
                     sizeFormatted: sizeString,
@@ -1437,7 +1446,15 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
                     self.isGenerating = false
                 }
             } catch {

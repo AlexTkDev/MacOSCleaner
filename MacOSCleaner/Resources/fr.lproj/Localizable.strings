@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "Obtenir l'état du stockage";
 "settings_cmd_clean_category" = "Nettoyer une catégorie spécifique (Caches, Journaux, etc.)";
 "settings_cmd_scheduled_cleanup" = "Exécuter le nettoyage planifié (Automator)";
+"settings_cmd_empty_trash" = "Vider la corbeille";
 "siri_phrase_developer_caches" = "Nettoyer les caches développeur";
 "siri_phrase_storage_status" = "Combien d'espace libre";
 "siri_phrase_clean_category" = "Nettoyer les caches système";
 "siri_phrase_scheduled_cleanup" = "Lancer le nettoyage planifié";
+"siri_phrase_empty_trash" = "Vide la corbeille";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Ajouter une commande";

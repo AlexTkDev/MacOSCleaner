@@ -28,6 +28,9 @@ public struct DiskAnalyzerView: View {
         .padding(16)
         .quickLookPreview($viewModel.quickLookURL)
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "File")
+            }
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
             }
@@ -291,6 +294,7 @@ struct DiskItemRow: View {
     @State private var showingDeleteConfirmation = false
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
     
@@ -331,20 +335,13 @@ struct DiskItemRow: View {
                 
                 Spacer()
                 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
                 
                 Text(item.size.formattedByteCount())
@@ -419,6 +416,10 @@ struct DiskItemRow: View {
                             .foregroundColor(.purple)
                             .font(.caption)
                         
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
+                        
                         if isGenerating {
                             HStack(spacing: 8) {
                                 ProgressView().controlSize(.small)
@@ -451,7 +452,7 @@ struct DiskItemRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainDiskFile(
+                let stream = try await AIExplanationService.shared.explainDiskFileStream(
                     fileName: item.name,
                     filePath: item.url.path,
                     sizeFormatted: item.size.formattedByteCount(),
@@ -460,7 +461,23 @@ struct DiskItemRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = item.fileType.localizedName
                     self.isGenerating = false
                 }
             } catch {

@@ -180,6 +180,7 @@ public final class AppSettings {
         static let enableStorageStatusCommand = "settings_cmd_storage_status"
         static let enableCleanCategoryCommand = "settings_cmd_clean_category"
         static let enableScheduledCleanupCommand = "settings_cmd_scheduled_cleanup"
+        static let enableEmptyTrashCommand = "settings_cmd_empty_trash"
         static let customSiriCommands = "settings_custom_siri_commands"
         static let isDebugMode = "settings_isDebugMode"
     }
@@ -235,25 +236,71 @@ public final class AppSettings {
     }
 
     public var enableDeveloperCachesCommand: Bool {
-        didSet { UserDefaults.standard.set(enableDeveloperCachesCommand, forKey: Keys.enableDeveloperCachesCommand) }
+        didSet {
+            UserDefaults.standard.set(enableDeveloperCachesCommand, forKey: Keys.enableDeveloperCachesCommand)
+            syncCommandState(key: Keys.enableDeveloperCachesCommand, isEnabled: enableDeveloperCachesCommand)
+        }
     }
 
     public var enableStorageStatusCommand: Bool {
-        didSet { UserDefaults.standard.set(enableStorageStatusCommand, forKey: Keys.enableStorageStatusCommand) }
+        didSet {
+            UserDefaults.standard.set(enableStorageStatusCommand, forKey: Keys.enableStorageStatusCommand)
+            syncCommandState(key: Keys.enableStorageStatusCommand, isEnabled: enableStorageStatusCommand)
+        }
     }
 
     public var enableCleanCategoryCommand: Bool {
-        didSet { UserDefaults.standard.set(enableCleanCategoryCommand, forKey: Keys.enableCleanCategoryCommand) }
+        didSet {
+            UserDefaults.standard.set(enableCleanCategoryCommand, forKey: Keys.enableCleanCategoryCommand)
+            syncCommandState(key: Keys.enableCleanCategoryCommand, isEnabled: enableCleanCategoryCommand)
+        }
     }
 
     public var enableScheduledCleanupCommand: Bool {
-        didSet { UserDefaults.standard.set(enableScheduledCleanupCommand, forKey: Keys.enableScheduledCleanupCommand) }
+        didSet {
+            UserDefaults.standard.set(enableScheduledCleanupCommand, forKey: Keys.enableScheduledCleanupCommand)
+            syncCommandState(key: Keys.enableScheduledCleanupCommand, isEnabled: enableScheduledCleanupCommand)
+        }
+    }
+
+    public var enableEmptyTrashCommand: Bool {
+        didSet {
+            UserDefaults.standard.set(enableEmptyTrashCommand, forKey: Keys.enableEmptyTrashCommand)
+            syncCommandState(key: Keys.enableEmptyTrashCommand, isEnabled: enableEmptyTrashCommand)
+        }
     }
 
     public var customSiriCommands: [CustomSiriCommand] {
         didSet {
+            for cmd in customSiriCommands {
+                if let key = cmd.settingKey {
+                    UserDefaults.standard.set(cmd.isEnabled, forKey: key)
+                    switch key {
+                    case Keys.enableDeveloperCachesCommand:
+                        if enableDeveloperCachesCommand != cmd.isEnabled { enableDeveloperCachesCommand = cmd.isEnabled }
+                    case Keys.enableStorageStatusCommand:
+                        if enableStorageStatusCommand != cmd.isEnabled { enableStorageStatusCommand = cmd.isEnabled }
+                    case Keys.enableCleanCategoryCommand:
+                        if enableCleanCategoryCommand != cmd.isEnabled { enableCleanCategoryCommand = cmd.isEnabled }
+                    case Keys.enableScheduledCleanupCommand:
+                        if enableScheduledCleanupCommand != cmd.isEnabled { enableScheduledCleanupCommand = cmd.isEnabled }
+                    case Keys.enableEmptyTrashCommand:
+                        if enableEmptyTrashCommand != cmd.isEnabled { enableEmptyTrashCommand = cmd.isEnabled }
+                    default:
+                        break
+                    }
+                }
+            }
             if let data = try? JSONEncoder().encode(customSiriCommands) {
                 UserDefaults.standard.set(data, forKey: Keys.customSiriCommands)
+            }
+        }
+    }
+
+    private func syncCommandState(key: String, isEnabled: Bool) {
+        if let idx = customSiriCommands.firstIndex(where: { $0.settingKey == key }) {
+            if customSiriCommands[idx].isEnabled != isEnabled {
+                customSiriCommands[idx].isEnabled = isEnabled
             }
         }
     }
@@ -332,11 +379,25 @@ public final class AppSettings {
         self.enableStorageStatusCommand = defaults.object(forKey: Keys.enableStorageStatusCommand) as? Bool ?? true
         self.enableCleanCategoryCommand = defaults.object(forKey: Keys.enableCleanCategoryCommand) as? Bool ?? true
         self.enableScheduledCleanupCommand = defaults.object(forKey: Keys.enableScheduledCleanupCommand) as? Bool ?? true
+        self.enableEmptyTrashCommand = defaults.object(forKey: Keys.enableEmptyTrashCommand) as? Bool ?? true
         self.isDebugMode = defaults.bool(forKey: Keys.isDebugMode)
 
         if let data = defaults.data(forKey: Keys.customSiriCommands),
            let decoded = try? JSONDecoder().decode([CustomSiriCommand].self, from: data) {
-            self.customSiriCommands = decoded
+            var commands = decoded
+            let defaultsList = CustomSiriCommand.makeDefaultCommands()
+            for i in 0..<commands.count {
+                if commands[i].settingKey == nil,
+                   let matchingDef = defaultsList.first(where: { $0.categoryRawValue == commands[i].categoryRawValue }) {
+                    commands[i].settingKey = matchingDef.settingKey
+                }
+            }
+            for def in defaultsList {
+                if !commands.contains(where: { $0.settingKey == def.settingKey || $0.categoryRawValue == def.categoryRawValue }) {
+                    commands.append(def)
+                }
+            }
+            self.customSiriCommands = commands
         } else {
             self.customSiriCommands = CustomSiriCommand.makeDefaultCommands()
         }
@@ -361,6 +422,7 @@ public final class AppSettings {
             Keys.enableAI, Keys.enableSiri, Keys.enableShortcutsAndAutomator,
             Keys.enableDeveloperCachesCommand, Keys.enableStorageStatusCommand,
             Keys.enableCleanCategoryCommand, Keys.enableScheduledCleanupCommand,
+            Keys.enableEmptyTrashCommand,
             Keys.customSiriCommands
         ]
         for key in allKeys {

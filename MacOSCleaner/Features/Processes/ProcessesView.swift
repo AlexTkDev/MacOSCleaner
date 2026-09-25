@@ -52,6 +52,9 @@ public struct ProcessesView: View {
             whitelistSheet
         }
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Process")
+            }
             Task { await viewModel.scan() }
         }
     }
