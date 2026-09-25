@@ -79,12 +79,14 @@ class DashboardViewModel: ObservableObject {
         
         await withTaskGroup(of: (String, Int64).self) { group in
             for entry in categoryPaths {
+                let paths = entry.paths
+                let key = entry.key
                 group.addTask {
                     var total: Int64 = 0
-                    for path in entry.paths {
-                        total += await self.calculatePathSize(path)
+                    for path in paths {
+                        total += await Self.calculatePathSize(path)
                     }
-                    return (entry.key, total)
+                    return (key, total)
                 }
             }
             for await (key, size) in group {
@@ -162,7 +164,7 @@ class DashboardViewModel: ObservableObject {
         self.isCategoriesLoading = false
     }
     
-    private func calculatePathSize(_ path: String) async -> Int64 {
+    nonisolated static func calculatePathSize(_ path: String) async -> Int64 {
         let fm = FileManager.default
         let url = URL(fileURLWithPath: path)
         var isDirectory: ObjCBool = false

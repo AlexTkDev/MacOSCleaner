@@ -3,6 +3,7 @@ import Observation
 import OSLog
 import AppKit
 
+@MainActor
 @Observable
 public final class CleanupViewModel {
     public let coordinator: CleanupCoordinator

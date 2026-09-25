@@ -7,8 +7,9 @@ private extension Logger {
     static let coordinator = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "CleanupCoordinator")
 }
 
+@MainActor
 @Observable
-public final class CleanupCoordinator: @unchecked Sendable {
+public final class CleanupCoordinator {
     private let stateMachine = CleanupStateMachine()
     private let engine: CleanupEngine
     private let journal: TransactionJournal

@@ -45,7 +45,7 @@ public struct PosixScanner: Sendable {
         let safeRoots = roots
         let safeConfig = config
         let safeProgress = progress
-        return AsyncStream(bufferingPolicy: .bufferingNewest(4)) { continuation in
+        return AsyncStream(bufferingPolicy: .unbounded) { continuation in
             let task = Task {
                 let fm = FileManager.default
                 let allRoots = safeRoots.filter { fm.fileExists(atPath: $0) }

@@ -346,7 +346,7 @@ public actor FileCleanupActor {
         return (freed, nil)
     }
 
-    func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
+    func cleanContentsBatch(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
         var totalFreed: Int64 = 0
         for path in paths {
             try Task.checkCancellation()

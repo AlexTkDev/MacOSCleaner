@@ -18,7 +18,7 @@ public actor PrivilegedTaskRunner {
     /// - Throws: An error if execution fails or user cancels the password prompt.
     public static func runAsAdmin(command: String) async throws -> String {
         try Task.checkCancellation()
-        return try await Task.detached {
+        let runnerTask = Task.detached {
             try Task.checkCancellation()
             // Escape special shell characters in the command
             let escapedCommand = command
@@ -34,6 +34,7 @@ public actor PrivilegedTaskRunner {
                 throw PrivilegedError.executionFailed
             }
             
+            try Task.checkCancellation()
             var error: NSDictionary? = nil
             let result = appleScript.executeAndReturnError(&error)
             
@@ -44,6 +45,12 @@ public actor PrivilegedTaskRunner {
             }
             
             return result.stringValue ?? ""
-        }.value
+        }
+
+        return try await withTaskCancellationHandler {
+            try await runnerTask.value
+        } onCancel: {
+            runnerTask.cancel()
+        }
     }
 }

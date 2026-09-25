@@ -514,6 +514,79 @@ struct CleanupEngineTests {
         #expect(entryCount < 1000, "Should not recurse infinitely through symlink loops")
     }
 
+    @Test("PosixScanner unbounded buffering delivers all batches across multiple roots")
+    func posixScannerUnboundedBufferingMultipleRoots() async throws {
+        let scanner = PosixScanner()
+        let tempBase = FileManager.default.temporaryDirectory.appendingPathComponent("posix_unbounded_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempBase) }
+
+        var roots: [String] = []
+        let rootCount = 10
+        for i in 0..<rootCount {
+            let rootDir = tempBase.appendingPathComponent("root_\(i)")
+            try FileManager.default.createDirectory(at: rootDir, withIntermediateDirectories: true)
+            for j in 0..<5 {
+                let file = rootDir.appendingPathComponent("file_\(j).txt")
+                try "test".write(to: file, atomically: true, encoding: .utf8)
+            }
+            roots.append(rootDir.path)
+        }
+
+        var totalEntries = 0
+        for await batch in scanner.scanParallel(roots: roots, config: .init(batchSize: 2)) {
+            totalEntries += batch.count
+        }
+
+        // Each root has 5 files -> 50 files total
+        #expect(totalEntries == 50)
+    }
+
+    @Test("cleanContentsBatch executes sequentially and cleans contents")
+    func cleanContentsBatchExecutesSequentially() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        let dir1 = ctx.homePath + "/Library/Caches/BatchTest1"
+        let dir2 = ctx.homePath + "/Library/Caches/BatchTest2"
+        try FileManager.default.createDirectory(atPath: dir1, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(atPath: dir2, withIntermediateDirectories: true)
+
+        let file1 = dir1 + "/item1.tmp"
+        let file2 = dir2 + "/item2.tmp"
+        try "content1".write(toFile: file1, atomically: true, encoding: .utf8)
+        try "content2".write(toFile: file2, atomically: true, encoding: .utf8)
+
+        let freed = try await engine.cleanContentsBatch([dir1, dir2], dryRun: false)
+        #expect(freed > 0)
+        #expect(!FileManager.default.fileExists(atPath: file1))
+        #expect(!FileManager.default.fileExists(atPath: file2))
+    }
+
+    @Test("cleanScatteredJunk isolates errors gracefully")
+    func cleanScatteredJunkIsolatesErrors() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        // Run scattered junk scan on the isolated context
+        let results = try await engine.cleanScatteredJunk(dryRun: true, cleanDSStore: true, progress: nil)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Scattered junk")
+    }
+
+    @Test("cleanLargeFiles isolates errors gracefully")
+    func cleanLargeFilesIsolatesErrors() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        let results = try await engine.cleanLargeFiles(dryRun: true, progress: nil)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Large files")
+    }
+
     // MARK: - Error Handling Tests
 
     @Test("Safety violation throws on protected path")

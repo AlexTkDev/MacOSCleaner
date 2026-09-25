@@ -200,10 +200,11 @@ public actor CleanupEngine {
         )
         self.safetyManager = safety
         self.timeouts = timeouts
-        self.sizeCache = DirectorySizeCache()
+        let sharedSizeCache = DirectorySizeCache()
+        self.sizeCache = sharedSizeCache
         self.fileActor = FileCleanupActor(
             safetyManager: safety,
-            sizeCache: DirectorySizeCache(),
+            sizeCache: sharedSizeCache,
             fileSystemContext: fileSystemContext
         )
         self.processActor = ProcessCleanupActor(commandRunner: commandRunner)
@@ -704,7 +705,7 @@ extension CleanupEngine {
         try await fileActor.cleanOldFilesRecursive(in: path, olderThanDays: days, dryRun: dryRun, progress: progress)
     }
 
-    func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
+    func cleanContentsBatch(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
         let pathsToClean: [String]
         if !dryRun, let selected = CleanupEngine.currentSelectedPaths {
             pathsToClean = paths.filter { selected.contains($0) }
@@ -712,7 +713,12 @@ extension CleanupEngine {
             pathsToClean = paths
         }
         guard !pathsToClean.isEmpty else { return 0 }
-        return try await fileActor.cleanContentsParallel(pathsToClean, dryRun: dryRun, progress: progress)
+        return try await fileActor.cleanContentsBatch(pathsToClean, dryRun: dryRun, progress: progress)
+    }
+
+    @available(*, deprecated, renamed: "cleanContentsBatch")
+    func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
+        try await cleanContentsBatch(paths, dryRun: dryRun, progress: progress)
     }
 
     /// Absolute existing paths from EmbeddedCleanupPaths (+ GeneratedCleanupPaths merge).
@@ -2093,99 +2099,111 @@ extension CleanupEngine {
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
         let windowsMetaNames: Set<String> = ["Thumbs.db", "desktop.ini", "ehthumbs.db"]
 
-        for await batch in scanner.scanParallel(
-            roots: scanDirs,
-            config: .init(
-                excludedPrefixes: ["/Library/", "/.Trash/", "/.git/", "/.vscode/", "/.idea/"],
-                maxDepth: nil,
-                batchSize: 1000,
-                yieldInterval: .seconds(2)
-            ),
-            progress: { scanned, _ in
-                progress?(.log("  Scanned \(scanned) files..."))
-            }
-        ) {
-            try Task.checkCancellation()
-
-            for entry in batch {
-                scannedCount += 1
-
-                if entry.path.contains("/.vscode/") || entry.path.contains("/.idea/")
-                    || entry.path.hasSuffix("/.vscode") || entry.path.hasSuffix("/.idea") {
-                    continue
+        do {
+            for await batch in scanner.scanParallel(
+                roots: scanDirs,
+                config: .init(
+                    excludedPrefixes: ["/Library/", "/.Trash/", "/.git/", "/.vscode/", "/.idea/"],
+                    maxDepth: nil,
+                    batchSize: 1000,
+                    yieldInterval: .seconds(2)
+                ),
+                progress: { scanned, _ in
+                    progress?(.log("  Scanned \(scanned) files..."))
                 }
+            ) {
+                try Task.checkCancellation()
 
-                if entry.name == ".DS_Store" {
-                    if cleanDSStore {
-                        foundItems.append(.dsStore(entry.path))
+                for entry in batch {
+                    scannedCount += 1
+
+                    if entry.path.contains("/.vscode/") || entry.path.contains("/.idea/")
+                        || entry.path.hasSuffix("/.vscode") || entry.path.hasSuffix("/.idea") {
+                        continue
+                    }
+
+                    if entry.name == ".DS_Store" {
+                        if cleanDSStore {
+                            foundItems.append(.dsStore(entry.path))
+                            if dryRun {
+                                emitFileItem(
+                                    await makeFileItemForPath(entry.path, fm: localFM),
+                                    category: "Scattered junk",
+                                    parentName: ".DS_Store",
+                                    progress: progress
+                                )
+                            }
+                        }
+                        continue
+                    }
+
+                    if entry.isDirectory && entry.name == "__MACOSX" {
+                        foundItems.append(.macosxDir(entry.path))
                         if dryRun {
                             emitFileItem(
                                 await makeFileItemForPath(entry.path, fm: localFM),
                                 category: "Scattered junk",
-                                parentName: ".DS_Store",
+                                parentName: "__MACOSX",
                                 progress: progress
                             )
                         }
+                        continue
                     }
-                    continue
-                }
 
-                if entry.isDirectory && entry.name == "__MACOSX" {
-                    foundItems.append(.macosxDir(entry.path))
-                    if dryRun {
-                        emitFileItem(
-                            await makeFileItemForPath(entry.path, fm: localFM),
-                            category: "Scattered junk",
-                            parentName: "__MACOSX",
-                            progress: progress
-                        )
-                    }
-                    continue
-                }
-
-                if windowsMetaNames.contains(entry.name) {
-                    foundItems.append(.windowsMeta(entry.path))
-                    if dryRun {
-                        emitFileItem(
-                            await makeFileItemForPath(entry.path, fm: localFM),
-                            category: "Scattered junk",
-                            parentName: "Windows metadata",
-                            progress: progress
-                        )
-                    }
-                    continue
-                }
-
-                if !entry.isDirectory && entry.name.hasSuffix(".log") {
-                    if let attrs = try? localFM.attributesOfItem(atPath: entry.path),
-                       let modDate = attrs[.modificationDate] as? Date,
-                       modDate < cutoffDate,
-                       let size = attrs[.size] as? Int64,
-                       size > 1024 * 1024 {
-                        foundItems.append(.oldLogFile(entry.path, size))
+                    if windowsMetaNames.contains(entry.name) {
+                        foundItems.append(.windowsMeta(entry.path))
                         if dryRun {
                             emitFileItem(
-                                await makeFileItemForPath(entry.path, fm: localFM, size: size),
+                                await makeFileItemForPath(entry.path, fm: localFM),
                                 category: "Scattered junk",
-                                parentName: "Old logs",
+                                parentName: "Windows metadata",
                                 progress: progress
                             )
                         }
+                        continue
                     }
-                    continue
-                }
 
-                if entry.isSymlink {
-                    let dirOfSymlink = (entry.path as NSString).deletingLastPathComponent
-                    let target = try? localFM.destinationOfSymbolicLink(atPath: entry.path)
-                    if let target = target {
-                        let resolvedTarget: String
-                        if (target as NSString).isAbsolutePath {
-                            resolvedTarget = target
-                        } else {
-                            resolvedTarget = (dirOfSymlink as NSString).appendingPathComponent(target)
+                    if !entry.isDirectory && entry.name.hasSuffix(".log") {
+                        if let attrs = try? localFM.attributesOfItem(atPath: entry.path),
+                           let modDate = attrs[.modificationDate] as? Date,
+                           modDate < cutoffDate,
+                           let size = attrs[.size] as? Int64,
+                           size > 1024 * 1024 {
+                            foundItems.append(.oldLogFile(entry.path, size))
+                            if dryRun {
+                                emitFileItem(
+                                    await makeFileItemForPath(entry.path, fm: localFM, size: size),
+                                    category: "Scattered junk",
+                                    parentName: "Old logs",
+                                    progress: progress
+                                )
+                            }
                         }
-                        if !localFM.fileExists(atPath: resolvedTarget) {
+                        continue
+                    }
+
+                    if entry.isSymlink {
+                        let dirOfSymlink = (entry.path as NSString).deletingLastPathComponent
+                        let target = try? localFM.destinationOfSymbolicLink(atPath: entry.path)
+                        if let target = target {
+                            let resolvedTarget: String
+                            if (target as NSString).isAbsolutePath {
+                                resolvedTarget = target
+                            } else {
+                                resolvedTarget = (dirOfSymlink as NSString).appendingPathComponent(target)
+                            }
+                            if !localFM.fileExists(atPath: resolvedTarget) {
+                                foundItems.append(.brokenSymlink(entry.path))
+                                if dryRun {
+                                    emitFileItem(
+                                        await makeFileItemForPath(entry.path, fm: localFM),
+                                        category: "Scattered junk",
+                                        parentName: "Broken symlinks",
+                                        progress: progress
+                                    )
+                                }
+                            }
+                        } else {
                             foundItems.append(.brokenSymlink(entry.path))
                             if dryRun {
                                 emitFileItem(
@@ -2196,19 +2214,13 @@ extension CleanupEngine {
                                 )
                             }
                         }
-                    } else {
-                        foundItems.append(.brokenSymlink(entry.path))
-                        if dryRun {
-                            emitFileItem(
-                                await makeFileItemForPath(entry.path, fm: localFM),
-                                category: "Scattered junk",
-                                parentName: "Broken symlinks",
-                                progress: progress
-                            )
-                        }
                     }
                 }
             }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            progress?(.log("  Warning: scattered junk scan encountered error: \(error.localizedDescription)"))
         }
 
         var freed: Int64 = 0
@@ -2351,27 +2363,33 @@ extension CleanupEngine {
         for dir in ipswSearchDirs {
             guard fm.fileExists(atPath: dir) else { continue }
             guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            while let item = enumerator.nextObject() as? String {
-                try Task.checkCancellation()
-                // Skip heavy directories in IPSW search too
-                let fullPath = "\(dir)/\(item)"
-                if Self.isHeavyDirectory(fullPath) {
-                    var isDir: ObjCBool = false
-                    fm.fileExists(atPath: fullPath, isDirectory: &isDir)
-                    if isDir.boolValue { enumerator.skipDescendants() }
-                    continue
-                }
-                let ext = (item as NSString).pathExtension.lowercased()
-                if ext == "ipsw" {
-                    if let attrs = try? fm.attributesOfItem(atPath: fullPath),
-                       let size = attrs[.size] as? Int64, size > 100 * 1024 * 1024 {
-                        items.append(("IPSW: \(item)", size))
-                        totalFound += size
-                        if dryRun {
-                            emitFileItem(CleanupFileItem(path: fullPath, sizeBytes: size, modificationDate: nil, isDirectory: false), category: "Large files", parentName: "Large files", progress: progress)
+            do {
+                while let item = enumerator.nextObject() as? String {
+                    try Task.checkCancellation()
+                    // Skip heavy directories in IPSW search too
+                    let fullPath = "\(dir)/\(item)"
+                    if Self.isHeavyDirectory(fullPath) {
+                        var isDir: ObjCBool = false
+                        fm.fileExists(atPath: fullPath, isDirectory: &isDir)
+                        if isDir.boolValue { enumerator.skipDescendants() }
+                        continue
+                    }
+                    let ext = (item as NSString).pathExtension.lowercased()
+                    if ext == "ipsw" {
+                        if let attrs = try? fm.attributesOfItem(atPath: fullPath),
+                           let size = attrs[.size] as? Int64, size > 100 * 1024 * 1024 {
+                            items.append(("IPSW: \(item)", size))
+                            totalFound += size
+                            if dryRun {
+                                emitFileItem(CleanupFileItem(path: fullPath, sizeBytes: size, modificationDate: nil, isDirectory: false), category: "Large files", parentName: "Large files", progress: progress)
+                            }
                         }
                     }
                 }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                progress?(.log("  Warning: failed scanning \(dir) for IPSW files: \(error.localizedDescription)"))
             }
         }
 
