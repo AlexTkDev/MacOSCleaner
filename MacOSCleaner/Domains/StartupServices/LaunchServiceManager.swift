@@ -205,27 +205,8 @@ public actor LaunchServiceManager {
             throw SafetyError.protectedPath(service.path)
         }
 
-        let uid = getuid()
-        let label = service.id
-
-        // Unload/bootout service prior to removing plist
-        let bootoutResult = try? await commandRunner.run(
-            command: "/bin/launchctl",
-            arguments: ["bootout", "gui/\(uid)/\(label)"]
-        )
-        if bootoutResult == nil || bootoutResult?.exitCode != 0 {
-            _ = try? await commandRunner.run(
-                command: "/bin/launchctl",
-                arguments: ["unload", "-w", service.path]
-            )
-        }
-        if service.path.hasPrefix("/Library/LaunchDaemons") {
-            _ = try? await commandRunner.run(
-                command: "/bin/launchctl",
-                arguments: ["bootout", "system/\(label)"]
-            )
-        }
-        try await stopService(label, path: service.path)
+        await LaunchdControl.bootout(plistPath: service.path, runner: commandRunner)
+        try await stopService(service.id, path: service.path)
 
         // Trash the plist file with .uninstall policy
         let plistURL = URL(fileURLWithPath: service.path)

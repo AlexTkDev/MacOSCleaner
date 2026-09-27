@@ -259,19 +259,19 @@ public actor CandidateCollector {
             }
         }
 
-        // 11. Network extension / VPN-specific
-        let isNetworkExt = identity.bundleID.lowercased().contains("littlesnitch") ||
-            identity.bundleID.lowercased().contains("nordvpn") ||
-            identity.bundleID.lowercased().contains("expressvpn") ||
-            identity.appName.lowercased().contains("vpn") ||
-            identity.appName.lowercased().contains("snitch")
-        if isNetworkExt {
-            let nePaths = [
-                NormalizedPath.joinHome(home, "Library/Application Support/Little Snitch"),
-                NormalizedPath.joinHome(home, "Library/Application Support/NordVPN"),
-            ]
-            for p in nePaths where fileManager.fileExists(atPath: p) {
-                candidates.insert(NormalizedPath.url(p, isDirectory: true))
+        // 11. Vendor support folders — only the matching product, never every VPN.
+        let bundle = identity.bundleID.lowercased()
+        var vendorSupport: [String] = []
+        if bundle.hasPrefix("at.obdev.") {
+            vendorSupport.append("Library/Application Support/Little Snitch")
+        }
+        if bundle.hasPrefix("com.nordvpn.") {
+            vendorSupport.append("Library/Application Support/NordVPN")
+        }
+        for relative in vendorSupport {
+            let path = NormalizedPath.joinHome(home, relative)
+            if fileManager.fileExists(atPath: path) {
+                candidates.insert(NormalizedPath.url(path, isDirectory: true))
             }
         }
 

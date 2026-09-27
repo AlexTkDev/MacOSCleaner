@@ -53,19 +53,18 @@ public struct PosixScanner: Sendable {
                 var totalScanned = 0
                 var totalFound = 0
 
-                await withTaskGroup(of: (Int, Int, [[Entry]]).self) { group in
+                await withTaskGroup(of: (Int, Int).self) { group in
                     for root in uniqueRoots {
                         group.addTask {
-                            Self.scanRoot(root, config: safeConfig)
+                            Self.scanRoot(root, config: safeConfig) { batch in
+                                continuation.yield(batch)
+                            }
                         }
                     }
 
-                    for await (scanned, found, batches) in group {
+                    for await (scanned, found) in group {
                         totalScanned += scanned
                         totalFound += found
-                        for batch in batches where !batch.isEmpty {
-                            continuation.yield(batch)
-                        }
                         safeProgress?(totalScanned, totalFound)
                     }
                 }
@@ -88,8 +87,11 @@ public struct PosixScanner: Sendable {
         return result
     }
 
-    private static func scanRoot(_ root: String, config: Config) -> (Int, Int, [[Entry]]) {
-        var allBatches: [[Entry]] = []
+    private static func scanRoot(
+        _ root: String,
+        config: Config,
+        yield: @Sendable ([Entry]) -> Void
+    ) -> (Int, Int) {
         var batch: [Entry] = []
         batch.reserveCapacity(config.batchSize)
         var scanned = 0
@@ -150,7 +152,7 @@ public struct PosixScanner: Sendable {
                     found += 1
 
                     if batch.count >= config.batchSize {
-                        allBatches.append(batch)
+                        yield(batch)
                         batch = []
                         batch.reserveCapacity(config.batchSize)
                     }
@@ -169,9 +171,9 @@ public struct PosixScanner: Sendable {
         }
 
         if !batch.isEmpty {
-            allBatches.append(batch)
+            yield(batch)
         }
 
-        return (scanned, found, allBatches)
+        return (scanned, found)
     }
 }

@@ -47,7 +47,7 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
     @Parameter(title: "Category", default: .userLogs)
     public var category: CategoryIntentTarget
 
-    @Parameter(title: "Confirm Deletion", default: false)
+    @Parameter(title: "Confirm Deletion", default: true)
     public var confirm: Bool
 
     @Parameter(title: "Dry Run Mode", default: false)
@@ -55,11 +55,11 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
 
     public init() {
         self.category = .userLogs
-        self.confirm = false
+        self.confirm = true
         self.dryRun = false
     }
 
-    public init(category: CategoryIntentTarget, confirm: Bool = false, dryRun: Bool = false) {
+    public init(category: CategoryIntentTarget, confirm: Bool = true, dryRun: Bool = false) {
         self.category = category
         self.confirm = confirm
         self.dryRun = dryRun
@@ -82,8 +82,17 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
             )
         }
 
+        if category == .largeFiles || category == .orphanedRemnants {
+            return .result(dialog: "\(category.rawValue) is review-only. Open macOS Cleaner to choose items.")
+        }
+
         let engine = CleanupEngine()
-        let results = (try? await engine.run(categories: [category.cleanupCategory], dryRun: shouldDryRun)) ?? []
+        let results: [CleanupEngineResult]
+        do {
+            results = try await engine.run(categories: [category.cleanupCategory], dryRun: shouldDryRun)
+        } catch {
+            return .result(dialog: "Could not clean \(category.rawValue): \(error.localizedDescription)")
+        }
         let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
 
         let mb = Double(freedBytes) / (1024 * 1024)

@@ -343,9 +343,9 @@
 "cleanup_option_voice_memos" = "تنظيف المذكرات الصوتية";
 "cleanup_option_voice_memos_sub" = "يزيل تسجيلات المذكرات الصوتية من المكتبة.";
 "cleanup_option_garageband_logic" = "تنظيف GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "يزيل ملفات مشاريع GarageBand وLogic Pro وذاكراتها المؤقتة.";
+"cleanup_option_garageband_logic_sub" = "يزيل ذاكرة GarageBand وLogic Pro المؤقتة فقط. تبقى المشاريع في الموسيقى.";
 "cleanup_option_imovie_final_cut" = "تنظيف iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "يزيل ملفات التصيير ومكتبات iMovie وFinal Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "يزيل ذاكرة iMovie وFinal Cut Pro المؤقتة فقط. تبقى المكتبات في الأفلام.";
 "cleanup_option_sleep_image" = "تنظيف صورة الإسبات";
 "cleanup_option_sleep_image_sub" = "يزيل ملف صورة الإسبات. يعيد macOS إنشاءه عند الإسبات التالي.";
 "cleanup_option_font_cache" = "مسح ذاكرة الخطوط المؤقتة";
@@ -1022,3 +1022,4 @@
 "startup_delete_confirm_title" = "هل تريد حذف خدمة بدء التشغيل؟";
 "startup_delete_confirm_message" = "هل أنت متأكد من رغبتك في حذف '%@'؟\nالملف: %@\nسيتم إيقاف الخدمة ونقل ملف plist الخاص بها إلى سلة المهملات.";
 "startup_delete_action" = "نقل إلى سلة المهملات";
+"scan_incomplete_without_fda" = "بدون الوصول الكامل إلى القرص، لا تظهر بعض المجلدات المحمية في هذه النتائج.";

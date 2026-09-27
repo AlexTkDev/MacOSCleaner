@@ -211,7 +211,7 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())!
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
         var freed: Int64 = 0
         var removedCount = 0
 
@@ -286,7 +286,7 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())!
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
         var freed: Int64 = 0
         var removedCount = 0
 

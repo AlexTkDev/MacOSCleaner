@@ -641,19 +641,7 @@ public actor UninstallerService {
     }
 
     private func bootoutLaunchdService(at path: String) async {
-        guard (path.contains("LaunchAgents") || path.contains("LaunchDaemons")), path.hasSuffix(".plist") else { return }
-        let domain = path.contains("LaunchDaemons") ? "system" : "gui/\(getuid())"
-        let bootout = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", domain, path])
-        if bootout?.exitCode == 0 {
-            Logger.uninstaller.debug("launchctl bootout: \(path, privacy: .public)")
-        } else {
-            do {
-                _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["unload", path])
-                Logger.uninstaller.debug("Unloaded launchctl: \(path, privacy: .public)")
-            } catch {
-                Logger.uninstaller.warning("launchctl unload failed '\(path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-            }
-        }
+        await LaunchdControl.bootout(plistPath: path, runner: commandRunner)
     }
 
     private func terminateRunningApp(_ app: AppInfo) async {
@@ -676,19 +664,20 @@ public actor UninstallerService {
         guard !runningApps.isEmpty else { return }
         Logger.uninstaller.info("Terminating \(runningApps.count) running instance(s) of '\(app.name, privacy: .public)'")
 
-        for running in runningApps {
-            running.terminate()
+        let handles: [AppQuitter.Handle] = await MainActor.run {
+            let policy = ProcessSafetyPolicy()
+            return runningApps.compactMap { running -> AppQuitter.Handle? in
+                let process = RunningProcess(application: running)
+                guard case .allowed = policy.isKillable(process) else {
+                    Logger.uninstaller.warning("Skipped terminate for protected process: \(process.name, privacy: .public)")
+                    return nil
+                }
+                return AppQuitter.Handle(application: running)
+            }
         }
-
-        let start = Date()
-        while Date().timeIntervalSince(start) < 3.0 {
-            if runningApps.allSatisfy({ $0.isTerminated }) { break }
-            try? await Task.sleep(for: .milliseconds(100))
-        }
-
-        for running in runningApps where !running.isTerminated {
-            Logger.uninstaller.warning("Force terminating '\(app.name, privacy: .public)' (PID: \(running.processIdentifier))")
-            running.forceTerminate()
+        let outcome = await AppQuitter.quit(handles)
+        for name in outcome.stillRunning {
+            Logger.uninstaller.warning("Still running after force terminate: \(name, privacy: .public)")
         }
     }
 
@@ -727,11 +716,10 @@ public actor UninstallerService {
             }
 
             if !privilegedItems.isEmpty {
-                let escaped = privilegedItems.map { "'\($0.url.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
                 do {
-                    _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                    let remaining = Set((try await PrivilegedTaskRunner.removeAsAdmin(privilegedItems.map(\.url))).map(\.path))
                     for item in privilegedItems {
-                        if !fileManager.fileExists(atPath: item.url.path) {
+                        if !remaining.contains(item.url.path) {
                             succeeded.append(item)
                             freed += item.sizeBytes
                         } else {
@@ -774,7 +762,7 @@ public actor UninstallerService {
     public func removeLeftovers(urls: [URL], bypassTrash: Bool = false) async throws -> Int64 {
         var freed: Int64 = 0
         if bypassTrash {
-            var privilegedPaths: [String] = []
+            var privileged: [(url: URL, size: Int64)] = []
             for url in urls {
                 do {
                     let size = FileManager.default.getDirectorySize(url: url)
@@ -783,20 +771,18 @@ public actor UninstallerService {
                     freed += size
                 } catch {
                     if Self.isPermissionError(error) {
-                        privilegedPaths.append(url.path)
+                        let size = FileManager.default.getDirectorySize(url: url)
+                        privileged.append((url, size))
                     } else {
                         Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
                     }
                 }
             }
-            if !privilegedPaths.isEmpty {
-                let escaped = privilegedPaths.map { "'\($0.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+            if !privileged.isEmpty {
                 do {
-                    _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
-                    for path in privilegedPaths {
-                        if !fileManager.fileExists(atPath: path) {
-                            freed += FileManager.default.getDirectorySize(url: URL(fileURLWithPath: path))
-                        }
+                    let remaining = Set((try await PrivilegedTaskRunner.removeAsAdmin(privileged.map(\.url))).map(\.path))
+                    for item in privileged where !remaining.contains(item.url.path) {
+                        freed += item.size
                     }
                 } catch {
                     Logger.uninstaller.error("Privileged removal failed for leftovers: \(error.localizedDescription)")
@@ -886,8 +872,7 @@ public actor UninstallerService {
 
             if !privilegedPaths.isEmpty {
                 Logger.uninstaller.info("Executing single privileged removal for \(privilegedPaths.count) item(s)")
-                let escaped = privilegedPaths.map { "'\($0.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
-                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
+                _ = try await PrivilegedTaskRunner.removeAsAdmin(privilegedPaths.map { URL(fileURLWithPath: $0) })
                 Logger.uninstaller.info("Permanently removed via admin privileges: \(privilegedPaths.count) item(s)")
             }
         } else {

@@ -96,7 +96,7 @@ public final class CleanupItemManager {
         for parent in items {
             for child in parent.children {
                 if child.isSelected, let p = child.path {
-                    paths.insert(p)
+                    paths.insert(Self.selectionKey(p))
                 }
             }
         }
@@ -266,11 +266,15 @@ public final class CleanupItemManager {
         return item.children.reduce(0) { $0 + selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
     }
 
-    private static func normalizePath(_ path: String) -> String {
+    static func selectionKey(_ path: String) -> String {
         if path.hasPrefix("command://") {
             return path
         }
         return NormalizedPath.key(NormalizedPath.url((path as NSString).expandingTildeInPath))
+    }
+
+    private static func normalizePath(_ path: String) -> String {
+        selectionKey(path)
     }
 
     private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {

@@ -15,7 +15,7 @@ public actor SnapshotStore {
         storageURL: URL? = nil,
         fileManager: FileManager = .default
     ) {
-        let appSupport = storageURL ?? fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = storageURL ?? fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fileManager.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
         self.storageURL = appSupport.appendingPathComponent("MacOSCleaner/Snapshots", isDirectory: true)
         self.fileManager = fileManager
         self.encoder = JSONEncoder()

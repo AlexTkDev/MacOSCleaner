@@ -26,6 +26,7 @@ public actor DirectorySizeCache {
     public func getSize(for path: String) -> Int64 {
         if let cached = cache[path], !cached.isExpired { return cached.size }
         let info = computeSize(path)
+        if Task.isCancelled { return info.size }
         cache[path] = info
         return info.size
     }
@@ -40,6 +41,7 @@ public actor DirectorySizeCache {
     public func getInfo(for path: String) -> CachedDirectoryInfo? {
         if let cached = cache[path], !cached.isExpired { return cached }
         let info = computeSize(path)
+        if Task.isCancelled { return info }
         cache[path] = info
         return info
     }

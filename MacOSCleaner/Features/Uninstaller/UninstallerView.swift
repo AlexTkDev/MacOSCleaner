@@ -31,6 +31,7 @@ enum UninstallerTab: String, CaseIterable, Identifiable {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    var scanLimited: Bool = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
     @State private var selectedTab: UninstallerTab = .applications
@@ -75,6 +76,14 @@ struct UninstallerView: View {
     var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                if scanLimited {
+                    Label("scan_incomplete_without_fda".localized, systemImage: "exclamationmark.triangle")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                }
                 if selectedTab == .applications {
                     applicationsContentView
                 } else {

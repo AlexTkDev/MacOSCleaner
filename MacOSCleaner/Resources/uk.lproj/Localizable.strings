@@ -339,9 +339,9 @@
 "cleanup_option_voice_memos" = "Очистити голосові нотатки";
 "cleanup_option_voice_memos_sub" = "Видаляє записи голосових нотаток з бібліотеки.";
 "cleanup_option_garageband_logic" = "Очистити GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Видаляє файли проектів та кеші GarageBand і Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Видаляє кеші GarageBand і Logic Pro. Проєкти в «Музиці» не чіпає.";
 "cleanup_option_imovie_final_cut" = "Очистити iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Видаляє файли рендерингу та бібліотеки iMovie і Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Видаляє кеші iMovie і Final Cut Pro. Бібліотеки у «Фільмах» не чіпає.";
 "cleanup_option_sleep_image" = "Очистити образ сну";
 "cleanup_option_sleep_image_sub" = "Видаляє файл гібернації (/var/vm/sleepimage). macOS відтворить його під час наступного сну.";
 "cleanup_option_font_cache" = "Очистити кеш шрифтів";
@@ -1018,3 +1018,4 @@
 "startup_delete_confirm_title" = "Видалити службу автозапуску?";
 "startup_delete_confirm_message" = "Ви впевнені, що хочете видалити «%@»?\nФайл: %@\nСлужбу буде зупинено, а її plist-файл переміщено до Смітника.";
 "startup_delete_action" = "Перемістити у Смітник";
+"scan_incomplete_without_fda" = "Без повного доступу до диска частину захищених папок не видно в результаті.";

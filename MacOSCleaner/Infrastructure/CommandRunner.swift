@@ -206,3 +206,10 @@ public actor CommandRunner {
         }
     }
 }
+
+public enum ShellQuoting {
+    /// Single-quote a string for `/bin/sh`, including embedded quotes.
+    public static func shellQuoted(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+}

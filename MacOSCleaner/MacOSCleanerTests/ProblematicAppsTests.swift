@@ -289,6 +289,26 @@ final class ProblematicAppsTests: XCTestCase {
         XCTAssertTrue(evidence.contains { $0.source == .rule })
     }
 
+    func test_networkExtensionRule_doesNotScoreForeignVPNPaths() {
+        let rule = NetworkExtensionRule()
+        let identity = makeIdentity(bundleID: "com.adguard.mac.vpn", appName: "AdGuard VPN")
+        let nord = URL(fileURLWithPath: "/Users/test/Library/Application Support/NordVPN")
+        let snitch = URL(fileURLWithPath: "/Users/test/Library/Application Support/Little Snitch")
+        let foreignExt = URL(fileURLWithPath: "/Library/SystemExtensions/com.nordvpn.macos.systemextension")
+        XCTAssertTrue(rule.evidence(for: nord, identity: identity).isEmpty)
+        XCTAssertTrue(rule.evidence(for: snitch, identity: identity).isEmpty)
+        XCTAssertTrue(rule.evidence(for: foreignExt, identity: identity).isEmpty)
+    }
+
+    func test_defaultRuleMatch_doesNotSubstringForkOrArc() {
+        let fork = GitClientsRule()
+        let forklift = makeIdentity(bundleID: "com.binarynights.ForkLift", appName: "ForkLift")
+        XCTAssertFalse(fork.matches(identity: forklift))
+        let arc = BrowserRule()
+        let archive = makeIdentity(bundleID: "com.example.archive", appName: "Archive")
+        XCTAssertFalse(arc.matches(identity: archive))
+    }
+
     func test_networkExtensionRule_evidence_forLaunchDaemon() {
         let rule = NetworkExtensionRule()
         let identity = makeIdentity(bundleID: "at.obdev.littlesnitch", appName: "Little Snitch")

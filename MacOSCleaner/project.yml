@@ -82,6 +82,8 @@ targets:
         basedOnDependencyAnalysis: true
     entitlements:
       path: MacOSCleaner.entitlements
+      properties:
+        com.apple.security.automation.apple-events: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner

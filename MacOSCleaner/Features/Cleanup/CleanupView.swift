@@ -2,18 +2,23 @@ import SwiftUI
 
 public struct CleanupView: View {
     let viewModel: CleanupViewModel
+    let scanLimited: Bool
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var scrollTaskBox = ScrollTaskBox()
     @State private var showingFontCacheAlert = false
     
-    public init(viewModel: CleanupViewModel) {
+    public init(viewModel: CleanupViewModel, scanLimited: Bool = false) {
         self.viewModel = viewModel
+        self.scanLimited = scanLimited
     }
     
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                if scanLimited {
+                    incompleteScanBanner
+                }
                 if viewModel.settings.isDebugMode && showLogs && !viewModel.scriptLogs.isEmpty && viewModel.state != .failed {
                     VSplitView {
                         content
@@ -50,6 +55,16 @@ public struct CleanupView: View {
         }
     }
     
+    @ViewBuilder
+    private var incompleteScanBanner: some View {
+        Label("scan_incomplete_without_fda".localized, systemImage: "exclamationmark.triangle")
+            .font(.callout)
+            .foregroundStyle(.orange)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+    }
+
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
@@ -200,26 +215,6 @@ public struct CleanupView: View {
                 binding: Binding(
                     get: { vm.options.cleanTimeMachineSnapshots },
                     set: { vm.options.cleanTimeMachineSnapshots = $0 }
-                )
-            ),
-            CleanupOptionItem(
-                title: "cleanup_option_cloud_docs".localized,
-                subtitle: "cleanup_option_cloud_docs_sub".localized,
-                icon: "icloud",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanCloudDocs },
-                    set: { vm.options.cleanCloudDocs = $0 }
-                )
-            ),
-            CleanupOptionItem(
-                title: "cleanup_option_voice_memos".localized,
-                subtitle: "cleanup_option_voice_memos_sub".localized,
-                icon: "mic",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanVoiceMemos },
-                    set: { vm.options.cleanVoiceMemos = $0 }
                 )
             ),
             CleanupOptionItem(

@@ -226,7 +226,10 @@ struct RootView: View {
         case .dashboard:
             DashboardView(journal: journal)
         case .cleanup:
-            CleanupView(viewModel: cleanupViewModel)
+            CleanupView(
+                viewModel: cleanupViewModel,
+                scanLimited: !permissionsManager.hasFullDiskAccess
+            )
         case .diskSpace:
             DiskAnalyzerView(settings: appSettings)
         case .duplicates:
@@ -236,7 +239,11 @@ struct RootView: View {
         case .startupServices:
             StartupServicesView(settings: appSettings)
         case .uninstaller:
-            UninstallerView(settings: appSettings, navigateToCleanup: { selectedItem = .cleanup })
+            UninstallerView(
+                settings: appSettings,
+                navigateToCleanup: { selectedItem = .cleanup },
+                scanLimited: !permissionsManager.hasFullDiskAccess
+            )
         case .settings:
             SettingsView(
                 settings: appSettings,

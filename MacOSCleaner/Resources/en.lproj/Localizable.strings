@@ -343,9 +343,9 @@
 "cleanup_option_voice_memos" = "Clean Voice Memos";
 "cleanup_option_voice_memos_sub" = "Removes Voice Memos recordings from the library.";
 "cleanup_option_garageband_logic" = "Clean GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Removes GarageBand and Logic Pro project files and caches.";
+"cleanup_option_garageband_logic_sub" = "Removes GarageBand and Logic Pro caches. Projects stay in Music.";
 "cleanup_option_imovie_final_cut" = "Clean iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Removes iMovie and Final Cut Pro render files and libraries.";
+"cleanup_option_imovie_final_cut_sub" = "Removes iMovie and Final Cut Pro caches. Libraries stay in Movies.";
 "cleanup_option_sleep_image" = "Clean Sleep Image";
 "cleanup_option_sleep_image_sub" = "Removes the hibernation image file. macOS recreates it on next sleep.";
 "cleanup_option_font_cache" = "Clear Font Cache";
@@ -1022,3 +1022,4 @@
 "startup_delete_confirm_title" = "Delete Startup Service?";
 "startup_delete_confirm_message" = "Are you sure you want to delete '%@'?\nFile: %@\nThis will stop the service and move its property list to the Trash.";
 "startup_delete_action" = "Move to Trash";
+"scan_incomplete_without_fda" = "Without Full Disk Access, some protected folders are missing from these results.";

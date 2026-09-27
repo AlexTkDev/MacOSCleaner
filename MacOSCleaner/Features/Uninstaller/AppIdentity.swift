@@ -200,8 +200,9 @@ private func deriveVendorNames(bundleID: String, appName: String, authority: Str
     }
     if let auth = authority {
         let orgRegex = try? NSRegularExpression(pattern: "(?<=: )[^,]+")
-        if let match = orgRegex?.firstMatch(in: auth, range: NSRange(auth.startIndex..., in: auth)) {
-            let org = String(auth[Range(match.range, in: auth)!]).trimmingCharacters(in: .whitespaces)
+        if let match = orgRegex?.firstMatch(in: auth, range: NSRange(auth.startIndex..., in: auth)),
+           let range = Range(match.range, in: auth) {
+            let org = String(auth[range]).trimmingCharacters(in: .whitespaces)
             names.insert(org)
         }
     }

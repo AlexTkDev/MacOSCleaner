@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "清理语音备忘录";
 "cleanup_option_voice_memos_sub" = "从媒体库中清理录音文件。";
 "cleanup_option_garageband_logic" = "清理 GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "清理 GarageBand 和 Logic Pro 项目及缓存。";
+"cleanup_option_garageband_logic_sub" = "仅清理 GarageBand 和 Logic Pro 的缓存。音乐中的项目会保留。";
 "cleanup_option_imovie_final_cut" = "清理 iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "清理 iMovie 和 Final Cut Pro 渲染文件。";
+"cleanup_option_imovie_final_cut_sub" = "仅清理 iMovie 和 Final Cut Pro 的缓存。影片中的资源库会保留。";
 "cleanup_option_sleep_image" = "清理休眠镜像 (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "删除休眠镜像文件。macOS 下次休眠时会自动重建。";
 "cleanup_option_font_cache" = "清理字体缓存";
@@ -868,7 +868,7 @@
 "settings_privacy_item_7_title" = "可选的永久彻底删除";
 "settings_privacy_item_7_desc" = "永久彻底删除和自动清空废纸篓功能默认为关闭，需手动开启。";
 "settings_privacy_item_8_title" = "应用平滑关闭";
-"settings_privacy_item_8_desc" = "清理前会先平滑关闭目标应用。";
+"settings_privacy_item_8_desc" = "清理前会关闭应用（先正常退出，3 秒后强制退出）。";
 "settings_privacy_item_9_title" = "完全磁盘访问权限";
 "settings_privacy_item_9_desc" = "启动时请求完全磁盘访问权限，以确保彻底扫描。";
 "settings_about_privacy_policy_sub" = "100% 本地化，零遥测隐私保证";
@@ -985,3 +985,4 @@
 "startup_delete_confirm_title" = "删除启动服务？";
 "startup_delete_confirm_message" = "确定要删除“%@”吗？\n文件：%@\n服务将被停止，其 plist 文件将移至废纸篓。";
 "startup_delete_action" = "移至废纸篓";
+"scan_incomplete_without_fda" = "没有完全磁盘访问权限时，部分受保护的文件夹不会出现在结果中。";

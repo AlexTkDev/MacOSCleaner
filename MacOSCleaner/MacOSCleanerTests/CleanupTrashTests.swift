@@ -148,6 +148,34 @@ final class CleanupTrashTests: XCTestCase {
                       "Journal must record successful trash emptying")
     }
 
+    func testExecuteCleanup_partialTrashDeselect_keepsUncheckedItem() async throws {
+        settings.emptyTrashDuringCleanup = true
+        let keep = trashDirectory.appendingPathComponent("keep.log")
+        let drop = trashDirectory.appendingPathComponent("drop.log")
+        try Data(repeating: 0xAA, count: 1024).write(to: keep)
+        try Data(repeating: 0xBB, count: 1024).write(to: drop)
+
+        coordinator.startScan(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.preview)
+
+        let trashLabel = "trash_user_label".localized
+        guard let parent = itemManager.items.firstIndex(where: { $0.label == trashLabel }) else {
+            XCTFail("Trash group missing")
+            return
+        }
+        guard let child = itemManager.items[parent].children.firstIndex(where: { $0.path?.hasSuffix("keep.log") == true }) else {
+            XCTFail("keep.log missing from trash preview")
+            return
+        }
+        itemManager.items[parent].children[child].isSelected = false
+
+        coordinator.executeCleanup(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.completed)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: keep.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: drop.path))
+    }
+
     func testExecuteCleanup_emptyTrashDuringCleanup_enabledButDeselected_preservesTrash() async throws {
         settings.emptyTrashDuringCleanup = true
         let file1 = trashDirectory.appendingPathComponent("file1.log")

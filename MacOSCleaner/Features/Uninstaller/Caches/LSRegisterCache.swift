@@ -20,7 +20,7 @@ public actor LSRegisterCache {
     private var dumpedPaths: [String]? = nil
 
     public init() {
-        let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches", isDirectory: true)
         self.storageURL = cachesDir.appendingPathComponent("com.macos-cleaner/lsregister.json")
         Task { await load() }
     }

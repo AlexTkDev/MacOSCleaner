@@ -343,9 +343,9 @@
 "cleanup_option_voice_memos" = "음성 메모 정리";
 "cleanup_option_voice_memos_sub" = "보관함에서 음성 메모 녹음을 제거합니다.";
 "cleanup_option_garageband_logic" = "GarageBand / Logic 정리";
-"cleanup_option_garageband_logic_sub" = "GarageBand와 Logic Pro 프로젝트 파일 및 캐시를 제거합니다.";
+"cleanup_option_garageband_logic_sub" = "GarageBand와 Logic Pro 캐시만 제거합니다. 음악의 프로젝트는 유지됩니다.";
 "cleanup_option_imovie_final_cut" = "iMovie / Final Cut 정리";
-"cleanup_option_imovie_final_cut_sub" = "iMovie와 Final Cut Pro 렌더 파일 및 보관함을 제거합니다.";
+"cleanup_option_imovie_final_cut_sub" = "iMovie와 Final Cut Pro 캐시만 제거합니다. 동영상의 보관함은 유지됩니다.";
 "cleanup_option_sleep_image" = "잠자기 이미지 정리";
 "cleanup_option_sleep_image_sub" = "최대 절전 이미지 파일을 제거합니다. 다음에 잠들면 macOS가 다시 만듭니다.";
 "cleanup_option_font_cache" = "서체 캐시 지우기";
@@ -1022,3 +1022,4 @@
 "startup_delete_confirm_title" = "시작 서비스를 삭제하겠습니까?";
 "startup_delete_confirm_message" = "'%@'을(를) 삭제하시겠습니까?\n파일: %@\n서비스가 중지되고 plist 파일이 휴지통으로 이동합니다.";
 "startup_delete_action" = "휴지통으로 이동";
+"scan_incomplete_without_fda" = "전체 디스크 접근 권한이 없으면 보호된 폴더 일부가 결과에 나오지 않습니다.";

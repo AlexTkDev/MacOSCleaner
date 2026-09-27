@@ -14,7 +14,8 @@ extension ApplicationRule {
         if supportedBundleIDs.contains(identity.bundleID) { return true }
         if let tid = identity.teamID, supportedTeamIDs.contains(tid) { return true }
         if supportedAppNames.contains(identity.appName) { return true }
-        let lower = identity.appName.lowercased()
-        return supportedAppNames.contains { lower.contains($0.lowercased()) }
+        return supportedAppNames.contains {
+            EvidenceProbe.wordBoundaryMatch(identity.appName, $0)
+        }
     }
 }

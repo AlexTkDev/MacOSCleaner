@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "Nettoyer les mémos vocaux";
 "cleanup_option_voice_memos_sub" = "Supprime les enregistrements de mémos vocaux.";
 "cleanup_option_garageband_logic" = "Nettoyer GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Supprime les fichiers de projet et caches GarageBand/Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Supprime les caches GarageBand et Logic Pro. Les projets dans Musique sont conservés.";
 "cleanup_option_imovie_final_cut" = "Nettoyer iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Supprime les fichiers de rendu et bibliothèques iMovie/Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Supprime les caches iMovie et Final Cut Pro. Les bibliothèques dans Films sont conservées.";
 "cleanup_option_sleep_image" = "Nettoyer l'image de veille (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "Supprime le fichier d’hibernation. macOS le recrée à la prochaine mise en veille.";
 "cleanup_option_font_cache" = "Vider le cache des polices";
@@ -876,7 +876,7 @@
 "settings_privacy_item_7_title" = "Suppression définitive optionnelle";
 "settings_privacy_item_7_desc" = "La suppression définitive est optionnelle et clairement indiquée.";
 "settings_privacy_item_8_title" = "Fermeture propre des applications";
-"settings_privacy_item_8_desc" = "Les applications sont fermées proprement avant le nettoyage.";
+"settings_privacy_item_8_desc" = "Les applications sont fermées avant le nettoyage (fermeture normale, puis forcée après 3 s).";
 "settings_privacy_item_9_title" = "Accès complet au disque";
 "settings_privacy_item_9_desc" = "Demandé au démarrage pour une capacité d'analyse complète.";
 "settings_about_privacy_policy_sub" = "100% local, zéro télémétrie garantie";
@@ -984,3 +984,4 @@
 "startup_delete_confirm_title" = "Supprimer le service de démarrage ?";
 "startup_delete_confirm_message" = "Voulez-vous vraiment supprimer « %@ » ?\nFichier : %@\nLe service sera arrêté et son fichier plist sera placé dans la corbeille.";
 "startup_delete_action" = "Placer dans la corbeille";
+"scan_incomplete_without_fda" = "Sans accès complet au disque, certains dossiers protégés manquent dans ces résultats.";

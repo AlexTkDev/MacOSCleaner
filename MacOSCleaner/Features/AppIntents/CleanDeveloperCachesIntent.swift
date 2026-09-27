@@ -26,7 +26,7 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
     @Parameter(title: "Target Component", default: .all)
     public var target: DeveloperCacheTarget
 
-    @Parameter(title: "Confirm Deletion", default: false)
+    @Parameter(title: "Confirm Deletion", default: true)
     public var confirm: Bool
 
     @Parameter(title: "Dry Run Mode", default: false)
@@ -34,11 +34,11 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
 
     public init() {
         self.target = .all
-        self.confirm = false
+        self.confirm = true
         self.dryRun = false
     }
 
-    public init(target: DeveloperCacheTarget, confirm: Bool = false, dryRun: Bool = false) {
+    public init(target: DeveloperCacheTarget, confirm: Bool = true, dryRun: Bool = false) {
         self.target = target
         self.confirm = confirm
         self.dryRun = dryRun
@@ -66,7 +66,12 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
         }()
 
         if shouldDryRun {
-            let results = (try? await engine.run(categories: categories, dryRun: true)) ?? []
+            let results: [CleanupEngineResult]
+            do {
+                results = try await engine.run(categories: categories, dryRun: true)
+            } catch {
+                return .result(dialog: "Could not preview developer caches: \(error.localizedDescription)")
+            }
             let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
             let mb = Double(freedBytes) / (1024 * 1024)
             let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
@@ -74,7 +79,12 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
         }
 
         if confirm {
-            let previewResults = (try? await engine.run(categories: categories, dryRun: true)) ?? []
+            let previewResults: [CleanupEngineResult]
+            do {
+                previewResults = try await engine.run(categories: categories, dryRun: true)
+            } catch {
+                return .result(dialog: "Could not preview developer caches: \(error.localizedDescription)")
+            }
             let previewBytes = previewResults.reduce(0) { $0 + $1.freedBytes }
             let mb = Double(previewBytes) / (1024 * 1024)
             let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
@@ -83,7 +93,12 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
             )
         }
 
-        let results = (try? await engine.run(categories: categories, dryRun: false)) ?? []
+        let results: [CleanupEngineResult]
+        do {
+            results = try await engine.run(categories: categories, dryRun: false)
+        } catch {
+            return .result(dialog: "Could not clean developer caches: \(error.localizedDescription)")
+        }
         let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
         let mb = Double(freedBytes) / (1024 * 1024)
         let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)

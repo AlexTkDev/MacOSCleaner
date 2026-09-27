@@ -343,9 +343,9 @@
 "cleanup_option_voice_memos" = "Limpiar Notas de Voz";
 "cleanup_option_voice_memos_sub" = "Elimina las grabaciones de Notas de Voz de la biblioteca.";
 "cleanup_option_garageband_logic" = "Limpiar GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Elimina archivos de proyecto y cachés de GarageBand y Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Elimina las cachés de GarageBand y Logic Pro. Los proyectos en Música se conservan.";
 "cleanup_option_imovie_final_cut" = "Limpiar iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Elimina archivos de renderizado y bibliotecas de iMovie y Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Elimina las cachés de iMovie y Final Cut Pro. Las bibliotecas en Películas se conservan.";
 "cleanup_option_sleep_image" = "Limpiar Imagen de Suspensión";
 "cleanup_option_sleep_image_sub" = "Elimina el archivo de imagen de hibernación. macOS lo recrea en el próximo sueño.";
 "cleanup_option_font_cache" = "Limpiar caché de fuentes";
@@ -1020,3 +1020,4 @@
 "startup_delete_confirm_title" = "¿Eliminar servicio de inicio?";
 "startup_delete_confirm_message" = "¿Seguro que desea eliminar '%@'?\nArchivo: %@\nEl servicio se detendrá y su archivo plist se trasladará a la Papelera.";
 "startup_delete_action" = "Mover al basurero";
+"scan_incomplete_without_fda" = "Sin acceso total al disco, faltan algunas carpetas protegidas en estos resultados.";

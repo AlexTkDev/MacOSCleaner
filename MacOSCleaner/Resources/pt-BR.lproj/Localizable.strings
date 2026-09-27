@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "Limpar Gravador de Voz";
 "cleanup_option_voice_memos_sub" = "Remove gravações do app Gravador.";
 "cleanup_option_garageband_logic" = "Limpar GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Remove arquivos de projeto e caches do GarageBand/Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Remove os caches do GarageBand e do Logic Pro. Os projetos em Música são mantidos.";
 "cleanup_option_imovie_final_cut" = "Limpar iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Remove arquivos de renderização e bibliotecas do iMovie/Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Remove os caches do iMovie e do Final Cut Pro. As bibliotecas em Filmes são mantidas.";
 "cleanup_option_sleep_image" = "Limpar imagem de repouso (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "Remove o arquivo de imagem de hibernação. O macOS o recria na próxima suspensão.";
 "cleanup_option_font_cache" = "Limpar cache de fontes";
@@ -868,7 +868,7 @@
 "settings_privacy_item_7_title" = "Exclusão Permanente Opcional";
 "settings_privacy_item_7_desc" = "A exclusão permanente é opcional e claramente sinalizada.";
 "settings_privacy_item_8_title" = "Encerramento Seguro de Apps";
-"settings_privacy_item_8_desc" = "Apps são encerrados com segurança antes da limpeza.";
+"settings_privacy_item_8_desc" = "Os apps são encerrados antes da limpeza (encerramento normal e, após 3 s, forçado).";
 "settings_privacy_item_9_title" = "Acesso Total ao Disco";
 "settings_privacy_item_9_desc" = "Solicitado na inicialização para escaneamento completo.";
 "settings_about_privacy_policy_sub" = "100% local, garantia zero telemetria";
@@ -985,3 +985,4 @@
 "startup_delete_confirm_title" = "Excluir serviço de inicialização?";
 "startup_delete_confirm_message" = "Tem certeza de que deseja excluir '%@'?\nArquivo: %@\nO serviço será descarregado e seu arquivo plist será movido para o Lixo.";
 "startup_delete_action" = "Mover para o Lixo";
+"scan_incomplete_without_fda" = "Sem Acesso Total ao Disco, algumas pastas protegidas não aparecem nestes resultados.";

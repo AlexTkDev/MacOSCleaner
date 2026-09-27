@@ -65,10 +65,10 @@ public struct DuplicatesView: View {
                 Button(action: { selectPresetFolder(FileManager.default.homeDirectoryForCurrentUser) }) {
                     Label("duplicate_folder_home".localized, systemImage: "house")
                 }
-                Button(action: { selectPresetFolder(FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!) }) {
+                Button(action: { selectPresetFolder(FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")) }) {
                     Label("duplicate_folder_downloads".localized, systemImage: "arrow.down.circle")
                 }
-                Button(action: { selectPresetFolder(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!) }) {
+                Button(action: { selectPresetFolder(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Documents")) }) {
                     Label("duplicate_folder_documents".localized, systemImage: "doc")
                 }
                 Divider()

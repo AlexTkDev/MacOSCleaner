@@ -51,7 +51,11 @@ public struct EmptyTrashIntent: AppIntent, Sendable {
         }
 
         if !shouldDryRun && !items.isEmpty {
-            freedBytes = (try? await trashManager.permanentlyDelete(urls: items)) ?? freedBytes
+            do {
+                freedBytes = try await trashManager.permanentlyDelete(urls: items)
+            } catch {
+                return .result(dialog: "Could not empty the Trash: \(error.localizedDescription)")
+            }
         }
 
         let mb = Double(freedBytes) / (1024 * 1024)

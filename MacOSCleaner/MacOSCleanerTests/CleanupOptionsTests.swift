@@ -102,6 +102,21 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertTrue(options.categories().contains(.projectBuildArtifacts))
     }
 
+    func testScanCategoriesAreRunnablePlusReviewOnly() {
+        let options = CleanupOptions()
+        let scanned = options.scanCategories()
+        let expected = options.categories() + CleanupCategory.reviewOnly.filter { !options.categories().contains($0) }
+        XCTAssertEqual(scanned, expected)
+        XCTAssertFalse(scanned.contains(.launchAgents))
+        XCTAssertFalse(scanned.contains(.voiceMemos))
+        XCTAssertTrue(scanned.contains(.largeFiles))
+        XCTAssertTrue(scanned.contains(.oldBackups))
+
+        var withFont = CleanupOptions(cleanVoiceMemos: true, cleanFontCache: true)
+        XCTAssertTrue(withFont.scanCategories().contains(.fontCache))
+        XCTAssertTrue(withFont.scanCategories().contains(.voiceMemos))
+    }
+
     func testOptionsEquality() {
         let a = CleanupOptions(cleanDSStore: false)
         let b = CleanupOptions(cleanDSStore: false)

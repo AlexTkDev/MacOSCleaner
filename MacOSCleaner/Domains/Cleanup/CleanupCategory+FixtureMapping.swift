@@ -1,6 +1,10 @@
 import Foundation
 
 extension CleanupCategory {
+    /// Shown in preview, never wiped as a whole. Selected leaves go to Trash.
+    public static let reviewOnly: [CleanupCategory] = [
+        .oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
+    ]
 
     public var localizedTitle: String {
         "category.\(rawValue)".localized

@@ -36,7 +36,7 @@ class DashboardViewModel: ObservableObject {
     
     private func fetchDiskUsage() async {
         let fileManager = FileManager.default
-        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first ?? fileManager.homeDirectoryForCurrentUser
         
         do {
             let values = try url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])

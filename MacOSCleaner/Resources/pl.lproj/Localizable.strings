@@ -343,9 +343,9 @@
 "cleanup_option_voice_memos" = "Wyczyść Notatki głosowe";
 "cleanup_option_voice_memos_sub" = "Usuwa nagrania Notatek głosowych z biblioteki.";
 "cleanup_option_garageband_logic" = "Wyczyść GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Usuwa pliki projektów i pamięci podręczne GarageBand oraz Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Usuwa pamięci podręczne GarageBand i Logic Pro. Projekty w Muzyce zostają.";
 "cleanup_option_imovie_final_cut" = "Wyczyść iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Usuwa pliki renderowania i biblioteki iMovie oraz Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Usuwa pamięci podręczne iMovie i Final Cut Pro. Biblioteki w Filmów zostają.";
 "cleanup_option_sleep_image" = "Wyczyść obraz uśpienia";
 "cleanup_option_sleep_image_sub" = "Usuwa plik obrazu hibernacji. macOS utworzy go ponownie przy następnym uśpieniu.";
 "cleanup_option_font_cache" = "Wyczyść pamięć podręczną czcionek";
@@ -1022,3 +1022,4 @@
 "startup_delete_confirm_title" = "Usunąć usługę startową?";
 "startup_delete_confirm_message" = "Czy na pewno chcesz usunąć „%@”?\nPlik: %@\nUsługa zostanie zatrzymana, a jej plik plist zostanie przeniesiony do Kosza.";
 "startup_delete_action" = "Przenieś do Kosza";
+"scan_incomplete_without_fda" = "Bez pełnego dostępu do dysku części chronionych folderów nie ma w tych wynikach.";

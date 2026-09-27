@@ -115,12 +115,17 @@ extension FileManager {
         FileManager._sizeCacheLock.unlock()
 
         var size: Int64 = 0
+        var cancelled = false
         let enumerator = self.enumerator(
             at: url,
             includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isRegularFileKey],
             options: []
         )
         while let fileURL = enumerator?.nextObject() as? URL {
+            if Task.isCancelled {
+                cancelled = true
+                break
+            }
             let shouldExclude: Bool
             if excludedPaths.isEmpty {
                 shouldExclude = false
@@ -156,6 +161,8 @@ extension FileManager {
             }
         }
 
+        guard !cancelled else { return size }
+
         FileManager._sizeCacheLock.lock()
         FileManager._sizeCache.setObject(NSNumber(value: size), forKey: path as NSString)
         FileManager._sizeCacheLock.unlock()
@@ -180,6 +187,7 @@ extension FileManager {
         FileManager._sizeCacheLock.unlock()
 
         var size: Int64 = 0
+        var cancelled = false
         if let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .totalFileAllocatedSizeKey]),
            values.isRegularFile == true {
             size = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
@@ -190,6 +198,10 @@ extension FileManager {
                 options: []
             )
             while let fileURL = enumerator?.nextObject() as? URL {
+                if Task.isCancelled {
+                    cancelled = true
+                    break
+                }
                 let shouldExclude: Bool
                 if excludedPaths.isEmpty {
                     shouldExclude = false
@@ -212,6 +224,8 @@ extension FileManager {
                 size += Int64(values.totalFileAllocatedSize ?? fileSize)
             }
         }
+
+        guard !cancelled else { return size }
 
         FileManager._sizeCacheLock.lock()
         FileManager._sizeCache.setObject(NSNumber(value: size), forKey: cacheKey)

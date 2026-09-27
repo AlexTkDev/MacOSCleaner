@@ -42,14 +42,13 @@ final class PermissionsManagerTests: XCTestCase {
     func testSubsequentLaunch_whenPreviouslyGranted_remembersAndNeverPromptsAgain() {
         testDefaults.set(true, forKey: "com.macoscleaner.fdaGranted")
 
-        // Even if live check returns false during app init, remembered grant must be preserved
         let manager = PermissionsManager(userDefaults: testDefaults, fdaCheck: { false })
-        
-        XCTAssertTrue(manager.hasFullDiskAccess)
+
+        XCTAssertFalse(manager.hasFullDiskAccess, "Revoked or unavailable FDA must not stay granted from memory")
         XCTAssertTrue(manager.fdaEverGranted)
 
         manager.showGuidanceIfNeeded()
-        XCTAssertFalse(manager.showGuidance, "Subsequent launch must remember granted permission and not prompt again")
+        XCTAssertFalse(manager.showGuidance, "A remembered grant suppresses the prompt until the user asks again")
     }
 
     func testGuidanceDismissTemporarily_promptsAgainOnNextLaunchUntilGranted() {

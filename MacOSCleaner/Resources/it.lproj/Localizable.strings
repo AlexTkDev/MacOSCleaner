@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "Pulisci Memo Vocali";
 "cleanup_option_voice_memos_sub" = "Rimuove le registrazioni di Memo Vocali.";
 "cleanup_option_garageband_logic" = "Pulisci GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Rimuove file di progetto e cache di GarageBand/Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Rimuove le cache di GarageBand e Logic Pro. I progetti in Musica restano.";
 "cleanup_option_imovie_final_cut" = "Pulisci iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Rimuove file di rendering e librerie di iMovie/Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Rimuove le cache di iMovie e Final Cut Pro. Le librerie in Film restano.";
 "cleanup_option_sleep_image" = "Pulisci Sleep Image";
 "cleanup_option_sleep_image_sub" = "Rimuove il file di ibernazione. macOS lo ricrea al prossimo stato di stop.";
 "cleanup_option_font_cache" = "Pulisci cache dei font";
@@ -868,7 +868,7 @@
 "settings_privacy_item_7_title" = "Eliminazione permanente opzionale";
 "settings_privacy_item_7_desc" = "L'eliminazione permanente è opzionale e chiaramente indicata.";
 "settings_privacy_item_8_title" = "Chiusura regolare delle app";
-"settings_privacy_item_8_desc" = "Le app vengono chiuse regolarmente prima della pulizia.";
+"settings_privacy_item_8_desc" = "Le app vengono chiuse prima della pulizia (chiusura normale, poi forzata dopo 3 s).";
 "settings_privacy_item_9_title" = "Accesso completo al disco";
 "settings_privacy_item_9_desc" = "Richiesto all'avvio per una scansione completa.";
 "settings_about_privacy_policy_sub" = "100% locale, garanzia zero telemetria";
@@ -985,3 +985,4 @@
 "startup_delete_confirm_title" = "Eliminare il servizio di avvio?";
 "startup_delete_confirm_message" = "Sei sicuro di voler eliminare \"%@\"?\nFile: %@\nIl servizio verrà interrotto e il file plist verrà spostato nel Cestino.";
 "startup_delete_action" = "Sposta nel Cestino";
+"scan_incomplete_without_fda" = "Senza accesso completo al disco, alcune cartelle protette mancano da questi risultati.";

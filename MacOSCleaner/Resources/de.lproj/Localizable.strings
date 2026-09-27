@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "Sprachmemos bereinigen";
 "cleanup_option_voice_memos_sub" = "Entfernt Sprachmemo-Aufnahmen.";
 "cleanup_option_garageband_logic" = "GarageBand / Logic bereinigen";
-"cleanup_option_garageband_logic_sub" = "Entfernt Projektdateien und Caches von GarageBand/Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Entfernt Caches von GarageBand und Logic Pro. Projekte in Musik bleiben erhalten.";
 "cleanup_option_imovie_final_cut" = "iMovie / Final Cut bereinigen";
-"cleanup_option_imovie_final_cut_sub" = "Entfernt Renderdateien und Mediatheken von iMovie/Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Entfernt Caches von iMovie und Final Cut Pro. Mediatheken in Filme bleiben erhalten.";
 "cleanup_option_sleep_image" = "Sleep-Image bereinigen";
 "cleanup_option_sleep_image_sub" = "Entfernt die Ruhezustandsdatei. macOS erstellt sie beim nächsten Ruhezustand neu.";
 "cleanup_option_font_cache" = "Schriftarten-Cache bereinigen";
@@ -878,7 +878,7 @@
 "settings_privacy_item_7_title" = "Optionale dauerhafte Löschung";
 "settings_privacy_item_7_desc" = "Dauerhaftes Löschen ist optional und deutlich gekennzeichnet.";
 "settings_privacy_item_8_title" = "Sicheres Schließen von Apps";
-"settings_privacy_item_8_desc" = "Apps werden vor der Bereinigung geordnet geschlossen.";
+"settings_privacy_item_8_desc" = "Apps werden vor der Bereinigung geschlossen (geordnet beenden, nach 3 s erzwungen).";
 "settings_privacy_item_9_title" = "Vollständiger Festplattenzugriff";
 "settings_privacy_item_9_desc" = "Wird beim Start für vollständiges Scannen angefordert.";
 "settings_about_privacy_policy_sub" = "100% lokal, null Telemetrie-Garantie";
@@ -986,3 +986,4 @@
 "startup_delete_confirm_title" = "Autostart-Dienst löschen?";
 "startup_delete_confirm_message" = "Möchten Sie „%@“ wirklich löschen?\nDatei: %@\nDer Dienst wird beendet und die plist-Datei in den Papierkorb verschoben.";
 "startup_delete_action" = "In den Papierkorb legen";
+"scan_incomplete_without_fda" = "Ohne vollen Festplattenzugriff fehlen einige geschützte Ordner in diesen Ergebnissen.";

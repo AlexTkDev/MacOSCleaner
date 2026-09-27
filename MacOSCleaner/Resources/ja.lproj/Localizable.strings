@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "ボイスメモを消去";
 "cleanup_option_voice_memos_sub" = "ライブラリから録音データを削除します。";
 "cleanup_option_garageband_logic" = "GarageBand / Logic を消去";
-"cleanup_option_garageband_logic_sub" = "プロジェクトファイルやキャッシュを削除します。";
+"cleanup_option_garageband_logic_sub" = "GarageBand と Logic Pro のキャッシュを削除します。ミュージック内のプロジェクトは残します。";
 "cleanup_option_imovie_final_cut" = "iMovie / Final Cut を消去";
-"cleanup_option_imovie_final_cut_sub" = "レンダリングファイルやライブラリを削除します。";
+"cleanup_option_imovie_final_cut_sub" = "iMovie と Final Cut Pro のキャッシュを削除します。ムービー内のライブラリは残します。";
 "cleanup_option_sleep_image" = "スリープ画像を消去";
 "cleanup_option_sleep_image_sub" = "ハイバネーション用のイメージファイルを削除します。次回のスリープ時に macOS が再作成します。";
 "cleanup_option_font_cache" = "フォントキャッシュを消去";
@@ -868,7 +868,7 @@
 "settings_privacy_item_7_title" = "オプトイン永久削除";
 "settings_privacy_item_7_desc" = "永久削除はユーザーが設定した場合のみ実行されます。";
 "settings_privacy_item_8_title" = "安全なアプリ終了";
-"settings_privacy_item_8_desc" = "クリーンアップ前にアプリを安全に終了します。";
+"settings_privacy_item_8_desc" = "クリーンアップ前にアプリを終了します（通常終了、3秒後に強制終了）。";
 "settings_privacy_item_9_title" = "フルディスクアクセス";
 "settings_privacy_item_9_desc" = "完全なスキャンを実行するためにアクセス権限を要求します。";
 "settings_about_privacy_policy_sub" = "完全ローカル、テレメトリゼロを保証";
@@ -985,3 +985,4 @@
 "startup_delete_confirm_title" = "スタートアップサービスを削除しますか？";
 "startup_delete_confirm_message" = "「%@」を削除してもよろしいですか？\nファイル: %@\nサービスを停止し、plistファイルをゴミ箱に移動します。";
 "startup_delete_action" = "ゴミ箱に入れる";
+"scan_incomplete_without_fda" = "フルディスクアクセスがないため、保護された一部のフォルダは結果に含まれていません。";

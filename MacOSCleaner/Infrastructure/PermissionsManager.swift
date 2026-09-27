@@ -44,7 +44,7 @@ public final class PermissionsManager {
         self.fdaEverGranted = userDefaults.bool(forKey: fdaGrantedKey)
 
         let liveFDA = check()
-        self.hasFullDiskAccess = liveFDA || self.fdaEverGranted
+        self.hasFullDiskAccess = liveFDA
         self.hasAccessibility = Self.checkAccessibility()
         self.hasAutomation = Self.checkAutomation()
         self.hasTrashAccess = Self.checkTrashAccess()
@@ -56,6 +56,13 @@ public final class PermissionsManager {
     /// Checks if the application has Full Disk Access by attempting to read protected paths.
     public static func checkFullDiskAccess() -> Bool {
         let fm = FileManager.default
+
+        let timeMachine = "/Library/Preferences/com.apple.TimeMachine.plist"
+        if fm.fileExists(atPath: timeMachine), let handle = FileHandle(forReadingAtPath: timeMachine) {
+            try? handle.close()
+            Logger.permissions.info("Full Disk Access check passed via Time Machine preferences")
+            return true
+        }
 
         // 1. Check system TCC.db (POSIX 644 world-readable, guarded by macOS TCC)
         let systemTCC = "/Library/Application Support/com.apple.TCC/TCC.db"
@@ -127,7 +134,7 @@ public final class PermissionsManager {
     /// Refreshes all permission statuses.
     public func refresh() {
         let liveFDA = fdaCheckClosure()
-        hasFullDiskAccess = liveFDA || fdaEverGranted
+        hasFullDiskAccess = liveFDA
         hasAccessibility = Self.checkAccessibility()
         hasAutomation = Self.checkAutomation()
         hasTrashAccess = Self.checkTrashAccess()
@@ -135,7 +142,7 @@ public final class PermissionsManager {
             persistFDAState()
         }
 
-        if (hasFullDiskAccess || fdaEverGranted) && showGuidance {
+        if hasFullDiskAccess && showGuidance {
             showGuidance = false
         }
     }
@@ -236,7 +243,9 @@ public final class PermissionsManager {
     /// If permission has not been obtained, continues asking on launch until granted.
     public func showGuidanceIfNeeded() {
         guard !guidanceDismissed else { return }
-        guard !hasFullDiskAccess && !fdaEverGranted else { return }
+        guard !hasFullDiskAccess else { return }
+        // A past grant only suppresses the prompt. The live check still reports access.
+        guard !fdaEverGranted else { return }
         showGuidance = true
     }
     

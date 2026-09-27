@@ -332,9 +332,9 @@
 "cleanup_option_voice_memos" = "清理語音備忘錄";
 "cleanup_option_voice_memos_sub" = "從媒體庫中清理錄音檔案。";
 "cleanup_option_garageband_logic" = "清理 GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "清理 GarageBand 和 Logic Pro 專案及快取。";
+"cleanup_option_garageband_logic_sub" = "僅清理 GarageBand 和 Logic Pro 的快取。音樂中的專案會保留。";
 "cleanup_option_imovie_final_cut" = "清理 iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "清理 iMovie 和 Final Cut Pro 渲染檔案。";
+"cleanup_option_imovie_final_cut_sub" = "僅清理 iMovie 和 Final Cut Pro 的快取。影片中的資料庫會保留。";
 "cleanup_option_sleep_image" = "清理休眠映像 (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "刪除休眠映像檔案。macOS 下次休眠時會自動重建。";
 "cleanup_option_font_cache" = "清理字型快取";
@@ -868,7 +868,7 @@
 "settings_privacy_item_7_title" = "可選的永久徹底刪除";
 "settings_privacy_item_7_desc" = "永久徹底刪除和自動清空垃圾桶功能預設為關閉，需手動開啟。";
 "settings_privacy_item_8_title" = "應用平滑關閉";
-"settings_privacy_item_8_desc" = "清理前會先平滑關閉目標應用。";
+"settings_privacy_item_8_desc" = "清理前會關閉應用程式（先正常結束，3 秒後強制結束）。";
 "settings_privacy_item_9_title" = "完整磁碟取用權限";
 "settings_privacy_item_9_desc" = "啟動時請求完整磁碟取用權限，以確保徹底掃描。";
 "settings_about_privacy_policy_sub" = "100% 本地化，零遙測隱私保證";
@@ -985,3 +985,4 @@
 "startup_delete_confirm_title" = "刪除啟動服務？";
 "startup_delete_confirm_message" = "確定要刪除「%@」嗎？\n檔案：%@\n服務將會停止，其 plist 檔案將移至垃圾桶。";
 "startup_delete_action" = "移至垃圾桶";
+"scan_incomplete_without_fda" = "沒有完整磁碟取用權限時，部分受保護的資料夾不會出現在結果中。";

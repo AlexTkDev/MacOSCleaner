@@ -191,7 +191,7 @@ struct UpToDateAlertView: View {
                     Text("update.releases_label".localized)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
-                    Link("https://github.com/AlexTkDev/MacOSCleaner/releases", destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases")!)
+                    Link("https://github.com/AlexTkDev/MacOSCleaner/releases", destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases") ?? UpdateChecker.releasesURL)
                         .font(.system(size: 11))
                 }
                 
@@ -199,7 +199,7 @@ struct UpToDateAlertView: View {
                     Text("update.website_label".localized)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
-                    Link("https://alextkdev.github.io/MacOSCleaner/", destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!)
+                    Link("https://alextkdev.github.io/MacOSCleaner/", destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/") ?? UpdateChecker.releasesURL)
                         .font(.system(size: 11))
                 }
             }

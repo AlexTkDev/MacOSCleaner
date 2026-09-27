@@ -33,7 +33,12 @@ public struct RunScheduledCleanupIntent: AppIntent, Sendable {
         // Orphan heuristics are never run unattended — only safe regenerable caches/logs.
         let categoriesToClean: [CleanupCategory] = [.appCaches, .userLogs, .systemCaches, .browserCaches]
         
-        let results = (try? await engine.run(categories: categoriesToClean, dryRun: shouldDryRun)) ?? []
+        let results: [CleanupEngineResult]
+        do {
+            results = try await engine.run(categories: categoriesToClean, dryRun: shouldDryRun)
+        } catch {
+            return .result(dialog: "Scheduled cleanup failed: \(error.localizedDescription)")
+        }
         let totalFreedBytes = results.reduce(0) { $0 + $1.freedBytes }
 
         let mb = Double(totalFreedBytes) / (1024 * 1024)

@@ -4,38 +4,30 @@ import XCTest
 final class WeightABTests: XCTestCase {
 
     func testWeightABComparison() async throws {
-        let testApps = [
-            "com.google.Chrome",
-            "com.tinyspeck.slackmacgap",
-            "org.telegram.desktop",
-            "com.microsoft.VSCode",
-            "com.apple.dt.Xcode",
-            "com.docker.docker",
-            "org.mozilla.firefox",
-            "com.spotify.client",
-            "com.hnc.Discord",
-            "us.zoom.xos"
-        ]
-
-        let discovery = AppDiscovery()
-        let installedURLs = await discovery.findAll()
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
         let commandRunner = CommandRunner()
-
-        var identities: [AppIdentity] = []
-        for url in installedURLs {
-            let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
-            if testApps.contains(identity.bundleID) {
-                identities.append(identity)
-            }
-        }
-
-        guard !identities.isEmpty else {
-            throw XCTSkip("None of the test apps are installed.")
-        }
+        let appDir = ctx.homeDirectory.appendingPathComponent("Applications/Example.app/Contents")
+        try FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+        let plist = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0"><dict>
+        <key>CFBundleIdentifier</key><string>com.example.isolated</string>
+        <key>CFBundleName</key><string>Example</string>
+        <key>CFBundleExecutable</key><string>Example</string>
+        </dict></plist>
+        """
+        try plist.write(to: appDir.appendingPathComponent("Info.plist"), atomically: true, encoding: .utf8)
+        let identity = await AppIdentity.resolve(
+            from: appDir.deletingLastPathComponent(),
+            commandRunner: commandRunner
+        )
+        let identities = [identity]
 
         let collector = CandidateCollector(
             commandRunner: commandRunner,
-            fileSystemContext: .production
+            fileSystemContext: ctx
         )
         let probe = EvidenceProbe(commandRunner: commandRunner)
         let registry = ApplicationRuleRegistry.shared

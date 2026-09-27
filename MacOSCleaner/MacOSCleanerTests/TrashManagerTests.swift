@@ -128,6 +128,28 @@ final class TrashManagerTests: XCTestCase {
         XCTAssertEqual(freed, 0)
     }
 
+    func testPermanentlyDeleteRefusesPathOutsideTrash() async throws {
+        let outside = tempDirectory.appendingPathComponent("outside.txt")
+        try "keep".write(to: outside, atomically: true, encoding: .utf8)
+        let freed = try await trashManager.permanentlyDelete(urls: [outside])
+        XCTAssertEqual(freed, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: outside.path))
+    }
+
+    func testTrashItemNameCollisionDoesNotOverwrite() async throws {
+        let existing = trashDirectory.appendingPathComponent("same.txt")
+        try "old".write(to: existing, atomically: true, encoding: .utf8)
+        let source = tempDirectory.appendingPathComponent("same.txt")
+        try "new".write(to: source, atomically: true, encoding: .utf8)
+
+        let trashed = try await trashManager.trashItem(at: source, policy: .cleanup)
+        let kept = try String(contentsOf: existing, encoding: .utf8)
+        let moved = try String(contentsOf: trashed, encoding: .utf8)
+        XCTAssertEqual(kept, "old")
+        XCTAssertEqual(moved, "new")
+        XCTAssertNotEqual(trashed.standardizedFileURL.path, existing.standardizedFileURL.path)
+    }
+
     func testEmptyTrashWholesaleThrows() async {
         do {
             _ = try await trashManager.emptyTrash()
