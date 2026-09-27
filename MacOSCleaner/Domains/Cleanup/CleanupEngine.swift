@@ -41,7 +41,7 @@ public struct CleanupTimeouts: Sendable {
             return scatteredJunk
         case .orphanedRemnants, .appContainers, .dynamicCacheDiscovery, .largeFiles, .orphanedFiles:
             return full
-        case .launchDaemons, .privilegedHelpers, .duplicateFiles:
+        case .launchDaemons, .privilegedHelpers:
             return system
         default:
             return fast
@@ -160,7 +160,6 @@ public enum CleanupCategory: String, Sendable, CaseIterable, Identifiable {
     case installerPackages = "installer_packages"
     case dnsFlush = "dns_flush"
     case fontCache = "font_cache"
-    case duplicateFiles = "duplicate_files"
     case unusedApps = "unused_apps"
     case projectBuildArtifacts = "project_build_artifacts"
 }
@@ -376,7 +375,6 @@ public actor CleanupEngine {
         case .installerPackages: return try await cleanInstallerPackages(dryRun: dryRun, progress: progress)
         case .dnsFlush: return try await cleanDNSFlush(dryRun: dryRun, progress: progress)
         case .fontCache: return try await cleanFontCache(dryRun: dryRun, progress: progress)
-        case .duplicateFiles: return try await cleanDuplicateFiles(dryRun: dryRun, progress: progress)
         case .unusedApps: return try await cleanUnusedApps(dryRun: dryRun, progress: progress)
         case .projectBuildArtifacts: return try await cleanProjectBuildArtifacts(dryRun: dryRun, progress: progress, olderThanDays: options.projectArtifactsOlderThanDays)
         }
@@ -3304,15 +3302,6 @@ extension CleanupEngine {
     }
 
 
-    // MARK: 52. Duplicate Files (scanning only — stub)
-
-    func cleanDuplicateFiles(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        progress?(.log("  Duplicate detection requires sha256 — recommend dedicated tool"))
-        progress?(.log("  Skipping — not implemented"))
-        progress?(.result(label: "Duplicate Files", freedMB: 0))
-        return [CleanupEngineResult(label: "Duplicate Files", freedMB: 0)]
-    }
-
     // MARK: 53. Unused Apps (scanning only)
 
     func cleanUnusedApps(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
@@ -3345,14 +3334,50 @@ extension CleanupEngine {
             }
         }
 
+        // Scan Intel-only plugins in audio / printers / colorpickers (review only)
+        let pluginDirs = [
+            "\(fileSystemContext.homePath)/Library/Audio/Plug-Ins",
+            "\(fileSystemContext.homePath)/Library/Printers",
+            "\(fileSystemContext.homePath)/Library/ColorPickers",
+            "/Library/Audio/Plug-Ins",
+            "/Library/ColorPickers"
+        ]
+        var intelPlugins: [(String, String)] = []
+        let pluginExtensions: Set<String> = ["component", "vst", "vst3", "colorPicker", "plugin"]
+        for dir in pluginDirs {
+            guard fm.fileExists(atPath: dir),
+                  let subdirs = try? fm.contentsOfDirectory(atPath: dir) else { continue }
+            for sub in subdirs {
+                let subPath = "\(dir)/\(sub)"
+                let subURL = URL(fileURLWithPath: subPath)
+                if pluginExtensions.contains(subURL.pathExtension) {
+                    if UninstallerService.isIntelOnlyApp(at: subURL) {
+                        intelPlugins.append((sub, subPath))
+                    }
+                } else if let innerItems = try? fm.contentsOfDirectory(atPath: subPath) {
+                    for inner in innerItems {
+                        let innerPath = "\(subPath)/\(inner)"
+                        let innerURL = URL(fileURLWithPath: innerPath)
+                        if pluginExtensions.contains(innerURL.pathExtension) && UninstallerService.isIntelOnlyApp(at: innerURL) {
+                            intelPlugins.append((inner, innerPath))
+                        }
+                    }
+                }
+            }
+        }
+
         if dryRun {
             for (name, path, lastUsed) in unusedApps {
                 let dateStr = lastUsed.map { fmtDate($0) } ?? "unknown"
                 progress?(.log("  \(name) — last used: \(dateStr) [\(shortPath(path))]"))
                 emitFileItem(CleanupFileItem(path: path, sizeBytes: 0, modificationDate: lastUsed, isDirectory: true), category: "Unused Apps", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
             }
+            for (name, path) in intelPlugins {
+                progress?(.log("  [Legacy Intel Plugin] \(name) [\(shortPath(path))]"))
+                emitFileItem(CleanupFileItem(path: path, sizeBytes: 0, modificationDate: nil, isDirectory: true), category: "Unused Apps", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
+            }
         }
-        progress?(.log("  Found \(unusedApps.count) potentially unused apps"))
+        progress?(.log("  Found \(unusedApps.count) potentially unused apps, \(intelPlugins.count) legacy Intel plugins"))
         progress?(.log("  Unused apps are for review only — no automatic deletion"))
         progress?(.result(label: "Unused Apps", freedMB: 0))
         return [CleanupEngineResult(label: "Unused Apps", freedMB: 0)]

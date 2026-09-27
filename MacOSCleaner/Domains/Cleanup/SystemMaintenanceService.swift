@@ -65,4 +65,25 @@ public final class SystemMaintenanceService {
             throw error
         }
     }
+
+    public private(set) var isPurgingAssessmentCache: Bool = false
+    public private(set) var assessmentCacheStatusMessage: String? = nil
+
+    public func purgeAssessmentCache() async throws {
+        isPurgingAssessmentCache = true
+        errorMessage = nil
+        assessmentCacheStatusMessage = nil
+        defer { isPurgingAssessmentCache = false }
+
+        let cmd = "/usr/sbin/spctl --purge"
+        do {
+            let output = try await PrivilegedTaskRunner.runAsAdmin(command: cmd)
+            assessmentCacheStatusMessage = "settings_spctl_purge_success".localized
+            Logger.maintenance.info("Gatekeeper assessment cache purged: \(output, privacy: .public)")
+        } catch {
+            self.errorMessage = error.localizedDescription
+            Logger.maintenance.error("Gatekeeper cache purge failed: \(error.localizedDescription, privacy: .public)")
+            throw error
+        }
+    }
 }

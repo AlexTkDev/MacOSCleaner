@@ -132,6 +132,7 @@ public actor UninstallerService {
         public var version: String = ""
         public var lastUsed: Date? = nil
         public var iconData: Data? = nil
+        public var isIntelOnly: Bool = false
         /// Multiple versions of the same app grouped together.
         public var versions: [AppInfo] = []
 
@@ -149,6 +150,7 @@ public actor UninstallerService {
             version: String = "",
             lastUsed: Date? = nil,
             iconData: Data? = nil,
+            isIntelOnly: Bool = false,
             versions: [AppInfo] = []
         ) {
             self.id = id
@@ -164,6 +166,7 @@ public actor UninstallerService {
             self.version = version
             self.lastUsed = lastUsed
             self.iconData = iconData
+            self.isIntelOnly = isIntelOnly
             self.versions = versions
         }
 
@@ -280,6 +283,8 @@ public actor UninstallerService {
         let mdItem = MDItemCreate(nil, url.path as CFString)
         let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
 
+        let isIntelOnly = Self.isIntelOnlyApp(at: url)
+
         return AppInfo(
             url: NormalizedPath.canonicalize(url),
             bundleID: identity.bundleID,
@@ -291,7 +296,8 @@ public actor UninstallerService {
             size: size,
             version: version(from: url),
             lastUsed: lastUsed,
-            iconData: iconData
+            iconData: iconData,
+            isIntelOnly: isIntelOnly
         )
     }
 
@@ -319,6 +325,7 @@ public actor UninstallerService {
             updated.relatedFiles = aggregateRelatedFiles(from: scannedVersions)
             updated.developerComponents = aggregateDeveloperComponents(from: scannedVersions)
             updated.absorbedHelperURLs = NormalizedPath.unique(scannedVersions.flatMap(\.absorbedHelperURLs))
+            updated.isIntelOnly = primary.isIntelOnly
             updated.scanState = .deepScanned
             return updated
         } else {
@@ -510,6 +517,16 @@ public actor UninstallerService {
                     isSelected: false,
                     size: file.size,
                     deletionRisk: .normal,
+                    evidence: file.evidence,
+                    confidence: file.confidence
+                )
+            }
+            if Self.isCLIConfigPath(file.url) {
+                return RelatedFile(
+                    url: file.url,
+                    isSelected: false,
+                    size: file.size,
+                    deletionRisk: .shared,
                     evidence: file.evidence,
                     confidence: file.confidence
                 )
@@ -1033,6 +1050,7 @@ public actor UninstallerService {
                     version: versionSummary,
                     lastUsed: latestLastUsed,
                     iconData: sortedVersions.compactMap(\.iconData).first,
+                    isIntelOnly: primary.isIntelOnly,
                     versions: sortedVersions
                 )
                 result.append(parent)
@@ -1093,5 +1111,31 @@ public actor UninstallerService {
             if lhs.confidence != rhs.confidence { return lhs.confidence > rhs.confidence }
             return NormalizedPath.key(lhs.url) < NormalizedPath.key(rhs.url)
         }
+    }
+
+    // MARK: - Architecture & CLI Protection Helpers
+
+    public static func isIntelOnlyApp(at url: URL) -> Bool {
+        guard let bundle = Bundle(url: url),
+              let archs = bundle.executableArchitectures?.compactMap({ $0.intValue }),
+              !archs.isEmpty else {
+            return false
+        }
+        let hasArm = archs.contains { ($0 & 0x00FFFFFF) == 12 }
+        let hasIntel = archs.contains { ($0 & 0x00FFFFFF) == 7 }
+        return hasIntel && !hasArm
+    }
+
+    public static let sharedCLIConfigNames: Set<String> = [
+        "cursor", "claude", "opencode", "github-copilot", "gh", "git", "docker", "nvim", "helix", "alacritty", "kitty", "fish", "zsh"
+    ]
+
+    public static func isCLIConfigPath(_ url: URL) -> Bool {
+        let path = url.path
+        let isXDG = path.contains("/.config/") || path.contains("/.cache/") || path.contains("/.local/share/")
+            || path.hasSuffix("/.config") || path.hasSuffix("/.cache") || path.hasSuffix("/.local/share")
+        guard isXDG else { return false }
+        let name = url.lastPathComponent.lowercased()
+        return sharedCLIConfigNames.contains(name)
     }
 }

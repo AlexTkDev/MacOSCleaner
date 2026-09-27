@@ -669,6 +669,7 @@
 "uninstaller.shared_help.jetbrains" = "Freigegebene Komponente der JetBrains-IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Freigegebene Android-Entwicklungsdaten (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Freigegebene Apple-Entwickler-Tools (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Gemeinsame Konfiguration und Daten für Befehlszeilen-Tools";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -767,6 +768,11 @@
 "settings_spotlight_reindex_button" = "Neu aufbauen";
 "settings_spotlight_reindexing" = "Wird neu aufgebaut...";
 "settings_spotlight_reindex_success" = "Spotlight-Neuindizierung gestartet";
+"settings_spctl_purge_title" = "Gatekeeper-Cache leeren";
+"settings_spctl_purge_sub" = "Löscht den Gatekeeper-Prüfcache zur Behebung von Startfehlern und veralteten Signaturen (spctl --purge)";
+"settings_spctl_purge_button" = "Cache leeren";
+"settings_spctl_purging" = "Wird geleert...";
+"settings_spctl_purge_success" = "Gatekeeper-Cache geleert";
 "settings_software_updates" = "Softwareaktualisierungen";
 "settings_software_updates_sub" = "Versionsprüfung";
 "settings_current_version" = "Aktuelle Version";

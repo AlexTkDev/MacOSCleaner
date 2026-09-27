@@ -1055,6 +1055,15 @@ struct AppRowView: View {
                             .foregroundStyle(Color.purple)
                             .background(Capsule().fill(Color.purple.opacity(0.15)))
                     }
+                    if app.isIntelOnly {
+                        Text("Intel")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .foregroundStyle(Color.orange)
+                            .background(Capsule().fill(Color.orange.opacity(0.15)))
+                    }
                 }
                 if isUninstalling {
                     Text("uninstaller_uninstalling".localized)
@@ -1332,6 +1341,8 @@ struct SharedBadgeView: View {
             return "uninstaller.shared_help.android".localized
         } else if path.contains("developer") || path.contains("coresimulator") {
             return "uninstaller.shared_help.apple_developer".localized
+        } else if path.contains(".config/") || path.contains(".cache/") || path.contains(".local/share/") {
+            return "uninstaller.shared_help.cli_config".localized
         } else {
             return "uninstaller.shared_component.help".localized
         }
@@ -1370,6 +1381,16 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                             .lineLimit(2)
                             .minimumScaleFactor(0.6)
                             .fixedSize(horizontal: false, vertical: true)
+                        
+                        if app.isIntelOnly {
+                            Text("Intel (Rosetta 2)")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .foregroundStyle(Color.orange)
+                                .background(Capsule().fill(Color.orange.opacity(0.15)))
+                        }
                         
                         AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
                             withAnimation(.spring()) {

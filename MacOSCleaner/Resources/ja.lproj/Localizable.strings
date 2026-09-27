@@ -659,6 +659,7 @@
 "uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) の共有コンポーネント";
 "uninstaller.shared_help.android" = "共有 Android 開発データ (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "共有 Apple 開発ツール (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "コマンドラインツールの共有設定およびデータ";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -757,6 +758,11 @@
 "settings_spotlight_reindex_button" = "再構築";
 "settings_spotlight_reindexing" = "再構築中...";
 "settings_spotlight_reindex_success" = "Spotlight の再インデックスを開始しました";
+"settings_spctl_purge_title" = "Gatekeeperキャッシュを消去";
+"settings_spctl_purge_sub" = "Gatekeeperの評価キャッシュを消去して起動エラーや古い署名を修正します (spctl --purge)";
+"settings_spctl_purge_button" = "キャッシュを消去";
+"settings_spctl_purging" = "消去中...";
+"settings_spctl_purge_success" = "Gatekeeperキャッシュを消去しました";
 "settings_software_updates" = "ソフトウェアアップデート";
 "settings_software_updates_sub" = "バージョン確認";
 "settings_current_version" = "現在のバージョン";

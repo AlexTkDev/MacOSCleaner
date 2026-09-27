@@ -759,6 +759,7 @@
 "uninstaller.shared_help.jetbrains" = "JetBrains IDE(IntelliJ IDEA, PyCharm, WebStorm, CLion)의 공유 구성 요소";
 "uninstaller.shared_help.android" = "공유 Android 개발 데이터 (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "공유 Apple Developer 도구 (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "명령줄 도구의 공유 구성 및 데이터";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld B";
@@ -865,6 +866,11 @@
 "settings_spotlight_reindex_button" = "인덱스 재구축";
 "settings_spotlight_reindexing" = "재구축 중…";
 "settings_spotlight_reindex_success" = "Spotlight 재색인이 시작되었습니다";
+"settings_spctl_purge_title" = "Gatekeeper 캐시 지우기";
+"settings_spctl_purge_sub" = "Gatekeeper 평가 캐시를 지워 실행 오류 및 오래된 서명을 해결합니다 (spctl --purge)";
+"settings_spctl_purge_button" = "캐시 지우기";
+"settings_spctl_purging" = "지우는 중...";
+"settings_spctl_purge_success" = "Gatekeeper 캐시가 삭제되었습니다";
 "settings_software_updates" = "소프트웨어 업데이트";
 "settings_software_updates_sub" = "버전 확인";
 "settings_current_version" = "현재 버전";

@@ -370,6 +370,38 @@ struct SettingsGeneralView: View {
                             .disabled(maintenanceService.isReindexingSpotlight)
                         }
                     }
+
+                    SettingsDivider()
+
+                    // Gatekeeper Assessment Cache Purge
+                    SettingsLabeledControl(
+                        "settings_spctl_purge_title".localized,
+                        subtitle: "settings_spctl_purge_sub".localized
+                    ) {
+                        HStack(spacing: 8) {
+                            if let status = maintenanceService.assessmentCacheStatusMessage {
+                                Text(status)
+                                    .font(.caption)
+                                    .foregroundStyle(.green)
+                            }
+                            Button {
+                                purgeAssessmentCache()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    if maintenanceService.isPurgingAssessmentCache {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+                                    Text(maintenanceService.isPurgingAssessmentCache
+                                         ? "settings_spctl_purging".localized
+                                         : "settings_spctl_purge_button".localized)
+                                }
+                                .frame(minWidth: 140)
+                            }
+                            .prominentGlassButtonStyle(tint: .accentColor)
+                            .disabled(maintenanceService.isPurgingAssessmentCache)
+                        }
+                    }
                 }
             }
         )
@@ -386,6 +418,17 @@ struct SettingsGeneralView: View {
         Task {
             do {
                 try await maintenanceService.rebuildSpotlightIndex()
+            } catch {
+                maintenanceAlertMessage = error.localizedDescription
+                showMaintenanceAlert = true
+            }
+        }
+    }
+
+    private func purgeAssessmentCache() {
+        Task {
+            do {
+                try await maintenanceService.purgeAssessmentCache()
             } catch {
                 maintenanceAlertMessage = error.localizedDescription
                 showMaintenanceAlert = true

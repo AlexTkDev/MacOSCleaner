@@ -659,6 +659,7 @@
 "uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) 的共享元件";
 "uninstaller.shared_help.android" = "共享的 Android 開發資料 (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "共享的 Apple 開發者工具 (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "命令列工具共享設定與資料";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -757,6 +758,11 @@
 "settings_spotlight_reindex_button" = "重建索引";
 "settings_spotlight_reindexing" = "正在重建...";
 "settings_spotlight_reindex_success" = "Spotlight 重建索引已啟動";
+"settings_spctl_purge_title" = "清除 Gatekeeper 快取";
+"settings_spctl_purge_sub" = "清除 Gatekeeper 評估快取以修復啟動錯誤與過期簽名 (spctl --purge)";
+"settings_spctl_purge_button" = "清除快取";
+"settings_spctl_purging" = "正在清除...";
+"settings_spctl_purge_success" = "Gatekeeper 快取已清除";
 "settings_software_updates" = "軟體更新";
 "settings_software_updates_sub" = "版本檢測";
 "settings_current_version" = "當前版本";

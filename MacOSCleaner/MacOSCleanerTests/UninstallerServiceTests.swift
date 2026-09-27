@@ -321,4 +321,28 @@ final class UninstallerServiceTests: XCTestCase {
         let rMatch = EvidenceProbe.appNameMatchesFileName("R", appName: "R")
         XCTAssertFalse(rMatch.exact)
     }
+
+    func testIsCLIConfigPath_detectsProtectedTools() {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let cursorConfig = URL(fileURLWithPath: "\(home)/.config/cursor")
+        let claudeConfig = URL(fileURLWithPath: "\(home)/.config/claude")
+        let openCodeLocal = URL(fileURLWithPath: "\(home)/.local/share/opencode")
+        let regularConfig = URL(fileURLWithPath: "\(home)/.config/myapp_unique_123")
+        let randomFile = URL(fileURLWithPath: "/Library/Caches/cursor")
+
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(cursorConfig))
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(claudeConfig))
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(openCodeLocal))
+        XCTAssertFalse(UninstallerService.isCLIConfigPath(regularConfig))
+        XCTAssertFalse(UninstallerService.isCLIConfigPath(randomFile))
+    }
+
+    func testAppInfo_isIntelOnlyDefaultFalse() {
+        let app = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/Test.app"),
+            bundleID: "com.test.app",
+            name: "TestApp"
+        )
+        XCTAssertFalse(app.isIntelOnly)
+    }
 }

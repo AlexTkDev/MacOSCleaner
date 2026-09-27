@@ -66,7 +66,6 @@ final class CleanupOptionsTests: XCTestCase {
 
         XCTAssertEqual(categories.count, 37)
         XCTAssertFalse(categories.contains(.fontCache))
-        XCTAssertFalse(categories.contains(.duplicateFiles))
     }
 
     func testFontCacheOption() {

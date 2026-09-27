@@ -757,6 +757,7 @@
 "uninstaller.shared_help.jetbrains" = "Спільний компонент середовища JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Спільні дані розробки Android (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Спільні засоби розробки Apple (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Спільна конфігурація та дані інструментів командного рядка";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";
@@ -859,6 +860,11 @@
 "settings_spotlight_reindex_button" = "Переіндексувати";
 "settings_spotlight_reindexing" = "Переіндексація...";
 "settings_spotlight_reindex_success" = "Переіндексацію Spotlight запущено";
+"settings_spctl_purge_title" = "Очистити кеш Gatekeeper";
+"settings_spctl_purge_sub" = "Скидає кеш перевірок Gatekeeper для виправлення помилок запуску та застарілих підписів (spctl --purge)";
+"settings_spctl_purge_button" = "Очистити кеш";
+"settings_spctl_purging" = "Очищення...";
+"settings_spctl_purge_success" = "Кеш Gatekeeper успішно очищено";
 "settings_software_updates" = "Оновлення ПЗ";
 "settings_software_updates_sub" = "Перевірка версій";
 "settings_current_version" = "Поточна версія";

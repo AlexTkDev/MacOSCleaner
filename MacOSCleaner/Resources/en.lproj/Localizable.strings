@@ -759,6 +759,7 @@
 "uninstaller.shared_help.jetbrains" = "Shared component of JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Shared Android development data (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Shared Apple Developer tools (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Shared command-line tool configuration and data";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld B";
@@ -865,6 +866,11 @@
 "settings_spotlight_reindex_button" = "Rebuild Index";
 "settings_spotlight_reindexing" = "Rebuilding...";
 "settings_spotlight_reindex_success" = "Spotlight reindexing started";
+"settings_spctl_purge_title" = "Purge Gatekeeper Cache";
+"settings_spctl_purge_sub" = "Clears Gatekeeper assessment cache to fix launch errors and stale signatures (spctl --purge)";
+"settings_spctl_purge_button" = "Purge Cache";
+"settings_spctl_purging" = "Purging...";
+"settings_spctl_purge_success" = "Gatekeeper assessment cache purged";
 "settings_software_updates" = "Software Updates";
 "settings_software_updates_sub" = "Version checks";
 "settings_current_version" = "Current Version";

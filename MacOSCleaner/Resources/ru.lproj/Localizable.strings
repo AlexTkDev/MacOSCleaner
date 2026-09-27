@@ -760,6 +760,7 @@
 "uninstaller.shared_help.jetbrains" = "Общий компонент среды JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Общие данные разработки Android (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Общие средства разработки Apple (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Общая конфигурация и данные инструментов командной строки";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld Б";
@@ -862,6 +863,11 @@
 "settings_spotlight_reindex_button" = "Переиндексировать";
 "settings_spotlight_reindexing" = "Переиндексация...";
 "settings_spotlight_reindex_success" = "Переиндексация Spotlight запущена";
+"settings_spctl_purge_title" = "Очистить кэш Gatekeeper";
+"settings_spctl_purge_sub" = "Сбрасывает кэш проверок Gatekeeper для устранения ошибок запуска и устаревших подписей (spctl --purge)";
+"settings_spctl_purge_button" = "Очистить кэш";
+"settings_spctl_purging" = "Очистка...";
+"settings_spctl_purge_success" = "Кэш Gatekeeper успешно очищен";
 "settings_software_updates" = "Обновления ПО";
 "settings_software_updates_sub" = "Проверка версий";
 "settings_current_version" = "Текущая версия";

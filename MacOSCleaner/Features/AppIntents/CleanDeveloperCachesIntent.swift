@@ -55,34 +55,38 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
         let isRunningInTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
         let shouldDryRun = dryRun || isRunningInTests
 
-        if confirm && !shouldDryRun {
+        let engine = CleanupEngine()
+        let categories: [CleanupCategory] = {
+            switch target {
+            case .all: return [.xcode, .packageManagers, .docker]
+            case .xcode: return [.xcode]
+            case .packageManagers: return [.packageManagers]
+            case .docker: return [.docker]
+            }
+        }()
+
+        if shouldDryRun {
+            let results = (try? await engine.run(categories: categories, dryRun: true)) ?? []
+            let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
+            let mb = Double(freedBytes) / (1024 * 1024)
+            let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
+            return .result(dialog: "[Preview] Estimated space to free from developer caches (\(target.rawValue)): \(formatted).")
+        }
+
+        if confirm {
+            let previewResults = (try? await engine.run(categories: categories, dryRun: true)) ?? []
+            let previewBytes = previewResults.reduce(0) { $0 + $1.freedBytes }
+            let mb = Double(previewBytes) / (1024 * 1024)
+            let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
             try await requestConfirmation(
-                result: .result(dialog: "Are you sure you want to clean developer caches (\(target.rawValue))?")
+                result: .result(dialog: "Found \(formatted) of developer caches (\(target.rawValue)). Do you want to clean?")
             )
         }
 
-        let engine = CleanupEngine()
-        var freedBytes: Int64 = 0
-
-        switch target {
-        case .all:
-            let results = (try? await engine.run(categories: [.xcode, .packageManagers, .docker], dryRun: shouldDryRun)) ?? []
-            freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-        case .xcode:
-            let results = (try? await engine.run(categories: [.xcode], dryRun: shouldDryRun)) ?? []
-            freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-        case .packageManagers:
-            let results = (try? await engine.run(categories: [.packageManagers], dryRun: shouldDryRun)) ?? []
-            freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-        case .docker:
-            let results = (try? await engine.run(categories: [.docker], dryRun: shouldDryRun)) ?? []
-            freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-        }
-
+        let results = (try? await engine.run(categories: categories, dryRun: false)) ?? []
+        let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
         let mb = Double(freedBytes) / (1024 * 1024)
         let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
-
-        let prefix = shouldDryRun ? "[Preview] Estimated space to free from developer caches (\(target.rawValue)):" : "Successfully cleaned developer caches (\(target.rawValue)). Freed:"
-        return .result(dialog: "\(prefix) \(formatted).")
+        return .result(dialog: "Successfully cleaned developer caches (\(target.rawValue)). Freed: \(formatted).")
     }
 }

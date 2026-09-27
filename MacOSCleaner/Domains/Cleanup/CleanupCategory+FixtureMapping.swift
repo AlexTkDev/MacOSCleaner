@@ -136,8 +136,6 @@ extension CleanupCategory {
             labels.insert("DNS Cache")
         case .fontCache:
             labels.insert("Font Cache")
-        case .duplicateFiles:
-            labels.insert("Duplicate Files")
         case .unusedApps:
             labels.insert("Unused Apps")
         case .projectBuildArtifacts:
@@ -212,7 +210,7 @@ extension CleanupCategory {
         case "dns_cache_scanner": return .dnsFlush
         case "font_cache_scanner": return .fontCache
         case "sleep_image_scanner": return nil
-        case "duplicate_files_scanner": return .duplicateFiles
+        case "duplicate_files_scanner": return nil
         case "unused_apps_scanner": return .unusedApps
         case "docker_scanner": return .docker
         case "downloads_scanner": return .largeFiles

@@ -759,6 +759,7 @@
 "uninstaller.shared_help.jetbrains" = "مكوّن مشترك من بيئات JetBrains (IntelliJ IDEA وPyCharm وWebStorm وCLion)";
 "uninstaller.shared_help.android" = "بيانات تطوير Android المشتركة (Android Studio وIntelliJ IDEA وGradle)";
 "uninstaller.shared_help.apple_developer" = "أدوات Apple Developer المشتركة (Xcode وCommand Line Tools وSimulator)";
+"uninstaller.shared_help.cli_config" = "إعدادات وبيانات مشتركة لأدوات سطر الأوامر";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld بايت";
@@ -865,6 +866,11 @@
 "settings_spotlight_reindex_button" = "إعادة بناء الفهرس";
 "settings_spotlight_reindexing" = "جارٍ إعادة البناء…";
 "settings_spotlight_reindex_success" = "بدأ إعادة فهرسة Spotlight";
+"settings_spctl_purge_title" = "تفريغ ذاكرة Gatekeeper المؤقتة";
+"settings_spctl_purge_sub" = "يمسح ذاكرة التقييم لـ Gatekeeper لإصلاح أخطاء التشغيل والتوقيعات القديمة (spctl --purge)";
+"settings_spctl_purge_button" = "تفريغ الذاكرة";
+"settings_spctl_purging" = "جارٍ التفريغ...";
+"settings_spctl_purge_success" = "تم تفريغ ذاكرة Gatekeeper بنجاح";
 "settings_software_updates" = "تحديثات البرامج";
 "settings_software_updates_sub" = "التحقق من الإصدار";
 "settings_current_version" = "الإصدار الحالي";
