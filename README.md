@@ -23,6 +23,7 @@
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>
+    <img src="https://img.shields.io/badge/Languages-14-success?style=flat" alt="Languages: 14">
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3%2BCommons-blue?style=flat" alt="License"></a>
   </p>
 
@@ -89,7 +90,7 @@
 - **Duplicate Finder:** Master-Detail split interface (`HSplitView`) with side-by-side group and file inspection. 3-stage detection pipeline (file size matching, 4 KB header checksum, full SHA-256 verification), native Quick Look previews (`Space`), high-resolution photo previews, middle-truncation path formatting, and Smart Selection actions (`Select All Duplicates`, `Deselect All`).
 - **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSizeKey`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
 - **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical system processes (`kernel_task`, `launchd`). Employs chunked lazy loading (`LazyVStack`) and memoized filtering to eliminate UI hitching. Startup Services manager categorizes LaunchAgents, LaunchDaemons, and Login Items, with direct "Show in Finder" navigation and safe service removal (`launchd` bootout + trash).
-- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘8`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (including Arabic with native RTL layout).
+- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘8`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (English, Russian, Ukrainian, German, French, Spanish, Italian, Japanese, Simplified & Traditional Chinese, Korean, Polish, Brazilian Portuguese, and Arabic with native RTL layout).
 
 Complete feature breakdowns and path specifications are documented in the [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
 

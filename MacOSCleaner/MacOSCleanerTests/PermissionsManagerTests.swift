@@ -39,7 +39,7 @@ final class PermissionsManagerTests: XCTestCase {
         XCTAssertFalse(manager.showGuidance, "If FDA is granted, guidance must NOT be shown")
     }
 
-    func testSubsequentLaunch_whenPreviouslyGranted_remembersAndNeverPromptsAgain() {
+    func testSubsequentLaunch_whenPreviouslyGranted_showsGuidanceIfRevoked() {
         testDefaults.set(true, forKey: "com.macoscleaner.fdaGranted")
 
         let manager = PermissionsManager(userDefaults: testDefaults, fdaCheck: { false })
@@ -48,7 +48,7 @@ final class PermissionsManagerTests: XCTestCase {
         XCTAssertTrue(manager.fdaEverGranted)
 
         manager.showGuidanceIfNeeded()
-        XCTAssertFalse(manager.showGuidance, "A remembered grant suppresses the prompt until the user asks again")
+        XCTAssertTrue(manager.showGuidance, "If FDA is revoked, guidance must be shown even if previously granted")
     }
 
     func testGuidanceDismissTemporarily_promptsAgainOnNextLaunchUntilGranted() {

@@ -244,8 +244,6 @@ public final class PermissionsManager {
     public func showGuidanceIfNeeded() {
         guard !guidanceDismissed else { return }
         guard !hasFullDiskAccess else { return }
-        // A past grant only suppresses the prompt. The live check still reports access.
-        guard !fdaEverGranted else { return }
         showGuidance = true
     }
     
