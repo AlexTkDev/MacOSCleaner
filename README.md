@@ -42,10 +42,11 @@
 | Principle | Technical Implementation |
 | :--- | :--- |
 | **No Telemetry** | No background daemons, analytics SDKs, or remote loggers. All scanning runs locally without network access. |
-| **Trash-First** | Files are moved to macOS Trash via `trashItem(at:)` when supported, preserving native file recovery. |
-| **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, and user document directories. |
+| **Trash-First** | Files are moved to macOS Trash via `trashItem(at:)` by default, preserving native file recovery. Selective preview ensures unselected files remain untouched; optional immediate bypass requires explicit confirmation. |
+| **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, user documents, IDE settings (`.vscode`, `.idea`, `.zed`), and Finder sidebar favorites (`FavoriteItems.sfl3`). |
+| **Non-Destructive Scanning** | Scanning never terminates running applications or modifies files. Cleanup and uninstallation enforce a 3-second soft quit timeout before forced termination. |
 | **Open Core** | Swift 6 codebase with strict concurrency, actors, and structured task groups. Core engine and heuristics are inspectable. |
-| **On-Device AI** | Checksums, hashes, and `FoundationModels` file explanations execute strictly on-device. |
+| **On-Device AI** | Checksums, hashes, and `FoundationModels` file explanations execute strictly on-device without cloud relays (no Private Cloud Compute or third-party APIs). |
 | **Native Runtime** | Built in Swift 6 and SwiftUI with Liquid Glass materials. No Electron or WebKit container overhead. |
 
 ---
@@ -83,12 +84,12 @@
 <a id="features"></a>
 ## ✨ Features
 
-- **Smart Cleanup:** scans 55+ categories across system caches, 275+ applications, 85+ developer toolchains & package managers (Xcode, Docker, `uv`, `mise`, Rust, Go, Python, Node), local AI models & coding assistants (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`).
-- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) to trace remnants across 1,800+ known application paths and heuristics, with standalone orphaned residuals discovery, confidence score tiers, post-uninstall review sheets, and root-level helper removal.
-- **Duplicate Finder:** identifies duplicate files through a 3-stage pipeline (file size matching, 4 KB header checksum, full SHA-256 verification).
-- **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSize`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
-- **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical processes (`kernel_task`, `launchd`), plus LaunchAgents and LaunchDaemons toggling.
-- **Native System Integrations:** on-device `FoundationModels` explanations for unknown caches, Siri and App Intents automation, Liquid Glass materials with keyboard navigation (`⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 10 language localizations.
+- **Smart Cleanup:** scans 55+ categories across system caches, user logs, browser data, 304 applications, and 92 developer toolchains (Xcode, Docker, `uv`, `mise`, Rust, Go `modcache`, Python, Node, CocoaPods), local AI models (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`). Includes review-only categories (iOS backups, Docker, Simulators) deselected by default, guarded Font Cache reset with confirmation, recent operations summary, and a dedicated History window (`⌘Y`).
+- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) across 2,343 cataloged remnant paths. Features a 3-stage uninstallation pipeline (soft quit → `launchd` helper bootout → file trashing), word-boundary matching to prevent false positives, Intel-only app badges (`executableArchitectures`), and standalone orphaned residuals cleanup with privilege escalation fallback.
+- **Duplicate Finder:** Master-Detail split interface (`HSplitView`) with side-by-side group and file inspection. 3-stage detection pipeline (file size matching, 4 KB header checksum, full SHA-256 verification), native Quick Look previews (`Space`), high-resolution photo previews, middle-truncation path formatting, and Smart Selection actions (`Select All Duplicates`, `Deselect All`).
+- **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSizeKey`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
+- **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical system processes (`kernel_task`, `launchd`). Employs chunked lazy loading (`LazyVStack`) and memoized filtering to eliminate UI hitching. Startup Services manager categorizes LaunchAgents, LaunchDaemons, and Login Items, with direct "Show in Finder" navigation and safe service removal (`launchd` bootout + trash).
+- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘8`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (including Arabic with native RTL layout).
 
 Complete feature breakdowns and path specifications are documented in the [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
 
