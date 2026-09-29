@@ -362,6 +362,7 @@
 "cleanup_complete_sub" = "Zwolniono %@ miejsca na dysku.";
 "cleanup_summary" = "Podsumowanie usuniętych pozycji";
 "cleanup_skipped" = "Nie udało się wyczyścić";
+"cleanup_partial_reason" = "Wyczyszczono %lld, %lld nie udało się usunąć";
 "cleanup_selected" = "Wybrano: %@";
 "cleanup_hide_logs" = "Ukryj dzienniki";
 "cleanup_show_logs" = "Pokaż dzienniki";

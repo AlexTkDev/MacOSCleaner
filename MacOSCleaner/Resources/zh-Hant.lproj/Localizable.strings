@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "已成功釋放 %@ 磁碟空間。";
 "cleanup_summary" = "刪除項目摘要";
 "cleanup_skipped" = "未能清理";
+"cleanup_partial_reason" = "已清理 %lld 項，%lld 項無法移除";
 "cleanup_selected" = "已選擇：%@";
 "cleanup_hide_logs" = "隱藏日誌";
 "cleanup_show_logs" = "顯示日誌";

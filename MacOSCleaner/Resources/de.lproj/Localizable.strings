@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "%@ Speicherplatz erfolgreich freigegeben.";
 "cleanup_summary" = "Zusammenfassung der gelöschten Objekte";
 "cleanup_skipped" = "Konnte nicht bereinigt werden";
+"cleanup_partial_reason" = "%lld bereinigt, %lld konnten nicht entfernt werden";
 "cleanup_selected" = "Ausgewählt: %@";
 "cleanup_hide_logs" = "Protokolle ausblenden";
 "cleanup_show_logs" = "Protokolle anzeigen";

@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "%@ の容量を正常に解放しました。";
 "cleanup_summary" = "削除サマリー";
 "cleanup_skipped" = "スキップされた項目";
+"cleanup_partial_reason" = "%lld件クリーン済み、%lld件は削除できませんでした";
 "cleanup_selected" = "選択中: %@";
 "cleanup_hide_logs" = "ログを非表示";
 "cleanup_show_logs" = "ログを表示";

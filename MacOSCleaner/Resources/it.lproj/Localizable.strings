@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "%@ di spazio su disco liberati con successo.";
 "cleanup_summary" = "Riepilogo elementi eliminati";
 "cleanup_skipped" = "Impossibile pulire";
+"cleanup_partial_reason" = "%lld puliti, %lld non rimovibili";
 "cleanup_selected" = "Selezionati: %@";
 "cleanup_hide_logs" = "Nascondi log";
 "cleanup_show_logs" = "Mostra log";

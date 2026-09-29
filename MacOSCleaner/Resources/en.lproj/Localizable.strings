@@ -362,6 +362,7 @@
 "cleanup_complete_sub" = "Successfully freed %@ of disk space.";
 "cleanup_summary" = "Deleted Items Summary";
 "cleanup_skipped" = "Could Not Clean";
+"cleanup_partial_reason" = "Cleaned %lld, %lld could not be removed";
 "cleanup_selected" = "Selected: %@";
 "cleanup_hide_logs" = "Hide Logs";
 "cleanup_show_logs" = "Show Logs";

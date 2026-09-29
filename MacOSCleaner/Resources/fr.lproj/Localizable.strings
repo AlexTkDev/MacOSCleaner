@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "%@ d'espace disque libérés avec succès.";
 "cleanup_summary" = "Résumé des éléments supprimés";
 "cleanup_skipped" = "Impossible de nettoyer";
+"cleanup_partial_reason" = "%lld nettoyé(s), %lld n'ont pas pu être supprimé(s)";
 "cleanup_selected" = "Sélectionné : %@";
 "cleanup_hide_logs" = "Masquer les journaux";
 "cleanup_show_logs" = "Afficher les journaux";

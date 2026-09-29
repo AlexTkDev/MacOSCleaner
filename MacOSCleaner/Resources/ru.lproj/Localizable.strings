@@ -361,6 +361,7 @@
 "cleanup_complete_sub" = "Успешно освобождено %@ дискового пространства.";
 "cleanup_summary" = "Сводка удаленных файлов";
 "cleanup_skipped" = "Не удалось очистить";
+"cleanup_partial_reason" = "Очищено %lld, %lld не удалось удалить";
 "cleanup_selected" = "Выбрано: %@";
 "cleanup_hide_logs" = "Скрыть логи";
 "cleanup_show_logs" = "Показать логи";

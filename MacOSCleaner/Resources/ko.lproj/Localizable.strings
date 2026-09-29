@@ -362,6 +362,7 @@
 "cleanup_complete_sub" = "디스크 공간 %@를 확보했습니다.";
 "cleanup_summary" = "삭제한 항목 요약";
 "cleanup_skipped" = "정리할 수 없음";
+"cleanup_partial_reason" = "%lld개 정리됨, %lld개 제거 불가";
 "cleanup_selected" = "선택됨: %@";
 "cleanup_hide_logs" = "로그 가리기";
 "cleanup_show_logs" = "로그 보기";

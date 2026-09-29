@@ -362,6 +362,7 @@
 "cleanup_complete_sub" = "Se liberaron %@ de espacio en disco.";
 "cleanup_summary" = "Resumen de elementos eliminados";
 "cleanup_skipped" = "No se pudo limpiar";
+"cleanup_partial_reason" = "%lld limpiados, %lld no se pudieron eliminar";
 "cleanup_selected" = "Seleccionado: %@";
 "cleanup_hide_logs" = "Ocultar registros";
 "cleanup_show_logs" = "Mostrar registros";

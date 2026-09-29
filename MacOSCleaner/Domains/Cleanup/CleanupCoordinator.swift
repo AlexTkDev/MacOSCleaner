@@ -188,7 +188,7 @@ public final class CleanupCoordinator {
                         records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "partial", bytesFreed: result.freedBytes))
                         self.skippedItems.append(SkippedCleanupItem(
                             label: result.label,
-                            reason: "partial failure: removed=\(result.removedCount) skipped=\(result.skippedCount) failed=\(result.failedCount)"
+                            reason: "cleanup_partial_reason".localizedWithArgs(Int64(result.removedCount), Int64(result.failedCount))
                         ))
                     } else {
                         records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))

@@ -362,6 +362,7 @@
 "cleanup_complete_sub" = "تم تحرير %@ من مساحة القرص.";
 "cleanup_summary" = "ملخص العناصر المحذوفة";
 "cleanup_skipped" = "تعذر التنظيف";
+"cleanup_partial_reason" = "تم تنظيف %lld، تعذر إزالة %lld";
 "cleanup_selected" = "المحدد: %@";
 "cleanup_hide_logs" = "إخفاء السجلات";
 "cleanup_show_logs" = "إظهار السجلات";

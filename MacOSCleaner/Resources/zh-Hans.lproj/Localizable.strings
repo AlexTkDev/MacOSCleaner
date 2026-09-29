@@ -351,6 +351,7 @@
 "cleanup_complete_sub" = "已成功释放 %@ 磁盘空间。";
 "cleanup_summary" = "删除项目摘要";
 "cleanup_skipped" = "未能清理";
+"cleanup_partial_reason" = "已清理 %lld 项，%lld 项无法移除";
 "cleanup_selected" = "已选择：%@";
 "cleanup_hide_logs" = "隐藏日志";
 "cleanup_show_logs" = "显示日志";
