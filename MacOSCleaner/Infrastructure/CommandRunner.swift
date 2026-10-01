@@ -38,10 +38,37 @@ public actor CommandRunner {
         process.standardError = stderrPipe
 
         // Use a simple lock to guard the resumed flag only.
-        // stdout/stderr are read atomically after process exits — no readabilityHandler race.
-        final class ResumeGuard: @unchecked Sendable {
+        // stdout/stderr are read via readabilityHandler (prevents pipe-buffer deadlock on large
+        // outputs) and drained atomically in terminationHandler after write ends are closed.
+        final class ProcessState: @unchecked Sendable {
             private let lock = NSLock()
             private var isResumed = false
+            private var stdoutData = Data()
+            private var stderrData = Data()
+
+            func appendStdout(_ data: Data) {
+                lock.lock()
+                stdoutData.append(data)
+                lock.unlock()
+            }
+
+            func appendStderr(_ data: Data) {
+                lock.lock()
+                stderrData.append(data)
+                lock.unlock()
+            }
+
+            func finish(process: Process, remainingOut: Data, remainingErr: Data) -> CommandResult {
+                lock.lock()
+                defer { lock.unlock() }
+                if !remainingOut.isEmpty { stdoutData.append(remainingOut) }
+                if !remainingErr.isEmpty { stderrData.append(remainingErr) }
+                return CommandResult(
+                    stdout: String(decoding: stdoutData, as: UTF8.self),
+                    stderr: String(decoding: stderrData, as: UTF8.self),
+                    exitCode: process.terminationStatus
+                )
+            }
 
             func resumeOnce(
                 continuation: CheckedContinuation<CommandResult, Error>,
@@ -55,31 +82,45 @@ public actor CommandRunner {
             }
         }
 
-        let guard_ = ResumeGuard()
+        let state = ProcessState()
+
+        // Drain pipe buffers continuously — required to prevent deadlock when
+        // the process produces more output than the pipe buffer (~64 KB on macOS).
+        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { state.appendStdout(data) }
+        }
+        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { state.appendStderr(data) }
+        }
 
         return try await withTaskCancellationHandler {
             try await withThrowingTaskGroup(of: CommandResult.self) { group in
                 group.addTask {
                     try await withCheckedThrowingContinuation { continuation in
                         process.terminationHandler = { proc in
-                            // Close write ends before reading so readDataToEndOfFile
-                            // doesn't block when child processes inherited the pipe fds.
+                            // Stop handler-based draining.
+                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
+                            stderrPipe.fileHandleForReading.readabilityHandler = nil
+                            // Close parent's write-end copies so readDataToEndOfFile
+                            // gets EOF immediately (not blocked by dangling write fds).
                             stdoutPipe.fileHandleForWriting.closeFile()
                             stderrPipe.fileHandleForWriting.closeFile()
-                            let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-                            let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                            let result = CommandResult(
-                                stdout: String(decoding: stdoutData, as: UTF8.self),
-                                stderr: String(decoding: stderrData, as: UTF8.self),
-                                exitCode: proc.terminationStatus
-                            )
-                            guard_.resumeOnce(continuation: continuation, result: .success(result))
+                            // Drain any bytes that arrived between the last handler
+                            // invocation and the terminationHandler.
+                            let remOut = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                            let remErr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                            let result = state.finish(process: proc, remainingOut: remOut, remainingErr: remErr)
+                            state.resumeOnce(continuation: continuation, result: .success(result))
                         }
 
                         do {
                             try process.run()
                         } catch {
-                            guard_.resumeOnce(
+                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
+                            stderrPipe.fileHandleForReading.readabilityHandler = nil
+                            state.resumeOnce(
                                 continuation: continuation,
                                 result: .failure(CommandRunnerError.invalidExecutable)
                             )
