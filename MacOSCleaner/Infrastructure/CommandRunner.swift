@@ -37,33 +37,11 @@ public actor CommandRunner {
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
-        final class ProcessState: @unchecked Sendable {
+        // Use a simple lock to guard the resumed flag only.
+        // stdout/stderr are read atomically after process exits — no readabilityHandler race.
+        final class ResumeGuard: @unchecked Sendable {
             private let lock = NSLock()
             private var isResumed = false
-            private var stdoutData = Data()
-            private var stderrData = Data()
-
-            func appendStdout(_ data: Data) {
-                lock.lock()
-                stdoutData.append(data)
-                lock.unlock()
-            }
-
-            func appendStderr(_ data: Data) {
-                lock.lock()
-                stderrData.append(data)
-                lock.unlock()
-            }
-
-            func finish(process: Process) -> CommandResult {
-                lock.lock()
-                defer { lock.unlock() }
-                return CommandResult(
-                    stdout: String(decoding: stdoutData, as: UTF8.self),
-                    stderr: String(decoding: stderrData, as: UTF8.self),
-                    exitCode: process.terminationStatus
-                )
-            }
 
             func resumeOnce(
                 continuation: CheckedContinuation<CommandResult, Error>,
@@ -77,45 +55,31 @@ public actor CommandRunner {
             }
         }
 
-        let state = ProcessState()
-
-        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
-            let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStdout(data)
-            }
-        }
-
-        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
-            let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStderr(data)
-            }
-        }
+        let guard_ = ResumeGuard()
 
         return try await withTaskCancellationHandler {
             try await withThrowingTaskGroup(of: CommandResult.self) { group in
                 group.addTask {
                     try await withCheckedThrowingContinuation { continuation in
                         process.terminationHandler = { proc in
-                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
-                            stderrPipe.fileHandleForReading.readabilityHandler = nil
-
-                            let remOut = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-                            let remErr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                            if !remOut.isEmpty { state.appendStdout(remOut) }
-                            if !remErr.isEmpty { state.appendStderr(remErr) }
-
-                            let result = state.finish(process: proc)
-                            state.resumeOnce(continuation: continuation, result: .success(result))
+                            // Close write ends before reading so readDataToEndOfFile
+                            // doesn't block when child processes inherited the pipe fds.
+                            stdoutPipe.fileHandleForWriting.closeFile()
+                            stderrPipe.fileHandleForWriting.closeFile()
+                            let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                            let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                            let result = CommandResult(
+                                stdout: String(decoding: stdoutData, as: UTF8.self),
+                                stderr: String(decoding: stderrData, as: UTF8.self),
+                                exitCode: proc.terminationStatus
+                            )
+                            guard_.resumeOnce(continuation: continuation, result: .success(result))
                         }
 
                         do {
                             try process.run()
                         } catch {
-                            stdoutPipe.fileHandleForReading.readabilityHandler = nil
-                            stderrPipe.fileHandleForReading.readabilityHandler = nil
-                            state.resumeOnce(
+                            guard_.resumeOnce(
                                 continuation: continuation,
                                 result: .failure(CommandRunnerError.invalidExecutable)
                             )
