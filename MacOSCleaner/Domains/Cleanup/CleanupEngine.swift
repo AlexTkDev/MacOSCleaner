@@ -227,7 +227,7 @@ public actor CleanupEngine {
         var pending = Array(categories.enumerated())
         var completedCount = 0
 
-        return try await CleanupEngine.$currentSelectedPaths.withValue(options.selectedPaths) {
+        return await CleanupEngine.$currentSelectedPaths.withValue(options.selectedPaths) {
             await withTaskGroup(of: (Int, String, [CleanupEngineResult]).self) { group in
 
                 for (index, category) in pending.prefix(maxConcurrency) {

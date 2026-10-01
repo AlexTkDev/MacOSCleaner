@@ -303,7 +303,7 @@ public actor AIExplanationService {
 
     // MARK: - Context Size Check & Heuristic
     private func checkContextSize(prompt: String, instructions: String) async throws {
-        let maxSize = SystemLanguageModel.default.contextSize ?? 4096
+        let maxSize = SystemLanguageModel.default.contextSize
         
         if #available(macOS 26.4, *) {
             let promptCount = try await SystemLanguageModel.default.tokenCount(for: prompt)
@@ -329,17 +329,13 @@ public actor AIExplanationService {
         
         do {
             let response = try await session.respond(to: prompt, generating: AIExplanationResult.self)
-            if #available(macOS 27.0, *) {
-                Logger.aiExplanation.info("Session structured completed. Usage: \(String(describing: session.usage), privacy: .public)")
-            }
+            Logger.aiExplanation.info("Session structured completed.")
             return response.content
         } catch {
             Logger.aiExplanation.warning("Structured generation failed, falling back to text: \(error.localizedDescription, privacy: .public)")
             do {
                 let response = try await session.respond(to: prompt)
-                if #available(macOS 27.0, *) {
-                    Logger.aiExplanation.info("Session text fallback completed. Usage: \(String(describing: session.usage), privacy: .public)")
-                }
+                Logger.aiExplanation.info("Session text fallback completed.")
                 let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: response.content)
                 return AIExplanationResult(verdict: extractedVerdict, explanation: clean.isEmpty ? response.content : clean)
             } catch {
@@ -352,7 +348,7 @@ public actor AIExplanationService {
     public func streamSession(instructions: String, prompt: String) async throws -> AsyncThrowingStream<String, Error> {
         try await checkContextSize(prompt: prompt, instructions: instructions)
         
-        return AsyncThrowingStream { continuation in
+        return AsyncThrowingStream(String.self) { continuation in
             let task = Task {
                 do {
                     let session = LanguageModelSession(instructions: instructions)
@@ -360,9 +356,7 @@ public actor AIExplanationService {
                     for try await chunk in innerStream {
                         continuation.yield(chunk.content)
                     }
-                    if #available(macOS 27.0, *) {
-                        Logger.aiExplanation.info("Stream completed. Usage: \(String(describing: session.usage), privacy: .public)")
-                    }
+                    Logger.aiExplanation.info("Stream completed.")
                     continuation.finish()
                 } catch {
                     Logger.aiExplanation.error("Stream failed: \(error.localizedDescription, privacy: .public)")

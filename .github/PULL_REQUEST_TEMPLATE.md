@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] Builds successfully
-- [ ] Tested locally
-- [ ] Documentation updated (if needed)
-- [ ] No unrelated changes included
+- [] Builds successfully
+- [] Tested locally
+- [] Documentation updated (if needed)
+- [] No unrelated changes included
