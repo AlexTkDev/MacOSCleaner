@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "Obtener estado del almacenamiento en disco";
 "settings_cmd_clean_category" = "Limpiar categoría específica (cachés, registros, etc.)";
 "settings_cmd_scheduled_cleanup" = "Ejecutar limpieza programada (Automator)";
+"settings_cmd_empty_trash" = "Vaciar la papelera";
 "siri_phrase_developer_caches" = "Limpiar cachés de desarrollador";
 "siri_phrase_storage_status" = "Cuánto espacio libre";
 "siri_phrase_clean_category" = "Limpiar cachés del sistema";
 "siri_phrase_scheduled_cleanup" = "Ejecutar limpieza programada";
+"siri_phrase_empty_trash" = "Vacía la papelera";
 
 // Custom Siri Commands Editor
 "siri_add_command_button" = "Añadir comando";
@@ -92,6 +94,10 @@
 "duplicate_trash_confirm_message" = "¿Está seguro de mover %ld duplicados (%@) a la Papelera?";
 "duplicate_trash_completed" = "Se movieron %ld archivos (%@) a la Papelera";
 "duplicate_trash_failed" = "Error al mover a la Papelera: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplicado";
+"duplicate_copies_count" = "%ld copias";
+"duplicate_no_selection" = "Seleccionar un grupo de duplicados";
 
 // Disk Analyzer Screen
 "menu_disk_space" = "Analizador de disco";
@@ -174,6 +180,10 @@
 "language.chinese_simplified" = "Chino (Simplificado)";
 "language.italian" = "Italiano";
 "language.portuguese_brazil" = "Portugués (Brasil)";
+"language.arabic" = "Árabe";
+"language.chinese_traditional" = "Chino (Tradicional)";
+"language.korean" = "Coreano";
+"language.polish" = "Polaco";
 
 // Settings View
 "menu_settings" = "Ajustes";
@@ -269,6 +279,7 @@
 "startup_scanning" = "Escaneando servicios...";
 "startup_no_agents" = "Sin agentes de inicio";
 "startup_no_agents_sub" = "No se encontraron agentes en ~/Library/LaunchAgents.";
+"startup_category_empty" = "No hay servicios en esta categoría";
 "startup_scan_failed" = "Escaneo fallido";
 "startup_status_loaded" = "Cargado";
 "startup_status_unloaded" = "Descargado";
@@ -312,6 +323,12 @@
 "cleanup_cleaning" = "Limpiando...";
 "cleanup_ready" = "Listo para limpiar";
 "cleanup_ready_sub" = "Escanee su sistema para encontrar cachés y archivos temporales seguros de eliminar.";
+"cleanup_base_section_title" = "LIMPIEZA BÁSICA (PREDETERMINADA)";
+"cleanup_base_system_cache" = "Caché del sistema";
+"cleanup_base_app_logs" = "Registros de apps";
+"cleanup_base_browser_cache" = "Caché del navegador";
+"cleanup_base_trash" = "Papelera (si está activada en ajustes)";
+"cleanup_badge_password" = "Contraseña";
 "cleanup_additional_options" = "Opciones de limpieza adicionales";
 "cleanup_option_ds_store" = "Limpiar archivos .DS_Store";
 "cleanup_option_ds_store_sub" = "Elimina archivos de metadatos generados por el sistema de los directorios.";
@@ -326,11 +343,16 @@
 "cleanup_option_voice_memos" = "Limpiar Notas de Voz";
 "cleanup_option_voice_memos_sub" = "Elimina las grabaciones de Notas de Voz de la biblioteca.";
 "cleanup_option_garageband_logic" = "Limpiar GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Elimina archivos de proyecto y cachés de GarageBand y Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Elimina las cachés de GarageBand y Logic Pro. Los proyectos en Música se conservan.";
 "cleanup_option_imovie_final_cut" = "Limpiar iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Elimina archivos de renderizado y bibliotecas de iMovie y Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Elimina las cachés de iMovie y Final Cut Pro. Las bibliotecas en Películas se conservan.";
 "cleanup_option_sleep_image" = "Limpiar Imagen de Suspensión";
 "cleanup_option_sleep_image_sub" = "Elimina el archivo de imagen de hibernación. macOS lo recrea en el próximo sueño.";
+"cleanup_option_font_cache" = "Limpiar caché de fuentes";
+"cleanup_option_font_cache_sub" = "Limpia las bases de datos de fuentes (atsutil). Se requiere reiniciar.";
+"cleanup_font_cache_confirm_title" = "¿Limpiar caché de fuentes?";
+"cleanup_font_cache_confirm_message" = "Limpiar el caché de fuentes puede alterar la representación del texto en las aplicaciones abiertas hasta reiniciar el Mac.";
+"cleanup_font_cache_confirm_action" = "Limpiar (reinicio necesario)";
 "cleanup_extended_title" = "Limpieza extendida";
 "cleanup_start_scan" = "Iniciar escaneo";
 "cleanup_failed" = "Limpieza fallida";
@@ -340,6 +362,7 @@
 "cleanup_complete_sub" = "Se liberaron %@ de espacio en disco.";
 "cleanup_summary" = "Resumen de elementos eliminados";
 "cleanup_skipped" = "No se pudo limpiar";
+"cleanup_partial_reason" = "%lld limpiados, %lld no se pudieron eliminar";
 "cleanup_selected" = "Seleccionado: %@";
 "cleanup_hide_logs" = "Ocultar registros";
 "cleanup_show_logs" = "Mostrar registros";
@@ -437,6 +460,7 @@
 "uninstaller_evidence_card_title" = "Evidencias y confianza";
 "uninstaller_evidence_why_flagged" = "¿Por qué se detectó este archivo?";
 "uninstaller_leftovers_cleaned_notification" = "Se limpiaron %lld archivos residuales (%@ liberados)";
+"orphaned_cleanup_failed_count" = "No se pudieron eliminar %lld archivos residuales.";
 
 // Processes View
 "menu_processes" = "Procesos";
@@ -737,6 +761,7 @@
 "uninstaller.shared_help.jetbrains" = "Componente compartido de IDEs de JetBrains (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Datos compartidos de desarrollo Android (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Herramientas de desarrollo de Apple compartidas (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Configuración y datos compartidos de herramientas de línea de comandos";
 
 // Format Helpers
 "format_bytes_b" = "%lld B";
@@ -772,7 +797,15 @@
 "settings_ai_status_ready" = "Listo";
 "settings_ai_status_unsupported_device" = "Dispositivo no compatible";
 "settings_ai_status_not_enabled" = "No activado en Ajustes del Sistema";
-"settings_ai_status_downloading" = "Descargando modelo...";
+"settings_ai_status_downloading" = "Descargando recursos del modelo...";
+"settings_ai_status_preparing" = "Preparando modelo...";
+"settings_ai_status_unsupported_language" = "Idioma no compatible";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence actualmente no es compatible con el idioma del sistema. Se requiere un idioma compatible (p. ej., inglés) en Ajustes del Sistema.";
+"settings_ai_hint_preparing" = "macOS está inicializando el modelo en segundo plano. Conecta tu Mac a la corriente y comprueba el estado en Ajustes del Sistema.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence está desactivado. Actívalo en Ajustes del Sistema de macOS.";
+"settings_ai_hint_unsupported_device" = "Este Mac no es compatible con Apple Intelligence. Se requiere un chip Apple Silicon M1 o posterior.";
+"settings_ai_open_system_settings" = "Abrir Ajustes del Sistema…";
+"settings_ai_refresh_status" = "Actualizar estado";
 "settings_ai_status_unavailable" = "No disponible";
 
 /* AI Explanations */
@@ -831,6 +864,11 @@
 "settings_spotlight_reindex_button" = "Reconstruir";
 "settings_spotlight_reindexing" = "Reconstruyendo...";
 "settings_spotlight_reindex_success" = "Reindexación de Spotlight iniciada";
+"settings_spctl_purge_title" = "Purgar caché de Gatekeeper";
+"settings_spctl_purge_sub" = "Borra la caché de evaluación de Gatekeeper para solucionar errores de inicio y firmas obsoletas (spctl --purge)";
+"settings_spctl_purge_button" = "Purgar caché";
+"settings_spctl_purging" = "Purgando...";
+"settings_spctl_purge_success" = "Caché de Gatekeeper purgada";
 "settings_software_updates" = "Actualizaciones de software";
 "settings_software_updates_sub" = "Comprobación de versiones";
 "settings_current_version" = "Versión actual";
@@ -959,3 +997,28 @@
 "settings_project_artifacts_age" = "Antigüedad de artefactos de proyecto";
 "settings_project_artifacts_age_sub" = "Buscar artefactos de compilación no modificados en más de estos días";
 "settings_days_count" = "> %d días";
+
+"dashboard_view_all_history" = "Ver todo el historial";
+"history_window_title" = "Historial de limpieza";
+"history_search_placeholder" = "Buscar";
+"history_sort_date" = "Fecha";
+"history_sort_size" = "Tamaño";
+"history_trigger_manual" = "Manual";
+"history_trigger_automatic" = "Automático";
+"history_empty_state" = "Aún no se ha realizado ninguna limpieza";
+"history_category_general" = "General";
+"history_category_media" = "Multimedia";
+"history_category_caches" = "Cachés";
+"history_category_dev" = "Desarrollo";
+"category.cloudkit_cache" = "Caché de iCloud CloudKit";
+"category.swiftpm_cache" = "Caché de Swift Package Manager";
+"select" = "Seleccionar";
+"dashboard_history_empty_hint" = "Para ver el historial de limpieza aquí, realiza un mantenimiento de tu Mac";
+"dashboard_start_cleanup" = "Iniciar limpieza";
+
+"startup_show_in_finder" = "Mostrar en el Finder";
+"startup_delete_service" = "Eliminar servicio";
+"startup_delete_confirm_title" = "¿Eliminar servicio de inicio?";
+"startup_delete_confirm_message" = "¿Seguro que desea eliminar '%@'?\nArchivo: %@\nEl servicio se detendrá y su archivo plist se trasladará a la Papelera.";
+"startup_delete_action" = "Mover al basurero";
+"scan_incomplete_without_fda" = "Sin acceso total al disco, faltan algunas carpetas protegidas en estos resultados.";

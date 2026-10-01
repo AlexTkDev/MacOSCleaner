@@ -59,8 +59,10 @@ targets:
           fi
 
           # Local/official Xcode: pack from SoT, then verify asset matches SoT.
-          swift "$GEN" --write
-          swift "$GEN" --check
+          MODULE_CACHE="${DERIVED_FILE_DIR:-$SRCROOT/.build/ModuleCache}"
+          mkdir -p "$MODULE_CACHE"
+          swift -module-cache-path "$MODULE_CACHE" "$GEN" --write
+          swift -module-cache-path "$MODULE_CACHE" "$GEN" --check
           if [[ ! -f "$ASSET" ]] || [[ ! -s "$ASSET" ]]; then
             echo "error: PrivateCleanupCatalog.dataset/catalog.bin missing or empty after pack" >&2
             exit 1
@@ -80,10 +82,12 @@ targets:
         basedOnDependencyAnalysis: true
     entitlements:
       path: MacOSCleaner.entitlements
+      properties:
+        com.apple.security.automation.apple-events: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 2.2.0
+        MARKETING_VERSION: 2.3.0
         CURRENT_PROJECT_VERSION: 2
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_DEBUG_DYLIB: NO

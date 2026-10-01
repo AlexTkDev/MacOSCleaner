@@ -284,10 +284,10 @@ public actor EvidenceProbe {
 
         let cFile = compactIdentityToken(bare)
         let cApp = compactIdentityToken(app)
-        guard cApp.count >= 4 else { return (false, false) }
+        guard cApp.count >= 2 else { return (false, false) }
         if cFile == cApp { return (true, false) }
-        // Compact prefix needs length ≥5 to avoid short-token collisions (code→codecache).
-        if cApp.count >= 5, cFile.hasPrefix(cApp), cFile.count > cApp.count {
+        // Compact prefix needs length ≥4 to avoid short-token collisions (code→codecache).
+        if cApp.count >= 4, cFile.hasPrefix(cApp), cFile.count > cApp.count {
             return (false, true)
         }
 
@@ -298,10 +298,10 @@ public actor EvidenceProbe {
             .filter { !$0.isEmpty }
         if rawWords.count >= 2 {
             let head = rawWords[0]
-            if head.count >= 4, !megaVendorNameTokens.contains(head) {
+            if head.count >= 2, !megaVendorNameTokens.contains(head) {
                 let cHead = compactIdentityToken(head)
                 if bare == head || cFile == cHead { return (true, false) }
-                if cHead.count >= 5, cFile.hasPrefix(cHead), cFile.count > cHead.count {
+                if cHead.count >= 4, cFile.hasPrefix(cHead), cFile.count > cHead.count {
                     return (false, true)
                 }
             }

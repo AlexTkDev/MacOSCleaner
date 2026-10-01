@@ -3,6 +3,7 @@ import Observation
 import OSLog
 import AppKit
 
+@MainActor
 @Observable
 public final class CleanupViewModel {
     public let coordinator: CleanupCoordinator
@@ -57,29 +58,15 @@ public final class CleanupViewModel {
     }
 
     @MainActor
+    public var isFontCacheSelectedForCleanup: Bool {
+        options.cleanFontCache || itemManager.selectedCleanupCategories(from: options.categories()).contains(.fontCache)
+    }
+
+    @MainActor
     public func executeCleanup() {
         var cleanupOptions = options
         cleanupOptions.projectArtifactsOlderThanDays = settings.projectArtifactsOlderThanDays
         coordinator.executeCleanup(options: cleanupOptions)
-    }
-
-    @MainActor
-    public func closeRunningApps() async {
-        let appsToClose = NSWorkspace.shared.runningApplications.filter { app in
-            app.activationPolicy == .regular &&
-            app.bundleIdentifier != Bundle.main.bundleIdentifier &&
-            !(app.bundleIdentifier ?? "").hasPrefix("com.apple.")
-        }
-
-        for app in appsToClose {
-            app.terminate()
-        }
-
-        try? await Task.sleep(for: .seconds(3))
-
-        for app in appsToClose {
-            app.forceTerminate()
-        }
     }
 
     @MainActor

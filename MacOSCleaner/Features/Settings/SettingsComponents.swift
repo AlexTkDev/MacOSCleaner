@@ -196,11 +196,21 @@ struct GlassCard<Header: View, Content: View, Footer: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(isDestructive ? Color.red.opacity(0.08) : Color.primary.opacity(0.03))
+                .fill(isDestructive ? Color.red.opacity(0.08) : Color.white.opacity(0.04))
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.regularMaterial)
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isDestructive ? Color.red.opacity(0.2) : Color.primary.opacity(0.06), lineWidth: 1)
+                        .strokeBorder(
+                            isDestructive
+                                ? LinearGradient(colors: [Color.red.opacity(0.4), Color.red.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                : LinearGradient(colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 1
+                        )
                 )
+                .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 4)
         }
     }
 }
@@ -368,16 +378,14 @@ struct SettingsActionRow: View {
             iconColor: isDestructive ? .red : .secondary
         ) {
             Button(role: isDestructive ? .destructive : nil, action: action) {
-                HStack(spacing: 4) {
+                HStack(spacing: 6) {
                     if let buttonIcon {
                         Image(systemName: buttonIcon)
                     }
                     Text(buttonTitle)
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(isDestructive ? .red : .accentColor)
-            .controlSize(.small)
+            .prominentGlassButtonStyle(tint: isDestructive ? .red : .accentColor)
         }
     }
 }

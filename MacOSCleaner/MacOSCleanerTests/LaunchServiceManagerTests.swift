@@ -195,4 +195,90 @@ final class LaunchServiceManagerTests: XCTestCase {
         let appleCount = prefixes.filter { $0 == "com.apple." }.count
         XCTAssertEqual(appleCount, 1)
     }
+
+    func testRemoveVendorPrefixProtectsApplePrefix() async {
+        await manager.removeVendorPrefix("com.apple.")
+        let prefixes = await manager.systemVendorPrefixes
+        XCTAssertTrue(prefixes.contains("com.apple."))
+    }
+
+    func testSetSystemVendorPrefixesRetainsApplePrefix() async {
+        await manager.setSystemVendorPrefixes(["com.google."])
+        let prefixes = await manager.systemVendorPrefixes
+        XCTAssertTrue(prefixes.contains("com.apple."))
+        XCTAssertTrue(prefixes.contains("com.google."))
+    }
+
+    // MARK: - Delete Service Tests
+
+    func testDeleteSystemServiceThrowsProtectedPath() async throws {
+        let service = StartupService(
+            id: "com.apple.sys",
+            name: "com.apple.sys",
+            path: "/System/Library/LaunchDaemons/com.apple.sys.plist",
+            isEnabled: true,
+            category: .system
+        )
+        do {
+            try await manager.delete(service: service)
+            XCTFail("Expected SafetyError.protectedPath")
+        } catch let error as SafetyError {
+            XCTAssertEqual(error, .protectedPath("/System/Library/LaunchDaemons/com.apple.sys.plist"))
+        }
+    }
+
+    func testDeleteServiceWithSystemPathThrowsProtectedPath() async throws {
+        let service = StartupService(
+            id: "com.test.sys",
+            name: "com.test.sys",
+            path: "/System/Library/LaunchAgents/com.test.sys.plist",
+            isEnabled: true,
+            category: .thirdParty
+        )
+        do {
+            try await manager.delete(service: service)
+            XCTFail("Expected SafetyError.protectedPath")
+        } catch let error as SafetyError {
+            XCTAssertEqual(error, .protectedPath("/System/Library/LaunchAgents/com.test.sys.plist"))
+        }
+    }
+
+    func testDeleteUserLaunchAgentSuccess() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let testTrash = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: testTrash, withIntermediateDirectories: true)
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let testTrashManager = TrashManager(safetyManager: safety, trashDirectoryURL: testTrash)
+
+        let agentsDir = ctx.homeDirectory.appendingPathComponent("Library/LaunchAgents", isDirectory: true)
+        try FileManager.default.createDirectory(at: agentsDir, withIntermediateDirectories: true)
+        let plistURL = agentsDir.appendingPathComponent("com.test.myagent.plist")
+        let plistContent: [String: Any] = ["Label": "com.test.myagent"]
+        let data = try PropertyListSerialization.data(fromPropertyList: plistContent, format: .xml, options: 0)
+        try data.write(to: plistURL)
+
+        let isolatedManager = LaunchServiceManager(
+            searchPaths: [agentsDir.path],
+            trashManager: testTrashManager
+        )
+
+        let service = StartupService(
+            id: "com.test.myagent",
+            name: "com.test.myagent",
+            path: plistURL.path,
+            isEnabled: false,
+            category: .user
+        )
+
+        try await isolatedManager.delete(service: service)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: plistURL.path))
+        let trashedFile = testTrash.appendingPathComponent("com.test.myagent.plist")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: trashedFile.path))
+    }
 }

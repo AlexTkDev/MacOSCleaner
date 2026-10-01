@@ -127,19 +127,54 @@ struct MacOSCleanerApp: App {
                     }
                 }
             }
+            
+            CommandGroup(after: .appInfo) {
+                Button("history_window_title".localized) {
+                    openWindow(id: "cleanup-history")
+                }
+                .keyboardShortcut("y", modifiers: .command)
+            }
         }
         
         Window("about_title".localized, id: "about") {
             AboutView(availableUpdate: availableUpdate)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
         
         Window("permissions_window_title".localized, id: "permissions") {
             PermissionsView(permissionsManager: permissionsManager)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+        
+        Window("history_window_title".localized, id: "cleanup-history") {
+            CleanupHistoryView(journal: journal)
+                .applyAppLanguage(appSettings.language)
+                .id(appSettings.language)
+        }
+        .windowResizability(.contentMinSize)
+        .defaultPosition(.center)
+        .defaultSize(width: 480, height: 600)
+        
+        Settings {
+            SettingsView(
+                settings: appSettings,
+                permissionsManager: permissionsManager,
+                onForget: {
+                    Task {
+                        try? await journal.clear()
+                    }
+                },
+                availableUpdate: $availableUpdate
+            )
+            .applyAppLanguage(appSettings.language)
+            .id(appSettings.language)
+        }
     }
 }
 
@@ -156,7 +191,7 @@ struct UpToDateAlertView: View {
                     Text("update.releases_label".localized)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
-                    Link("https://github.com/AlexTkDev/MacOSCleaner/releases", destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases")!)
+                    Link("https://github.com/AlexTkDev/MacOSCleaner/releases", destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases") ?? UpdateChecker.releasesURL)
                         .font(.system(size: 11))
                 }
                 
@@ -164,7 +199,7 @@ struct UpToDateAlertView: View {
                     Text("update.website_label".localized)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
-                    Link("https://alextkdev.github.io/MacOSCleaner/", destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!)
+                    Link("https://alextkdev.github.io/MacOSCleaner/", destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/") ?? UpdateChecker.releasesURL)
                         .font(.system(size: 11))
                 }
             }

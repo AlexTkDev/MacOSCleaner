@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "Get Disk Storage Status";
 "settings_cmd_clean_category" = "Clean Specific Category (Caches, Logs, etc.)";
 "settings_cmd_scheduled_cleanup" = "Run Scheduled Cleanup (Automator)";
+"settings_cmd_empty_trash" = "Empty Trash";
 "siri_phrase_developer_caches" = "Clean developer caches";
 "siri_phrase_storage_status" = "How much free space";
 "siri_phrase_clean_category" = "Clean system caches";
 "siri_phrase_scheduled_cleanup" = "Run scheduled cleanup";
+"siri_phrase_empty_trash" = "Empty Trash";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Add Command";
@@ -92,6 +94,10 @@
 "duplicate_trash_confirm_message" = "Are you sure you want to move %ld selected duplicate files (%@) to Trash?";
 "duplicate_trash_completed" = "Successfully moved %ld files (%@) to Trash";
 "duplicate_trash_failed" = "Failed to move files to Trash: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplicate";
+"duplicate_copies_count" = "%ld copies";
+"duplicate_no_selection" = "Select a duplicate group";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Disk Analyzer";
@@ -174,6 +180,10 @@
 "language.chinese_simplified" = "Chinese (Simplified)";
 "language.italian" = "Italian";
 "language.portuguese_brazil" = "Portuguese (Brazil)";
+"language.arabic" = "Arabic";
+"language.chinese_traditional" = "Chinese (Traditional)";
+"language.korean" = "Korean";
+"language.polish" = "Polish";
 
 /* Settings View */
 "menu_settings" = "Settings";
@@ -269,6 +279,7 @@
 "startup_scanning" = "Scanning services...";
 "startup_no_agents" = "No Startup Agents";
 "startup_no_agents_sub" = "No agents found in ~/Library/LaunchAgents.";
+"startup_category_empty" = "No services in this category";
 "startup_scan_failed" = "Scan Failed";
 "startup_status_loaded" = "Loaded";
 "startup_status_unloaded" = "Unloaded";
@@ -312,6 +323,12 @@
 "cleanup_cleaning" = "Cleaning Up...";
 "cleanup_ready" = "Ready to Clean";
 "cleanup_ready_sub" = "Scan your system to find safe-to-remove caches and temporary files.";
+"cleanup_base_section_title" = "BASE CLEANUP (DEFAULT)";
+"cleanup_base_system_cache" = "System Cache";
+"cleanup_base_app_logs" = "App Logs";
+"cleanup_base_browser_cache" = "Browser Cache";
+"cleanup_base_trash" = "Trash (if enabled in settings)";
+"cleanup_badge_password" = "Password";
 "cleanup_additional_options" = "Additional Cleanup Options";
 "cleanup_option_ds_store" = "Clean .DS_Store files";
 "cleanup_option_ds_store_sub" = "Removes system generated metadata files from directories.";
@@ -326,11 +343,16 @@
 "cleanup_option_voice_memos" = "Clean Voice Memos";
 "cleanup_option_voice_memos_sub" = "Removes Voice Memos recordings from the library.";
 "cleanup_option_garageband_logic" = "Clean GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "Removes GarageBand and Logic Pro project files and caches.";
+"cleanup_option_garageband_logic_sub" = "Removes GarageBand and Logic Pro caches. Projects stay in Music.";
 "cleanup_option_imovie_final_cut" = "Clean iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "Removes iMovie and Final Cut Pro render files and libraries.";
+"cleanup_option_imovie_final_cut_sub" = "Removes iMovie and Final Cut Pro caches. Libraries stay in Movies.";
 "cleanup_option_sleep_image" = "Clean Sleep Image";
 "cleanup_option_sleep_image_sub" = "Removes the hibernation image file. macOS recreates it on next sleep.";
+"cleanup_option_font_cache" = "Clear Font Cache";
+"cleanup_option_font_cache_sub" = "Clears font database caches (atsutil). Requires a system restart to take effect.";
+"cleanup_font_cache_confirm_title" = "Clear Font Cache?";
+"cleanup_font_cache_confirm_message" = "Clearing font caches can corrupt text and font rendering in open applications until you restart your Mac.";
+"cleanup_font_cache_confirm_action" = "Clear & Restart Required";
 "cleanup_extended_title" = "Extended Cleanup";
 "cleanup_start_scan" = "Start Scan";
 "cleanup_failed" = "Cleanup Failed";
@@ -340,6 +362,7 @@
 "cleanup_complete_sub" = "Successfully freed %@ of disk space.";
 "cleanup_summary" = "Deleted Items Summary";
 "cleanup_skipped" = "Could Not Clean";
+"cleanup_partial_reason" = "Cleaned %lld, %lld could not be removed";
 "cleanup_selected" = "Selected: %@";
 "cleanup_hide_logs" = "Hide Logs";
 "cleanup_show_logs" = "Show Logs";
@@ -435,6 +458,7 @@
 "uninstaller_evidence_card_title" = "Evidence & Confidence";
 "uninstaller_evidence_why_flagged" = "Why was this flagged?";
 "uninstaller_leftovers_cleaned_notification" = "Cleaned %lld leftover item(s) (%@ freed)";
+"orphaned_cleanup_failed_count" = "Failed to remove %lld residual item(s).";
 "uninstaller_show_in_finder" = "Show in Finder";
 
 /* Processes View */
@@ -736,6 +760,7 @@
 "uninstaller.shared_help.jetbrains" = "Shared component of JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Shared Android development data (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Shared Apple Developer tools (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Shared command-line tool configuration and data";
 
 /* Format Helpers */
 "format_bytes_b" = "%lld B";
@@ -776,6 +801,14 @@
 "settings_ai_status_unsupported_device" = "Device Not Eligible";
 "settings_ai_status_not_enabled" = "Not Enabled in System Settings";
 "settings_ai_status_downloading" = "Downloading Model Assets...";
+"settings_ai_status_preparing" = "Preparing Model...";
+"settings_ai_status_unsupported_language" = "Language Not Supported";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence does not currently support the active system language. A supported language (such as English) is required in macOS System Settings.";
+"settings_ai_hint_preparing" = "macOS is initializing model assets in the background. Connect your Mac to power and check progress in System Settings.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence is disabled. Turn it on in macOS System Settings.";
+"settings_ai_hint_unsupported_device" = "This Mac does not support Apple Intelligence. An Apple Silicon M1 chip or later is required.";
+"settings_ai_open_system_settings" = "Open System Settings…";
+"settings_ai_refresh_status" = "Refresh Status";
 "settings_ai_status_unavailable" = "Unavailable";
 
 /* AI Explanations */
@@ -834,6 +867,11 @@
 "settings_spotlight_reindex_button" = "Rebuild Index";
 "settings_spotlight_reindexing" = "Rebuilding...";
 "settings_spotlight_reindex_success" = "Spotlight reindexing started";
+"settings_spctl_purge_title" = "Purge Gatekeeper Cache";
+"settings_spctl_purge_sub" = "Clears Gatekeeper assessment cache to fix launch errors and stale signatures (spctl --purge)";
+"settings_spctl_purge_button" = "Purge Cache";
+"settings_spctl_purging" = "Purging...";
+"settings_spctl_purge_success" = "Gatekeeper assessment cache purged";
 "settings_software_updates" = "Software Updates";
 "settings_software_updates_sub" = "Version checks";
 "settings_current_version" = "Current Version";
@@ -961,3 +999,28 @@
 "settings_project_artifacts_age" = "Project Artifacts Age";
 "settings_project_artifacts_age_sub" = "Scan build artifacts not modified in more than this many days";
 "settings_days_count" = "> %d days";
+
+"dashboard_view_all_history" = "View All History";
+"history_window_title" = "Cleanup History";
+"history_search_placeholder" = "Search";
+"history_sort_date" = "Date";
+"history_sort_size" = "Size";
+"history_trigger_manual" = "Manual";
+"history_trigger_automatic" = "Automatic";
+"history_empty_state" = "No cleanups have been performed yet";
+"history_category_general" = "General";
+"history_category_media" = "Media";
+"history_category_caches" = "Caches";
+"history_category_dev" = "Development";
+"category.cloudkit_cache" = "iCloud CloudKit Cache";
+"category.swiftpm_cache" = "Swift Package Manager Cache";
+"select" = "Select";
+"dashboard_history_empty_hint" = "To see your cleanup history here, perform a maintenance cleanup of your Mac";
+"dashboard_start_cleanup" = "Start Cleanup";
+
+"startup_show_in_finder" = "Show in Finder";
+"startup_delete_service" = "Delete Service";
+"startup_delete_confirm_title" = "Delete Startup Service?";
+"startup_delete_confirm_message" = "Are you sure you want to delete '%@'?\nFile: %@\nThis will stop the service and move its property list to the Trash.";
+"startup_delete_action" = "Move to Trash";
+"scan_incomplete_without_fda" = "Without Full Disk Access, some protected folders are missing from these results.";

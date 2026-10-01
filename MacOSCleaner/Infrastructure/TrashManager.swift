@@ -14,10 +14,16 @@ public actor TrashManager {
     private let safetyManager: SafetyManager
     private let fileManager: FileManager
     private let bookmarkKey = "com.macoscleaner.trashBookmark"
+    nonisolated public let trashDirectoryURL: URL
     
-    public init(safetyManager: SafetyManager = SafetyManager(), fileManager: FileManager = .default) {
+    public init(
+        safetyManager: SafetyManager = SafetyManager(),
+        fileManager: FileManager = .default,
+        trashDirectoryURL: URL? = nil
+    ) {
         self.safetyManager = safetyManager
         self.fileManager = fileManager
+        self.trashDirectoryURL = trashDirectoryURL ?? fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
     }
     
     @discardableResult
@@ -42,6 +48,30 @@ public actor TrashManager {
         var trashedURLs: [URL] = []
         var failedURLs: [URL] = []
         var missingURLs: [URL] = []
+
+        // If an isolated test trash directory is configured (different from system ~/.Trash), simulate trash by moving into trashDirectoryURL
+        let systemTrashDir = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
+        let isIsolatedTestTrash = trashDirectoryURL.standardizedFileURL != systemTrashDir
+
+        if isIsolatedTestTrash {
+            for url in urls {
+                guard fileManager.fileExists(atPath: url.path) else {
+                    missingURLs.append(url)
+                    continue
+                }
+                let targetURL = uniqueDestination(for: url, in: trashDirectoryURL)
+                do {
+                    try fileManager.moveItem(at: url, to: targetURL)
+                    trashedURLs.append(targetURL)
+                } catch {
+                    failedURLs.append(url)
+                }
+            }
+            if trashedURLs.isEmpty, !missingURLs.isEmpty {
+                throw TrashError.trashOperationFailed("Item does not exist")
+            }
+            return trashedURLs
+        }
 
         // 1. Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
         for url in urls {
@@ -80,9 +110,8 @@ public actor TrashManager {
         }
 
         // 2. For items that need elevated permissions, batch them into a single privileged command (1 prompt max)
-        let trashDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
-        let trashRoot = trashDir.path
-        let escapedTrashRoot = "'\(trashRoot.replacingOccurrences(of: "'", with: "'\\''"))'"
+        let trashDir = trashDirectoryURL
+        let escapedTrashRoot = ShellQuoting.shellQuoted(trashDir.path)
         let uid = getuid()
         let gid = getgid()
 
@@ -90,11 +119,9 @@ public actor TrashManager {
         var batchTargetURLs: [URL] = []
 
         for url in failedURLs {
-            let escapedSource = "'\(url.path.replacingOccurrences(of: "'", with: "'\\''"))'"
-            let targetURL = trashDir.appendingPathComponent(url.lastPathComponent)
-            let targetPath = targetURL.path
-            let escapedTarget = "'\(targetPath.replacingOccurrences(of: "'", with: "'\\''"))'"
-
+            let targetURL = uniqueDestination(for: url, in: trashDir)
+            let escapedSource = ShellQuoting.shellQuoted(url.path)
+            let escapedTarget = ShellQuoting.shellQuoted(targetURL.path)
             commands.append("/bin/mv \(escapedSource) \(escapedTrashRoot)/ && /usr/sbin/chown -R \(uid):\(gid) \(escapedTarget)")
             batchTargetURLs.append(targetURL)
         }
@@ -122,27 +149,39 @@ public actor TrashManager {
         )
     }
 
-    /// Permanently deletes only the given URLs (typically items just moved into Trash).
+    /// Permanently deletes only the given URLs (typically items just moved into Trash, or contents of ~/.Trash).
     /// Batches any privileged items so authentication is requested at most ONCE.
     @discardableResult
     public func permanentlyDelete(urls: [URL]) async throws -> Int64 {
         try await ensureAccess()
 
         var totalFreed: Int64 = 0
-        var failedURLs: [URL] = []
+        var failedItems: [(url: URL, size: Int64)] = []
+
+        let systemTrashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
+        let customTrashURL = trashDirectoryURL.standardizedFileURL
 
         for url in urls {
             do {
                 try Task.checkCancellation()
-                guard fileManager.fileExists(atPath: url.path) else { continue }
-                let size = fileManager.getDirectorySize(url: url)
+                let stdURL = url.standardizedFileURL
+                guard stdURL != customTrashURL && stdURL != systemTrashURL else {
+                    Logger.trash.warning("Refusing to delete ~/.Trash directory itself")
+                    continue
+                }
+                guard isDirectTrashChild(stdURL) else {
+                    Logger.trash.warning("Refusing permanent delete outside Trash: \(stdURL.path, privacy: .public)")
+                    continue
+                }
+                guard fileManager.fileExists(atPath: stdURL.path) else { continue }
+                let size = fileManager.getPhysicalDirectorySize(url: stdURL)
                 do {
-                    try fileManager.removeItem(at: url)
+                    try fileManager.removeItem(at: stdURL)
                     totalFreed += size
-                    Logger.trash.debug("Permanently deleted: \(url.path, privacy: .public) (\(size) bytes)")
+                    Logger.trash.debug("Permanently deleted: \(stdURL.path, privacy: .public) (\(size) bytes)")
                 } catch {
                     if (error as NSError).code == NSFileWriteNoPermissionError || (error as NSError).code == Int(EPERM) || (error as NSError).code == Int(EACCES) {
-                        failedURLs.append(url)
+                        failedItems.append((url: stdURL, size: size))
                     } else {
                         throw error
                     }
@@ -154,15 +193,14 @@ public actor TrashManager {
             }
         }
 
-        if !failedURLs.isEmpty {
-            let escaped = failedURLs.map { "'\($0.path.replacingOccurrences(of: "'", with: "'\\''"))'" }.joined(separator: " ")
+        if !failedItems.isEmpty {
             do {
-                _ = try await PrivilegedTaskRunner.runAsAdmin(command: "/bin/rm -rf \(escaped)")
-                for url in failedURLs {
-                    let size = fileManager.getDirectorySize(url: url)
-                    totalFreed += size
+                let remaining = try await PrivilegedTaskRunner.removeAsAdmin(failedItems.map(\.url))
+                let remainingPaths = Set(remaining.map(\.path))
+                for item in failedItems where !remainingPaths.contains(item.url.path) {
+                    totalFreed += item.size
                 }
-                Logger.trash.info("Permanently deleted \(failedURLs.count) privileged item(s) in a single batch")
+                Logger.trash.info("Permanently deleted \(failedItems.count) privileged item(s) in a single batch")
             } catch {
                 Logger.trash.error("Batch privileged delete failed: \(error.localizedDescription, privacy: .public)")
             }
@@ -171,9 +209,43 @@ public actor TrashManager {
         return totalFreed
     }
     
+    private func uniqueDestination(for source: URL, in trash: URL) -> URL {
+        let ext = source.pathExtension
+        let base = source.deletingPathExtension().lastPathComponent
+        var index = 0
+        while true {
+            let name: String
+            if index == 0 {
+                name = source.lastPathComponent
+            } else if ext.isEmpty {
+                name = "\(base) \(index)"
+            } else {
+                name = "\(base) \(index).\(ext)"
+            }
+            let candidate = trash.appendingPathComponent(name)
+            if !fileManager.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+            index += 1
+        }
+    }
+
+    private func isDirectTrashChild(_ url: URL) -> Bool {
+        let parent = url.deletingLastPathComponent().standardizedFileURL.path
+        if parent == trashDirectoryURL.standardizedFileURL.path { return true }
+        let homeTrash = fileManager.homeDirectoryForCurrentUser
+            .appendingPathComponent(".Trash")
+            .standardizedFileURL.path
+        if parent == homeTrash { return true }
+        let uid = String(getuid())
+        let parts = url.standardizedFileURL.pathComponents
+        guard parts.count >= 6, parts.dropFirst().first == "Volumes" else { return false }
+        return parts[parts.count - 3] == ".Trashes" && parts[parts.count - 2] == uid
+    }
+
     nonisolated public func ensureAccess() async throws {
         let fileManager = FileManager.default
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = trashDirectoryURL
         
         if hasAccess() { return }
         if loadBookmark() { return }
@@ -213,7 +285,7 @@ public actor TrashManager {
     
     nonisolated private func hasAccess() -> Bool {
         let fileManager = FileManager.default
-        let trashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = trashDirectoryURL
         return (try? fileManager.contentsOfDirectory(atPath: trashURL.path)) != nil
     }
     

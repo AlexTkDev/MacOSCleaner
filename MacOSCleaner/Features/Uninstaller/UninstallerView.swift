@@ -31,6 +31,7 @@ enum UninstallerTab: String, CaseIterable, Identifiable {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    var scanLimited: Bool = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
     @State private var selectedTab: UninstallerTab = .applications
@@ -75,6 +76,14 @@ struct UninstallerView: View {
     var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                if scanLimited {
+                    Label("scan_incomplete_without_fda".localized, systemImage: "exclamationmark.triangle")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                }
                 if selectedTab == .applications {
                     applicationsContentView
                 } else {
@@ -134,6 +143,9 @@ struct UninstallerView: View {
             )
         }
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Application")
+            }
             if allApps.isEmpty {
                 loadApps()
             }
@@ -169,8 +181,10 @@ struct UninstallerView: View {
         } message: {
             if let app = selectedApp {
                 let count = app.relatedFiles.filter(\.isSelected).count + app.developerComponents.filter(\.isSelected).count
+                let sizeToReclaim = settings.showRelatedFiles ? app.totalSize : app.size
+                let formattedSize = ByteCountFormatter.localizedString(fromByteCount: sizeToReclaim, countStyle: .file)
                 if settings.bypassTrashOnUninstall {
-                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)))
+                    Text(String(format: "uninstaller_uninstall_app_warning_perm".localized, app.name, Int64(count)) + " (\(formattedSize))")
                 } else {
                     Text(String(format: "uninstaller_uninstall_app_warning_trash".localized, app.name, Int64(count)))
                 }
@@ -197,8 +211,10 @@ struct UninstallerView: View {
         } message: {
             if let versionApp = versionToUninstall, let parentApp = selectedApp {
                 let count = versionApp.relatedFiles.filter(\.isSelected).count + versionApp.developerComponents.filter(\.isSelected).count
+                let sizeToReclaim = settings.showRelatedFiles ? versionApp.totalSize : versionApp.size
+                let formattedSize = ByteCountFormatter.localizedString(fromByteCount: sizeToReclaim, countStyle: .file)
                 if settings.bypassTrashOnUninstall {
-                    Text(String(format: "uninstaller_uninstall_version_warning_perm".localized, versionApp.version, parentApp.name, Int64(count)))
+                    Text(String(format: "uninstaller_uninstall_version_warning_perm".localized, versionApp.version, parentApp.name, Int64(count)) + " (\(formattedSize))")
                 } else {
                     Text(String(format: "uninstaller_uninstall_version_warning_trash".localized, versionApp.version, parentApp.name, Int64(count)))
                 }
@@ -262,7 +278,8 @@ struct UninstallerView: View {
                     }
                 }
                 .frame(width: max(250, geometry.size.width * 0.3)) // 30% width but min 250
-                .background(Color(NSColor.controlBackgroundColor).opacity(reduceTransparency ? 1.0 : 0.15))
+                .background(reduceTransparency ? Color(NSColor.controlBackgroundColor) : Color.clear)
+                .background(.ultraThinMaterial)
                 
                 Divider()
                 
@@ -848,8 +865,8 @@ struct UninstallerView: View {
                             }
                         )
                     ) {
-                        VStack(spacing: 1) {
-                            ForEach(files) { file in
+                        VStack(spacing: 0) {
+                            ForEach(Array(files.enumerated()), id: \.element.id) { index, file in
                                 RelatedFileRow(
                                     file: file,
                                     appName: app.name,
@@ -858,14 +875,22 @@ struct UninstallerView: View {
                                     versionBadge: versionBadgeText(for: file.url, in: app),
                                     onToggle: { toggleSelection(file, in: app) }
                                 )
+                                if index < files.count - 1 {
+                                    Divider()
+                                        .opacity(0.2)
+                                }
                             }
                         }
-                        .glassCard(cornerRadius: 10)
+                        .glassCard(cornerRadius: 12)
                     } label: {
-                        Label(tier.displayKey.localized, systemImage: tierIcon(tier))
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(tierColor(tier))
+                        HStack(spacing: 6) {
+                            Image(systemName: tierIcon(tier))
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(tier.displayKey.localized)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(tierColor(tier))
                     }
                 }
             }
@@ -904,11 +929,16 @@ struct UninstallerView: View {
     private func developerComponentsSection(_ app: UninstallerService.AppInfo) -> some View {
         let displayComps = displayedDeveloperComponents(for: app)
         return VStack(alignment: .leading, spacing: 6) {
-            Label("uninstaller_developer_components".localized, systemImage: "wrench.adjustable")
-                .font(.caption)
-                .fontWeight(.semibold)
+            HStack(spacing: 6) {
+                Image(systemName: "wrench.adjustable")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("uninstaller_developer_components".localized)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.primary)
 
-            VStack(spacing: 1) {
+            VStack(spacing: 0) {
                 ForEach(Array(displayComps.enumerated()), id: \.element.id) { index, component in
                     HStack {
                         Toggle("", isOn: Binding(
@@ -921,9 +951,9 @@ struct UninstallerView: View {
 
                         Image(systemName: "shippingbox")
                             .foregroundColor(.purple)
-                            .font(.caption)
+                            .font(.system(size: 13))
 
-                        VStack(alignment: .leading, spacing: 1) {
+                        VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 4) {
                                 Text(component.title)
                                     .font(.subheadline)
@@ -949,11 +979,17 @@ struct UninstallerView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .glassEffect(.regular.tint(.purple))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
+
+                    if index < displayComps.count - 1 {
+                        Divider()
+                            .opacity(0.2)
+                    }
                 }
             }
+            .glassCard(cornerRadius: 12)
 
             HStack {
                 Text("uninstaller_developer_components_description".localized)
@@ -1028,6 +1064,15 @@ struct AppRowView: View {
                             .foregroundStyle(Color.purple)
                             .background(Capsule().fill(Color.purple.opacity(0.15)))
                     }
+                    if app.isIntelOnly {
+                        Text("Intel")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .foregroundStyle(Color.orange)
+                            .background(Capsule().fill(Color.orange.opacity(0.15)))
+                    }
                 }
                 if isUninstalling {
                     Text("uninstaller_uninstalling".localized)
@@ -1078,6 +1123,7 @@ struct RelatedFileRow: View {
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
 
@@ -1137,20 +1183,13 @@ struct RelatedFileRow: View {
 
                 Spacer()
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
 
                 Button {
@@ -1175,6 +1214,10 @@ struct RelatedFileRow: View {
                             .foregroundColor(.purple)
                             .font(.caption)
                         
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
+                        
                         if isGenerating {
                             HStack(spacing: 8) {
                                 ProgressView().controlSize(.small)
@@ -1198,9 +1241,9 @@ struct RelatedFileRow: View {
                 .padding(.bottom, 4)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .contentShape(Rectangle())
     }
 
     private func generateAIExplanation() {
@@ -1208,14 +1251,13 @@ struct RelatedFileRow: View {
         errorMessage = nil
         
         let lang = settings.language
+        let evidenceStrings = file.evidence.map { evidence -> String in
+            let explanation = EvidenceExplanations.explanation(for: evidence, args: appName)
+            return "\(explanation.title): \(explanation.description)"
+        }
         Task {
             do {
-                let evidenceStrings = file.evidence.map { evidence -> String in
-                    let explanation = EvidenceExplanations.explanation(for: evidence, args: appName)
-                    return "\(explanation.title): \(explanation.description)"
-                }
-                
-                let result = try await AIExplanationService.shared.explainRelation(
+                let stream = try await AIExplanationService.shared.explainRelationStream(
                     appName: appName,
                     filePath: file.url.path,
                     evidence: evidenceStrings,
@@ -1224,7 +1266,24 @@ struct RelatedFileRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = evidenceStrings.first ?? file.url.lastPathComponent
                     self.isGenerating = false
                 }
             } catch {
@@ -1291,6 +1350,8 @@ struct SharedBadgeView: View {
             return "uninstaller.shared_help.android".localized
         } else if path.contains("developer") || path.contains("coresimulator") {
             return "uninstaller.shared_help.apple_developer".localized
+        } else if path.contains(".config/") || path.contains(".cache/") || path.contains(".local/share/") {
+            return "uninstaller.shared_help.cli_config".localized
         } else {
             return "uninstaller.shared_component.help".localized
         }
@@ -1330,21 +1391,23 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                             .minimumScaleFactor(0.6)
                             .fixedSize(horizontal: false, vertical: true)
                         
-                        if settings.enableAI && AIExplanationService.shared.isAvailable {
-                            Button {
-                                withAnimation(.spring()) {
-                                    isExpanded.toggle()
-                                }
-                                if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                                    generateAIExplanation()
-                                }
-                            } label: {
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(isExpanded ? .purple : .secondary)
-                                    .font(.title3)
+                        if app.isIntelOnly {
+                            Text("Intel (Rosetta 2)")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .foregroundStyle(Color.orange)
+                                .background(Capsule().fill(Color.orange.opacity(0.15)))
+                        }
+                        
+                        AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                            withAnimation(.spring()) {
+                                isExpanded.toggle()
                             }
-                            .buttonStyle(.plain)
-                            .help("uninstaller_explain_with_ai".localized)
+                            if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                                generateAIExplanation()
+                            }
                         }
                     }
                     
@@ -1405,7 +1468,7 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
         
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainApp(
+                let stream = try await AIExplanationService.shared.explainAppStream(
                     appName: app.name,
                     bundleID: app.bundleID ?? "Unknown",
                     sizeFormatted: sizeString,
@@ -1413,7 +1476,15 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
                     self.isGenerating = false
                 }
             } catch {

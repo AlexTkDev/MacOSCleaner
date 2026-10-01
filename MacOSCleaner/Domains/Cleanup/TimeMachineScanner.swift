@@ -13,7 +13,9 @@ public actor TimeMachineScanner {
     
     /// Queries tmutil to list local snapshots and estimates their size.
     public static func listLocalSnapshots() async -> [Snapshot] {
-        return await Task.detached {
+        guard !Task.isCancelled else { return [] }
+        let runnerTask = Task.detached {
+            guard !Task.isCancelled else { return [Snapshot]() }
             let task = Process()
             task.launchPath = "/usr/bin/tmutil"
             task.arguments = ["listlocalsnapshots", "/"]
@@ -26,6 +28,7 @@ public actor TimeMachineScanner {
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 task.waitUntilExit()
                 
+                guard !Task.isCancelled else { return [Snapshot]() }
                 guard let output = String(data: data, encoding: .utf8) else {
                     return []
                 }
@@ -51,7 +54,13 @@ public actor TimeMachineScanner {
                 Logger.tmScanner.error("Failed to run tmutil listlocalsnapshots: \(error.localizedDescription, privacy: .public)")
                 return []
             }
-        }.value
+        }
+
+        return await withTaskCancellationHandler {
+            await runnerTask.value
+        } onCancel: {
+            runnerTask.cancel()
+        }
     }
     
     /// Retrieves total purgeable space on the root volume.

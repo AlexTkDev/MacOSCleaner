@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "Speicherplatz-Status abrufen";
 "settings_cmd_clean_category" = "Bestimmte Kategorie bereinigen (Caches, Logs usw.)";
 "settings_cmd_scheduled_cleanup" = "Geplante Bereinigung ausführen (Automator)";
+"settings_cmd_empty_trash" = "Papierkorb entleeren";
 "siri_phrase_developer_caches" = "Entwicklercaches bereinigen";
 "siri_phrase_storage_status" = "Wie viel freier Speicher";
 "siri_phrase_clean_category" = "Systemcaches bereinigen";
 "siri_phrase_scheduled_cleanup" = "Geplante Bereinigung starten";
+"siri_phrase_empty_trash" = "Papierkorb leeren";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "Befehl hinzufügen";
@@ -92,6 +94,10 @@
 "duplicate_trash_confirm_message" = "Möchten Sie %ld ausgewählte Duplikate (%@) wirklich in den Papierkorb verschieben?";
 "duplicate_trash_completed" = "%ld Dateien (%@) erfolgreich in den Papierkorb verschoben";
 "duplicate_trash_failed" = "Fehler beim Verschieben in den Papierkorb: %@";
+"duplicate_badge_original" = "Original";
+"duplicate_badge_duplicate" = "Duplikat";
+"duplicate_copies_count" = "%ld Kopien";
+"duplicate_no_selection" = "Duplikatgruppe auswählen";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "Speicherplatz-Analyse";
@@ -173,6 +179,10 @@
 "language.chinese_simplified" = "Chinesisch (Vereinfacht)";
 "language.italian" = "Italienisch";
 "language.portuguese_brazil" = "Portugiesisch (Brasilien)";
+"language.arabic" = "Arabisch";
+"language.chinese_traditional" = "Chinesisch (Traditionell)";
+"language.korean" = "Koreanisch";
+"language.polish" = "Polnisch";
 
 /* Settings View */
 "menu_settings" = "Einstellungen";
@@ -209,8 +219,8 @@
 "scan_mode.safe" = "Sicher";
 "scan_mode.balanced" = "Ausgewogen";
 "scan_mode.balanced.default" = "Standard";
-"scan_mode.safe.desc" = "Findet nur eindeutige Dateien (Bundle ID, Name). Minimales Risiko.";
-"scan_mode.balanced.desc" = "Vollständiger Scan inklusive Spotlight (mdfind). Empfohlen für gründliche Reinigung.";
+"scan_mode.safe.desc" = "Findet nur Dateien mit hoher Übereinstimmung: nach Bundle-ID, App-Name oder Paketbelegen. Verwendet kein Spotlight. Minimales Risiko, freigegebene Dateien zu entfernen.";
+"scan_mode.balanced.desc" = "Vollständiger Scan inklusive Spotlight (mdfind), erweiterter Pfade und aller möglichen Treffer. Findet mehr Reste, auch an ungewöhnlichen Orten. Empfohlen für gründliche Bereinigung.";
 
 /* Update Checker */
 "update.check" = "Nach Updates suchen";
@@ -237,16 +247,16 @@
 "settings_notifications_denied" = "Abgelehnt (in Systemeinstellungen öffnen)";
 "settings_notifications_not_determined" = "Nicht angefordert";
 "settings_open_notification_settings" = "Mitteilungseinstellungen öffnen";
-"settings_tooltip_theme" = "Wählen Sie das Erscheinungsbild der Anwendung.";
+"settings_tooltip_theme" = "Wählen Sie das Erscheinungsbild der Anwendung. „System“ folgt den macOS-Einstellungen.";
 "settings_tooltip_notifications" = "Systembenachrichtigungen nach Scans und Bereinigungen anzeigen.";
 "settings_tooltip_tooltips" = "Hilfreiche Beschreibungen beim Bewegen der Maus über Elemente anzeigen.";
 "settings_tooltip_auto_scan" = "Beim Start der App automatisch nach Bereinigungsobjekten suchen.";
-"settings_tooltip_refresh_interval" = "Intervall zur Aktualisierung der Prozessliste.";
+"settings_tooltip_refresh_interval" = "Wie oft die Prozessliste aktualisiert wird. „Manuell“ schaltet die automatische Aktualisierung aus.";
 "settings_tooltip_sort_by" = "Standard-Sortierung für die Prozessliste.";
-"settings_tooltip_empty_trash" = "Leert den Papierkorb während der Bereinigung.";
-"settings_tooltip_bypass_trash" = "Dateien bei der Deinstallation dauerhaft löschen.";
-"settings_tooltip_show_related" = "Liste der zugehörigen Dateien im Deinstallationsprogramm anzeigen.";
-"settings_tooltip_empty_trash_immediately" = "Papierkorb nach dem Verschieben von Objekten sofort leeren.";
+"settings_tooltip_empty_trash" = "Wenn aktiviert, wird der System-Papierkorb während der Bereinigung geleert. Aus Sicherheitsgründen standardmäßig deaktiviert.";
+"settings_tooltip_bypass_trash" = "Beim Deinstallieren einer App und ihrer Dateien werden diese dauerhaft gelöscht statt in den Papierkorb verschoben. ACHTUNG: Die Deinstallation ist dann unwiderruflich.";
+"settings_tooltip_show_related" = "Zeigt im Deinstallationsprogramm die zugehörigen Dateien (Caches, Einstellungen, Protokolle) jeder App.";
+"settings_tooltip_empty_trash_immediately" = "Nach dem Verschieben in den Papierkorb wird dieser sofort geleert. Die Bereinigung ist dann unwiderruflich.";
 "settings_tooltip_skip_expert" = "Dateiauswahl überspringen und Anwendung sofort vollständig deinstallieren.";
 "settings_tooltip_forget" = "Alle Einstellungen löschen und Werkszustand wiederherstellen.";
 
@@ -254,7 +264,7 @@
 "settings_reset_confirm_title" = "Alle Einstellungen zurücksetzen?";
 "settings_reset_confirm_button" = "Alles zurücksetzen";
 "settings_reset_confirm_message" = "Dies löscht alle gespeicherten Daten. Diese Aktion kann nicht rückgängig gemacht werden.";
-"settings_trash_warning" = "Diese Einstellungen machen das Löschen unwiderruflich.";
+"settings_trash_warning" = "Diese Einstellungen machen das Löschen unwiderruflich. Dateien, die den Papierkorb umgehen oder sofort daraus entfernt werden, lassen sich nicht wiederherstellen.";
 
 /* Startup Services View */
 "menu_startup_services" = "Autostart-Dienste";
@@ -264,6 +274,7 @@
 "startup_scanning" = "Dienste werden gescannt...";
 "startup_no_agents" = "Keine Autostart-Dienste";
 "startup_no_agents_sub" = "Keine Dienste in ~/Library/LaunchAgents gefunden.";
+"startup_category_empty" = "Keine Dienste in dieser Kategorie";
 "startup_scan_failed" = "Scan fehlgeschlagen";
 "startup_status_loaded" = "Geladen";
 "startup_status_unloaded" = "Nicht geladen";
@@ -301,25 +312,36 @@
 "cleanup_cleaning" = "Bereinigung läuft...";
 "cleanup_ready" = "Bereit zur Bereinigung";
 "cleanup_ready_sub" = "Scannen Sie Ihr System nach sicheren temporären Dateien.";
+"cleanup_base_section_title" = "STANDARD-BEREINIGUNG (STANDARD)";
+"cleanup_base_system_cache" = "Systemcache";
+"cleanup_base_app_logs" = "App-Protokolle";
+"cleanup_base_browser_cache" = "Browser-Cache";
+"cleanup_base_trash" = "Papierkorb (wenn in Einstellungen aktiviert)";
+"cleanup_badge_password" = "Passwort";
 "cleanup_additional_options" = "Zusätzliche Bereinigungsoptionen";
 "cleanup_option_ds_store" = ".DS_Store Dateien löschen";
 "cleanup_option_ds_store_sub" = "Entfernt vom System erstellte Metadaten-Dateien.";
 "cleanup_option_maven" = "Maven Repository bereinigen (~/.m2/repository)";
-"cleanup_option_maven_sub" = "Entfernt heruntergeladene Maven-Abhängigkeiten.";
+"cleanup_option_maven_sub" = "Entfernt heruntergeladene Maven-Abhängigkeiten. Sie werden beim nächsten Build erneut geladen.";
 "cleanup_option_modcache" = "Go Modul-Cache bereinigen (GOMODCACHE)";
-"cleanup_option_modcache_sub" = "Entfernt heruntergeladene Go-Module.";
+"cleanup_option_modcache_sub" = "Entfernt heruntergeladene Go-Module. Sie werden beim nächsten Build erneut geladen.";
 "cleanup_option_projects" = ".dart_tool in Projekten bereinigen";
-"cleanup_option_projects_sub" = "Entfernt Flutter/Dart Projekt-Caches.";
+"cleanup_option_projects_sub" = "Entfernt Flutter/Dart-Projektcaches in ~/Documents, ~/Projects, ~/Developer, ~/dev, ~/code, ~/repos.";
 "cleanup_option_cloud_docs" = "iCloud-Dokumente bereinigen";
-"cleanup_option_cloud_docs_sub" = "Entfernt lokalen iCloud-Cache.";
+"cleanup_option_cloud_docs_sub" = "Entfernt den iCloud-Dokumentcache. Dokumente werden bei Bedarf erneut aus iCloud geladen.";
 "cleanup_option_voice_memos" = "Sprachmemos bereinigen";
 "cleanup_option_voice_memos_sub" = "Entfernt Sprachmemo-Aufnahmen.";
 "cleanup_option_garageband_logic" = "GarageBand / Logic bereinigen";
-"cleanup_option_garageband_logic_sub" = "Entfernt Projektdateien und Caches von GarageBand/Logic Pro.";
+"cleanup_option_garageband_logic_sub" = "Entfernt Caches von GarageBand und Logic Pro. Projekte in Musik bleiben erhalten.";
 "cleanup_option_imovie_final_cut" = "iMovie / Final Cut bereinigen";
-"cleanup_option_imovie_final_cut_sub" = "Entfernt Renderdateien und Mediatheken von iMovie/Final Cut Pro.";
+"cleanup_option_imovie_final_cut_sub" = "Entfernt Caches von iMovie und Final Cut Pro. Mediatheken in Filme bleiben erhalten.";
 "cleanup_option_sleep_image" = "Sleep-Image bereinigen";
-"cleanup_option_sleep_image_sub" = "Entfernt die Ruhezustandsdatei.";
+"cleanup_option_sleep_image_sub" = "Entfernt die Ruhezustandsdatei. macOS erstellt sie beim nächsten Ruhezustand neu.";
+"cleanup_option_font_cache" = "Schriftarten-Cache bereinigen";
+"cleanup_option_font_cache_sub" = "Löscht Schriftarten-Datenbanken (atsutil). Ein Neustart ist erforderlich.";
+"cleanup_font_cache_confirm_title" = "Schriftarten-Cache bereinigen?";
+"cleanup_font_cache_confirm_message" = "Das Löschen des Schriftarten-Caches kann die Textdarstellung in geöffneten Anwendungen bis zum Neustart beeinträchtigen.";
+"cleanup_font_cache_confirm_action" = "Bereinigen (Neustart nötig)";
 "cleanup_extended_title" = "Erweiterte Bereinigung";
 "cleanup_start_scan" = "Scan starten";
 "cleanup_failed" = "Bereinigung fehlgeschlagen";
@@ -329,6 +351,7 @@
 "cleanup_complete_sub" = "%@ Speicherplatz erfolgreich freigegeben.";
 "cleanup_summary" = "Zusammenfassung der gelöschten Objekte";
 "cleanup_skipped" = "Konnte nicht bereinigt werden";
+"cleanup_partial_reason" = "%lld bereinigt, %lld konnten nicht entfernt werden";
 "cleanup_selected" = "Ausgewählt: %@";
 "cleanup_hide_logs" = "Protokolle ausblenden";
 "cleanup_show_logs" = "Protokolle anzeigen";
@@ -351,8 +374,8 @@
 "cleanup_complete_body" = "%@ erfolgreich freigegeben.";
 
 "trash_user_label" = "Benutzer-Papierkorb";
-"trash_user_description" = "Inhalt Ihres System-Papierkorbs.";
-"trash_access_prompt_message" = "Bitte wählen Sie den Papierkorb-Ordner aus, um Zugriff zu gewähren.";
+"trash_user_description" = "Inhalt des System-Papierkorbs. Enthält gelöschte Dateien.";
+"trash_access_prompt_message" = "Bitte wählen Sie den Papierkorb-Ordner, um Zugriff zum Scannen und Bereinigen zu gewähren. (Er ist bereits ausgewählt, klicken Sie nur auf „Zugriff gewähren“)";
 "trash_access_prompt_button" = "Zugriff gewähren";
 
 /* Uninstaller View */
@@ -422,6 +445,7 @@
 "uninstaller_evidence_card_title" = "Nachweise & Vertrauen";
 "uninstaller_evidence_why_flagged" = "Warum wurde diese Datei erkannt?";
 "uninstaller_leftovers_cleaned_notification" = "%lld Restdatei(en) bereinigt (%@ freigegeben)";
+"orphaned_cleanup_failed_count" = "%lld Restdatei(en) konnten nicht entfernt werden.";
 "uninstaller_show_in_finder" = "Im Finder anzeigen";
 
 /* Processes View */
@@ -444,8 +468,8 @@
 "processes_scan_failed" = "Scan fehlgeschlagen";
 "processes_manage_blacklist" = "Blacklist verwalten";
 "processes_manage_whitelist" = "Whitelist verwalten";
-"processes_tooltip_blacklist" = "Prozesse, die Sie immer beenden können.";
-"processes_tooltip_whitelist" = "Geschützte Prozesse, die nie beendet werden dürfen.";
+"processes_tooltip_blacklist" = "Prozesse, die Sie immer beenden können — fügen Sie hier ressourcenintensive Apps wie Docker oder OrbStack hinzu";
+"processes_tooltip_whitelist" = "Prozesse, die nie beendet werden dürfen — schützen Sie wichtige Apps vor versehentlichem Beenden";
 "processes_tooltip_refresh" = "Prozessliste aktualisieren";
 "processes_section_user" = "Ihre Prozesse";
 "processes_section_system" = "Systemprozesse";
@@ -471,7 +495,7 @@
 "permissions_dismiss_temp" = "Später erinnern";
 "permissions_dismiss_permanent" = "Nicht mehr anzeigen";
 "permissions_warning_title" = "Sind Sie sicher?";
-"permissions_warning_message" = "Ohne vollständigen Festplattenzugriff können viele Dateien nicht gefunden werden.";
+"permissions_warning_message" = "Ohne vollständigen Festplattenzugriff kann die App viele unnötige Dateien nicht finden und bereinigen. Die Qualität der Bereinigung sinkt deutlich.";
 "permissions_warning_confirm" = "Niemals erlauben";
 "permissions_status_granted" = "Gewährt";
 "permissions_status_required" = "Erforderlich";
@@ -646,6 +670,7 @@
 "uninstaller.shared_help.jetbrains" = "Freigegebene Komponente der JetBrains-IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion)";
 "uninstaller.shared_help.android" = "Freigegebene Android-Entwicklungsdaten (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "Freigegebene Apple-Entwickler-Tools (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "Gemeinsame Konfiguration und Daten für Befehlszeilen-Tools";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -680,6 +705,14 @@
 "settings_ai_status_unsupported_device" = "Gerät nicht unterstützt";
 "settings_ai_status_not_enabled" = "In Systemeinstellungen nicht aktiviert";
 "settings_ai_status_downloading" = "Modell-Ressourcen werden heruntergeladen...";
+"settings_ai_status_preparing" = "Modell wird vorbereitet...";
+"settings_ai_status_unsupported_language" = "Sprache nicht unterstützt";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence unterstützt die aktuelle Systemsprache derzeit nicht. Eine unterstützte Sprache (z. B. Englisch) ist in den Systemeinstellungen erforderlich.";
+"settings_ai_hint_preparing" = "macOS initialisiert das Modell im Hintergrund. Schließen Sie den Mac an den Strom an und prüfen Sie den Status in den Systemeinstellungen.";
+"settings_ai_hint_not_enabled" = "Apple Intelligence ist deaktiviert. Aktivieren Sie es in den macOS-Systemeinstellungen.";
+"settings_ai_hint_unsupported_device" = "Dieser Mac unterstützt Apple Intelligence nicht. Ein Apple Silicon M1 Chip oder neuer ist erforderlich.";
+"settings_ai_open_system_settings" = "Systemeinstellungen öffnen…";
+"settings_ai_refresh_status" = "Status aktualisieren";
 "settings_ai_status_unavailable" = "Nicht verfügbar";
 
 "uninstaller_explain_with_ai" = "Mit KI erklären";
@@ -736,6 +769,11 @@
 "settings_spotlight_reindex_button" = "Neu aufbauen";
 "settings_spotlight_reindexing" = "Wird neu aufgebaut...";
 "settings_spotlight_reindex_success" = "Spotlight-Neuindizierung gestartet";
+"settings_spctl_purge_title" = "Gatekeeper-Cache leeren";
+"settings_spctl_purge_sub" = "Löscht den Gatekeeper-Prüfcache zur Behebung von Startfehlern und veralteten Signaturen (spctl --purge)";
+"settings_spctl_purge_button" = "Cache leeren";
+"settings_spctl_purging" = "Wird geleert...";
+"settings_spctl_purge_success" = "Gatekeeper-Cache geleert";
 "settings_software_updates" = "Softwareaktualisierungen";
 "settings_software_updates_sub" = "Versionsprüfung";
 "settings_current_version" = "Aktuelle Version";
@@ -744,7 +782,7 @@
 "settings_permissions_overall" = "Gesamter Berechtigungsstatus";
 "settings_permissions_overall_sub" = "Erforderlich zum Scannen von Caches";
 "settings_fda_title" = "Vollständiger Festplattenzugriff (FDA)";
-"settings_fda_body" = "Ermöglicht das sichere Finden verwaister Dateien und Caches.";
+"settings_fda_body" = "Der vollständige Festplattenzugriff erlaubt MacOSCleaner, verwaiste Systemdateien, Xcode-DerivedData und App-Protokolle sicher zu finden.";
 "settings_open_privacy_settings" = "Datenschutzeinstellungen öffnen";
 "settings_check_status" = "Status prüfen";
 "settings_permission_guide" = "Anleitung";
@@ -841,7 +879,7 @@
 "settings_privacy_item_7_title" = "Optionale dauerhafte Löschung";
 "settings_privacy_item_7_desc" = "Dauerhaftes Löschen ist optional und deutlich gekennzeichnet.";
 "settings_privacy_item_8_title" = "Sicheres Schließen von Apps";
-"settings_privacy_item_8_desc" = "Apps werden vor der Bereinigung geordnet geschlossen.";
+"settings_privacy_item_8_desc" = "Apps werden vor der Bereinigung geschlossen (geordnet beenden, nach 3 s erzwungen).";
 "settings_privacy_item_9_title" = "Vollständiger Festplattenzugriff";
 "settings_privacy_item_9_desc" = "Wird beim Start für vollständiges Scannen angefordert.";
 "settings_about_privacy_policy_sub" = "100% lokal, null Telemetrie-Garantie";
@@ -925,3 +963,28 @@
 "uninstaller.evidence.parentDirectory.description" = "In einem zugehörigen Ordner gefunden.";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "In der Launch Services Datenbank registriert.";
+
+"dashboard_view_all_history" = "Gesamten Verlauf anzeigen";
+"history_window_title" = "Bereinigungsverlauf";
+"history_search_placeholder" = "Suchen";
+"history_sort_date" = "Datum";
+"history_sort_size" = "Größe";
+"history_trigger_manual" = "Manuell";
+"history_trigger_automatic" = "Automatisch";
+"history_empty_state" = "Bislang wurden keine Bereinigungen durchgeführt";
+"history_category_general" = "Allgemein";
+"history_category_media" = "Medien";
+"history_category_caches" = "Caches";
+"history_category_dev" = "Entwicklung";
+"category.cloudkit_cache" = "iCloud CloudKit Cache";
+"category.swiftpm_cache" = "Swift Package Manager Cache";
+"select" = "Auswählen";
+"dashboard_history_empty_hint" = "Führen Sie eine Systembereinigung durch, damit hier der Bereinigungsverlauf angezeigt wird";
+"dashboard_start_cleanup" = "Bereinigung starten";
+
+"startup_show_in_finder" = "Im Finder anzeigen";
+"startup_delete_service" = "Dienst löschen";
+"startup_delete_confirm_title" = "Autostart-Dienst löschen?";
+"startup_delete_confirm_message" = "Möchten Sie „%@“ wirklich löschen?\nDatei: %@\nDer Dienst wird beendet und die plist-Datei in den Papierkorb verschoben.";
+"startup_delete_action" = "In den Papierkorb legen";
+"scan_incomplete_without_fda" = "Ohne vollen Festplattenzugriff fehlen einige geschützte Ordner in diesen Ergebnissen.";

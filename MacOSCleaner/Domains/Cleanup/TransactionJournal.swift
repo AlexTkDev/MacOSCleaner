@@ -18,7 +18,7 @@ public actor TransactionJournal {
             self.journalURL = url
             self.archiveDirectoryURL = url.deletingLastPathComponent().appendingPathComponent("archives", isDirectory: true)
         } else {
-            let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
             let journalDir = appSupport.appendingPathComponent("MacOSCleaner", isDirectory: true)
             try? FileManager.default.createDirectory(at: journalDir, withIntermediateDirectories: true)
             self.journalURL = journalDir.appendingPathComponent("transactions.jsonl")

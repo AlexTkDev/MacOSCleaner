@@ -112,7 +112,7 @@ struct SettingsGeneralView: View {
             content: {
                 SettingsLabeledControl(
                     "settings_current_version".localized,
-                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.2.0")"
+                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.3.0")"
                 ) {
                     if isCheckingForUpdates {
                         ProgressView().controlSize(.small)
@@ -120,9 +120,7 @@ struct SettingsGeneralView: View {
                         Button(String(format: "update.available".localized, update.version)) {
                             UpdatePromptController.open(update)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(.orange)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: .orange)
                     } else {
                         Button(hasCheckedForUpdates ? "update.up_to_date".localized : "update.check".localized) {
                             Task {
@@ -132,9 +130,7 @@ struct SettingsGeneralView: View {
                                 isCheckingForUpdates = false
                             }
                         }
-                        .buttonStyle(.bordered)
-                        .tint(hasCheckedForUpdates ? .green : .accentColor)
-                        .controlSize(.small)
+                        .prominentGlassButtonStyle(tint: hasCheckedForUpdates ? .green : .accentColor)
                     }
                 }
             }
@@ -175,7 +171,9 @@ struct SettingsGeneralView: View {
                     ) {
                         StatusPill(
                             permissionsManager.hasFullDiskAccess ? "status_granted".localized : "status_required".localized,
-                            style: permissionsManager.hasFullDiskAccess ? .success : .error
+                            iconName: permissionsManager.hasFullDiskAccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
+                            style: permissionsManager.hasFullDiskAccess ? .success : .error,
+                            size: .small
                         )
                     }
 
@@ -197,20 +195,17 @@ struct SettingsGeneralView: View {
         Button("settings_open_privacy_settings".localized) {
             permissionsManager.openFullDiskAccessSettings()
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.small)
+        .prominentGlassButtonStyle(tint: .accentColor)
 
         Button("settings_check_status".localized) {
             permissionsManager.refresh()
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .secondaryGlassButtonStyle()
 
         Button("settings_permission_guide".localized) {
             showInstructionSheet = true
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .secondaryGlassButtonStyle()
     }
 
     private var notificationsCard: some View {
@@ -255,8 +250,7 @@ struct SettingsGeneralView: View {
                                 Button("settings_open_settings".localized) {
                                     NotificationManager.shared.openNotificationSettings()
                                 }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .secondaryGlassButtonStyle()
                                 .fixedSize()
                                 .layoutPriority(1)
                             }
@@ -267,8 +261,7 @@ struct SettingsGeneralView: View {
                                 Button("settings_open_settings".localized) {
                                     NotificationManager.shared.openNotificationSettings()
                                 }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .secondaryGlassButtonStyle()
                             }
                         }
                     }
@@ -323,8 +316,7 @@ struct SettingsGeneralView: View {
                                                 systemImage: touchIDCommandCopied ? "checkmark" : "doc.on.doc"
                                             )
                                         }
-                                        .buttonStyle(.bordered)
-                                        .controlSize(.small)
+                                        .secondaryGlassButtonStyle()
 
                                         Button {
                                             maintenanceService.refreshTouchIDStatus()
@@ -334,8 +326,7 @@ struct SettingsGeneralView: View {
                                                 systemImage: "arrow.clockwise"
                                             )
                                         }
-                                        .buttonStyle(.bordered)
-                                        .controlSize(.small)
+                                        .secondaryGlassButtonStyle()
                                     }
                                 }
                             }
@@ -375,9 +366,40 @@ struct SettingsGeneralView: View {
                                 }
                                 .frame(minWidth: 140)
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.regular)
+                            .prominentGlassButtonStyle(tint: .accentColor)
                             .disabled(maintenanceService.isReindexingSpotlight)
+                        }
+                    }
+
+                    SettingsDivider()
+
+                    // Gatekeeper Assessment Cache Purge
+                    SettingsLabeledControl(
+                        "settings_spctl_purge_title".localized,
+                        subtitle: "settings_spctl_purge_sub".localized
+                    ) {
+                        HStack(spacing: 8) {
+                            if let status = maintenanceService.assessmentCacheStatusMessage {
+                                Text(status)
+                                    .font(.caption)
+                                    .foregroundStyle(.green)
+                            }
+                            Button {
+                                purgeAssessmentCache()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    if maintenanceService.isPurgingAssessmentCache {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+                                    Text(maintenanceService.isPurgingAssessmentCache
+                                         ? "settings_spctl_purging".localized
+                                         : "settings_spctl_purge_button".localized)
+                                }
+                                .frame(minWidth: 140)
+                            }
+                            .prominentGlassButtonStyle(tint: .accentColor)
+                            .disabled(maintenanceService.isPurgingAssessmentCache)
                         }
                     }
                 }
@@ -396,6 +418,17 @@ struct SettingsGeneralView: View {
         Task {
             do {
                 try await maintenanceService.rebuildSpotlightIndex()
+            } catch {
+                maintenanceAlertMessage = error.localizedDescription
+                showMaintenanceAlert = true
+            }
+        }
+    }
+
+    private func purgeAssessmentCache() {
+        Task {
+            do {
+                try await maintenanceService.purgeAssessmentCache()
             } catch {
                 maintenanceAlertMessage = error.localizedDescription
                 showMaintenanceAlert = true

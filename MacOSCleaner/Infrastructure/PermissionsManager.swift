@@ -33,60 +33,80 @@ public final class PermissionsManager {
 
     private let userDefaultsKey = "com.macoscleaner.guidanceDismissed"
     private let fdaGrantedKey = "com.macoscleaner.fdaGranted"
+    private let userDefaults: UserDefaults
+    private let fdaCheckClosure: @Sendable () -> Bool
 
-    public init() {
-        self.guidanceDismissed = UserDefaults.standard.bool(forKey: userDefaultsKey)
-        self.fdaEverGranted = UserDefaults.standard.bool(forKey: fdaGrantedKey)
-        self.hasFullDiskAccess = Self.checkFullDiskAccess()
+    public init(userDefaults: UserDefaults = .standard, fdaCheck: (@Sendable () -> Bool)? = nil) {
+        self.userDefaults = userDefaults
+        let check = fdaCheck ?? { Self.checkFullDiskAccess() }
+        self.fdaCheckClosure = check
+        self.guidanceDismissed = userDefaults.bool(forKey: userDefaultsKey)
+        self.fdaEverGranted = userDefaults.bool(forKey: fdaGrantedKey)
+
+        let liveFDA = check()
+        self.hasFullDiskAccess = liveFDA
         self.hasAccessibility = Self.checkAccessibility()
         self.hasAutomation = Self.checkAutomation()
         self.hasTrashAccess = Self.checkTrashAccess()
-        persistFDAState()
+        if liveFDA {
+            persistFDAState()
+        }
     }
     
     /// Checks if the application has Full Disk Access by attempting to read protected paths.
     public static func checkFullDiskAccess() -> Bool {
         let fm = FileManager.default
-        
-        // Directories with restricted permissions — listing contents requires FDA
-        let protectedPaths = [
-            "/Library/Application Support/com.apple.TCC",
-            "/private/var/db/dslocal",
+
+        let timeMachine = "/Library/Preferences/com.apple.TimeMachine.plist"
+        if fm.fileExists(atPath: timeMachine), let handle = FileHandle(forReadingAtPath: timeMachine) {
+            try? handle.close()
+            Logger.permissions.info("Full Disk Access check passed via Time Machine preferences")
+            return true
+        }
+
+        // 1. Check system TCC.db (POSIX 644 world-readable, guarded by macOS TCC)
+        let systemTCC = "/Library/Application Support/com.apple.TCC/TCC.db"
+        if fm.fileExists(atPath: systemTCC) {
+            if let handle = FileHandle(forReadingAtPath: systemTCC) {
+                try? handle.close()
+                Logger.permissions.info("Full Disk Access check passed via system TCC.db")
+                return true
+            }
+        }
+
+        // 2. Check user-level TCC protected directories (listing requires FDA)
+        let homeDir = fm.homeDirectoryForCurrentUser.path
+        let userTCCDirs = [
+            homeDir + "/Library/Suggestions",
+            homeDir + "/Library/Mail"
         ]
-        
-        var checked = false
-        for path in protectedPaths {
-            guard fm.fileExists(atPath: path) else { continue }
-            checked = true
+        for dir in userTCCDirs {
+            guard fm.fileExists(atPath: dir) else { continue }
             do {
-                _ = try fm.contentsOfDirectory(atPath: path)
+                _ = try fm.contentsOfDirectory(atPath: dir)
+                Logger.permissions.info("Full Disk Access check passed via directory: \(dir)")
+                return true
             } catch {
-                Logger.permissions.warning("FDA check failed at: \(path)")
-                return false
+                // Throws EPERM if FDA is not granted
             }
         }
-        
-        // Fallback for older macOS — try Keychains with attribute check
-        if !checked {
-            let keychains = "/Library/Keychains"
-            if fm.fileExists(atPath: keychains) {
-                do {
-                    // attributesOfItem requires read access to the item metadata,
-                    // which is a stronger check than listing parent directory
-                    _ = try fm.attributesOfItem(atPath: keychains)
-                    if let items = try? fm.contentsOfDirectory(atPath: keychains),
-                       let first = items.first {
-                        _ = try fm.attributesOfItem(atPath: keychains + "/" + first)
-                    }
-                } catch {
-                    Logger.permissions.warning("FDA check failed at: \(keychains)")
-                    return false
-                }
+
+        // 3. Check Safari protected files
+        let safariFiles = [
+            homeDir + "/Library/Safari/CloudTabs.db",
+            homeDir + "/Library/Safari/Bookmarks.plist"
+        ]
+        for file in safariFiles {
+            guard fm.fileExists(atPath: file) else { continue }
+            if let handle = FileHandle(forReadingAtPath: file) {
+                try? handle.close()
+                Logger.permissions.info("Full Disk Access check passed via Safari file: \(file)")
+                return true
             }
         }
-        
-        Logger.permissions.info("Full Disk Access check passed")
-        return true
+
+        Logger.permissions.warning("Full Disk Access check: not granted")
+        return false
     }
     
     /// Checks if the app has Accessibility (AX) access.
@@ -113,11 +133,14 @@ public final class PermissionsManager {
     
     /// Refreshes all permission statuses.
     public func refresh() {
-        hasFullDiskAccess = Self.checkFullDiskAccess()
+        let liveFDA = fdaCheckClosure()
+        hasFullDiskAccess = liveFDA
         hasAccessibility = Self.checkAccessibility()
         hasAutomation = Self.checkAutomation()
         hasTrashAccess = Self.checkTrashAccess()
-        persistFDAState()
+        if liveFDA {
+            persistFDAState()
+        }
 
         if hasFullDiskAccess && showGuidance {
             showGuidance = false
@@ -126,10 +149,9 @@ public final class PermissionsManager {
 
     /// Persists the Full Disk Access grant so the app remembers it across launches.
     private func persistFDAState() {
-        if hasFullDiskAccess {
-            fdaEverGranted = true
-            UserDefaults.standard.set(true, forKey: fdaGrantedKey)
-        }
+        fdaEverGranted = true
+        userDefaults.set(true, forKey: fdaGrantedKey)
+        Logger.permissions.info("Full Disk Access persisted as granted")
     }
     
     /// Returns true if all critical permissions are granted.
@@ -216,7 +238,9 @@ public final class PermissionsManager {
         }
     }
     
-    /// Shows the guidance panel to the user.
+    /// Shows the guidance panel to the user if access has not yet been granted.
+    /// Once permission is granted (or remembered), the prompt is one-time and not shown again.
+    /// If permission has not been obtained, continues asking on launch until granted.
     public func showGuidanceIfNeeded() {
         guard !guidanceDismissed else { return }
         guard !hasFullDiskAccess else { return }
@@ -227,11 +251,11 @@ public final class PermissionsManager {
     public func dismissGuidancePermanently() {
         guidanceDismissed = true
         showGuidance = false
-        UserDefaults.standard.set(true, forKey: userDefaultsKey)
+        userDefaults.set(true, forKey: userDefaultsKey)
         Logger.permissions.info("Guidance permanently dismissed by user")
     }
     
-    /// Temporarily dismisses the guidance (will show again next launch).
+    /// Temporarily dismisses the guidance (will show again next launch if permission not obtained).
     public func dismissGuidanceTemporarily() {
         showGuidance = false
     }
@@ -240,7 +264,9 @@ public final class PermissionsManager {
     /// for when the user changes their mind (e.g. from Settings).
     public func requestGuidanceAgain() {
         guidanceDismissed = false
-        UserDefaults.standard.set(false, forKey: userDefaultsKey)
+        userDefaults.set(false, forKey: userDefaultsKey)
+        fdaEverGranted = false
+        userDefaults.set(false, forKey: fdaGrantedKey)
         refresh()
         if !hasFullDiskAccess {
             showGuidance = true

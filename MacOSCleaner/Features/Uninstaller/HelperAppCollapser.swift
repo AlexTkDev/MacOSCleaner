@@ -105,7 +105,12 @@ public enum HelperAppCollapser {
         for parent in apps {
             guard let helpers = parent.identity?.helperNames, !helpers.isEmpty else { continue }
             let helperName = helper.name.lowercased()
-            if helpers.contains(where: { helperName.contains($0.lowercased()) || $0.lowercased().contains(helperName) }) {
+            if helpers.contains(where: { helperItem in
+                let hLower = helperItem.lowercased()
+                guard hLower.count >= 3, !genericFrameworkTokens.contains(hLower) else { return false }
+                if hLower == "gpu" || hLower == "net" || helperName == "gpu" || helperName == "net" { return false }
+                return helperName == hLower || EvidenceProbe.wordBoundaryMatch(helperName, hLower)
+            }) {
                 return parent
             }
         }

@@ -192,4 +192,25 @@ final class ConfidenceEngineTests: XCTestCase {
         let result = ConfidenceEngine.assess([.appNameExact, .vendorName], identity: identity)
         XCTAssertEqual(result.tier, .veryLikely)
     }
+
+    func test_score30Boost_narrowedToExactAndBundleIDPrefix() {
+        let identity = googleStudioIdentity()
+        // appNamePrefix alone with score 50 (in [30, 59]) should NOT be boosted to veryLikely
+        let prefixResult = ConfidenceEngine.assess([.appNamePrefix], identity: identity)
+        XCTAssertEqual(prefixResult.tier, .possible)
+
+        // executableName with score in [30, 59] should NOT be boosted to veryLikely
+        var weights = ScoringWeights.default
+        weights.executableName = 40
+        let execResult = ConfidenceEngine.assess([.executableName], identity: identity, weights: weights)
+        XCTAssertEqual(execResult.tier, .possible)
+
+        // appNameExact with score >= 30 IS boosted to veryLikely
+        let exactResult = ConfidenceEngine.assess([.appNameExact], identity: identity)
+        XCTAssertEqual(exactResult.tier, .veryLikely)
+
+        // bundleIDPrefix with score >= 30 IS boosted to veryLikely
+        let bundlePrefixResult = ConfidenceEngine.assess([.bundleIDPrefix], identity: identity)
+        XCTAssertEqual(bundlePrefixResult.tier, .veryLikely)
+    }
 }

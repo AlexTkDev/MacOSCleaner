@@ -251,12 +251,12 @@ public actor OrphanScanner {
                     return true
                 }
                 // Check if directory is a vendor suite folder matching app name
-                if cleanName.count >= 4 && (appName.hasPrefix(cleanName + " ") || appName.hasSuffix(" " + cleanName)) {
+                if cleanName.count >= 2 && (appName.hasPrefix(cleanName + " ") || appName.hasSuffix(" " + cleanName)) {
                     return true
                 }
-                let appTokens = appName.components(separatedBy: CharacterSet(charactersIn: " -_.")).filter { $0.count >= 4 }
+                let appTokens = appName.components(separatedBy: CharacterSet(charactersIn: " -_.")).filter { $0.count >= 2 }
                 for token in appTokens {
-                    if cleanName.contains(token) || filename.contains(token) {
+                    if EvidenceProbe.wordBoundaryMatch(cleanName, token) || EvidenceProbe.wordBoundaryMatch(filename, token) {
                         return true
                     }
                 }

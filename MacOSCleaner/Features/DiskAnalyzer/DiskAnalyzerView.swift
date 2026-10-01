@@ -28,6 +28,9 @@ public struct DiskAnalyzerView: View {
         .padding(16)
         .quickLookPreview($viewModel.quickLookURL)
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "File")
+            }
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
             }
@@ -41,10 +44,10 @@ public struct DiskAnalyzerView: View {
                 Button(action: { viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser) }) {
                     Label("duplicate_folder_home".localized, systemImage: "house")
                 }
-                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!) }) {
+                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")) }) {
                     Label("duplicate_folder_downloads".localized, systemImage: "arrow.down.circle")
                 }
-                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!) }) {
+                Button(action: { viewModel.startScan(for: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Documents")) }) {
                     Label("duplicate_folder_documents".localized, systemImage: "doc")
                 }
                 Divider()
@@ -58,6 +61,7 @@ public struct DiskAnalyzerView: View {
                         .lineLimit(1)
                 }
             }
+            .secondaryGlassButtonStyle()
 
             Spacer()
 
@@ -82,10 +86,13 @@ public struct DiskAnalyzerView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.primary.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+            )
 
             // Scan Action Button
             Button(action: { viewModel.selectFolderAndScan() }) {
@@ -94,7 +101,7 @@ public struct DiskAnalyzerView: View {
                     Text("disk_analyzer_scan".localized)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
     }
     
@@ -172,16 +179,14 @@ public struct DiskAnalyzerView: View {
                         .font(.caption.monospaced().weight(.semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(Color.accentColor.opacity(0.12))
+                        .glassEffect(Glass.regular.tint(.accentColor), in: Capsule())
                         .foregroundColor(.accentColor)
-                        .clipShape(Capsule())
                 }
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(Color.primary.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 10))
     }
     
     private var scanningView: some View {
@@ -263,8 +268,16 @@ public struct DiskAnalyzerView: View {
             .padding(4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
     }
 }
 
@@ -281,6 +294,7 @@ struct DiskItemRow: View {
     @State private var showingDeleteConfirmation = false
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
     
@@ -321,20 +335,13 @@ struct DiskItemRow: View {
                 
                 Spacer()
                 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
                 
                 Text(item.size.formattedByteCount())
@@ -409,6 +416,10 @@ struct DiskItemRow: View {
                             .foregroundColor(.purple)
                             .font(.caption)
                         
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
+                        
                         if isGenerating {
                             HStack(spacing: 8) {
                                 ProgressView().controlSize(.small)
@@ -441,7 +452,7 @@ struct DiskItemRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainDiskFile(
+                let stream = try await AIExplanationService.shared.explainDiskFileStream(
                     fileName: item.name,
                     filePath: item.url.path,
                     sizeFormatted: item.size.formattedByteCount(),
@@ -450,7 +461,23 @@ struct DiskItemRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = item.fileType.localizedName
                     self.isGenerating = false
                 }
             } catch {

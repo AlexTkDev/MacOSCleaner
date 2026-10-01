@@ -64,7 +64,18 @@ final class CleanupOptionsTests: XCTestCase {
         let options = CleanupOptions()
         let categories = options.categories()
 
-        XCTAssertEqual(categories.count, 39)
+        XCTAssertEqual(categories.count, 37)
+        XCTAssertFalse(categories.contains(.fontCache))
+    }
+
+    func testFontCacheOption() {
+        let defaultOptions = CleanupOptions()
+        XCTAssertFalse(defaultOptions.cleanFontCache)
+        XCTAssertFalse(defaultOptions.categories().contains(.fontCache))
+
+        let fontOptions = CleanupOptions(cleanFontCache: true)
+        XCTAssertTrue(fontOptions.cleanFontCache)
+        XCTAssertTrue(fontOptions.categories().contains(.fontCache))
     }
 
     func testDSStoreEnabledAddsScatteredJunk() {
@@ -89,6 +100,21 @@ final class CleanupOptionsTests: XCTestCase {
     func testProjectArtifactsEnabledAddsCategory() {
         let options = CleanupOptions(cleanProjectArtifacts: true)
         XCTAssertTrue(options.categories().contains(.projectBuildArtifacts))
+    }
+
+    func testScanCategoriesAreRunnablePlusReviewOnly() {
+        let options = CleanupOptions()
+        let scanned = options.scanCategories()
+        let expected = options.categories() + CleanupCategory.reviewOnly.filter { !options.categories().contains($0) }
+        XCTAssertEqual(scanned, expected)
+        XCTAssertFalse(scanned.contains(.launchAgents))
+        XCTAssertFalse(scanned.contains(.voiceMemos))
+        XCTAssertTrue(scanned.contains(.largeFiles))
+        XCTAssertTrue(scanned.contains(.oldBackups))
+
+        var withFont = CleanupOptions(cleanVoiceMemos: true, cleanFontCache: true)
+        XCTAssertTrue(withFont.scanCategories().contains(.fontCache))
+        XCTAssertTrue(withFont.scanCategories().contains(.voiceMemos))
     }
 
     func testOptionsEquality() {

@@ -243,18 +243,21 @@ public struct ConfidenceBadgeView: View {
     }
 
     public var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 8, weight: .bold))
             Text(tier.displayKey.localized)
                 .font(.system(size: 9, weight: .semibold))
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
         .foregroundStyle(color)
-        .background(Capsule().fill(color.opacity(0.12)))
+        .background(
+            Capsule()
+                .fill(Color.black.opacity(0.35))
+        )
         .overlay(
-            Capsule().strokeBorder(color.opacity(0.25), lineWidth: 0.8)
+            Capsule().strokeBorder(color.opacity(0.35), lineWidth: 0.8)
         )
     }
 }

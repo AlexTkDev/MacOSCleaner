@@ -12,6 +12,12 @@
 
 .build/
 DerivedData/
+.derivedData/
+**/DerivedData/
+**/.derivedData/
+**/.derived_data/
+**/.derivedData*
+**/DerivedData*
 
 *.xcworkspace
 !default.xcworkspace
@@ -130,3 +136,5 @@ MacOSCleaner/Resources/Assets.xcassets/PrivateCleanupCatalog.dataset/
 MacOSCleaner/.require-private-catalog
 ./derived_data 
 derived_data/
+# Superdesign temp HTML / local screenshot cache
+.superdesign/tmp/

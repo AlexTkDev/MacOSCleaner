@@ -30,6 +30,14 @@ public enum ServiceCategory: String, Codable, Sendable, CaseIterable, Identifiab
         case .system: return .red
         }
     }
+
+    public var helpText: String {
+        switch self {
+        case .user: return "startup_help_user".localized
+        case .thirdParty: return "startup_help_third_party".localized
+        case .system: return "startup_help_system".localized
+        }
+    }
 }
 
 public struct StartupService: Identifiable, Codable, Sendable {

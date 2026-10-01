@@ -113,6 +113,10 @@ extension AppLanguage {
         case .chineseSimplified: return Locale(identifier: "zh_Hans_CN")
         case .italian: return Locale(identifier: "it_IT")
         case .portugueseBrazil: return Locale(identifier: "pt_BR")
+        case .arabic: return Locale(identifier: "ar_SA")
+        case .chineseTraditional: return Locale(identifier: "zh_Hant_TW")
+        case .korean: return Locale(identifier: "ko_KR")
+        case .polish: return Locale(identifier: "pl_PL")
         }
     }
 }

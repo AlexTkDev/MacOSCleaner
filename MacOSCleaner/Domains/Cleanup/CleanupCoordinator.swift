@@ -7,8 +7,9 @@ private extension Logger {
     static let coordinator = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "CleanupCoordinator")
 }
 
+@MainActor
 @Observable
-public final class CleanupCoordinator: @unchecked Sendable {
+public final class CleanupCoordinator {
     private let stateMachine = CleanupStateMachine()
     private let engine: CleanupEngine
     private let journal: TransactionJournal
@@ -16,6 +17,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
     private let trashManager: TrashManager
     private let itemManager: CleanupItemManager
     private let notifier: CleanupNotifier
+    private let trashDirectoryURL: URL
     private var currentTask: Task<Void, Never>?
     
     public var state: CleanupState { stateMachine.state }
@@ -38,7 +40,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
         settings: AppSettings,
         trashManager: TrashManager = TrashManager(),
         itemManager: CleanupItemManager,
-        notifier: CleanupNotifier = CleanupNotifier()
+        notifier: CleanupNotifier = CleanupNotifier(),
+        trashDirectoryURL: URL? = nil
     ) {
         self.engine = engine
         self.journal = journal
@@ -46,6 +49,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         self.trashManager = trashManager
         self.itemManager = itemManager
         self.notifier = notifier
+        self.trashDirectoryURL = trashDirectoryURL ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
     }
     
     @MainActor
@@ -77,10 +81,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.pendingLogs = []
                 self.isLogFlushScheduled = false
                 self.skippedItems = []
-                
-                // Close running apps before scan for better cache cleanup
-                await self.closeRunningApps()
-                
+
                 let categories = options.scanCategories()
                 
                 _ = try await self.engine.scan(categories: categories, options: options) { [weak self] event in
@@ -125,8 +126,8 @@ public final class CleanupCoordinator: @unchecked Sendable {
         currentTask?.cancel()
         currentTask = Task {
             do {
-                // Close running apps before cleanup
-                await self.closeRunningApps()
+                let quit = await AppQuitter.quit(AppQuitter.cleanupTargets())
+                try Task.checkCancellation()
 
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedMB = 0
@@ -136,22 +137,36 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 self.scriptLogs = []
                 self.pendingLogs = []
                 self.isLogFlushScheduled = false
+                self.skippedItems = []
+                for name in quit.forced {
+                    self.scriptLogs.append("Force terminated: \(name)")
+                    Logger.coordinator.info("Force terminated: \(name, privacy: .public)")
+                }
+                for name in quit.stillRunning {
+                    self.skippedItems.append(SkippedCleanupItem(
+                        label: name,
+                        reason: "still running after force terminate"
+                    ))
+                    Logger.coordinator.warning("Still running after force terminate: \(name, privacy: .public)")
+                }
                 
                 let trashLabel = "trash_user_label".localized
-                let selectedTrashURLs = self.itemManager.selectedLeafURLs(underParentLabel: trashLabel)
-                if !selectedTrashURLs.isEmpty {
+                let isTrashSelected = self.itemManager.items.first(where: { $0.label == trashLabel })?.isSelected ?? false
+                if self.settings.emptyTrashDuringCleanup && isTrashSelected {
                     try await self.trashManager.requestTrashAccess()
                 }
 
                 let categories = self.itemManager.selectedCleanupCategories(from: options.categories())
                 // Review-only categories — never run category-level wipe.
-                let safeCategories = categories.filter {
-                    $0 != .oldBackups && $0 != .aiModels && $0 != .installerPackages && $0 != .largeFiles && $0 != .projectBuildArtifacts
-                }
+                let safeCategories = categories.filter { !CleanupCategory.reviewOnly.contains($0) }
                 var records: [OperationRecord] = []
                 var hadPartialFailure = false
+                
+                var runOptions = options
+                runOptions.selectedPaths = self.itemManager.allSelectedPaths()
+                FileManager.clearSizeCache()
 
-                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: options) { [weak self] event in
+                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: runOptions) { [weak self] event in
                     guard let self else { return }
                     Task { @MainActor in
                         self.handleEngineEvent(event)
@@ -173,7 +188,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
                         records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "partial", bytesFreed: result.freedBytes))
                         self.skippedItems.append(SkippedCleanupItem(
                             label: result.label,
-                            reason: "partial failure: removed=\(result.removedCount) skipped=\(result.skippedCount) failed=\(result.failedCount)"
+                            reason: "cleanup_partial_reason".localizedWithArgs(Int64(result.removedCount), Int64(result.failedCount))
                         ))
                     } else {
                         records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))
@@ -189,30 +204,11 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     }
                 }
 
-                // Permanently delete only explicitly selected Trash items (never whole ~/.Trash).
-                if !selectedTrashURLs.isEmpty {
-                    self.totalSteps = self.currentStep + 1
-                    self.currentStep += 1
-                    self.stepTitle = "cleanup_emptying_trash".localized
-                    let deletedBytes = try await self.trashManager.permanentlyDelete(urls: selectedTrashURLs)
-                    let deletedMB = Int(deletedBytes / (1024 * 1024))
-                    self.totalFreedMB += deletedMB
-                    self.totalFreedBytes += deletedBytes
-                    if deletedBytes > 0 {
-                        self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
-                    }
-                    records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
-                }
 
                 // Move selected review-only items to Trash (never category-level wipe).
-                let reviewGroups: [(CleanupCategory, String)] = [
-                    (.oldBackups, "Old Backups"),
-                    (.aiModels, "AI Models"),
-                    (.installerPackages, "Installer Packages"),
-                    (.largeFiles, "Large files"),
-                    (.projectBuildArtifacts, "Project build artifacts"),
-                ]
-                for (category, logLabel) in reviewGroups {
+                var trashedThisRun: [URL] = []
+                for category in CleanupCategory.reviewOnly {
+                    let logLabel = category.localizedTitle
                     let selectedURLs = self.selectedReviewLeafURLs(for: category)
                     guard !selectedURLs.isEmpty else { continue }
                     self.currentStep += 1
@@ -221,8 +217,9 @@ public final class CleanupCoordinator: @unchecked Sendable {
                     for url in selectedURLs {
                         do {
                             try Task.checkCancellation()
-                            let size = FileManager.default.getDirectorySize(url: url)
-                            _ = try await self.trashManager.trashItem(at: url, policy: .cleanup)
+                            let size = await Task.detached { Self.directorySize(url) }.value
+                            let trashed = try await self.trashManager.trashItem(at: url, policy: .cleanup)
+                            trashedThisRun.append(trashed)
                             freed += size
                         } catch is CancellationError {
                             throw CancellationError()
@@ -243,6 +240,35 @@ public final class CleanupCoordinator: @unchecked Sendable {
                         status: hadPartialFailure ? "partial" : "success",
                         bytesFreed: freed
                     ))
+                }
+
+                // Final step: permanently delete selected Trash children and items moved this run.
+                if self.settings.emptyTrashDuringCleanup && (isTrashSelected || !trashedThisRun.isEmpty) {
+                    let selectedTrash = isTrashSelected
+                        ? self.itemManager.selectedLeafURLs(underParentLabel: trashLabel)
+                        : []
+                    var seen = Set<String>()
+                    var urlsToDelete: [URL] = []
+                    for url in selectedTrash + trashedThisRun {
+                        let key = url.standardizedFileURL.path
+                        if seen.insert(key).inserted {
+                            urlsToDelete.append(url)
+                        }
+                    }
+                    if !urlsToDelete.isEmpty {
+                        self.totalSteps = self.currentStep + 1
+                        self.currentStep += 1
+                        self.stepTitle = "cleanup_emptying_trash".localized
+                        try await self.trashManager.requestTrashAccess()
+                        let deletedBytes = try await self.trashManager.permanentlyDelete(urls: urlsToDelete)
+                        let deletedMB = Int(deletedBytes / (1024 * 1024))
+                        self.totalFreedMB += deletedMB
+                        self.totalFreedBytes += deletedBytes
+                        if deletedBytes > 0 {
+                            self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                        }
+                        records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
+                    }
                 }
 
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
@@ -358,7 +384,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
     @MainActor
     private func deselectReviewOnlyGroups() {
-        for category in [CleanupCategory.oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts] {
+        for category in CleanupCategory.reviewOnly {
             for label in category.previewLabels {
                 itemManager.setSelection(underParentLabel: label, isSelected: false)
             }
@@ -381,7 +407,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
 
     @MainActor
     private func presentTrashItemsForReview() async {
-        let trashURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let trashURL = self.trashDirectoryURL
         let trashLabel = "trash_user_label".localized
         guard FileManager.default.fileExists(atPath: trashURL.path),
               let contents = try? FileManager.default.contentsOfDirectory(
@@ -393,7 +419,7 @@ public final class CleanupCoordinator: @unchecked Sendable {
         }
 
         for url in contents {
-            let size = FileManager.default.getDirectorySize(url: url)
+            let size = await Task.detached { Self.physicalDirectorySize(url) }.value
             guard size > 0 else { continue }
             var isDir: ObjCBool = false
             FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
@@ -405,59 +431,23 @@ public final class CleanupCoordinator: @unchecked Sendable {
                 isDirectory: isDir.boolValue,
                 category: trashLabel,
                 parentName: trashLabel,
-                isSelected: false
+                isSelected: true
             )
         }
 
         if let idx = itemManager.items.firstIndex(where: { $0.label == trashLabel }) {
-            itemManager.items[idx].isSelected = false
+            itemManager.items[idx].isSelected = true
         }
     }
 
-    @MainActor
-    private func closeRunningApps() async {
-        let appsToClose = NSWorkspace.shared.runningApplications.filter { app in
-            app.activationPolicy == .regular &&
-            app.bundleIdentifier != Bundle.main.bundleIdentifier &&
-            !(app.bundleIdentifier ?? "").hasPrefix("com.apple.")
-        }
-
-        for app in appsToClose {
-            app.terminate()
-        }
-
-        do {
-            try await Task.sleep(for: .seconds(3))
-        } catch {
-            Logger.coordinator.warning("Sleep interrupted during app termination")
-        }
-
-        let safetyPolicy = ProcessSafetyPolicy()
-        for app in appsToClose {
-            if !app.isTerminated {
-                let process = RunningProcess(
-                    pid: app.processIdentifier,
-                    name: app.localizedName ?? "Unknown",
-                    path: app.bundleURL?.path,
-                    user: nil,
-                    cpuPercent: 0,
-                    memoryBytes: 0,
-                    threadCount: 0,
-                    startTime: nil,
-                    parentPID: 0,
-                    bundleID: app.bundleIdentifier
-                )
-                let permission = safetyPolicy.isKillable(process)
-                if case .allowed = permission {
-                    app.forceTerminate()
-                    Logger.coordinator.info("Force terminated: \(app.localizedName ?? "Unknown")")
-                } else if case .blocked(let reason) = permission {
-                    Logger.coordinator.warning("Skipped force terminate for protected process: \(app.localizedName ?? "Unknown") - \(reason)")
-                }
-            }
-        }
+    nonisolated private static func directorySize(_ url: URL) -> Int64 {
+        FileManager.default.getDirectorySize(url: url)
     }
-    
+
+    nonisolated private static func physicalDirectorySize(_ url: URL) -> Int64 {
+        FileManager.default.getPhysicalDirectorySize(url: url)
+    }
+
     @MainActor
     private func handleEngineEvent(_ event: CleanupEngineEvent) {
         switch event {
@@ -481,10 +471,19 @@ public final class CleanupCoordinator: @unchecked Sendable {
         case .log(let message):
             self.pendingLogs.append(message)
             self.scheduleLogFlushIfNeeded()
-        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName):
+        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName, let isSelected, let isCommandBacked):
             let localizedCategory = CleanupCategory.localizedGroupTitle(for: category)
             let effectiveParent = parentName.map { CleanupCategory.localizedGroupTitle(for: $0) } ?? localizedCategory
-            self.itemManager.appendFileItem(path: path, sizeBytes: sizeBytes, modificationDate: modificationDate, isDirectory: isDirectory, category: localizedCategory, parentName: effectiveParent)
+            self.itemManager.appendFileItem(
+                path: path,
+                sizeBytes: sizeBytes,
+                modificationDate: modificationDate,
+                isDirectory: isDirectory,
+                category: localizedCategory,
+                parentName: effectiveParent,
+                isSelected: isSelected,
+                isCommandBacked: isCommandBacked
+            )
         }
     }
     

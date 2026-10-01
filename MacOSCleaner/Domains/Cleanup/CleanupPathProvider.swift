@@ -102,6 +102,10 @@ public enum CleanupPathExpander {
                     guard let children = try? fileManager.contentsOfDirectory(atPath: dir) else { continue }
                     for child in children where Self.fnmatch(pattern: component, string: child) {
                         let childPath = NormalizedPath.join(base, child)
+                        // Never expand /Users/* into foreign user profiles
+                        if dir == "/Users" && childPath != NormalizedPath.string(home) {
+                            continue
+                        }
                         if Self.isSymlinkDirectory(NormalizedPath.url(childPath), fileManager: fileManager) {
                             continue
                         }
@@ -112,6 +116,10 @@ public enum CleanupPathExpander {
             } else {
                 for base in matches {
                     let candidate = NormalizedPath.join(base, component)
+                    let dir = base.isEmpty ? "/" : base
+                    if dir == "/Users" && candidate != NormalizedPath.string(home) {
+                        continue
+                    }
                     if fileManager.fileExists(atPath: candidate) { next.append(candidate) }
                     if next.count >= maxMatches { return Array(next.prefix(maxMatches)) }
                 }

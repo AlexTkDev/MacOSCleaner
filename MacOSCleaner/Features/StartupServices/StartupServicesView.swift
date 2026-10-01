@@ -3,6 +3,7 @@ import SwiftUI
 public struct StartupServicesView: View {
     let settings: AppSettings
     @State private var viewModel = StartupServicesViewModel()
+    @State private var serviceToDelete: StartupService? = nil
 
     public var body: some View {
         GlassEffectContainer {
@@ -22,6 +23,8 @@ public struct StartupServicesView: View {
                     errorView(error)
                 } else if viewModel.services.isEmpty {
                     emptyView
+                } else if viewModel.filteredServices.isEmpty {
+                    categoryEmptyView
                 } else {
                     serviceList
                 }
@@ -35,7 +38,31 @@ public struct StartupServicesView: View {
                 .help("startup_refresh".localized)
             }
         }
-        .onAppear { Task { await viewModel.scan() } }
+        .alert(
+            "startup_delete_confirm_title".localized,
+            isPresented: Binding(
+                get: { serviceToDelete != nil },
+                set: { if !$0 { serviceToDelete = nil } }
+            ),
+            presenting: serviceToDelete
+        ) { service in
+            Button("cancel".localized, role: .cancel) {
+                serviceToDelete = nil
+            }
+            Button("startup_delete_action".localized, role: .destructive) {
+                let target = service
+                serviceToDelete = nil
+                Task { await viewModel.delete(service: target) }
+            }
+        } message: { service in
+            Text(String(format: "startup_delete_confirm_message".localized, service.name, service.path))
+        }
+        .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Startup")
+            }
+            Task { await viewModel.scan() }
+        }
     }
 
     private var filterPicker: some View {
@@ -69,6 +96,8 @@ public struct StartupServicesView: View {
             )
         }
         .padding(.horizontal, 4)
+        .padding(.vertical, 3)
+        .glassEffect(Glass.regular, in: Capsule())
     }
 
     private func filterButton(
@@ -78,44 +107,59 @@ public struct StartupServicesView: View {
         icon: String? = nil,
         color: Color? = nil
     ) -> some View {
-        Button(action: {
+        let isSelected = viewModel.filter == tag
+        let buttonColor = color ?? Color.accentColor
+        return Button(action: {
             withAnimation(.easeInOut(duration: 0.2)) {
                 viewModel.filter = tag
             }
         }) {
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 if let icon, let color {
                     Image(systemName: icon)
                         .font(.system(size: 10))
-                        .foregroundColor(color)
+                        .foregroundColor(isSelected ? .white : color)
                 }
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
                 Text("\(count)")
-                    .font(.system(size: 10, weight: .bold))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(
-                        Capsule()
-                            .fill(viewModel.filter == tag
-                                  ? (color ?? Color.accentColor).opacity(0.2)
-                                  : Color.secondary.opacity(0.1))
-                    )
+                    .font(.system(size: 11, weight: .bold))
+                    .opacity(isSelected ? 0.9 : 0.6)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(viewModel.filter == tag
-                          ? (color ?? Color.accentColor).opacity(0.1)
-                          : Color.clear)
-            )
-            .overlay(
-                Capsule()
-                    .stroke(viewModel.filter == tag
-                            ? (color ?? Color.accentColor).opacity(0.3)
-                            : Color.clear, lineWidth: 1)
-            )
+            .padding(.vertical, 5)
+            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    buttonColor.opacity(0.88),
+                                    buttonColor.opacity(0.72)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: Color.white.opacity(0.50), location: 0.0),
+                                            .init(color: buttonColor.opacity(0.5), location: 0.5),
+                                            .init(color: Color.white.opacity(0.12), location: 1.0)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: buttonColor.opacity(0.35), radius: 6, x: 0, y: 2)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -124,9 +168,16 @@ public struct StartupServicesView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.filteredServices) { service in
-                    ServiceRow(service: service, settings: settings) {
-                        Task { await viewModel.toggle(service: service) }
-                    }
+                    ServiceRow(
+                        service: service,
+                        settings: settings,
+                        onToggle: {
+                            Task { await viewModel.toggle(service: service) }
+                        },
+                        onDelete: {
+                            serviceToDelete = service
+                        }
+                    )
                     if service.id != viewModel.filteredServices.last?.id {
                         Divider().padding(.leading, 120)
                     }
@@ -155,6 +206,27 @@ public struct StartupServicesView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var categoryEmptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: viewModel.filter?.icon ?? "tray")
+                .font(.system(size: 64, weight: .thin))
+                .foregroundColor(viewModel.filter?.color ?? .secondary)
+                .opacity(0.6)
+            VStack(spacing: 8) {
+                Text("startup_category_empty".localized)
+                    .font(.headline)
+                if let filter = viewModel.filter {
+                    Text(filter.helpText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private func errorView(_ error: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
@@ -172,7 +244,7 @@ public struct StartupServicesView: View {
             Button("try_again".localized) {
                 Task { await viewModel.scan() }
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -182,9 +254,11 @@ struct ServiceRow: View {
     let service: StartupService
     let settings: AppSettings
     let onToggle: () -> Void
+    let onDelete: () -> Void
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
+    @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
 
@@ -206,20 +280,13 @@ struct ServiceRow: View {
 
                 Spacer()
 
-                if settings.enableAI && AIExplanationService.shared.isAvailable {
-                    Button {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                        if isExpanded && aiExplanation.isEmpty && !isGenerating {
-                            generateAIExplanation()
-                        }
-                    } label: {
-                        Image(systemName: "sparkles")
-                            .foregroundColor(isExpanded ? .purple : .secondary)
+                AIExplainButton(isExpanded: isExpanded, isEnabledSetting: settings.enableAI) {
+                    withAnimation(.spring()) {
+                        isExpanded.toggle()
                     }
-                    .buttonStyle(.plain)
-                    .help("uninstaller_explain_with_ai".localized)
+                    if isExpanded && aiExplanation.isEmpty && !isGenerating {
+                        generateAIExplanation()
+                    }
                 }
 
                 StatusBadge(isEnabled: service.isEnabled)
@@ -227,9 +294,49 @@ struct ServiceRow: View {
                 Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
                     onToggle()
                 }
-                .buttonStyle(.bordered)
-                .tint(service.isEnabled ? .red : .accentColor)
+                .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
                 .controlSize(.small)
+                .disabled(service.category == .system)
+
+                Button {
+                    let url = URL(fileURLWithPath: service.path)
+                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                } label: {
+                    Image(systemName: "folder")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("startup_show_in_finder".localized)
+
+                if service.category != .system {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13))
+                            .foregroundColor(.red.opacity(0.85))
+                    }
+                    .buttonStyle(.plain)
+                    .help("startup_delete_service".localized)
+                }
+            }
+            .contextMenu {
+                Button {
+                    let url = URL(fileURLWithPath: service.path)
+                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                } label: {
+                    Label("startup_show_in_finder".localized, systemImage: "folder")
+                }
+
+                if service.category != .system {
+                    Divider()
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Label("startup_delete_service".localized, systemImage: "trash")
+                    }
+                }
             }
             
             if isExpanded {
@@ -239,6 +346,10 @@ struct ServiceRow: View {
                         Image(systemName: "sparkles")
                             .foregroundColor(.purple)
                             .font(.caption)
+                        
+                        if let verdict {
+                            AIVerdictBadge(verdict: verdict)
+                        }
                         
                         if isGenerating {
                             HStack(spacing: 8) {
@@ -273,7 +384,7 @@ struct ServiceRow: View {
         let lang = settings.language
         Task {
             do {
-                let result = try await AIExplanationService.shared.explainStartupService(
+                let stream = try await AIExplanationService.shared.explainStartupServiceStream(
                     serviceName: service.name,
                     filePath: service.path,
                     category: service.category.displayName,
@@ -282,7 +393,23 @@ struct ServiceRow: View {
                 )
                 
                 await MainActor.run {
-                    self.aiExplanation = result
+                    self.aiExplanation = ""
+                }
+                for try await chunk in stream {
+                    await MainActor.run {
+                        self.aiExplanation += chunk
+                    }
+                }
+                
+                await MainActor.run {
+                    let (extractedVerdict, clean) = AIExplanationResult.extractVerdict(from: self.aiExplanation)
+                    self.verdict = extractedVerdict
+                    self.aiExplanation = clean
+                    self.isGenerating = false
+                }
+            } catch let error as AIError where error == .contextSizeExceeded {
+                await MainActor.run {
+                    self.aiExplanation = service.category.displayName
                     self.isGenerating = false
                 }
             } catch {

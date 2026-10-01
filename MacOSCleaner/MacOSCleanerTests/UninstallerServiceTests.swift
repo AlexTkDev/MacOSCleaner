@@ -136,4 +136,213 @@ final class UninstallerServiceTests: XCTestCase {
         XCTAssertEqual(grouped.versions.count, 2)
         XCTAssertEqual(grouped.totalSize, 350)
     }
+
+    // MARK: - Trash & Bypass Trash Behavior
+
+    func testUninstall_bypassTrash_deletesDirectly_preservesThirdPartyTrash() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let trashDir = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let trash = TrashManager(safetyManager: safety, trashDirectoryURL: trashDir)
+        let testService = UninstallerService(safetyManager: safety, trashManager: trash)
+
+        // Setup app & related files
+        let appDir = ctx.homeDirectory.appendingPathComponent("Applications/Demo.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+        let appBinary = appDir.appendingPathComponent("Demo")
+        try "binary".data(using: .utf8)!.write(to: appBinary)
+
+        let cacheDir = ctx.homeDirectory.appendingPathComponent("Library/Caches/com.demo.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        let cacheFile = cacheDir.appendingPathComponent("cache.db")
+        try "cache".data(using: .utf8)!.write(to: cacheFile)
+
+        // Setup third-party file in trash
+        let finderTrashFile = trashDir.appendingPathComponent("user_important_doc.pdf")
+        try "important".data(using: .utf8)!.write(to: finderTrashFile)
+
+        var app = UninstallerService.AppInfo(
+            url: appDir,
+            bundleID: "com.demo.app",
+            name: "Demo"
+        )
+        app.relatedFiles = [
+            UninstallerService.RelatedFile(url: cacheFile, isSelected: true, size: 5)
+        ]
+
+        _ = try await testService.uninstall(app: app, bypassTrash: true, emptyTrashImmediately: false)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: appDir.path), "App should be removed directly")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: cacheFile.path), "Related file should be removed directly")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: finderTrashFile.path), "Finder trash files must never be touched")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: trashDir.appendingPathComponent("Demo.app").path), "Should not be moved to trash")
+    }
+
+    func testUninstall_emptyTrashImmediately_deletesOwnFiles_preservesThirdPartyTrash() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let trashDir = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let trash = TrashManager(safetyManager: safety, trashDirectoryURL: trashDir)
+        let testService = UninstallerService(safetyManager: safety, trashManager: trash)
+
+        let appDir = ctx.homeDirectory.appendingPathComponent("Applications/Demo2.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+        let appBinary = appDir.appendingPathComponent("Demo2")
+        try "binary".data(using: .utf8)!.write(to: appBinary)
+
+        let finderTrashFile = trashDir.appendingPathComponent("existing_trash_file.txt")
+        try "dont_delete_me".data(using: .utf8)!.write(to: finderTrashFile)
+
+        let app = UninstallerService.AppInfo(
+            url: appDir,
+            bundleID: "com.demo2.app",
+            name: "Demo2"
+        )
+
+        _ = try await testService.uninstall(app: app, bypassTrash: false, emptyTrashImmediately: true)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: appDir.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: trashDir.appendingPathComponent("Demo2.app").path),
+                       "App should be removed immediately from Trash")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: finderTrashFile.path),
+                      "Finder trash files must never be touched by emptyTrashImmediately")
+    }
+
+    func testUninstall_defaultTrash_movesToTrash_preservesThirdPartyTrash() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let trashDir = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let trash = TrashManager(safetyManager: safety, trashDirectoryURL: trashDir)
+        let testService = UninstallerService(safetyManager: safety, trashManager: trash)
+
+        let appDir = ctx.homeDirectory.appendingPathComponent("Applications/Demo3.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+        let appBinary = appDir.appendingPathComponent("Demo3")
+        try "binary".data(using: .utf8)!.write(to: appBinary)
+
+        let finderTrashFile = trashDir.appendingPathComponent("existing_trash_file.txt")
+        try "dont_delete_me".data(using: .utf8)!.write(to: finderTrashFile)
+
+        let app = UninstallerService.AppInfo(
+            url: appDir,
+            bundleID: "com.demo3.app",
+            name: "Demo3"
+        )
+
+        _ = try await testService.uninstall(app: app, bypassTrash: false, emptyTrashImmediately: false)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: appDir.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: trashDir.appendingPathComponent("Demo3.app").path),
+                      "App should remain in Trash when emptyTrashImmediately is false")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: finderTrashFile.path),
+                      "Finder trash files must never be touched")
+    }
+
+    func testIsApplicationConfigurationPath() {
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Preferences/com.example.app.plist"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/.config/nvim/init.vim"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/JetBrains/IntelliJIdea2024.1/options/other.xml"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/Code/User/settings.json"))
+        XCTAssertTrue(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Application Support/Cursor/User/settings.json"))
+        // Caches and logs are NOT configurations
+        XCTAssertFalse(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Caches/com.example.app"))
+        XCTAssertFalse(UninstallerService.isApplicationConfigurationPath("/Users/alex/Library/Logs/com.example.app.log"))
+    }
+
+    func testRemoveOrphanedResiduals_returnsStructuredResult() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer {
+            if let root = ctx.allowedRoots.first {
+                try? FileManager.default.removeItem(at: root)
+            }
+        }
+        let safety = SafetyManager(homeDirectory: ctx.homePath, fileSystemContext: ctx)
+        let trashDir = ctx.homeDirectory.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let trash = TrashManager(safetyManager: safety, trashDirectoryURL: trashDir)
+        let testService = UninstallerService(safetyManager: safety, trashManager: trash)
+
+        let orphanFile = ctx.homeDirectory.appendingPathComponent("Library/Caches/orphan.cache")
+        try FileManager.default.createDirectory(at: orphanFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "orphan_data".data(using: .utf8)!.write(to: orphanFile)
+
+        let orphanItem = OrphanItem(
+            url: orphanFile,
+            name: "Orphan",
+            bundleID: "com.example.orphan",
+            sizeBytes: 11,
+            category: "Caches",
+            isSelected: true
+        )
+
+        let result = try await testService.removeOrphanedResiduals([orphanItem], bypassTrash: false)
+        XCTAssertEqual(result.succeededItems.count, 1)
+        XCTAssertEqual(result.failedItems.count, 0)
+        XCTAssertEqual(result.freed, 11)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: orphanFile.path))
+    }
+
+    func testAppNameMatchesFileName_twoLetterNames() {
+        // VLC (3 chars)
+        let vlcMatch = EvidenceProbe.appNameMatchesFileName("VLC", appName: "VLC")
+        XCTAssertTrue(vlcMatch.exact)
+
+        // Arc (3 chars)
+        let arcMatch = EvidenceProbe.appNameMatchesFileName("Arc", appName: "Arc")
+        XCTAssertTrue(arcMatch.exact)
+
+        // Go (2 chars)
+        let goMatch = EvidenceProbe.appNameMatchesFileName("Go", appName: "Go")
+        XCTAssertTrue(goMatch.exact)
+
+        // Zed (3 chars)
+        let zedMatch = EvidenceProbe.appNameMatchesFileName("zed", appName: "Zed")
+        XCTAssertTrue(zedMatch.exact)
+
+        // 1 char name like "R" should NOT match via appNameMatchesFileName
+        let rMatch = EvidenceProbe.appNameMatchesFileName("R", appName: "R")
+        XCTAssertFalse(rMatch.exact)
+    }
+
+    func testIsCLIConfigPath_detectsProtectedTools() {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let cursorConfig = URL(fileURLWithPath: "\(home)/.config/cursor")
+        let claudeConfig = URL(fileURLWithPath: "\(home)/.config/claude")
+        let openCodeLocal = URL(fileURLWithPath: "\(home)/.local/share/opencode")
+        let regularConfig = URL(fileURLWithPath: "\(home)/.config/myapp_unique_123")
+        let randomFile = URL(fileURLWithPath: "/Library/Caches/cursor")
+
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(cursorConfig))
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(claudeConfig))
+        XCTAssertTrue(UninstallerService.isCLIConfigPath(openCodeLocal))
+        XCTAssertFalse(UninstallerService.isCLIConfigPath(regularConfig))
+        XCTAssertFalse(UninstallerService.isCLIConfigPath(randomFile))
+    }
+
+    func testAppInfo_isIntelOnlyDefaultFalse() {
+        let app = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/Test.app"),
+            bundleID: "com.test.app",
+            name: "TestApp"
+        )
+        XCTAssertFalse(app.isIntelOnly)
+    }
 }

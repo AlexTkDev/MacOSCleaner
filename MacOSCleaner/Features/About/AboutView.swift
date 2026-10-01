@@ -94,14 +94,17 @@ struct AboutView: View {
                 Spacer()
             }
             .padding(12)
-            .glassEffect(.regular.tint(.purple.opacity(0.2)))
-            .cornerRadius(12)
+            .glassEffect(Glass.regular.tint(.purple), in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }
 
+    private func safeURL(_ string: String) -> URL {
+        URL(string: string) ?? URL(fileURLWithPath: "/")
+    }
+
     private var developerCard: some View {
-        Link(destination: URL(string: "https://orcid.org/0009-0002-8907-5406")!) {
+        Link(destination: safeURL("https://orcid.org/0009-0002-8907-5406")) {
             HStack(spacing: 12) {
                 Image(systemName: "person.circle.fill")
                     .font(.title3)
@@ -130,7 +133,7 @@ struct AboutView: View {
 
     private var linksCard: some View {
         VStack(spacing: 0) {
-            Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md")!) {
+            Link(destination: safeURL("https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md")) {
                 Label("about_donate".localized, systemImage: "heart.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.pink)
@@ -139,7 +142,7 @@ struct AboutView: View {
                     .contentShape(Rectangle())
             }
             Divider().padding(.leading, 38)
-            Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner")!) {
+            Link(destination: safeURL("https://github.com/AlexTkDev/MacOSCleaner")) {
                 Label("about_star_github".localized, systemImage: "star.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.yellow)
@@ -148,7 +151,7 @@ struct AboutView: View {
                     .contentShape(Rectangle())
             }
             Divider().padding(.leading, 38)
-            Link(destination: URL(string: "https://alextkdev.github.io/MacOSCleaner/")!) {
+            Link(destination: safeURL("https://alextkdev.github.io/MacOSCleaner/")) {
                 Label("about_website".localized, systemImage: "globe")
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -156,7 +159,7 @@ struct AboutView: View {
                     .contentShape(Rectangle())
             }
             Divider().padding(.leading, 38)
-            Link(destination: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/issues")!) {
+            Link(destination: safeURL("https://github.com/AlexTkDev/MacOSCleaner/issues")) {
                 Label("about_problem_link".localized, systemImage: "exclamationmark.bubble.fill")
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,7 +167,7 @@ struct AboutView: View {
                     .contentShape(Rectangle())
             }
             Divider().padding(.leading, 38)
-            Link(destination: URL(string: "https://www.linkedin.com/in/aleksandrtk/")!) {
+            Link(destination: safeURL("https://www.linkedin.com/in/aleksandrtk/")) {
                 Label("about_linkedin".localized, systemImage: "person.crop.circle.badge.plus")
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -178,5 +181,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: AvailableUpdate(version: "2.2.0", dmgURL: nil))
+    AboutView(availableUpdate: AvailableUpdate(version: "2.3.0", dmgURL: nil))
 }

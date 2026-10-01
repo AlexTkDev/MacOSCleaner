@@ -348,7 +348,6 @@ public enum EmbeddedCleanupPaths {
     public static let mailDownloads: [CleanupPath] = [
         CleanupPath(path: "~/Library/Mail Downloads", category: .mailDownloads),
         CleanupPath(path: "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads", category: .mailDownloads),
-        CleanupPath(path: "~/Library/Mail/*/Attachments", category: .mailDownloads),
     ]
 
     // MARK: - Launch Agents (NEW)
@@ -450,10 +449,6 @@ public enum EmbeddedCleanupPaths {
         CleanupCommand(command: "sudo atsutil databases -remove", description: "Remove font databases", requiresSudo: true, safe: true, requiresRestart: true),
     ]
 
-    public static let sleepImageCommands: [CleanupCommand] = [
-        CleanupCommand(command: "sudo pmset hibernatemode 0; sudo rm /var/vm/sleepimage", description: "Disable hibernation and remove sleepimage", requiresSudo: true, safe: false),
-    ]
-
     // MARK: - Accessor
 
     public static func paths(for category: CleanupCategory) -> [CleanupPath] {
@@ -500,7 +495,6 @@ public enum EmbeddedCleanupPaths {
         switch category {
         case .dnsFlush: return dnsFlushCommands
         case .fontCache: return fontCacheCommands
-        case .sleepImage: return sleepImageCommands
         default: return []
         }
     }

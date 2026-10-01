@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "ストレージ状態の取得";
 "settings_cmd_clean_category" = "特定のカテゴリの消去 (キャッシュ、ログなど)";
 "settings_cmd_scheduled_cleanup" = "スケジュールされたクリーンアップの実行 (Automator)";
+"settings_cmd_empty_trash" = "ゴミ箱を空にする";
 "siri_phrase_developer_caches" = "開発者キャッシュをクリーンアップ";
 "siri_phrase_storage_status" = "空き容量はどれくらい";
 "siri_phrase_clean_category" = "システムキャッシュをクリーンアップ";
 "siri_phrase_scheduled_cleanup" = "スケジュール済みクリーンアップを実行";
+"siri_phrase_empty_trash" = "ゴミ箱を空にして";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "コマンドを追加";
@@ -92,6 +94,10 @@
 "duplicate_trash_confirm_message" = "選択した %ld 個の重複ファイル (%@) をゴミ箱へ移動してもよろしいですか？";
 "duplicate_trash_completed" = "%ld 個のファイル (%@) をゴミ箱へ移動しました";
 "duplicate_trash_failed" = "ゴミ箱への移動に失敗しました: %@";
+"duplicate_badge_original" = "オリジナル";
+"duplicate_badge_duplicate" = "複製";
+"duplicate_copies_count" = "%ld個のコピー";
+"duplicate_no_selection" = "重複グループを選択";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "ディスク分析";
@@ -173,6 +179,10 @@
 "language.chinese_simplified" = "中国語 (簡体字)";
 "language.italian" = "イタリア語";
 "language.portuguese_brazil" = "ポルトガル語 (ブラジル)";
+"language.arabic" = "アラビア語";
+"language.chinese_traditional" = "中国語 (繁体字)";
+"language.korean" = "韓国語";
+"language.polish" = "ポーランド語";
 
 /* Settings View */
 "menu_settings" = "設定";
@@ -209,8 +219,8 @@
 "scan_mode.safe" = "セーフ";
 "scan_mode.balanced" = "バランス";
 "scan_mode.balanced.default" = "デフォルト";
-"scan_mode.safe.desc" = "確実なファイル (Bundle ID や名前一致) のみを検索。リスク最小。";
-"scan_mode.balanced.desc" = "Spotlight (mdfind) を含む完全スキャン。徹底的な削除に推奨。";
+"scan_mode.safe.desc" = "Bundle ID、アプリ名、またはパッケージレシートで高い確度で一致するファイルだけを見つけます。Spotlight は使いません。共有ファイルを削除するリスクは最小です。";
+"scan_mode.balanced.desc" = "Spotlight（mdfind）、拡張パス、考えられるすべての一致を含む完全スキャンです。標準外の場所も含め、より多くの残留ファイルを見つけます。徹底的な整理に推奨します。";
 
 /* Update Checker */
 "update.check" = "アップデートを確認";
@@ -237,24 +247,24 @@
 "settings_notifications_denied" = "拒否 (システム設定を開く)";
 "settings_notifications_not_determined" = "未要求";
 "settings_open_notification_settings" = "通知設定を開く";
-"settings_tooltip_theme" = "アプリの外観テーマを選択します。";
+"settings_tooltip_theme" = "アプリの外観を選びます。「システム設定に準拠」は macOS の設定に従います。";
 "settings_tooltip_notifications" = "スキャンやクリーンアップの完了時に通知を表示します。";
 "settings_tooltip_tooltips" = "要素にカーソルを置いたときにヘルプを表示します。";
 "settings_tooltip_auto_scan" = "起動時に自動的にスキャンを開始します。";
-"settings_tooltip_refresh_interval" = "プロセス一覧の更新頻度。";
+"settings_tooltip_refresh_interval" = "プロセス一覧を更新する間隔です。「手動」にすると自動更新を止めます。";
 "settings_tooltip_sort_by" = "プロセス一覧のデフォルトの並べ替え順。";
-"settings_tooltip_empty_trash" = "クリーンアップ実行時にゴミ箱を空にします。";
-"settings_tooltip_bypass_trash" = "アンインストール時にファイルを永久削除します。";
-"settings_tooltip_show_related" = "アプリに関連する設定・キャッシュファイルを表示します。";
-"settings_tooltip_empty_trash_immediately" = "ゴミ箱への移動後、即座に空にします。";
-"settings_tooltip_skip_expert" = "選択ステップをスキップし、すぐ全削除を行います。";
+"settings_tooltip_empty_trash" = "オンにすると、整理の一環としてシステムのゴミ箱を空にします。安全のため、初期設定ではオフです。";
+"settings_tooltip_bypass_trash" = "アプリと関連ファイルを削除するとき、ゴミ箱に移さず完全に削除します。注意: 削除は元に戻せません。";
+"settings_tooltip_show_related" = "アンインストーラで、各アプリの関連ファイル（キャッシュ、設定、ログ）の一覧を表示します。";
+"settings_tooltip_empty_trash_immediately" = "項目をゴミ箱へ移したあと、すぐに空にします。整理は元に戻せなくなります。";
+"settings_tooltip_skip_expert" = "エキスパートモードのファイル選択を飛ばし、関連ファイルをすべて選択した状態ですぐにアプリを削除します。";
 "settings_tooltip_forget" = "すべての設定を初期化します。";
 
 /* Settings Reset Dialog */
 "settings_reset_confirm_title" = "すべての設定を初期化しますか？";
 "settings_reset_confirm_button" = "初期化する";
 "settings_reset_confirm_message" = "保存されたデータが消去されます。この操作は取り消せません。";
-"settings_trash_warning" = "これらの設定により削除の取り消しができなくなります。";
+"settings_trash_warning" = "これらの設定は削除を取り消せなくします。ゴミ箱を経由しないファイルや、直後に空にしたものは復元できません。";
 
 /* Startup Services View */
 "menu_startup_services" = "スタートアップサービス";
@@ -264,6 +274,7 @@
 "startup_scanning" = "サービスをスキャン中...";
 "startup_no_agents" = "スタートアップサービスはありません";
 "startup_no_agents_sub" = "~/Library/LaunchAgents にエージェントは見つかりませんでした。";
+"startup_category_empty" = "このカテゴリにはサービスがありません";
 "startup_scan_failed" = "スキャン失敗";
 "startup_status_loaded" = "ロード済み";
 "startup_status_unloaded" = "未ロード";
@@ -301,25 +312,36 @@
 "cleanup_cleaning" = "クリーンアップ中...";
 "cleanup_ready" = "クリーンアップの準備完了";
 "cleanup_ready_sub" = "削除可能な一時ファイルをスキャンします。";
+"cleanup_base_section_title" = "基本クリーンアップ（デフォルト）";
+"cleanup_base_system_cache" = "システムキャッシュ";
+"cleanup_base_app_logs" = "アプリログ";
+"cleanup_base_browser_cache" = "ブラウザキャッシュ";
+"cleanup_base_trash" = "ゴミ箱（設定で有効な場合）";
+"cleanup_badge_password" = "パスワード";
 "cleanup_additional_options" = "追加のクリーンアップオプション";
 "cleanup_option_ds_store" = ".DS_Store ファイルを消去";
 "cleanup_option_ds_store_sub" = "システム生成のメタデータファイルを削除します。";
 "cleanup_option_maven" = "Maven リポジトリを消去 (~/.m2/repository)";
-"cleanup_option_maven_sub" = "ダウンロード済みの Maven 依存関係を削除します。";
+"cleanup_option_maven_sub" = "ダウンロード済みの Maven 依存関係を削除します。次のビルドで再ダウンロードされます。";
 "cleanup_option_modcache" = "Go モジュールキャッシュを消去 (GOMODCACHE)";
-"cleanup_option_modcache_sub" = "ダウンロード済みの Go モジュールを削除します。";
+"cleanup_option_modcache_sub" = "ダウンロード済みの Go モジュールを削除します。次のビルドで再ダウンロードされます。";
 "cleanup_option_projects" = "プロジェクト内の .dart_tool を消去";
-"cleanup_option_projects_sub" = "Flutter/Dart プロジェクトのキャッシュを削除します。";
+"cleanup_option_projects_sub" = "~/Documents、~/Projects、~/Developer、~/dev、~/code、~/repos にある Flutter/Dart プロジェクトのキャッシュを削除します。";
 "cleanup_option_cloud_docs" = "iCloud 書類キャッシュを消去";
-"cleanup_option_cloud_docs_sub" = "ローカルの iCloud 書類キャッシュを削除します。";
+"cleanup_option_cloud_docs_sub" = "iCloud 書類のキャッシュを削除します。書類は必要に応じて iCloud から再ダウンロードされます。";
 "cleanup_option_voice_memos" = "ボイスメモを消去";
 "cleanup_option_voice_memos_sub" = "ライブラリから録音データを削除します。";
 "cleanup_option_garageband_logic" = "GarageBand / Logic を消去";
-"cleanup_option_garageband_logic_sub" = "プロジェクトファイルやキャッシュを削除します。";
+"cleanup_option_garageband_logic_sub" = "GarageBand と Logic Pro のキャッシュを削除します。ミュージック内のプロジェクトは残します。";
 "cleanup_option_imovie_final_cut" = "iMovie / Final Cut を消去";
-"cleanup_option_imovie_final_cut_sub" = "レンダリングファイルやライブラリを削除します。";
+"cleanup_option_imovie_final_cut_sub" = "iMovie と Final Cut Pro のキャッシュを削除します。ムービー内のライブラリは残します。";
 "cleanup_option_sleep_image" = "スリープ画像を消去";
-"cleanup_option_sleep_image_sub" = "ハイバネーション用ファイルを削除します。";
+"cleanup_option_sleep_image_sub" = "ハイバネーション用のイメージファイルを削除します。次回のスリープ時に macOS が再作成します。";
+"cleanup_option_font_cache" = "フォントキャッシュを消去";
+"cleanup_option_font_cache_sub" = "フォントデータベース（atsutil）を削除します。再起動が必要です。";
+"cleanup_font_cache_confirm_title" = "フォントキャッシュを消去しますか？";
+"cleanup_font_cache_confirm_message" = "フォントキャッシュを消去すると、Macを再起動するまで開いているアプリのテキスト表示が崩れる可能性があります。";
+"cleanup_font_cache_confirm_action" = "消去（再起動が必要）";
 "cleanup_extended_title" = "拡張クリーンアップ";
 "cleanup_start_scan" = "スキャン開始";
 "cleanup_failed" = "クリーンアップ失敗";
@@ -329,6 +351,7 @@
 "cleanup_complete_sub" = "%@ の容量を正常に解放しました。";
 "cleanup_summary" = "削除サマリー";
 "cleanup_skipped" = "スキップされた項目";
+"cleanup_partial_reason" = "%lld件クリーン済み、%lld件は削除できませんでした";
 "cleanup_selected" = "選択中: %@";
 "cleanup_hide_logs" = "ログを非表示";
 "cleanup_show_logs" = "ログを表示";
@@ -351,8 +374,8 @@
 "cleanup_complete_body" = "%@ を正常に解放しました。";
 
 "trash_user_label" = "ユーザーゴミ箱";
-"trash_user_description" = "システムゴミ箱の中身です。";
-"trash_access_prompt_message" = "アクセス権限を許可するにはゴミ箱フォルダを選択してください。";
+"trash_user_description" = "システムのゴミ箱の内容です。削除したファイルが入っています。";
+"trash_access_prompt_message" = "スキャンと整理のアクセスを許可するには、ゴミ箱フォルダを選択してください。（すでに選択済みです。「アクセスを許可」をクリックするだけです）";
 "trash_access_prompt_button" = "アクセスを許可";
 
 /* Uninstaller View */
@@ -401,7 +424,7 @@
 "uninstaller_uninstall_version_warning_perm" = "%2$@ のバージョン %1$@ とその関連ファイル (%3$lld) が永久に削除されます。";
 "uninstaller_version_deleted_body" = "%2$@ のバージョン %1$@ が正常に削除されました。";
 "uninstaller_versions" = "バージョン";
-"shared_data_warning" = "このデータは他のアプリと共有されています。";
+"shared_data_warning" = "このデータは他のアプリと共有されています（例: Android SDK、AVD）。削除すると他の IDE に影響することがあります。";
 
 /* Uninstaller Leftovers */
 "uninstaller_tab_apps" = "アプリケーション";
@@ -422,6 +445,7 @@
 "uninstaller_evidence_card_title" = "検出根拠と信頼度";
 "uninstaller_evidence_why_flagged" = "このファイルが検出された理由";
 "uninstaller_leftovers_cleaned_notification" = "%lld 件の残存ファイルを削除しました (%@ を解放)";
+"orphaned_cleanup_failed_count" = "%lld 件の残存ファイルを削除できませんでした。";
 "uninstaller_show_in_finder" = "Finderで表示";
 
 /* Processes View */
@@ -444,8 +468,8 @@
 "processes_scan_failed" = "スキャン失敗";
 "processes_manage_blacklist" = "ブラックリストを管理";
 "processes_manage_whitelist" = "ホワイトリストを管理";
-"processes_tooltip_blacklist" = "常に終了可能なプロセス。";
-"processes_tooltip_whitelist" = "終了から保護する重要なプロセス。";
+"processes_tooltip_blacklist" = "いつでも終了できるプロセスです。Docker や OrbStack のような重いアプリをここに追加します";
+"processes_tooltip_whitelist" = "絶対に終了してはいけないプロセスです。重要なアプリを誤って終了しないよう保護します";
 "processes_tooltip_refresh" = "プロセス一覧を更新";
 "processes_section_user" = "ユーザープロセス";
 "processes_section_system" = "システムプロセス";
@@ -471,7 +495,7 @@
 "permissions_dismiss_temp" = "後でリマインド";
 "permissions_dismiss_permanent" = "今後表示しない";
 "permissions_warning_title" = "本当によろしいですか？";
-"permissions_warning_message" = "アクセス権限がない場合、不要なファイルを見つけることができません。";
+"permissions_warning_message" = "フルディスクアクセスがないと、不要なファイルの多くを見つけて整理できません。整理の質が大きく下がります。";
 "permissions_warning_confirm" = "許可しない";
 "permissions_status_granted" = "許可済み";
 "permissions_status_required" = "必要";
@@ -620,7 +644,7 @@
 "uninstaller.related_files" = "関連ファイル";
 "uninstaller.developer_artifacts" = "開発成果物";
 "uninstaller.progress.developer_components" = "開発コンポーネントをチェック中...";
-"uninstaller.footer.summary" = "%lld 件のファイルが選択されています";
+"uninstaller.footer.summary" = "%lld 件のファイルが選択されています（%@ 段階）";
 "uninstaller.metadata.difficulty" = "削除難易度";
 "uninstaller.metadata.difficulty.critical" = "最高";
 "uninstaller.metadata.difficulty.high" = "高";
@@ -636,6 +660,7 @@
 "uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) の共有コンポーネント";
 "uninstaller.shared_help.android" = "共有 Android 開発データ (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "共有 Apple 開発ツール (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "コマンドラインツールの共有設定およびデータ";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -670,6 +695,14 @@
 "settings_ai_status_unsupported_device" = "非対応デバイス";
 "settings_ai_status_not_enabled" = "システム設定で無効";
 "settings_ai_status_downloading" = "モデルアセットをダウンロード中...";
+"settings_ai_status_preparing" = "モデルを準備中...";
+"settings_ai_status_unsupported_language" = "言語が未対応";
+"settings_ai_hint_unsupported_language" = "Apple Intelligence は現在、システム言語に対応していません。システム設定で対応言語（英語など）を選択してください。";
+"settings_ai_hint_preparing" = "macOS がバックグラウンドでモデルを初期化しています。電源に接続し、システム設定で状況を確認してください。";
+"settings_ai_hint_not_enabled" = "Apple Intelligence がオフです。macOS のシステム設定でオンにしてください。";
+"settings_ai_hint_unsupported_device" = "この Mac は Apple Intelligence をサポートしていません。Apple Silicon M1 以降が必要です。";
+"settings_ai_open_system_settings" = "システム設定を開く…";
+"settings_ai_refresh_status" = "ステータスを更新";
 "settings_ai_status_unavailable" = "利用不可";
 
 "uninstaller_explain_with_ai" = "AI で解説";
@@ -726,6 +759,11 @@
 "settings_spotlight_reindex_button" = "再構築";
 "settings_spotlight_reindexing" = "再構築中...";
 "settings_spotlight_reindex_success" = "Spotlight の再インデックスを開始しました";
+"settings_spctl_purge_title" = "Gatekeeperキャッシュを消去";
+"settings_spctl_purge_sub" = "Gatekeeperの評価キャッシュを消去して起動エラーや古い署名を修正します (spctl --purge)";
+"settings_spctl_purge_button" = "キャッシュを消去";
+"settings_spctl_purging" = "消去中...";
+"settings_spctl_purge_success" = "Gatekeeperキャッシュを消去しました";
 "settings_software_updates" = "ソフトウェアアップデート";
 "settings_software_updates_sub" = "バージョン確認";
 "settings_current_version" = "現在のバージョン";
@@ -734,7 +772,7 @@
 "settings_permissions_overall" = "権限の全体ステータス";
 "settings_permissions_overall_sub" = "キャッシュのスキャンに必要です";
 "settings_fda_title" = "フルディスクアクセス (FDA)";
-"settings_fda_body" = "孤立ファイルやキャッシュを安全に検索するために必要です。";
+"settings_fda_body" = "フルディスクアクセスにより、MacOSCleaner は孤立したシステムファイル、Xcode の Derived Data、アプリのログを安全に見つけられます。";
 "settings_open_privacy_settings" = "プライバシー設定を開く";
 "settings_check_status" = "ステータスを確認";
 "settings_permission_guide" = "ガイド";
@@ -831,7 +869,7 @@
 "settings_privacy_item_7_title" = "オプトイン永久削除";
 "settings_privacy_item_7_desc" = "永久削除はユーザーが設定した場合のみ実行されます。";
 "settings_privacy_item_8_title" = "安全なアプリ終了";
-"settings_privacy_item_8_desc" = "クリーンアップ前にアプリを安全に終了します。";
+"settings_privacy_item_8_desc" = "クリーンアップ前にアプリを終了します（通常終了、3秒後に強制終了）。";
 "settings_privacy_item_9_title" = "フルディスクアクセス";
 "settings_privacy_item_9_desc" = "完全なスキャンを実行するためにアクセス権限を要求します。";
 "settings_about_privacy_policy_sub" = "完全ローカル、テレメトリゼロを保証";
@@ -924,3 +962,28 @@
 "uninstaller.evidence.parentDirectory.description" = "アプリに関連するディレクトリ内で見つかりました。";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "Launch Services データベースに登録されています。";
+
+"dashboard_view_all_history" = "すべての履歴を表示";
+"history_window_title" = "クリーンアップ履歴";
+"history_search_placeholder" = "検索";
+"history_sort_date" = "日付";
+"history_sort_size" = "サイズ";
+"history_trigger_manual" = "手動";
+"history_trigger_automatic" = "自動";
+"history_empty_state" = "クリーンアップはまだ実行されていません";
+"history_category_general" = "一般";
+"history_category_media" = "メディア";
+"history_category_caches" = "キャッシュ";
+"history_category_dev" = "開発";
+"category.cloudkit_cache" = "iCloud CloudKit キャッシュ";
+"category.swiftpm_cache" = "Swift Package Manager キャッシュ";
+"select" = "選択";
+"dashboard_history_empty_hint" = "クリーンアップ履歴を表示するには、Macのメンテナンスを実行してください";
+"dashboard_start_cleanup" = "クリーンアップを開始";
+
+"startup_show_in_finder" = "Finderで表示";
+"startup_delete_service" = "サービスを削除";
+"startup_delete_confirm_title" = "スタートアップサービスを削除しますか？";
+"startup_delete_confirm_message" = "「%@」を削除してもよろしいですか？\nファイル: %@\nサービスを停止し、plistファイルをゴミ箱に移動します。";
+"startup_delete_action" = "ゴミ箱に入れる";
+"scan_incomplete_without_fda" = "フルディスクアクセスがないため、保護された一部のフォルダは結果に含まれていません。";

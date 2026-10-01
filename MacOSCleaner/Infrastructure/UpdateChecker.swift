@@ -15,8 +15,8 @@ public struct AvailableUpdate: Sendable, Equatable {
 }
 
 public actor UpdateChecker {
-    public static let releasesURL = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases")!
-    private static let apiURL = URL(string: "https://api.github.com/repos/AlexTkDev/MacOSCleaner/releases/latest")!
+    public static let releasesURL: URL = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases") ?? URL(fileURLWithPath: "/")
+    private static let apiURL: URL = URL(string: "https://api.github.com/repos/AlexTkDev/MacOSCleaner/releases/latest") ?? URL(fileURLWithPath: "/")
 
     private struct Release: Decodable {
         let tag_name: String
@@ -43,8 +43,12 @@ public actor UpdateChecker {
             let remoteVersion = remoteTag.hasPrefix("v") ? String(remoteTag.dropFirst()) : remoteTag
             guard isNewer(remoteVersion, than: localVersion) else { return nil }
 
+            let downloadPrefix = "https://github.com/AlexTkDev/MacOSCleaner/releases/download/"
             let dmgURL = release.assets
-                .first { $0.name.lowercased().hasSuffix(".dmg") }
+                .first {
+                    $0.name.lowercased().hasSuffix(".dmg")
+                        && $0.browser_download_url.hasPrefix(downloadPrefix)
+                }
                 .flatMap { URL(string: $0.browser_download_url) }
 
             Logger.updater.info("Update available: \(remoteVersion, privacy: .public) (current: \(localVersion, privacy: .public))")

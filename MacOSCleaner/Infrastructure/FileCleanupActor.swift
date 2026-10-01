@@ -28,21 +28,21 @@ public actor FileCleanupActor {
         await sizeCache.getSize(for: path)
     }
 
-    func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?, failedCount: Int) {
         try Task.checkCancellation()
         let url = URL(fileURLWithPath: path)
-        try fileSystemContext.assertAllowedForMutation(url)
         try safetyManager.validate(url: url)
+        try fileSystemContext.assertAllowedForMutation(url)
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
-            return (0, nil)
+            return (0, nil, 0)
         }
 
         // Do not traverse into symlink directories — leaf symlink is removed as the link itself.
         if safetyManager.isSymlinkDirectory(url) {
             progress?(.log("  \(Self.shortPath(path)) — symlink directory, skipped"))
-            return (0, nil)
+            return (0, nil, 0)
         }
 
         var isDir: ObjCBool = false
@@ -52,32 +52,44 @@ public actor FileCleanupActor {
             let size = Self.physicalSize(of: path, fm: fm)
             if dryRun {
                 progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(size))"))
-                guard size >= Self.minPreviewBytes else { return (0, nil) }
-                return (size, Self.fileItemForPath(path, size: size, isDirectory: false))
+                guard size >= Self.minPreviewBytes else { return (0, nil, 0) }
+                return (size, Self.fileItemForPath(path, size: size, isDirectory: false), 0)
             }
             do {
                 try fm.removeItem(at: url)
             } catch {
                 progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
                 Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
-                return (0, nil)
+                return (0, nil, 1)
             }
             guard !fm.fileExists(atPath: path) else {
                 progress?(.log("  \(Self.shortPath(path)) — still present after delete, not counting"))
-                return (0, nil)
+                return (0, nil, 1)
             }
             progress?(.log("  \(Self.shortPath(path)) — removed, freed \(Self.formatBytes(size))"))
-            return (size, nil)
+            return (size, nil, 0)
         }
 
         let before = await getDirectorySize(path)
         if dryRun {
             progress?(.log("  \(Self.shortPath(path)) — \(Self.formatBytes(before))"))
-            guard before >= Self.minPreviewBytes else { return (0, nil) }
-            return (before, Self.fileItemForPath(path, size: before, isDirectory: true))
+            guard before >= Self.minPreviewBytes else { return (0, nil, 0) }
+            return (before, Self.fileItemForPath(path, size: before, isDirectory: true), 0)
         }
 
-        let contents = try fm.contentsOfDirectory(atPath: path)
+        let contents: [String]
+        do {
+            contents = try fm.contentsOfDirectory(atPath: path)
+        } catch {
+            let nsError = error as NSError
+            if (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+                || (nsError.domain == NSCocoaErrorDomain && (nsError.code == NSFileReadNoPermissionError || nsError.code == NSFileWriteNoPermissionError)) {
+                progress?(.log("  \(Self.shortPath(path)) — access denied by macOS (Full Disk Access required)"))
+            } else {
+                progress?(.log("  \(Self.shortPath(path)) — read failed: \(error.localizedDescription)"))
+            }
+            return (0, nil, 1)
+        }
         var removedCount = 0
         var failedCount = 0
         let runningBundle = Bundle.main.bundlePath
@@ -119,7 +131,7 @@ public actor FileCleanupActor {
         } else if freed > 0 {
             progress?(.log("  \(Self.shortPath(path)) — removed \(removedCount) items, freed \(Self.formatBytes(freed))"))
         }
-        return (freed, nil)
+        return (freed, nil, failedCount)
     }
 
     func removeDirectory(_ path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
@@ -199,13 +211,41 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())!
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
         var freed: Int64 = 0
         var removedCount = 0
 
-        let contents = try fm.contentsOfDirectory(atPath: path)
+        let contents: [String]
+        do {
+            contents = try fm.contentsOfDirectory(atPath: path)
+        } catch {
+            let nsError = error as NSError
+            if (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+                || (nsError.domain == NSCocoaErrorDomain && (nsError.code == NSFileReadNoPermissionError || nsError.code == NSFileWriteNoPermissionError)) {
+                progress?(.log("  \(Self.shortPath(path)) — access denied by macOS (Full Disk Access required)"))
+            } else {
+                progress?(.log("  \(Self.shortPath(path)) — read failed: \(error.localizedDescription)"))
+            }
+            return (0, nil)
+        }
+
+        let runningBundle = Bundle.main.bundlePath
         for item in contents {
+            try Task.checkCancellation()
             let itemURL = URL(fileURLWithPath: path).appendingPathComponent(item)
+            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                continue
+            }
+            if safetyManager.isSymlinkDirectory(itemURL) {
+                continue
+            }
+            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
+                continue
+            }
+            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
+                continue
+            }
+
             let attrs = try? fm.attributesOfItem(atPath: itemURL.path)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
                 var isDir: ObjCBool = false
@@ -246,15 +286,19 @@ public actor FileCleanupActor {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
-        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())!
+        let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
         var freed: Int64 = 0
         var removedCount = 0
 
         guard let enumerator = fm.enumerator(atPath: path) else { return (0, nil) }
+        let runningBundle = Bundle.main.bundlePath
         while let item = enumerator.nextObject() as? String {
             try Task.checkCancellation()
             let itemPath = "\(path)/\(item)"
             let itemURL = URL(fileURLWithPath: itemPath)
+            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                continue
+            }
             let shouldExclude = FileManager.shouldExclude(url: itemURL)
             if shouldExclude {
                 var isDir: ObjCBool = false
@@ -262,6 +306,17 @@ public actor FileCleanupActor {
                 if isDir.boolValue { enumerator.skipDescendants() }
                 continue
             }
+            if safetyManager.isSymlinkDirectory(itemURL) {
+                enumerator.skipDescendants()
+                continue
+            }
+            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
+                continue
+            }
+            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
+                continue
+            }
+
             let attrs = try? fm.attributesOfItem(atPath: itemPath)
             if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
                 let size = Self.physicalSize(of: itemPath, fm: fm)
@@ -291,11 +346,11 @@ public actor FileCleanupActor {
         return (freed, nil)
     }
 
-    func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
+    func cleanContentsBatch(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
         var totalFreed: Int64 = 0
         for path in paths {
             try Task.checkCancellation()
-            let (freed, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
+            let (freed, item, _) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
             totalFreed += freed
             if dryRun, let item { emitFileItem(item, category: nil, parentName: nil, progress: progress) }
         }

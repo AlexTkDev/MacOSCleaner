@@ -151,7 +151,7 @@ final class FileSystemIsolationTests: XCTestCase {
         let previewPaths = PathBox()
         let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         _ = try await engine.run(categories: [.oldBackups], dryRun: true) { event in
-            if case .fileItem(let path, _, _, _, _, _) = event {
+            if case .fileItem(let path, _, _, _, _, _, _, _) = event {
                 previewPaths.append(path)
             }
         }
@@ -162,5 +162,21 @@ final class FileSystemIsolationTests: XCTestCase {
         let backupsPrefix = (backupsRoot.path as NSString).standardizingPath
         XCTAssertFalse(paths.contains(where: { $0.hasPrefix(backupsPrefix) }))
         XCTAssertTrue(FileManager.default.fileExists(atPath: keep.path))
+    }
+
+    func test_productionEnforcesAllowedRoots() {
+        let prod = FileSystemContext.production
+        XCTAssertTrue(prod.enforceAllowedRoots)
+        let allowedPaths = prod.allowedRoots.map(\.path)
+        XCTAssertFalse(allowedPaths.contains("/Users"), "Allowed roots must never include wholesale /Users")
+        XCTAssertTrue(allowedPaths.contains(FileManager.default.homeDirectoryForCurrentUser.resolvingSymlinksInPath().path))
+    }
+
+    func test_cleanupPathExpanderDoesNotExpandForeignUsers() throws {
+        let home = fileSystemContext.homePath
+        let matches = CleanupPathExpander.expand("/Users/*", home: home)
+        for match in matches {
+            XCTAssertEqual(match, NormalizedPath.string(home), "Glob on /Users/* must never expand to foreign user profiles")
+        }
     }
 }

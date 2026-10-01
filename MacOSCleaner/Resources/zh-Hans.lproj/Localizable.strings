@@ -29,10 +29,12 @@
 "settings_cmd_storage_status" = "获取磁盘存储状态";
 "settings_cmd_clean_category" = "清理指定分类 (缓存、日志等)";
 "settings_cmd_scheduled_cleanup" = "运行计划清理 (Automator)";
+"settings_cmd_empty_trash" = "清倒废纸篓";
 "siri_phrase_developer_caches" = "清理开发者缓存";
 "siri_phrase_storage_status" = "还有多少可用空间";
 "siri_phrase_clean_category" = "清理系统缓存";
 "siri_phrase_scheduled_cleanup" = "运行计划清理";
+"siri_phrase_empty_trash" = "清倒废纸篓";
 
 /* Custom Siri Commands Editor */
 "siri_add_command_button" = "添加指令";
@@ -92,6 +94,10 @@
 "duplicate_trash_confirm_message" = "确定要将所选的 %ld 个重复文件 (%@) 移至废纸篓吗？";
 "duplicate_trash_completed" = "已成功将 %ld 个文件 (%@) 移至废纸篓";
 "duplicate_trash_failed" = "移至废纸篓失败：%@";
+"duplicate_badge_original" = "原件";
+"duplicate_badge_duplicate" = "副本";
+"duplicate_copies_count" = "%ld 个副本";
+"duplicate_no_selection" = "选择重复项组";
 
 /* Disk Analyzer Screen */
 "menu_disk_space" = "磁盘分析";
@@ -173,6 +179,10 @@
 "language.chinese_simplified" = "简体中文";
 "language.italian" = "意大利语";
 "language.portuguese_brazil" = "葡萄牙语 (巴西)";
+"language.arabic" = "阿拉伯语";
+"language.chinese_traditional" = "繁体中文";
+"language.korean" = "韩语";
+"language.polish" = "波兰语";
 
 /* Settings View */
 "menu_settings" = "设置";
@@ -209,8 +219,8 @@
 "scan_mode.safe" = "安全";
 "scan_mode.balanced" = "平衡";
 "scan_mode.balanced.default" = "默认";
-"scan_mode.safe.desc" = "仅查找基于 Bundle ID 或应用名的确凿关联文件，风险最低。";
-"scan_mode.balanced.desc" = "包括 Spotlight 全局索引的高级扫描，推荐彻底清理。";
+"scan_mode.safe.desc" = "只查找按 Bundle ID、应用名称或安装包回执高置信匹配的文件。不使用 Spotlight。误删共享文件的风险最低。";
+"scan_mode.balanced.desc" = "完整扫描，包括 Spotlight（mdfind）、扩展路径和所有可能的匹配。能找到更多残留，包括非标准位置。建议用于彻底清理。";
 
 /* Update Checker */
 "update.check" = "检查更新";
@@ -237,16 +247,16 @@
 "settings_notifications_denied" = "已拒绝 (在系统设置中打开)";
 "settings_notifications_not_determined" = "未请求";
 "settings_open_notification_settings" = "打开通知设置";
-"settings_tooltip_theme" = "选择应用程序的外观主题风格。";
+"settings_tooltip_theme" = "选择应用的外观。跟随系统会采用 macOS 的设置。";
 "settings_tooltip_notifications" = "在扫描和清理完成时显示系统通知。";
 "settings_tooltip_tooltips" = "鼠标悬停在界面元素上时显示提示。";
 "settings_tooltip_auto_scan" = "应用启动时自动开始扫描可清理的项目。";
-"settings_tooltip_refresh_interval" = "进程列表的自动刷新频率。";
+"settings_tooltip_refresh_interval" = "进程列表的刷新频率。选择手动会关闭自动刷新。";
 "settings_tooltip_sort_by" = "进程列表的默认排序方式。";
-"settings_tooltip_empty_trash" = "在清理过程中同时清空系统废纸篓。";
-"settings_tooltip_bypass_trash" = "卸载应用及关联文件时直接彻底删除，不经过废纸篓。";
-"settings_tooltip_show_related" = "在卸载页面中展示每个应用关联的缓存和偏好设置文件。";
-"settings_tooltip_empty_trash_immediately" = "移至废纸篓后立即彻底清空。";
+"settings_tooltip_empty_trash" = "开启后，清理过程中会清空系统废纸篓。为安全起见，默认关闭。";
+"settings_tooltip_bypass_trash" = "卸载应用及其关联文件时直接彻底删除，不经过废纸篓。警告：卸载将无法撤销。";
+"settings_tooltip_show_related" = "在卸载界面显示每个应用找到的关联文件（缓存、偏好设置、日志）。";
+"settings_tooltip_empty_trash_immediately" = "将项目移到废纸篓后立即清空。清理操作将无法撤销。";
 "settings_tooltip_skip_expert" = "跳过手动勾选环节，直接勾选所有残留进行全量彻底卸载。";
 "settings_tooltip_forget" = "清除所有已保存偏好设置并恢复出厂默认值。";
 
@@ -254,7 +264,7 @@
 "settings_reset_confirm_title" = "重置所有设置？";
 "settings_reset_confirm_button" = "重置所有";
 "settings_reset_confirm_message" = "这将清除所有保存的数据并将设置恢复为默认值。此操作无法撤销。";
-"settings_trash_warning" = "这些设置将导致删除无法撤销，请谨慎开启。";
+"settings_trash_warning" = "这些设置会使删除无法撤销。绕过废纸篓或从中立即清空的文件无法恢复。";
 
 /* Startup Services View */
 "menu_startup_services" = "开机启动项";
@@ -264,6 +274,7 @@
 "startup_scanning" = "正在扫描服务...";
 "startup_no_agents" = "无开机启动项";
 "startup_no_agents_sub" = "未在 ~/Library/LaunchAgents 中找到后台服务。";
+"startup_category_empty" = "该分类下没有服务";
 "startup_scan_failed" = "扫描失败";
 "startup_status_loaded" = "已加载";
 "startup_status_unloaded" = "未加载";
@@ -301,6 +312,12 @@
 "cleanup_cleaning" = "正在清理...";
 "cleanup_ready" = "准备清理";
 "cleanup_ready_sub" = "扫描系统以寻找可安全删除的临时文件。";
+"cleanup_base_section_title" = "基础清理（默认）";
+"cleanup_base_system_cache" = "系统缓存";
+"cleanup_base_app_logs" = "应用日志";
+"cleanup_base_browser_cache" = "浏览器缓存";
+"cleanup_base_trash" = "废纸篓（若在设置中启用）";
+"cleanup_badge_password" = "密码";
 "cleanup_additional_options" = "附加清理选项";
 "cleanup_option_ds_store" = "清理 .DS_Store 文件";
 "cleanup_option_ds_store_sub" = "清理系统中自动生成的文件夹元数据文件。";
@@ -309,17 +326,22 @@
 "cleanup_option_modcache" = "清理 Go 模块缓存 (GOMODCACHE)";
 "cleanup_option_modcache_sub" = "删除下载的 Go 依赖包。下次构建时将重新下载。";
 "cleanup_option_projects" = "清理项目中的 .dart_tool";
-"cleanup_option_projects_sub" = "清理 Flutter/Dart 项目缓存。";
+"cleanup_option_projects_sub" = "删除 ~/Documents、~/Projects、~/Developer、~/dev、~/code、~/repos 中的 Flutter/Dart 项目缓存。";
 "cleanup_option_cloud_docs" = "清理 iCloud 文档缓存";
 "cleanup_option_cloud_docs_sub" = "清理本地的 iCloud 文档缓存。按需重新下载。";
 "cleanup_option_voice_memos" = "清理语音备忘录";
 "cleanup_option_voice_memos_sub" = "从媒体库中清理录音文件。";
 "cleanup_option_garageband_logic" = "清理 GarageBand / Logic";
-"cleanup_option_garageband_logic_sub" = "清理 GarageBand 和 Logic Pro 项目及缓存。";
+"cleanup_option_garageband_logic_sub" = "仅清理 GarageBand 和 Logic Pro 的缓存。音乐中的项目会保留。";
 "cleanup_option_imovie_final_cut" = "清理 iMovie / Final Cut";
-"cleanup_option_imovie_final_cut_sub" = "清理 iMovie 和 Final Cut Pro 渲染文件。";
+"cleanup_option_imovie_final_cut_sub" = "仅清理 iMovie 和 Final Cut Pro 的缓存。影片中的资源库会保留。";
 "cleanup_option_sleep_image" = "清理休眠镜像 (Sleep Image)";
 "cleanup_option_sleep_image_sub" = "删除休眠镜像文件。macOS 下次休眠时会自动重建。";
+"cleanup_option_font_cache" = "清理字体缓存";
+"cleanup_option_font_cache_sub" = "清理字体数据库缓存 (atsutil)。需要重启生效。";
+"cleanup_font_cache_confirm_title" = "确定清理字体缓存？";
+"cleanup_font_cache_confirm_message" = "清理字体缓存可能导致当前打开的应用程序中的文本渲染异常，直到重新启动 Mac。";
+"cleanup_font_cache_confirm_action" = "清理（需要重启）";
 "cleanup_extended_title" = "深度扩展清理";
 "cleanup_start_scan" = "开始扫描";
 "cleanup_failed" = "清理失败";
@@ -329,6 +351,7 @@
 "cleanup_complete_sub" = "已成功释放 %@ 磁盘空间。";
 "cleanup_summary" = "删除项目摘要";
 "cleanup_skipped" = "未能清理";
+"cleanup_partial_reason" = "已清理 %lld 项，%lld 项无法移除";
 "cleanup_selected" = "已选择：%@";
 "cleanup_hide_logs" = "隐藏日志";
 "cleanup_show_logs" = "显示日志";
@@ -351,8 +374,8 @@
 "cleanup_complete_body" = "已成功释放 %@ 空间。";
 
 "trash_user_label" = "用户废纸篓";
-"trash_user_description" = "系统废纸篓中的文件。";
-"trash_access_prompt_message" = "请选择废纸篓文件夹以授予扫描和清理权限。";
+"trash_user_description" = "系统废纸篓中的内容。包含已删除的文件。";
+"trash_access_prompt_message" = "请选择废纸篓文件夹，以授予扫描和清理权限。（文件夹已经选中，只需点击“授予权限”）";
 "trash_access_prompt_button" = "授予权限";
 
 /* Uninstaller View */
@@ -401,7 +424,7 @@
 "uninstaller_uninstall_version_warning_perm" = "这将永久删除 %2$@ 的版本 %1$@ 及其相关文件 (%3$lld)。";
 "uninstaller_version_deleted_body" = "%2$@ 的版本 %1$@ 已成功移除。";
 "uninstaller_versions" = "版本";
-"shared_data_warning" = "此数据与其他应用共享，删除可能影响其他开发环境。";
+"shared_data_warning" = "此数据与其他应用共享（例如 Android SDK、AVD）。删除可能影响其他 IDE。";
 
 /* Uninstaller Leftovers */
 "uninstaller_tab_apps" = "应用程序";
@@ -422,6 +445,7 @@
 "uninstaller_evidence_card_title" = "匹配依据与置信度";
 "uninstaller_evidence_why_flagged" = "为什么标记此文件？";
 "uninstaller_leftovers_cleaned_notification" = "已清理 %lld 项残留文件 (释放 %@)";
+"orphaned_cleanup_failed_count" = "未能删除 %lld 个残留文件。";
 "uninstaller_show_in_finder" = "在访达中显示";
 
 /* Processes View */
@@ -444,8 +468,8 @@
 "processes_scan_failed" = "扫描失败";
 "processes_manage_blacklist" = "管理黑名单";
 "processes_manage_whitelist" = "管理白名单";
-"processes_tooltip_blacklist" = "允许随时结束的进程列表。";
-"processes_tooltip_whitelist" = "免受误杀保护的关键进程列表。";
+"processes_tooltip_blacklist" = "可以随时结束的进程 — 把 Docker 或 OrbStack 这类较重的应用加到这里";
+"processes_tooltip_whitelist" = "绝不能结束的进程 — 保护关键应用，避免误结束";
 "processes_tooltip_refresh" = "刷新进程列表";
 "processes_section_user" = "用户进程";
 "processes_section_system" = "系统进程";
@@ -471,7 +495,7 @@
 "permissions_dismiss_temp" = "稍后提醒我";
 "permissions_dismiss_permanent" = "不再显示";
 "permissions_warning_title" = "确定要跳过吗？";
-"permissions_warning_message" = "缺少完全磁盘访问权限会导致许多隐藏垃圾文件无法被发现和清理。";
+"permissions_warning_message" = "没有完全磁盘访问权限时，应用无法找到并清理许多不必要的文件。清理效果会明显下降。";
 "permissions_warning_confirm" = "绝不授权";
 "permissions_status_granted" = "已授权";
 "permissions_status_required" = "需要授权";
@@ -636,6 +660,7 @@
 "uninstaller.shared_help.jetbrains" = "JetBrains IDE (IntelliJ IDEA, PyCharm, WebStorm, CLion) 的共享组件";
 "uninstaller.shared_help.android" = "共享的 Android 开发数据 (Android Studio, IntelliJ IDEA, Gradle)";
 "uninstaller.shared_help.apple_developer" = "共享的 Apple 开发者工具 (Xcode, Command Line Tools, Simulator)";
+"uninstaller.shared_help.cli_config" = "命令行工具共享配置与数据";
 
 "format_bytes_b" = "%lld B";
 "format_bytes_kb" = "%.1f KB";
@@ -670,6 +695,14 @@
 "settings_ai_status_unsupported_device" = "设备硬件不支持";
 "settings_ai_status_not_enabled" = "未在系统设置中开启";
 "settings_ai_status_downloading" = "正在下载模型资源...";
+"settings_ai_status_preparing" = "正在准备模型...";
+"settings_ai_status_unsupported_language" = "语言不受支持";
+"settings_ai_hint_unsupported_language" = "Apple 智能目前不支持当前系统语言。需要在系统设置中使用受支持的语言（如英语）。";
+"settings_ai_hint_preparing" = "macOS 正在后台初始化模型。请将 Mac 连接电源并在系统设置中确认状态。";
+"settings_ai_hint_not_enabled" = "Apple 智能已停用。请在 macOS 系统设置中将其开启。";
+"settings_ai_hint_unsupported_device" = "此 Mac 不支持 Apple 智能。需要 Apple 芯片 M1 或更高版本。";
+"settings_ai_open_system_settings" = "打开系统设置…";
+"settings_ai_refresh_status" = "刷新状态";
 "settings_ai_status_unavailable" = "不可用";
 
 "uninstaller_explain_with_ai" = "使用 AI 解释";
@@ -726,6 +759,11 @@
 "settings_spotlight_reindex_button" = "重建索引";
 "settings_spotlight_reindexing" = "正在重建...";
 "settings_spotlight_reindex_success" = "Spotlight 重建索引已启动";
+"settings_spctl_purge_title" = "清除 Gatekeeper 缓存";
+"settings_spctl_purge_sub" = "清除 Gatekeeper 评估缓存以修复启动错误和过期签名 (spctl --purge)";
+"settings_spctl_purge_button" = "清除缓存";
+"settings_spctl_purging" = "正在清除...";
+"settings_spctl_purge_success" = "Gatekeeper 缓存已清除";
 "settings_software_updates" = "软件更新";
 "settings_software_updates_sub" = "版本检测";
 "settings_current_version" = "当前版本";
@@ -734,7 +772,7 @@
 "settings_permissions_overall" = "总体授权状态";
 "settings_permissions_overall_sub" = "扫描系统缓存与应用残留所必需";
 "settings_fda_title" = "完全磁盘访问权限 (FDA)";
-"settings_fda_body" = "允许 MacOSCleaner 安全搜寻孤立系统文件和缓存。";
+"settings_fda_body" = "完全磁盘访问权限让 MacOSCleaner 能安全地找到孤立的系统文件、Xcode 派生数据和应用日志。";
 "settings_open_privacy_settings" = "打开隐私设置";
 "settings_check_status" = "检查状态";
 "settings_permission_guide" = "设置指引";
@@ -831,7 +869,7 @@
 "settings_privacy_item_7_title" = "可选的永久彻底删除";
 "settings_privacy_item_7_desc" = "永久彻底删除和自动清空废纸篓功能默认为关闭，需手动开启。";
 "settings_privacy_item_8_title" = "应用平滑关闭";
-"settings_privacy_item_8_desc" = "清理前会先平滑关闭目标应用。";
+"settings_privacy_item_8_desc" = "清理前会关闭应用（先正常退出，3 秒后强制退出）。";
 "settings_privacy_item_9_title" = "完全磁盘访问权限";
 "settings_privacy_item_9_desc" = "启动时请求完全磁盘访问权限，以确保彻底扫描。";
 "settings_about_privacy_policy_sub" = "100% 本地化，零遥测隐私保证";
@@ -924,3 +962,28 @@
 "uninstaller.evidence.parentDirectory.description" = "在与该应用相关的目录中找到。";
 "uninstaller.evidence.launchServicesRegistered.title" = "Launch Services";
 "uninstaller.evidence.launchServicesRegistered.description" = "在 Launch Services 数据库中已注册。";
+
+"dashboard_view_all_history" = "查看全部历史";
+"history_window_title" = "清理历史";
+"history_search_placeholder" = "搜索";
+"history_sort_date" = "日期";
+"history_sort_size" = "大小";
+"history_trigger_manual" = "手动";
+"history_trigger_automatic" = "自动";
+"history_empty_state" = "尚未执行任何清理";
+"history_category_general" = "常规";
+"history_category_media" = "媒体";
+"history_category_caches" = "缓存";
+"history_category_dev" = "开发";
+"category.cloudkit_cache" = "iCloud CloudKit 缓存";
+"category.swiftpm_cache" = "Swift 包管理器缓存";
+"select" = "选择";
+"dashboard_history_empty_hint" = "若要在此处查看清理历史，请对您的 Mac 执行一次维护清理";
+"dashboard_start_cleanup" = "开始清理";
+
+"startup_show_in_finder" = "在访达中显示";
+"startup_delete_service" = "删除服务";
+"startup_delete_confirm_title" = "删除启动服务？";
+"startup_delete_confirm_message" = "确定要删除“%@”吗？\n文件：%@\n服务将被停止，其 plist 文件将移至废纸篓。";
+"startup_delete_action" = "移至废纸篓";
+"scan_incomplete_without_fda" = "没有完全磁盘访问权限时，部分受保护的文件夹不会出现在结果中。";

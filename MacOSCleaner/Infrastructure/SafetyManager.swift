@@ -65,7 +65,6 @@ public struct SafetyManager: Sendable {
         ]
 
         self.refuseList = [
-            "/",
             "/System",
             "/Library",
             "/usr",
@@ -87,6 +86,8 @@ public struct SafetyManager: Sendable {
             "\(home)/Movies",
             "\(home)/Music",
             "\(home)/Pictures",
+            "\(home)/Backups",
+            "/",
         ]
 
         let defaultExceptions = [
@@ -128,6 +129,11 @@ public struct SafetyManager: Sendable {
             "\(home)/.gradle",
             "\(home)/.pub-cache",
             "\(home)/.dartServer",
+            "\(home)/.swiftpm/cache",
+            "\(home)/.cocoapods/repos",
+            "\(home)/.kotlin",
+            "\(home)/.flutter-devtools",
+            "\(home)/.m2",
             "\(home)/.android",
             "\(home)/.ollama",
             "\(home)/.diffusionbee",
@@ -141,6 +147,8 @@ public struct SafetyManager: Sendable {
             "/opt/homebrew/Caskroom",
             "/usr/local/Cellar",
             "/usr/local/Caskroom",
+            URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
+            URL(fileURLWithPath: NSTemporaryDirectory()).resolvingSymlinksInPath().standardizedFileURL.path,
         ]
 
         self.allowedExceptions = defaultExceptions + allowedExceptions
@@ -154,7 +162,8 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Reminders",
             "\(home)/Library/Contacts",
             "\(home)/Library/Application Support/AddressBook",
-            "\(home)/Library/Messages/Attachments",
+            "\(home)/Library/Messages",
+            "\(home)/Library/Mobile Documents",
             "\(home)/Library/Preferences/com.google.Keystone.Agent.plist",
             "\(home)/Library/Google/GoogleSoftwareUpdate",
             "\(home)/Library/Application Support/Google/GoogleUpdater",
@@ -172,16 +181,9 @@ public struct SafetyManager: Sendable {
             "/Library/Application Support/com.apple.TCC",
             "/var/db/dslocal",
             "/private/var/db/dslocal",
-            // User content roots — hard refuse so broad /var/folders|/tmp exceptions cannot override.
+            // Sensitive user credentials roots
             "\(home)/.ssh",
             "\(home)/.gnupg",
-            "\(home)/Documents",
-            "\(home)/Desktop",
-            "\(home)/Downloads",
-            "\(home)/Movies",
-            "\(home)/Music",
-            "\(home)/Pictures",
-            "\(home)/Backups",
         ]
 
         let appSupport = "\(home)/Library/Application Support"
@@ -215,6 +217,10 @@ public struct SafetyManager: Sendable {
         self.credentialFileNames = [
             "login data", "login data for account", "cookies",
             "web data", "account web data", "local state", "secure preferences",
+            "cookies.sqlite", "cookies.binarycookies",
+            "logins.json", "key4.db", "cert9.db",
+            "places.sqlite", "favicons.sqlite", "formhistory.sqlite",
+            "sessionstore.jsonlz4", "logins-backup.json",
         ]
 
         self.exactRefuseList = [
@@ -233,6 +239,8 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Application Scripts",
             "\(home)/Library/Developer",
             "\(home)/Library/Messages",
+            "\(home)/Library/Mobile Documents",
+            "\(home)/Library/Cookies",
             "\(home)/Backups",
             "/Library/Application Support",
             "/Library/Preferences",
@@ -240,6 +248,10 @@ public struct SafetyManager: Sendable {
             "/Library/LaunchDaemons",
             "/Library/PrivilegedHelperTools",
             "\(home)/Library/LaunchAgents",
+            "/tmp",
+            "/private/tmp",
+            URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
+            URL(fileURLWithPath: NSTemporaryDirectory()).resolvingSymlinksInPath().standardizedFileURL.path,
         ]
     }
 
@@ -265,19 +277,29 @@ public struct SafetyManager: Sendable {
         let pathsToCheck = [path, resolvedPath]
 
         for p in pathsToCheck {
-            // Regenerable project build dirs / aged backup leaves under Documents/Desktop may pass before hard refuse.
-            if Self.isProjectLocalBuildArtifact(p, home: home)
-                || Self.isReviewableBackupLeaf(p, home: home)
-                || Self.isReviewableInstallerLeaf(p, home: home)
-                || Self.isReviewableLargeArchiveLeaf(p, home: home) {
-                continue
-            }
             for refused in hardRefuseList where p == refused || p.hasPrefix(refused + "/") {
                 throw SafetyError.protectedPath(refused)
             }
 
+            // Apple system group containers must never be removed
+            if p == "\(home)/Library/Group Containers" {
+                throw SafetyError.protectedPath(p)
+            }
+            if p.hasPrefix("\(home)/Library/Group Containers/group.com.apple")
+                || p.hasPrefix("\(home)/Library/Group Containers/com.apple") {
+                throw SafetyError.protectedPath("\(home)/Library/Group Containers")
+            }
+
             if exactRefuseList.contains(p) {
                 throw SafetyError.protectedPath(p)
+            }
+
+            // Protect ~/Library/Mail under uninstall unless inside ~/Library/Mail/Bundles
+            if policy == .uninstall && (p == "\(home)/Library/Mail" || p.hasPrefix("\(home)/Library/Mail/")) {
+                let bundles = "\(home)/Library/Mail/Bundles"
+                if !(p == bundles || p.hasPrefix(bundles + "/")) {
+                    throw SafetyError.protectedPath("\(home)/Library/Mail")
+                }
             }
 
             if policy == .cleanup, let refused = cleanupProtectedPath(p) {
@@ -306,7 +328,18 @@ public struct SafetyManager: Sendable {
                 throw SafetyError.protectedPath(immutableRefuseRoot(matching: p) ?? p)
             }
 
-            let isException = allowedExceptions.contains { exception in
+            // Custom exceptions must never override user personal content roots.
+            let isUserContentRoot = [
+                "\(home)/Documents",
+                "\(home)/Desktop",
+                "\(home)/Downloads",
+                "\(home)/Movies",
+                "\(home)/Music",
+                "\(home)/Pictures",
+                "\(home)/Backups",
+            ].contains { p == $0 || p.hasPrefix($0 + "/") }
+
+            let isException = !isUserContentRoot && allowedExceptions.contains { exception in
                 p == exception || p.hasPrefix(exception + "/")
             }
 
@@ -314,8 +347,11 @@ public struct SafetyManager: Sendable {
                 continue
             }
 
-            // Regenerable project build artifacts under user project roots
-            if Self.isProjectLocalBuildArtifact(p, home: home) {
+            // Regenerable project build artifacts / aged backup leaves under user project roots
+            if Self.isProjectLocalBuildArtifact(p, home: home)
+                || Self.isReviewableBackupLeaf(p, home: home)
+                || Self.isReviewableInstallerLeaf(p, home: home)
+                || Self.isReviewableLargeArchiveLeaf(p, home: home) {
                 continue
             }
 
@@ -325,7 +361,9 @@ public struct SafetyManager: Sendable {
 
             for refused in refuseList {
                 let isExactMatch = (p == refused)
-                let isSubdirectory = p.hasPrefix(refused + "/")
+                let isSubdirectory = (refused == "/")
+                    ? (!p.hasPrefix(home + "/") && p != "/" && p.hasPrefix("/"))
+                    : p.hasPrefix(refused + "/")
 
                 if isExactMatch {
                     throw SafetyError.protectedPath(refused)
@@ -418,8 +456,14 @@ public struct SafetyManager: Sendable {
         return (st.st_mode & S_IFMT) == S_IFLNK
     }
 
-    /// Cleanup-only protection: login/session data survives regular cleanup.
     private func cleanupProtectedPath(_ path: String) -> String? {
+        let lowerPath = path.lowercased()
+
+        // Protect Mail wholesale during cleanup (never touch attachments or mailbox databases)
+        if lowerPath == "\(home.lowercased())/library/mail" || lowerPath.hasPrefix("\(home.lowercased())/library/mail/") {
+            return "\(home)/Library/Mail"
+        }
+
         for root in browserUserDataRoots {
             if path == root || root.hasPrefix(path + "/") {
                 return path
@@ -441,8 +485,56 @@ public struct SafetyManager: Sendable {
             return path
         }
 
-        guard path.contains("/Application Support/") else { return nil }
-        var basename = URL(fileURLWithPath: path).lastPathComponent.lowercased()
+        // Project settings and IDE configurations (e.g. .vscode, .idea, .zed)
+        if lowerPath.contains("/.vscode/") || lowerPath.hasSuffix("/.vscode")
+            || lowerPath.contains("/.idea/") || lowerPath.hasSuffix("/.idea")
+            || lowerPath.contains("/.zed/") || lowerPath.hasSuffix("/.zed") {
+            return path
+        }
+
+        // Shared file lists (Finder sidebar favorites, etc.)
+        if lowerPath.contains("/com.apple.sharedfilelist/") {
+            let sflName = URL(fileURLWithPath: path).lastPathComponent.lowercased()
+            let safeSFLNames: Set<String> = [
+                "com.apple.lssharedfilelist.recentdocuments.sfl3",
+                "com.apple.lssharedfilelist.recentapplications.sfl3",
+                "com.apple.lssharedfilelist.recentservers.sfl3",
+                "com.apple.lssharedfilelist.recenthosts.sfl3",
+            ]
+            if !safeSFLNames.contains(sflName) {
+                return path
+            }
+        }
+
+        // IDE user configuration (VS Code, Cursor, Windsurf, Zed, etc.)
+        let protectedIDEParents = [
+            "/application support/code/user/",
+            "/application support/code - insiders/user/",
+            "/application support/cursor/user/",
+            "/application support/windsurf/user/",
+            "/application support/ai.opencode.desktop/user/",
+            "/.config/zed/",
+            "/application support/dev.zed.zed/",
+        ]
+        if protectedIDEParents.contains(where: { lowerPath.contains($0) }) {
+            // Under User/, only workspaceStorage is a cleanable cache; settings, keybindings, snippets are protected
+            if !lowerPath.contains("/user/workspacestorage/") && !lowerPath.hasSuffix("/user/workspacestorage") {
+                return path
+            }
+        }
+
+        // Project / IDE configuration files anywhere (e.g. settings.json, launch.json, tasks.json)
+        let fileName = URL(fileURLWithPath: path).lastPathComponent.lowercased()
+        let protectedConfigFiles: Set<String> = [
+            "settings.json", "launch.json", "tasks.json",
+            "extensions.json", "keybindings.json",
+        ]
+        if protectedConfigFiles.contains(fileName) {
+            return path
+        }
+
+        // Credential and cookie files across Library, Application Support, and Containers
+        var basename = fileName
         for suffix in ["-journal", "-wal", "-shm"] where basename.hasSuffix(suffix) {
             basename = String(basename.dropLast(suffix.count))
             break
@@ -465,7 +557,16 @@ public struct SafetyManager: Sendable {
             "\(homeLower)/projects/", "\(homeLower)/repos/", "\(homeLower)/src/",
             "\(homeLower)/workspace/", "\(homeLower)/code/",
         ]
-        guard roots.contains(where: { lower.hasPrefix($0) }) else { return false }
+        guard let matchingRoot = roots.first(where: { lower.hasPrefix($0) }) else { return false }
+        if lower.contains("/.vscode") || lower.contains("/.idea") || lower.contains("/.zed") { return false }
+
+        // Must be inside a project directory (depth >= 2 under Documents or Desktop)
+        // e.g. Documents/my_project/build is allowed, Documents/build directly is not
+        if matchingRoot == "\(homeLower)/documents/" || matchingRoot == "\(homeLower)/desktop/" {
+            let relative = lower.dropFirst(matchingRoot.count)
+            let segments = relative.split(separator: "/", omittingEmptySubsequences: true)
+            guard segments.count >= 2 else { return false }
+        }
 
         let name = URL(fileURLWithPath: lower).lastPathComponent
         let artifactNames: Set<String> = [

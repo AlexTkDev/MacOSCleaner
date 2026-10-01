@@ -352,4 +352,164 @@ final class SafetyManagerTests: XCTestCase {
         XCTAssertFalse(SafetyManager.isShallowAbsoluteRoot("/opt/homebrew"))
         XCTAssertFalse(SafetyManager.isShallowAbsoluteRoot("/usr/local/bin"))
     }
+
+    func testIDESettingsProtected() {
+        let idePaths = [
+            "\(home)/Projects/my-app/.vscode/settings.json",
+            "\(home)/Projects/my-app/.vscode",
+            "\(home)/Projects/my-app/.idea/workspace.xml",
+            "\(home)/Projects/my-app/.idea",
+            "\(home)/Library/Application Support/Code/User/settings.json",
+            "\(home)/Library/Application Support/Cursor/User/keybindings.json"
+        ]
+
+        for path in idePaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Path \(path) must be protected") { error in
+                guard case SafetyError.protectedPath = error else {
+                    XCTFail("Expected protectedPath for \(path), got \(error)")
+                    return
+                }
+            }
+        }
+    }
+
+    func testFinderSidebarFavoritesProtected() {
+        let favoritePaths = [
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteItems.sfl3",
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteVolumes.sfl3",
+            "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ProjectsItems.sfl3"
+        ]
+
+        for path in favoritePaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url), "Path \(path) must be protected") { error in
+                guard case SafetyError.protectedPath = error else {
+                    XCTFail("Expected protectedPath for \(path), got \(error)")
+                    return
+                }
+            }
+        }
+    }
+
+    func testICloudDriveHardRefused() {
+        let paths = [
+            "\(home)/Library/Mobile Documents",
+            "\(home)/Library/Mobile Documents/com~apple~CloudDocs",
+            "\(home)/Library/Mobile Documents/com~apple~CloudDocs/Documents/file.txt",
+        ]
+        for path in paths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup))
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .uninstall))
+        }
+    }
+
+    func testMessagesProtected() {
+        let paths = [
+            "\(home)/Library/Messages",
+            "\(home)/Library/Messages/chat.db",
+            "\(home)/Library/Messages/chat.db-wal",
+            "\(home)/Library/Messages/chat.db-shm",
+            "\(home)/Library/Messages/Attachments",
+        ]
+        for path in paths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup))
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .uninstall))
+        }
+    }
+
+    func testMailProtectedUnderCleanupAndAllowedBundlesUnderUninstall() {
+        let mailPaths = [
+            "\(home)/Library/Mail",
+            "\(home)/Library/Mail/V10",
+            "\(home)/Library/Mail/V10/MailData/Envelope Index",
+            "\(home)/Library/Mail/V10/Attachments",
+        ]
+        for path in mailPaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup))
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .uninstall))
+        }
+
+        let bundlePlugin = "\(home)/Library/Mail/Bundles/SomePlugin.mailbundle"
+        XCTAssertNoThrow(try safetyManager.validate(url: URL(fileURLWithPath: bundlePlugin), policy: .uninstall))
+        // Still blocked under cleanup
+        XCTAssertThrowsError(try safetyManager.validate(url: URL(fileURLWithPath: bundlePlugin), policy: .cleanup))
+    }
+
+    func testAppleGroupContainersProtected() {
+        let appleGroupPaths = [
+            "\(home)/Library/Group Containers/group.com.apple.notes",
+            "\(home)/Library/Group Containers/group.com.apple.iCloudDrive",
+            "\(home)/Library/Group Containers/com.apple.mail",
+            "\(home)/Library/Group Containers",
+        ]
+        for path in appleGroupPaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup))
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .uninstall))
+        }
+
+        let thirdPartyGroup = "\(home)/Library/Group Containers/group.com.example.app"
+        XCTAssertNoThrow(try safetyManager.validate(url: URL(fileURLWithPath: thirdPartyGroup), policy: .cleanup))
+        XCTAssertNoThrow(try safetyManager.validate(url: URL(fileURLWithPath: thirdPartyGroup), policy: .uninstall))
+    }
+
+    func testSafariAndFirefoxCookiesProtected() {
+        let cookiePaths = [
+            "\(home)/Library/Cookies/Cookies.binarycookies",
+            "\(home)/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies",
+            "\(home)/Library/Application Support/Firefox/Profiles/abc.default/cookies.sqlite",
+            "\(home)/Library/Application Support/Firefox/Profiles/abc.default/logins.json",
+            "\(home)/Library/Application Support/Firefox/Profiles/abc.default/key4.db",
+        ]
+        for path in cookiePaths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup), "Cookie/credential path \(path) must be protected under cleanup")
+        }
+    }
+
+    func testProjectLocalBuildArtifactRequiresDepth() {
+        // Direct child of Documents or Desktop is NOT a project artifact
+        let directDocumentsBuild = URL(fileURLWithPath: "\(home)/Documents/build")
+        let directDesktopBuild = URL(fileURLWithPath: "\(home)/Desktop/build")
+        let directNodeModules = URL(fileURLWithPath: "\(home)/Documents/node_modules")
+        XCTAssertFalse(SafetyManager.isProjectLocalBuildArtifact(directDocumentsBuild.path, home: home))
+        XCTAssertFalse(SafetyManager.isProjectLocalBuildArtifact(directDesktopBuild.path, home: home))
+        XCTAssertFalse(SafetyManager.isProjectLocalBuildArtifact(directNodeModules.path, home: home))
+
+        XCTAssertThrowsError(try safetyManager.validate(url: directDocumentsBuild))
+        XCTAssertThrowsError(try safetyManager.validate(url: directDesktopBuild))
+        XCTAssertThrowsError(try safetyManager.validate(url: directNodeModules))
+
+        // Nested inside project is allowed
+        let projectBuild = URL(fileURLWithPath: "\(home)/Documents/my_project/build")
+        let projectNodeModules = URL(fileURLWithPath: "\(home)/Documents/my_project/node_modules")
+        XCTAssertTrue(SafetyManager.isProjectLocalBuildArtifact(projectBuild.path, home: home))
+        XCTAssertTrue(SafetyManager.isProjectLocalBuildArtifact(projectNodeModules.path, home: home))
+        XCTAssertNoThrow(try safetyManager.validate(url: projectBuild))
+        XCTAssertNoThrow(try safetyManager.validate(url: projectNodeModules))
+    }
+
+    func testZedAndConfigFilesProtected() {
+        let paths = [
+            "\(home)/Documents/my_project/.zed/settings.json",
+            "\(home)/Documents/my_project/.zed",
+            "\(home)/Documents/my_project/settings.json",
+            "\(home)/Documents/my_project/launch.json",
+        ]
+        for path in paths {
+            let url = URL(fileURLWithPath: path)
+            XCTAssertThrowsError(try safetyManager.validate(url: url, policy: .cleanup), "Config path \(path) must be protected under cleanup")
+        }
+    }
+
+    func testRefuseListRootMatchesWithoutDoubleSlash() {
+        let unwhitelisted = URL(fileURLWithPath: "/some_unwhitelisted_system_root/child")
+        XCTAssertThrowsError(try safetyManager.validate(url: unwhitelisted)) { error in
+            XCTAssertEqual(error as? SafetyError, SafetyError.protectedPath("/"))
+        }
+    }
 }

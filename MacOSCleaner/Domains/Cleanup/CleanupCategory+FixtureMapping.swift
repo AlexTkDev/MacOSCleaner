@@ -1,6 +1,10 @@
 import Foundation
 
 extension CleanupCategory {
+    /// Shown in preview, never wiped as a whole. Selected leaves go to Trash.
+    public static let reviewOnly: [CleanupCategory] = [
+        .oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
+    ]
 
     public var localizedTitle: String {
         "category.\(rawValue)".localized
@@ -15,7 +19,7 @@ extension CleanupCategory {
     }
 
     public var previewLabels: Set<String> {
-        var labels: Set<String> = [localizedTitle]
+        var labels: Set<String> = [localizedTitle, rawValue]
 
         switch self {
         case .appCaches:
@@ -136,10 +140,6 @@ extension CleanupCategory {
             labels.insert("DNS Cache")
         case .fontCache:
             labels.insert("Font Cache")
-        case .sleepImage:
-            labels.insert("Sleep Image")
-        case .duplicateFiles:
-            labels.insert("Duplicate Files")
         case .unusedApps:
             labels.insert("Unused Apps")
         case .projectBuildArtifacts:
@@ -213,8 +213,8 @@ extension CleanupCategory {
         case "mail_attachments_scanner": return .mailDownloads
         case "dns_cache_scanner": return .dnsFlush
         case "font_cache_scanner": return .fontCache
-        case "sleep_image_scanner": return .sleepImage
-        case "duplicate_files_scanner": return .duplicateFiles
+        case "sleep_image_scanner": return nil
+        case "duplicate_files_scanner": return nil
         case "unused_apps_scanner": return .unusedApps
         case "docker_scanner": return .docker
         case "downloads_scanner": return .largeFiles

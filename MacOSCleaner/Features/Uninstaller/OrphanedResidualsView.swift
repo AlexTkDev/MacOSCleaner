@@ -20,6 +20,8 @@ public struct OrphanedResidualsView: View {
     @State private var showingConfirmation = false
     @State private var isCleaning = false
     @State private var scanTask: Task<Void, Never>? = nil
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert = false
 
     public init(service: UninstallerService, settings: AppSettings) {
         self.service = service
@@ -77,11 +79,18 @@ public struct OrphanedResidualsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .confirmationDialog(
-            "uninstaller_confirm_trash_leftovers_title".localized,
+            settings.bypassTrashOnUninstall
+                ? "uninstaller_confirm_perm_delete".localized
+                : "uninstaller_confirm_trash_leftovers_title".localized,
             isPresented: $showingConfirmation,
             titleVisibility: .visible
         ) {
-            Button("uninstaller_move_trash".localized, role: .destructive) {
+            Button(
+                settings.bypassTrashOnUninstall
+                    ? "uninstaller_delete_permanently".localized
+                    : "uninstaller_move_trash".localized,
+                role: .destructive
+            ) {
                 performCleaning()
             }
             Button("cancel".localized, role: .cancel) { }
@@ -91,6 +100,13 @@ public struct OrphanedResidualsView: View {
                 Int64(selectedItems.count),
                 ByteCountFormatter.localizedString(fromByteCount: selectedSizeBytes, countStyle: .file)
             ))
+        }
+        .alert("error".localized, isPresented: $showingErrorAlert) {
+            Button("ok".localized, role: .cancel) { }
+        } message: {
+            if let errorMessage {
+                Text(errorMessage)
+            }
         }
     }
 
@@ -209,7 +225,7 @@ public struct OrphanedResidualsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.2))
+            .background(.ultraThinMaterial)
 
             Divider()
 
@@ -266,7 +282,7 @@ public struct OrphanedResidualsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.4))
+            .background(.ultraThinMaterial)
         }
     }
 
@@ -281,11 +297,14 @@ public struct OrphanedResidualsView: View {
             Text(title)
                 .font(.caption2)
                 .fontWeight(isSelected ? .bold : .medium)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 9)
                 .padding(.vertical, 4)
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.85))
                 .background(
-                    Capsule().fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.12))
+                    Capsule().fill(isSelected ? Color.accentColor : Color.black.opacity(0.35))
+                )
+                .overlay(
+                    Capsule().strokeBorder(isSelected ? Color.white.opacity(0.2) : Color.white.opacity(0.08), lineWidth: 0.8)
                 )
         }
         .buttonStyle(.plain)
@@ -455,27 +474,36 @@ public struct OrphanedResidualsView: View {
         Task {
             defer { isCleaning = false }
             do {
-                let freed = try await service.removeOrphanedResiduals(
+                let result = try await service.removeOrphanedResiduals(
                     targets,
                     bypassTrash: settings.bypassTrashOnUninstall
                 )
                 
                 await MainActor.run {
-                    let removedIDs = Set(targets.map(\.id))
+                    let removedIDs = Set(result.succeededItems.map(\.id))
                     self.items.removeAll { removedIDs.contains($0.id) }
                     
-                    if settings.showNotifications {
+                    if !result.failedItems.isEmpty {
+                        self.errorMessage = String(format: "orphaned_cleanup_failed_count".localized, Int64(result.failedItems.count))
+                        self.showingErrorAlert = true
+                    }
+                    
+                    if settings.showNotifications, !result.succeededItems.isEmpty {
                         let title = "uninstaller_complete_title".localized
                         let body = String(
                             format: "uninstaller_leftovers_cleaned_notification".localized,
-                            Int64(targets.count),
-                            ByteCountFormatter.localizedString(fromByteCount: freed, countStyle: .file)
+                            Int64(result.succeededItems.count),
+                            ByteCountFormatter.localizedString(fromByteCount: result.freed, countStyle: .file)
                         )
                         NotificationManager.shared.sendNotification(title: title, body: body)
                     }
                 }
             } catch {
                 Logger.orphanView.error("Cleaning failed: \(error.localizedDescription, privacy: .public)")
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.showingErrorAlert = true
+                }
             }
         }
     }

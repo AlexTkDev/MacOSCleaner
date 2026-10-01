@@ -5,6 +5,7 @@ final class TrashManagerTests: XCTestCase {
     var trashManager: TrashManager!
     var fileSystemContext: FileSystemContext!
     var tempDirectory: URL!
+    var trashDirectory: URL!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -13,7 +14,10 @@ final class TrashManagerTests: XCTestCase {
             homeDirectory: fileSystemContext.homePath,
             fileSystemContext: fileSystemContext
         )
-        trashManager = TrashManager(safetyManager: safety)
+        trashDirectory = fileSystemContext.homeDirectory
+            .appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        trashManager = TrashManager(safetyManager: safety, trashDirectoryURL: trashDirectory)
         tempDirectory = fileSystemContext.homeDirectory
             .appendingPathComponent("Library/Application Support/MacOSCleanerTests_Trash", isDirectory: true)
         try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
@@ -26,6 +30,7 @@ final class TrashManagerTests: XCTestCase {
         fileSystemContext = nil
         trashManager = nil
         tempDirectory = nil
+        trashDirectory = nil
         try super.tearDownWithError()
     }
 
@@ -33,14 +38,10 @@ final class TrashManagerTests: XCTestCase {
         let fileURL = tempDirectory.appendingPathComponent("test_file.txt")
         try "test".data(using: .utf8)!.write(to: fileURL)
 
-        // Bypass real Trash: permanent delete under isolated root when trash is unavailable in CI.
-        // Validate path is allowed, then remove — mirrors uninstall bypass path.
-        try SafetyManager(
-            homeDirectory: fileSystemContext.homePath,
-            fileSystemContext: fileSystemContext
-        ).validate(url: fileURL, policy: .uninstall)
-        try FileManager.default.removeItem(at: fileURL)
+        let trashed = try await trashManager.trashItem(at: fileURL, policy: .cleanup)
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: trashed.path))
+        XCTAssertEqual(trashed.deletingLastPathComponent().path, trashDirectory.path)
     }
 
     func testTrashProtectedPathThrowsSafetyError() async throws {
@@ -74,6 +75,89 @@ final class TrashManagerTests: XCTestCase {
             // Also acceptable under fail-closed context
         } catch {
             XCTFail("Expected TrashError/SafetyError, got \(error)")
+        }
+    }
+
+    func testPermanentlyDeleteSuccess() async throws {
+        let fileURL = trashDirectory.appendingPathComponent("perm_delete_test.txt")
+        guard let data = "hello world".data(using: .utf8) else {
+            XCTFail("Data encoding failed")
+            return
+        }
+        try data.write(to: fileURL)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+
+        let freed = try await trashManager.permanentlyDelete(urls: [fileURL])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertGreaterThan(freed, 0)
+    }
+
+    func testPermanentlyDeleteDirectory() async throws {
+        let subDir = trashDirectory.appendingPathComponent("subfolder", isDirectory: true)
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        let fileInside = subDir.appendingPathComponent("file.bin")
+        try Data(repeating: 0x42, count: 1024).write(to: fileInside)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: subDir.path))
+        let freed = try await trashManager.permanentlyDelete(urls: [subDir])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: subDir.path))
+        XCTAssertGreaterThanOrEqual(freed, 1024)
+    }
+
+    func testPermanentlyDeleteSelectiveDoesNotTouchOtherFilesInTrash() async throws {
+        let fileToDelete = trashDirectory.appendingPathComponent("delete_me.txt")
+        let thirdPartyFile = trashDirectory.appendingPathComponent("keep_me_finder.txt")
+        try "delete".data(using: .utf8)!.write(to: fileToDelete)
+        try "keep".data(using: .utf8)!.write(to: thirdPartyFile)
+
+        let freed = try await trashManager.permanentlyDelete(urls: [fileToDelete])
+        XCTAssertGreaterThan(freed, 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fileToDelete.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: thirdPartyFile.path), "Unrelated files in Trash must never be deleted")
+    }
+
+    func testPermanentlyDeleteRefusesTrashFolderItself() async throws {
+        let freed = try await trashManager.permanentlyDelete(urls: [trashDirectory])
+        XCTAssertEqual(freed, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: trashDirectory.path), ".Trash folder itself must never be removed")
+    }
+
+    func testPermanentlyDeleteRefusesSystemTrashFolderItself() async throws {
+        let systemTrash = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        let freed = try await trashManager.permanentlyDelete(urls: [systemTrash])
+        XCTAssertEqual(freed, 0)
+    }
+
+    func testPermanentlyDeleteRefusesPathOutsideTrash() async throws {
+        let outside = tempDirectory.appendingPathComponent("outside.txt")
+        try "keep".write(to: outside, atomically: true, encoding: .utf8)
+        let freed = try await trashManager.permanentlyDelete(urls: [outside])
+        XCTAssertEqual(freed, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: outside.path))
+    }
+
+    func testTrashItemNameCollisionDoesNotOverwrite() async throws {
+        let existing = trashDirectory.appendingPathComponent("same.txt")
+        try "old".write(to: existing, atomically: true, encoding: .utf8)
+        let source = tempDirectory.appendingPathComponent("same.txt")
+        try "new".write(to: source, atomically: true, encoding: .utf8)
+
+        let trashed = try await trashManager.trashItem(at: source, policy: .cleanup)
+        let kept = try String(contentsOf: existing, encoding: .utf8)
+        let moved = try String(contentsOf: trashed, encoding: .utf8)
+        XCTAssertEqual(kept, "old")
+        XCTAssertEqual(moved, "new")
+        XCTAssertNotEqual(trashed.standardizedFileURL.path, existing.standardizedFileURL.path)
+    }
+
+    func testEmptyTrashWholesaleThrows() async {
+        do {
+            _ = try await trashManager.emptyTrash()
+            XCTFail("Expected wholesale emptyTrash to throw")
+        } catch is TrashError {
+            // Expected
+        } catch {
+            XCTFail("Expected TrashError, got \(error)")
         }
     }
 }

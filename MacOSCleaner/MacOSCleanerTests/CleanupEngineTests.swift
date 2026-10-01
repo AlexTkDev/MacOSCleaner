@@ -514,6 +514,79 @@ struct CleanupEngineTests {
         #expect(entryCount < 1000, "Should not recurse infinitely through symlink loops")
     }
 
+    @Test("PosixScanner unbounded buffering delivers all batches across multiple roots")
+    func posixScannerUnboundedBufferingMultipleRoots() async throws {
+        let scanner = PosixScanner()
+        let tempBase = FileManager.default.temporaryDirectory.appendingPathComponent("posix_unbounded_\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempBase) }
+
+        var roots: [String] = []
+        let rootCount = 10
+        for i in 0..<rootCount {
+            let rootDir = tempBase.appendingPathComponent("root_\(i)")
+            try FileManager.default.createDirectory(at: rootDir, withIntermediateDirectories: true)
+            for j in 0..<5 {
+                let file = rootDir.appendingPathComponent("file_\(j).txt")
+                try "test".write(to: file, atomically: true, encoding: .utf8)
+            }
+            roots.append(rootDir.path)
+        }
+
+        var totalEntries = 0
+        for await batch in scanner.scanParallel(roots: roots, config: .init(batchSize: 2)) {
+            totalEntries += batch.count
+        }
+
+        // Each root has 5 files -> 50 files total
+        #expect(totalEntries == 50)
+    }
+
+    @Test("cleanContentsBatch executes sequentially and cleans contents")
+    func cleanContentsBatchExecutesSequentially() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        let dir1 = ctx.homePath + "/Library/Caches/BatchTest1"
+        let dir2 = ctx.homePath + "/Library/Caches/BatchTest2"
+        try FileManager.default.createDirectory(atPath: dir1, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(atPath: dir2, withIntermediateDirectories: true)
+
+        let file1 = dir1 + "/item1.tmp"
+        let file2 = dir2 + "/item2.tmp"
+        try "content1".write(toFile: file1, atomically: true, encoding: .utf8)
+        try "content2".write(toFile: file2, atomically: true, encoding: .utf8)
+
+        let freed = try await engine.cleanContentsBatch([dir1, dir2], dryRun: false)
+        #expect(freed > 0)
+        #expect(!FileManager.default.fileExists(atPath: file1))
+        #expect(!FileManager.default.fileExists(atPath: file2))
+    }
+
+    @Test("cleanScatteredJunk isolates errors gracefully")
+    func cleanScatteredJunkIsolatesErrors() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        // Run scattered junk scan on the isolated context
+        let results = try await engine.cleanScatteredJunk(dryRun: true, cleanDSStore: true, progress: nil)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Scattered junk")
+    }
+
+    @Test("cleanLargeFiles isolates errors gracefully")
+    func cleanLargeFilesIsolatesErrors() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        let results = try await engine.cleanLargeFiles(dryRun: true, progress: nil)
+        #expect(results.count == 1)
+        #expect(results.first?.label == "Large files")
+    }
+
     // MARK: - Error Handling Tests
 
     @Test("Safety violation throws on protected path")
@@ -565,7 +638,9 @@ struct CleanupEngineTests {
 
     @Test("Run returns large files category")
     func runReturnsLargeFilesCategory() async throws {
-        let engine = CleanupEngine()
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
         let results = try await engine.run(categories: [.largeFiles], dryRun: true)
         #expect(results.count == 1)
         #expect(results.first?.label == "Large files")
@@ -820,6 +895,78 @@ struct CleanupEngineTests {
         #expect(size < 5 * 1024 * 1024, "Must use allocated size, got \(size)")
     }
 
+    @Test("Review-only categories emit isSelected false in dry run")
+    func reviewOnlyCategoriesEmitDeselected() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let backupDir = URL(fileURLWithPath: "\(home)/Library/Application Support/MobileSync/Backup/test-backup")
+        try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+        try "backup data".write(to: backupDir.appendingPathComponent("info.plist"), atomically: true, encoding: .utf8)
+
+        let mailDir = URL(fileURLWithPath: "\(home)/Library/Mail Downloads")
+        try FileManager.default.createDirectory(at: mailDir, withIntermediateDirectories: true)
+        try "mail data".write(to: mailDir.appendingPathComponent("attachment.pdf"), atomically: true, encoding: .utf8)
+
+        let savedStateDir = URL(fileURLWithPath: "\(home)/Library/Saved Application State/com.test.app.savedState")
+        try FileManager.default.createDirectory(at: savedStateDir, withIntermediateDirectories: true)
+        try "state data".write(to: savedStateDir.appendingPathComponent("data.data"), atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        let deselectedCount = ThreadSafeCounter()
+
+        _ = try await engine.run(categories: [.iosBackups, .mailDownloads, .savedAppState], dryRun: true) { event in
+            if case .fileItem(_, _, _, _, _, _, let isSelected, _) = event {
+                #expect(!isSelected, "Review-only items must have isSelected == false")
+                deselectedCount.increment()
+            }
+        }
+
+        #expect(deselectedCount.value >= 3)
+    }
+
+    @Test("Shared file lists only cleans recent items and preserves favorites")
+    func sharedFileListsPreservesFavorites() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let sflDir = URL(fileURLWithPath: "\(home)/Library/Application Support/com.apple.sharedfilelist")
+        try FileManager.default.createDirectory(at: sflDir, withIntermediateDirectories: true)
+
+        let favFile = sflDir.appendingPathComponent("com.apple.LSSharedFileList.FavoriteItems.sfl3")
+        let recentFile = sflDir.appendingPathComponent("com.apple.LSSharedFileList.RecentDocuments.sfl3")
+        try "favorites".write(to: favFile, atomically: true, encoding: .utf8)
+        try "recent".write(to: recentFile, atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        _ = try await engine.cleanSharedFileLists(dryRun: false, progress: nil)
+
+        #expect(FileManager.default.fileExists(atPath: favFile.path))
+        #expect(!FileManager.default.fileExists(atPath: recentFile.path))
+    }
+
+    @Test("Language caches honors cleanModCache")
+    func languageCachesHonorsCleanModCache() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let home = ctx.homePath
+        let goModDir = URL(fileURLWithPath: "\(home)/go/pkg/mod/cache/download")
+        try FileManager.default.createDirectory(at: goModDir, withIntermediateDirectories: true)
+        let testFile = goModDir.appendingPathComponent("test.mod")
+        try "module test".write(to: testFile, atomically: true, encoding: .utf8)
+
+        let engine = CleanupEngine(fileSystemContext: ctx)
+
+        _ = try await engine.cleanLanguageCaches(dryRun: false, progress: nil, cleanModCache: false)
+        #expect(FileManager.default.fileExists(atPath: testFile.path))
+
+        _ = try await engine.cleanLanguageCaches(dryRun: false, progress: nil, cleanModCache: true)
+        #expect(!FileManager.default.fileExists(atPath: testFile.path))
+    }
+
     // MARK: - Helpers
 
     private func createTempCacheDir() -> URL {
@@ -857,4 +1004,178 @@ private final class ThreadSafeArray<Value>: @unchecked Sendable {
     func append(_ value: Value) {
         lock.withLock { _items.append(value) }
     }
+}
+
+// MARK: - Selected Paths Filter Tests
+
+extension CleanupEngineTests {
+    @Test("selectedPaths respects explicitly passed options")
+    func selectedPathsFiltersCommandBackedItems() async throws {
+        let engine = CleanupEngine()
+        var options = CleanupOptions.default
+        options.selectedPaths = ["command://font/cache-clear"] // Only font cache selected
+        
+        let results = try await engine.run(categories: [.fontCache, .timeMachineSnapshots], dryRun: false, options: options)
+        
+        // Time Machine wasn't in selectedPaths so it should be skipped
+        let tmResult = results.first { $0.label == "Time Machine Snapshots" }
+        #expect(tmResult != nil)
+        #expect(tmResult!.skippedCount == 1)
+        #expect(tmResult!.freedMB == 0)
+    }
+
+    @Test("deselecting Xcode archives keeps them when DerivedData is selected")
+    func selectedPathsKeepsUnselectedArchives() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        let fm = FileManager.default
+        let archives = ctx.homePath + "/Library/Developer/Xcode/Archives/Old.xcarchive"
+        let derivedFile = ctx.homePath + "/Library/Developer/Xcode/DerivedData/stale.txt"
+        try fm.createDirectory(atPath: archives, withIntermediateDirectories: true)
+        try fm.createDirectory(atPath: (derivedFile as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+        try "archive".write(toFile: archives + "/Info.plist", atomically: true, encoding: .utf8)
+        try "derived".write(toFile: derivedFile, atomically: true, encoding: .utf8)
+        let old = Date(timeIntervalSinceNow: -200 * 24 * 3600)
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: archives)
+
+        var options = CleanupOptions()
+        options.selectedPaths = [CleanupItemManager.selectionKey(ctx.homePath + "/Library/Developer/Xcode/DerivedData")]
+        _ = try await engine.run(categories: [.xcode], dryRun: false, options: options)
+
+        #expect(!fm.fileExists(atPath: derivedFile))
+        #expect(fm.fileExists(atPath: archives + "/Info.plist"))
+    }
+
+    @Test("android SDK removes only the selected old build-tools version")
+    func selectedPathsRemovesOnlyChosenBuildTools() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        let fm = FileManager.default
+        let tools = ctx.homePath + "/Library/Android/sdk/build-tools"
+        for version in ["30.0.0", "31.0.0", "34.0.0"] {
+            let dir = tools + "/" + version
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            try "x".write(toFile: dir + "/source.properties", atomically: true, encoding: .utf8)
+        }
+        var options = CleanupOptions()
+        options.selectedPaths = [CleanupItemManager.selectionKey(tools + "/30.0.0")]
+        _ = try await engine.run(categories: [.androidSDK], dryRun: false, options: options)
+
+        #expect(!fm.fileExists(atPath: tools + "/30.0.0"))
+        #expect(fm.fileExists(atPath: tools + "/31.0.0/source.properties"))
+        #expect(fm.fileExists(atPath: tools + "/34.0.0/source.properties"))
+    }
+
+    @Test("dynamic cache discovery deletes only the selected cache")
+    func selectedPathsFiltersDynamicCache() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        let fm = FileManager.default
+        let cache = ctx.homePath + "/Library/Caches/com.apple.cleaner.dynamic"
+        try fm.createDirectory(atPath: cache, withIntermediateDirectories: true)
+        let payload = cache + "/blob"
+        try Data(count: 5 * 1024 * 1024 + 64).write(to: URL(fileURLWithPath: payload))
+
+        var skipped = CleanupOptions()
+        skipped.selectedPaths = []
+        _ = try await engine.run(categories: [.dynamicCacheDiscovery], dryRun: false, options: skipped)
+        #expect(fm.fileExists(atPath: payload))
+
+        var chosen = CleanupOptions()
+        chosen.selectedPaths = [CleanupItemManager.selectionKey(cache)]
+        _ = try await engine.run(categories: [.dynamicCacheDiscovery], dryRun: false, options: chosen)
+        #expect(!fm.fileExists(atPath: payload))
+    }
+
+    @Test("npm cache clean runs only when that cache path is selected")
+    func selectedPathsFiltersNpmCacheClean() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let cache = ctx.homePath + "/.npm"
+        try FileManager.default.createDirectory(atPath: cache, withIntermediateDirectories: true)
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.availableCommands = ["npm"]
+        let box = CommandLog()
+        runner.runHandler = { _, args in
+            let joined = args.joined(separator: " ")
+            box.append(joined)
+            if joined.contains("npm config get cache") {
+                return CommandResult(stdout: cache + "\n", stderr: "", exitCode: 0)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+        let engine = CleanupEngine(commandRunner: runner, fileSystemContext: ctx)
+        var options = CleanupOptions()
+        options.selectedPaths = []
+        _ = try await engine.run(categories: [.packageManagers], dryRun: false, options: options)
+        #expect(!box.values.contains { $0.contains("npm cache clean") })
+    }
+
+    @Test("simctl delete is not invoked unless its command item is selected")
+    func simctlDeleteRequiresSelection() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.availableCommands = ["xcrun"]
+        let box = CommandLog()
+        runner.runHandler = { _, args in
+            let joined = args.joined(separator: " ")
+            box.append(joined)
+            if joined.contains("list devices") {
+                return CommandResult(stdout: "2\n", stderr: "", exitCode: 0)
+            }
+            if joined.contains("list runtimes") {
+                return CommandResult(stdout: "com.apple.CoreSimulator.SimRuntime.iOS-17-0\ncom.apple.CoreSimulator.SimRuntime.iOS-18-0\n", stderr: "", exitCode: 0)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+        let engine = CleanupEngine(commandRunner: runner, fileSystemContext: ctx)
+        var options = CleanupOptions()
+        options.selectedPaths = []
+        _ = try await engine.run(categories: [.iosSimulators], dryRun: false, options: options)
+        #expect(!box.values.contains { $0.contains("simctl delete") || $0.contains("runtime delete") })
+    }
+
+    @Test("media options clean caches and leave user libraries alone")
+    func mediaOptionsDoNotDeleteUserLibraries() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let fm = FileManager.default
+        let music = ctx.homePath + "/Music/GarageBand/song.band"
+        let movies = ctx.homePath + "/Movies/iMovie Library.imovielibrary/clip"
+        let memo = ctx.homePath + "/Library/Application Support/com.apple.VoiceMemos/Recordings/note.m4a"
+        let gbCache = ctx.homePath + "/Library/Caches/com.apple.garageband10/cache.bin"
+        let movieCache = ctx.homePath + "/Library/Caches/com.apple.iMovieApp/cache.bin"
+        for path in [music, movies, memo, gbCache, movieCache] {
+            try fm.createDirectory(atPath: (path as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+            try "x".write(toFile: path, atomically: true, encoding: .utf8)
+        }
+        let engine = CleanupEngine(fileSystemContext: ctx)
+        var options = CleanupOptions()
+        options.cleanGarageBandLogic = true
+        options.cleanIMovieFinalCut = true
+        options.cleanVoiceMemos = true
+        _ = try await engine.run(
+            categories: [.garageBandLogic, .iMovieFinalCut, .voiceMemos],
+            dryRun: false,
+            options: options
+        )
+        #expect(fm.fileExists(atPath: music))
+        #expect(fm.fileExists(atPath: movies))
+        #expect(fm.fileExists(atPath: memo))
+        #expect(!fm.fileExists(atPath: gbCache))
+        #expect(!fm.fileExists(atPath: movieCache))
+    }
+}
+
+private final class CommandLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var items: [String] = []
+    var values: [String] { lock.withLock { items } }
+    func append(_ value: String) { lock.withLock { items.append(value) } }
 }

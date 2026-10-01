@@ -37,6 +37,9 @@ public actor CommandRunner {
         process.standardOutput = stdoutPipe
         process.standardError = stderrPipe
 
+        // Use a simple lock to guard the resumed flag only.
+        // stdout/stderr are read via readabilityHandler (prevents pipe-buffer deadlock on large
+        // outputs) and drained atomically in terminationHandler after write ends are closed.
         final class ProcessState: @unchecked Sendable {
             private let lock = NSLock()
             private var isResumed = false
@@ -55,9 +58,11 @@ public actor CommandRunner {
                 lock.unlock()
             }
 
-            func finish(process: Process) -> CommandResult {
+            func finish(process: Process, remainingOut: Data, remainingErr: Data) -> CommandResult {
                 lock.lock()
                 defer { lock.unlock() }
+                if !remainingOut.isEmpty { stdoutData.append(remainingOut) }
+                if !remainingErr.isEmpty { stderrData.append(remainingErr) }
                 return CommandResult(
                     stdout: String(decoding: stdoutData, as: UTF8.self),
                     stderr: String(decoding: stderrData, as: UTF8.self),
@@ -79,18 +84,15 @@ public actor CommandRunner {
 
         let state = ProcessState()
 
+        // Drain pipe buffers continuously — required to prevent deadlock when
+        // the process produces more output than the pipe buffer (~64 KB on macOS).
         stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
             let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStdout(data)
-            }
+            if !data.isEmpty { state.appendStdout(data) }
         }
-
         stderrPipe.fileHandleForReading.readabilityHandler = { handle in
             let data = handle.availableData
-            if !data.isEmpty {
-                state.appendStderr(data)
-            }
+            if !data.isEmpty { state.appendStderr(data) }
         }
 
         return try await withTaskCancellationHandler {
@@ -98,15 +100,18 @@ public actor CommandRunner {
                 group.addTask {
                     try await withCheckedThrowingContinuation { continuation in
                         process.terminationHandler = { proc in
+                            // Stop handler-based draining.
                             stdoutPipe.fileHandleForReading.readabilityHandler = nil
                             stderrPipe.fileHandleForReading.readabilityHandler = nil
-
+                            // Close parent's write-end copies so readDataToEndOfFile
+                            // gets EOF immediately (not blocked by dangling write fds).
+                            stdoutPipe.fileHandleForWriting.closeFile()
+                            stderrPipe.fileHandleForWriting.closeFile()
+                            // Drain any bytes that arrived between the last handler
+                            // invocation and the terminationHandler.
                             let remOut = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
                             let remErr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                            if !remOut.isEmpty { state.appendStdout(remOut) }
-                            if !remErr.isEmpty { state.appendStderr(remErr) }
-
-                            let result = state.finish(process: proc)
+                            let result = state.finish(process: proc, remainingOut: remOut, remainingErr: remErr)
                             state.resumeOnce(continuation: continuation, result: .success(result))
                         }
 
@@ -204,5 +209,12 @@ public actor CommandRunner {
                 if process.isRunning { process.terminate() }
             }
         }
+    }
+}
+
+public enum ShellQuoting {
+    /// Single-quote a string for `/bin/sh`, including embedded quotes.
+    public static func shellQuoted(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 }

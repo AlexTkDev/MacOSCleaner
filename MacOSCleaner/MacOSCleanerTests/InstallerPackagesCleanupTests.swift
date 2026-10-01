@@ -23,7 +23,7 @@ final class InstallerPackagesCleanupTests: XCTestCase {
         let box = Box()
         let engine = CleanupEngine(fileSystemContext: ctx)
         let results = try await engine.run(categories: [.installerPackages], dryRun: true) { event in
-            if case .fileItem(let path, _, _, _, let category, _) = event {
+            if case .fileItem(let path, _, _, _, let category, _, _, _) = event {
                 XCTAssertEqual(category, "Installer Packages")
                 box.append(path)
             }

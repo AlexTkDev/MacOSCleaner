@@ -36,10 +36,10 @@ public actor ProcessManager {
 
     public func terminate(_ process: RunningProcess) async throws {
         let permission = safetyPolicy.isKillable(process)
-        guard case .allowed = permission else {
+        if case .blocked(let reason) = permission {
             throw ProcessManagerError.operationBlocked(
                 processName: process.name,
-                reason: permission.blockReason ?? "Unknown"
+                reason: reason
             )
         }
 
@@ -61,10 +61,10 @@ public actor ProcessManager {
 
     public func forceKill(_ process: RunningProcess) async throws {
         let permission = safetyPolicy.isKillable(process)
-        guard case .allowed = permission else {
+        if case .blocked(let reason) = permission {
             throw ProcessManagerError.operationBlocked(
                 processName: process.name,
-                reason: permission.blockReason ?? "Unknown"
+                reason: reason
             )
         }
 
@@ -89,10 +89,10 @@ public actor ProcessManager {
         timeout: TimeInterval = 5.0
     ) async throws {
         let permission = safetyPolicy.isKillable(process)
-        guard case .allowed = permission else {
+        if case .blocked(let reason) = permission {
             throw ProcessManagerError.operationBlocked(
                 processName: process.name,
-                reason: permission.blockReason ?? "Unknown"
+                reason: reason
             )
         }
 

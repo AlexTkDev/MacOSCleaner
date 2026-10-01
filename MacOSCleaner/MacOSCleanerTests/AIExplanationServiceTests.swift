@@ -6,8 +6,50 @@ final class AIExplanationServiceTests: XCTestCase {
     
     func testAvailabilityCheck() async {
         let isAvailable = await AIExplanationService.shared.isAvailable
-        // Since we are running in a test suite, we check if availability returns the expected boolean
-        XCTAssertEqual(isAvailable, SystemLanguageModel.default.availability == .available)
+        let systemLocale = Locale(identifier: Locale.preferredLanguages.first ?? Locale.current.identifier)
+        let expected = SystemLanguageModel.default.availability == .available && SystemLanguageModel.default.supportsLocale(systemLocale)
+        XCTAssertEqual(isAvailable, expected)
+    }
+
+    func testAvailabilityState() async {
+        let state = await AIExplanationService.shared.availabilityState
+        let isAvailable = await AIExplanationService.shared.isAvailable
+        XCTAssertEqual(state.isAvailable, isAvailable)
+        XCTAssertFalse(state.helpTooltip.isEmpty)
+    }
+
+    func testPrewarm() async {
+        // Should not throw or crash
+        await AIExplanationService.shared.prewarm(promptPrefix: "Test")
+    }
+
+    func testVerdictExtraction() {
+        let safeResult = AIExplanationResult.extractVerdict(from: "[SAFE] This cache is temporary and safe to delete.")
+        XCTAssertEqual(safeResult.verdict, .safe)
+        XCTAssertEqual(safeResult.cleanText, "This cache is temporary and safe to delete.")
+
+        let cautionResult = AIExplanationResult.extractVerdict(from: "[CAUTION] This file contains user preferences.")
+        XCTAssertEqual(cautionResult.verdict, .caution)
+        XCTAssertEqual(cautionResult.cleanText, "This file contains user preferences.")
+
+        let dangerResult = AIExplanationResult.extractVerdict(from: "[DANGER] Core system launch daemon.")
+        XCTAssertEqual(dangerResult.verdict, .danger)
+        XCTAssertEqual(dangerResult.cleanText, "Core system launch daemon.")
+
+        let plainResult = AIExplanationResult.extractVerdict(from: "Plain text explanation without verdict tag.")
+        XCTAssertNil(plainResult.verdict)
+        XCTAssertEqual(plainResult.cleanText, "Plain text explanation without verdict tag.")
+    }
+
+    func testAIErrorDescriptions() {
+        let notAvailable = AIError.notAvailable
+        XCTAssertEqual(notAvailable.errorDescription, "AI model is not available on this device")
+
+        let contextExceeded = AIError.contextSizeExceeded
+        XCTAssertEqual(contextExceeded.errorDescription, "Prompt context size exceeded limit")
+
+        let genFailed = AIError.generationFailed("Model timed out")
+        XCTAssertEqual(genFailed.errorDescription, "Failed to generate explanation: Model timed out")
     }
     
     func testUnavailableThrowsError() async {

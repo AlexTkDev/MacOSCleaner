@@ -66,4 +66,24 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertTrue(labels.contains("dashboard_radar_media".localized))
         XCTAssertTrue(labels.contains("dashboard_radar_other".localized))
     }
+
+    func testCalculatePathSizeOffMain() async throws {
+        let testDir = tempDir.appendingPathComponent("size_test_dir")
+        try FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
+        let file1 = testDir.appendingPathComponent("file1.dat")
+        let file2 = testDir.appendingPathComponent("file2.dat")
+        let data1 = Data(repeating: 0x41, count: 500)
+        let data2 = Data(repeating: 0x42, count: 700)
+        try data1.write(to: file1)
+        try data2.write(to: file2)
+
+        let dirSize = await DashboardViewModel.calculatePathSize(testDir.path)
+        XCTAssertEqual(dirSize, 1200)
+
+        let singleFileSize = await DashboardViewModel.calculatePathSize(file1.path)
+        XCTAssertEqual(singleFileSize, 500)
+
+        let nonexistentSize = await DashboardViewModel.calculatePathSize(testDir.appendingPathComponent("missing").path)
+        XCTAssertEqual(nonexistentSize, 0)
+    }
 }

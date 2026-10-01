@@ -6,6 +6,7 @@ import SwiftUI
 
 struct RootView: View {
     @State private var selectedItem: NavigationItem = .dashboard
+    @Namespace private var navNamespace
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
@@ -19,6 +20,38 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
+            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
+                .ignoresSafeArea()
+
+            Color(NSColor.windowBackgroundColor).opacity(0.85)
+                .ignoresSafeArea()
+
+            Color.black.opacity(0.20)
+                .ignoresSafeArea()
+
+            GeometryReader { proxy in
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.08))
+                        .blur(radius: 140)
+                        .frame(width: proxy.size.width * 0.75, height: proxy.size.height * 0.75)
+                        .position(x: proxy.size.width * 0.18, y: proxy.size.height * 0.12)
+
+                    Circle()
+                        .fill(Color.purple.opacity(0.06))
+                        .blur(radius: 160)
+                        .frame(width: proxy.size.width * 0.65, height: proxy.size.height * 0.65)
+                        .position(x: proxy.size.width * 0.85, y: proxy.size.height * 0.85)
+
+                    Circle()
+                        .fill(Color.cyan.opacity(0.03))
+                        .blur(radius: 120)
+                        .frame(width: proxy.size.width * 0.45, height: proxy.size.height * 0.45)
+                        .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.5)
+                }
+            }
+            .ignoresSafeArea()
+
             VStack(spacing: 0) {
                 topNavigationBar
                 
@@ -39,7 +72,7 @@ struct RootView: View {
             GlassOverlayView(manager: GlassOverlayManager.shared)
         }
         .frame(minWidth: 1024, minHeight: 680)
-        .environment(\.locale, appSettings.language.locale)
+        .applyAppLanguage(appSettings.language)
         .sheet(isPresented: $permissionsManager.showGuidance) {
             PermissionsView(permissionsManager: permissionsManager)
         }
@@ -60,6 +93,9 @@ struct RootView: View {
             permissionsManager.refresh()
             permissionsManager.showGuidanceIfNeeded()
             presentUpdateIfReady()
+            if appSettings.autoScanOnStartup && cleanupViewModel.state == .idle {
+                cleanupViewModel.startScan()
+            }
         }
         .onChange(of: availableUpdate) { _, _ in
             presentUpdateIfReady()
@@ -78,41 +114,46 @@ struct RootView: View {
         )
     }
 
-    // MARK: - Navigation Groups
-    private let navGroups: [[NavigationItem]] = [
-        [.dashboard],
-        [.cleanup, .diskSpace, .duplicates, .uninstaller],
-        [.processes, .startupServices],
-        [.settings]
+    // MARK: - Navigation Items
+    private let navItems: [NavigationItem] = [
+        .dashboard, .cleanup, .diskSpace, .duplicates, .uninstaller,
+        .processes, .startupServices, .settings
     ]
 
     private var topNavigationBar: some View {
-        HStack(spacing: 0) {
-            ForEach(navGroups.indices, id: \.self) { groupIndex in
-                let group = navGroups[groupIndex]
+        GlassEffectContainer(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(navItems.indices, id: \.self) { index in
+                    navButton(for: navItems[index])
 
-                HStack(spacing: 2) {
-                    ForEach(group, id: \.self) { item in
-                        navButton(for: item)
+                    if index < navItems.count - 1 {
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.04),
+                                        Color.white.opacity(0.28),
+                                        Color.white.opacity(0.04)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(width: 1, height: 18)
+                            .padding(.horizontal, 6)
                     }
                 }
-
-                if groupIndex < navGroups.count - 1 {
-                    Divider()
-                        .frame(height: 18)
-                        .opacity(0.4)
-                        .padding(.horizontal, 4)
-                }
             }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .glassEffect(Glass.regular, in: Capsule())
+            .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 3)
-        .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 12))
         .id(appSettings.language)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 12)
-        .padding(.top, 4)
-        .padding(.bottom, 6)
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
     }
 
     @ViewBuilder
@@ -123,32 +164,58 @@ struct RootView: View {
                 selectedItem = item
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: item.systemImage)
                     .font(.system(size: 15, weight: .medium))
                     .frame(width: 22, height: 22)
                 // Compact on all locales: label only for the selected item.
                 if isSelected {
                     Text(item.localizedTitle)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }
-            .padding(.horizontal, isSelected ? 10 : 9)
+            .padding(.horizontal, isSelected ? 16 : 14)
             .padding(.vertical, 6)
-            .frame(minWidth: isSelected ? nil : 40, minHeight: 32)
-            .contentShape(Rectangle())
-            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.6))
+            .frame(minWidth: isSelected ? nil : 52, minHeight: 34)
+            .contentShape(Capsule())
+            .foregroundStyle(isSelected ? Color.white : Color.primary.opacity(0.75))
             .background {
                 if isSelected {
                     Capsule()
-                        .fill(Color.accentColor)
-                        .glassEffect(Glass.regular.tint(Color.accentColor).interactive(), in: Capsule())
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.accentColor.opacity(0.88),
+                                    Color.accentColor.opacity(0.72)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: Color.white.opacity(0.50), location: 0.0),
+                                            .init(color: Color.accentColor.opacity(0.5), location: 0.5),
+                                            .init(color: Color.white.opacity(0.12), location: 1.0)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: Color.accentColor.opacity(0.35), radius: 6, x: 0, y: 2)
+                        .glassEffectUnion(id: "navSelection", namespace: navNamespace)
                 }
             }
         }
         .buttonStyle(.plain)
+        .keyboardShortcut(item.keyboardKey, modifiers: .command)
         .help(item.localizedTitle)
     }
 
@@ -159,7 +226,10 @@ struct RootView: View {
         case .dashboard:
             DashboardView(journal: journal)
         case .cleanup:
-            CleanupView(viewModel: cleanupViewModel)
+            CleanupView(
+                viewModel: cleanupViewModel,
+                scanLimited: !permissionsManager.hasFullDiskAccess
+            )
         case .diskSpace:
             DiskAnalyzerView(settings: appSettings)
         case .duplicates:
@@ -169,7 +239,11 @@ struct RootView: View {
         case .startupServices:
             StartupServicesView(settings: appSettings)
         case .uninstaller:
-            UninstallerView(settings: appSettings, navigateToCleanup: { selectedItem = .cleanup })
+            UninstallerView(
+                settings: appSettings,
+                navigateToCleanup: { selectedItem = .cleanup },
+                scanLimited: !permissionsManager.hasFullDiskAccess
+            )
         case .settings:
             SettingsView(
                 settings: appSettings,

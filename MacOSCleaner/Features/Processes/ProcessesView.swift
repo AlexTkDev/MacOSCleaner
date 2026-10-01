@@ -52,6 +52,9 @@ public struct ProcessesView: View {
             whitelistSheet
         }
         .onAppear {
+            if settings.enableAI {
+                AIExplanationService.shared.prewarm(promptPrefix: "Process")
+            }
             Task { await viewModel.scan() }
         }
     }
@@ -171,7 +174,7 @@ public struct ProcessesView: View {
             Button(role: .destructive, action: { Task { await viewModel.forceKillSelected() } }) {
                 Label("force_kill_selected".localized, systemImage: "exclamationmark.triangle")
             }
-            .glassButtonStyle()
+            .destructiveGlassButtonStyle()
             .disabled(viewModel.selection.isEmpty)
         }
         .padding(.horizontal)
@@ -181,8 +184,11 @@ public struct ProcessesView: View {
     private var groupedProcessList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.processGroups) { group in
+                ForEach(viewModel.displayedGroups) { group in
                     processGroupRow(group)
+                        .onAppear {
+                            viewModel.loadMoreGroupsIfNeeded(currentGroup: group)
+                        }
                     Divider()
                 }
             }
@@ -196,8 +202,11 @@ public struct ProcessesView: View {
     private var flatProcessList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.filteredProcesses) { process in
+                ForEach(viewModel.displayedProcesses) { process in
                     processRow(process)
+                        .onAppear {
+                            viewModel.loadMoreProcessesIfNeeded(currentProcess: process)
+                        }
                     Divider()
                 }
             }
@@ -361,7 +370,7 @@ public struct ProcessesView: View {
             Button("try_again".localized) {
                 Task { await viewModel.scan() }
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -382,7 +391,7 @@ public struct ProcessesView: View {
                 Button("add".localized) {
                     Task { await viewModel.addToBlacklist() }
                 }
-                .buttonStyle(.borderedProminent)
+                .prominentGlassButtonStyle(tint: .accentColor)
                 .disabled(viewModel.newBlacklistEntry.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
@@ -404,7 +413,7 @@ public struct ProcessesView: View {
             Button("done".localized) {
                 viewModel.showBlacklistAlert = false
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .padding()
         .frame(width: 420, height: 380)
@@ -426,7 +435,7 @@ public struct ProcessesView: View {
                 Button("add".localized) {
                     Task { await viewModel.addToWhitelist() }
                 }
-                .buttonStyle(.borderedProminent)
+                .prominentGlassButtonStyle(tint: .accentColor)
                 .disabled(viewModel.newWhitelistEntry.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
@@ -448,7 +457,7 @@ public struct ProcessesView: View {
             Button("done".localized) {
                 viewModel.showWhitelistAlert = false
             }
-            .buttonStyle(.borderedProminent)
+            .prominentGlassButtonStyle(tint: .accentColor)
         }
         .padding()
         .frame(width: 420, height: 380)

@@ -151,12 +151,26 @@ private func scanPlugIns(url: URL) async -> Set<String> {
     return Set(items.compactMap { $0.pathExtension == "bundle" ? $0.deletingPathExtension().lastPathComponent : $0.lastPathComponent })
 }
 
+public let genericFrameworkTokens: Set<String> = [
+    "gpu", "net", "framework", "electron", "chromium", "core", "ui", "audio", "video",
+    "mantle", "sparkle", "crashlytics", "sentry", "webrtc", "ffmpeg"
+]
+
 private func scanHelpers(url: URL) async -> Set<String> {
     let fm = FileManager.default
     let frameworksURL = url.appendingPathComponent("Contents/Frameworks")
     guard let items = try? fm.contentsOfDirectory(at: frameworksURL, includingPropertiesForKeys: nil) else { return [] }
-    let helperNames = items.filter { $0.lastPathComponent.lowercased().contains("helper") || $0.lastPathComponent.lowercased().contains("framework") }
-    return Set(helperNames.map { $0.deletingPathExtension().lastPathComponent })
+    let helperItems = items.filter { item in
+        let lower = item.lastPathComponent.lowercased()
+        return lower.contains("helper") || lower.contains("framework")
+    }
+    let extracted = helperItems.map { $0.deletingPathExtension().lastPathComponent }
+    return Set(extracted.filter { name in
+        let lower = name.lowercased()
+        if genericFrameworkTokens.contains(lower) { return false }
+        if lower.count < 3 { return false }
+        return true
+    })
 }
 
 // "apple" is a stopword: deriving vendor "Apple" from com.apple.* bundle IDs makes
@@ -186,8 +200,9 @@ private func deriveVendorNames(bundleID: String, appName: String, authority: Str
     }
     if let auth = authority {
         let orgRegex = try? NSRegularExpression(pattern: "(?<=: )[^,]+")
-        if let match = orgRegex?.firstMatch(in: auth, range: NSRange(auth.startIndex..., in: auth)) {
-            let org = String(auth[Range(match.range, in: auth)!]).trimmingCharacters(in: .whitespaces)
+        if let match = orgRegex?.firstMatch(in: auth, range: NSRange(auth.startIndex..., in: auth)),
+           let range = Range(match.range, in: auth) {
+            let org = String(auth[range]).trimmingCharacters(in: .whitespaces)
             names.insert(org)
         }
     }

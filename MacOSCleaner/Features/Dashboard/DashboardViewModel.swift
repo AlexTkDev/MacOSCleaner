@@ -13,6 +13,8 @@ class DashboardViewModel: ObservableObject {
     @Published var totalFreedBytes: Int64 = 0
     @Published var cleanupCount: Int = 0
     @Published var recentTransactions: [CleanupTransaction] = []
+    @Published var recentRecords: [CleanupRecord] = []
+    @Published var allRecords: [CleanupRecord] = []
     @Published var systemInfo: SystemInfo = .current
     
     // Disk Categories (Donut Chart)
@@ -26,6 +28,7 @@ class DashboardViewModel: ObservableObject {
     }
     
     func refresh() async {
+        systemInfo = .current
         await fetchDiskUsage()
         await fetchHistory()
         await fetchCategoryData()
@@ -33,7 +36,7 @@ class DashboardViewModel: ObservableObject {
     
     private func fetchDiskUsage() async {
         let fileManager = FileManager.default
-        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first ?? fileManager.homeDirectoryForCurrentUser
         
         do {
             let values = try url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])
@@ -48,6 +51,9 @@ class DashboardViewModel: ObservableObject {
         do {
             let allTransactions = try await journal.loadAll()
             recentTransactions = Array(allTransactions.reversed().prefix(5))
+            let records = allTransactions.reversed().map { CleanupRecord(transaction: $0) }
+            allRecords = records
+            recentRecords = Array(records.prefix(3))
             totalFreedBytes = allTransactions.reduce(0) { sum, transaction in
                 sum + transaction.operations.reduce(0) { $0 + $1.bytesFreed }
             }
@@ -73,12 +79,14 @@ class DashboardViewModel: ObservableObject {
         
         await withTaskGroup(of: (String, Int64).self) { group in
             for entry in categoryPaths {
+                let paths = entry.paths
+                let key = entry.key
                 group.addTask {
                     var total: Int64 = 0
-                    for path in entry.paths {
-                        total += await self.calculatePathSize(path)
+                    for path in paths {
+                        total += await Self.calculatePathSize(path)
                     }
-                    return (entry.key, total)
+                    return (key, total)
                 }
             }
             for await (key, size) in group {
@@ -156,7 +164,7 @@ class DashboardViewModel: ObservableObject {
         self.isCategoriesLoading = false
     }
     
-    private func calculatePathSize(_ path: String) async -> Int64 {
+    nonisolated static func calculatePathSize(_ path: String) async -> Int64 {
         let fm = FileManager.default
         let url = URL(fileURLWithPath: path)
         var isDirectory: ObjCBool = false

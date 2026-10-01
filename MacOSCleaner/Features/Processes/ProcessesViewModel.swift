@@ -5,8 +5,12 @@ import os
 @Observable
 @MainActor
 public final class ProcessesViewModel {
-    public var processes: [RunningProcess] = []
-    public var searchText: String = ""
+    public var processes: [RunningProcess] = [] {
+        didSet { invalidateCache() }
+    }
+    public var searchText: String = "" {
+        didSet { invalidateCache() }
+    }
     public var isLoading: Bool = false
     public var lastError: String? = nil
     public var confirmKill: RunningProcess? = nil
@@ -20,10 +24,20 @@ public final class ProcessesViewModel {
     public var newWhitelistEntry: String = ""
     public var permissions: [pid_t: KillPermission] = [:]
     public var selection: Set<pid_t> = []
-    public var sortOption: ProcessSortOption = .cpu
+    public var sortOption: ProcessSortOption = .cpu {
+        didSet { invalidateCache() }
+    }
     public var refreshInterval: RefreshInterval = .manual
     public var viewMode: ViewMode = .grouped
     public var expandedGroups: Set<String> = []
+
+    public private(set) var visibleProcessCount: Int = 60
+    public private(set) var visibleGroupCount: Int = 30
+    private let processPageSize: Int = 60
+    private let groupPageSize: Int = 30
+
+    private var cachedFilteredProcesses: [RunningProcess]?
+    private var cachedProcessGroups: [ProcessGroup]?
 
     private let processManager: ProcessManager
     private var refreshTask: Task<Void, Never>?
@@ -46,7 +60,53 @@ public final class ProcessesViewModel {
         }
     }
 
+    private func invalidateCache() {
+        cachedFilteredProcesses = nil
+        cachedProcessGroups = nil
+        resetPagination()
+    }
+
+    public func resetPagination() {
+        visibleProcessCount = processPageSize
+        visibleGroupCount = groupPageSize
+    }
+
+    public var displayedProcesses: [RunningProcess] {
+        let all = filteredProcesses
+        if all.count <= visibleProcessCount {
+            return all
+        }
+        return Array(all.prefix(visibleProcessCount))
+    }
+
+    public var displayedGroups: [ProcessGroup] {
+        let all = processGroups
+        if all.count <= visibleGroupCount {
+            return all
+        }
+        return Array(all.prefix(visibleGroupCount))
+    }
+
+    public func loadMoreProcessesIfNeeded(currentProcess: RunningProcess) {
+        let all = filteredProcesses
+        guard let index = all.firstIndex(where: { $0.id == currentProcess.id }) else { return }
+        if index >= visibleProcessCount - 15 && visibleProcessCount < all.count {
+            visibleProcessCount = min(visibleProcessCount + processPageSize, all.count)
+        }
+    }
+
+    public func loadMoreGroupsIfNeeded(currentGroup: ProcessGroup) {
+        let all = processGroups
+        guard let index = all.firstIndex(where: { $0.id == currentGroup.id }) else { return }
+        if index >= visibleGroupCount - 8 && visibleGroupCount < all.count {
+            visibleGroupCount = min(visibleGroupCount + groupPageSize, all.count)
+        }
+    }
+
     public var filteredProcesses: [RunningProcess] {
+        if let cached = cachedFilteredProcesses {
+            return cached
+        }
         let result: [RunningProcess]
         if searchText.isEmpty {
             result = processes
@@ -58,7 +118,7 @@ public final class ProcessesViewModel {
                 $0.bundleID?.lowercased().contains(query) == true
             }
         }
-        return result.sorted { a, b in
+        let sorted = result.sorted { a, b in
             switch sortOption {
             case .cpu:
                 return a.cpuPercent > b.cpuPercent
@@ -70,17 +130,24 @@ public final class ProcessesViewModel {
                 return a.threadCount > b.threadCount
             }
         }
+        cachedFilteredProcesses = sorted
+        return sorted
     }
 
     public var processGroups: [ProcessGroup] {
+        if let cached = cachedProcessGroups {
+            return cached
+        }
         let groups = ProcessGroup.group(processes: filteredProcesses)
-        return groups.map { group in
+        let mapped = groups.map { group in
             var group = group
             if !searchText.isEmpty {
                 group.isExpanded = true
             }
             return group
         }
+        cachedProcessGroups = mapped
+        return mapped
     }
 
     public var userProcesses: [RunningProcess] {

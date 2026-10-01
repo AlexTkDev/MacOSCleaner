@@ -2,27 +2,32 @@ import SwiftUI
 import Charts
 
 struct DashboardView: View {
+    @Environment(\.openWindow) private var openWindow
     @StateObject private var viewModel: DashboardViewModel
+    @State private var showHistorySheet = false
+    private let journal: TransactionJournal
     
     init(journal: TransactionJournal) {
+        self.journal = journal
         _viewModel = StateObject(wrappedValue: DashboardViewModel(journal: journal))
     }
     
     var body: some View {
-        GlassEffectContainer {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    HStack(spacing: 20) {
-                        diskUsageCard
-                        rightColumn
-                    }
-                    
-                    recentOperationsSection
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                HStack(spacing: 20) {
+                    diskUsageCard
+                    rightColumn
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-                .padding(.top, 8)
+                
+                recentOperationsSection
             }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+            .padding(.top, 8)
+        }
+        .sheet(isPresented: $showHistorySheet) {
+            CleanupHistoryView(journal: journal)
         }
         .task {
             await viewModel.refresh()
@@ -96,28 +101,64 @@ struct DashboardView: View {
     }
     
     private var recentOperationsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             Label("dashboard_recent_operations".localized, systemImage: "clock")
                 .font(.headline)
             
-            if viewModel.recentTransactions.isEmpty {
-                Text("dashboard_no_recent_operations".localized)
+            if viewModel.recentRecords.isEmpty {
+                Text("history_empty_state".localized)
                     .foregroundColor(.secondary)
+                    .font(.system(size: 13))
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 40)
-                    .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.vertical, 36)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(Color.white.opacity(0.04))
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.20), Color.white.opacity(0.06)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+                    .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
             } else {
-                VStack(spacing: 0) {
-                    ForEach(viewModel.recentTransactions) { transaction in
-                        TransactionRow(transaction: transaction)
-                        if transaction.id != viewModel.recentTransactions.last?.id {
-                            Divider()
-                        }
+                HStack(spacing: 12) {
+                    ForEach(viewModel.recentRecords) { record in
+                        CleanupCardView(record: record)
                     }
                 }
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                Button {
+                    openWindow(id: "cleanup-history")
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 12))
+                        Text("dashboard_view_all_history".localized)
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .onHover { inside in
+                    if inside {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 4)
             }
         }
     }
@@ -132,16 +173,18 @@ struct StatRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(color)
-                .frame(width: 32)
+                .frame(width: 32, height: 32)
+                .glassEffect(Glass.regular.tint(color), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Text(value)
                     .font(.headline)
+                    .foregroundColor(.primary)
             }
             Spacer()
         }
@@ -207,17 +250,19 @@ struct SystemInfoItem: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.accentColor)
-                .frame(width: 32)
+                .frame(width: 30, height: 30)
+                .glassEffect(Glass.regular.tint(.accentColor), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Text(value)
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundColor(.primary)
             }
         }
     }
