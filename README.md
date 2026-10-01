@@ -29,6 +29,7 @@
 
   <p>
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
+    <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#screenshots">📸 Screenshots</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
     <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki">📖 Documentation</a>
@@ -52,16 +53,23 @@
 
 ---
 
+<a id="demo"></a>
 <a id="screenshots"></a>
-## 📸 Screenshots
+## 🎬 Demo & Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/Dashboard_v2_2.png" width="48%" alt="Dashboard">
-  <img src="assets/screenshots/Uninstaller_v2_2.png" width="48%" alt="App Uninstaller">
+  <video src="assets/demo_video.mp4" controls width="100%">
+    Your browser does not support the video tag. <a href="assets/demo_video.mp4">Watch demo video</a>.
+  </video>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/Dashboard_v2_3.png" width="48%" alt="Dashboard">
+  <img src="assets/screenshots/Cleanup_page_v2_3.png" width="48%" alt="Smart Cleanup">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2_2.png" width="48%" alt="Smart Cleanup">
-  <img src="assets/screenshots/Processes_v2_2.png" width="48%" alt="Process Manager">
+  <img src="assets/screenshots/Cleanup_Scan_v2_3.png" width="48%" alt="Cleanup Scan">
+  <img src="assets/screenshots/Uninstaller_scan_v2_3.png" width="48%" alt="App Uninstaller">
 </p>
 
 <p align="center">
