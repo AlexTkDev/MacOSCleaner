@@ -1,6 +1,6 @@
 # MacOSCleaner
 
-> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry. Personal use only.
+> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (optional GitHub Releases update check on launch). Personal use only.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.3.0.

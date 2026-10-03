@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller</title>
-  <meta name="description" content="Free open-source macOS cleaner for Apple Silicon. Clean storage, caches, app leftovers, Xcode and Docker — offline, no telemetry.">
+  <meta name="description" content="Free source-available macOS cleaner (GPLv3 + Commons Clause) for Apple Silicon. Clean storage, caches, app leftovers, Xcode and Docker — zero telemetry.">
 
   <meta name="keywords" content="mac cleaner, macOS cleaner, free mac cleaner, clean mac storage, app uninstaller mac, cache cleaner, disk cleanup, remove app leftovers, Xcode cleanup, Docker cleanup, Homebrew cache, developer cleanup">
   <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
@@ -20,7 +20,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="MacOSCleaner">
   <meta property="og:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
-  <meta property="og:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Native SwiftUI, offline, no telemetry.">
+  <meta property="og:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Native SwiftUI, zero telemetry.">
   <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
@@ -31,7 +31,7 @@
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MacOSCleaner – Free macOS Cleaner &amp; App Uninstaller">
-  <meta name="twitter:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Offline, no telemetry.">
+  <meta name="twitter:description" content="Free macOS cleaner for caches, app leftovers, disk cleanup, Xcode and Docker. Zero telemetry.">
   <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
   <meta name="twitter:image:alt" content="MacOSCleaner banner">
 
@@ -46,7 +46,7 @@
     "name": "MacOSCleaner",
     "alternateName": ["macOS Cleaner", "Mac Cleaner", "Apple Silicon Cleaner"],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
-    "description": "Free open-source macOS cleaner and app uninstaller for Apple Silicon. Offline, no telemetry.",
+    "description": "Free source-available macOS cleaner (GPLv3 + Commons Clause) and app uninstaller for Apple Silicon. Zero telemetry.",
     "inLanguage": "en",
     "publisher": {
       "@type": "Person",
@@ -76,9 +76,9 @@
       "price": "0",
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock",
-      "category": "Free Open-Source Software"
+      "category": "Source-Available Software (GPLv3 + Commons Clause)"
     },
-    "description": "Free open-source macOS cleaner for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — fully offline with no telemetry.",
+    "description": "Free source-available macOS cleaner (GPLv3 + Commons Clause) for Apple Silicon. Clean Mac storage, remove caches, uninstall apps with leftover scan, clean Xcode and Docker data — zero telemetry.",
     "softwareVersion": "2.3.0",
     "fileFormat": "application/x-apple-diskimage",
     "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.3.0/MacOSCleaner.dmg",
@@ -98,7 +98,7 @@
       "Startup Services Manager with LaunchAgent uninstaller",
       "Process Manager with chunked lazy loading",
       "Full localization for 14 languages (including Arabic RTL)",
-      "100% Offline with zero telemetry"
+      "Zero telemetry (only optional GitHub Releases update check on launch)"
     ],
     "url": "https://alextkdev.github.io/MacOSCleaner/",
     "image": "https://alextkdev.github.io/MacOSCleaner/static/og-banner.png",
@@ -238,7 +238,7 @@
       </a>
       <h1>Free macOS Cleaner &amp; App Uninstaller</h1>
       <p class="hero-tagline">Free disk space.<br><span class="dim">Keep control.</span></p>
-      <p class="hero-lead">The powerful, free macOS cleaner for Apple Silicon. Reclaim tens of gigabytes from hidden caches, developer junk, duplicate files, and leftover app remnants — with native Siri automation and on-device AI. Review every file first. 100% offline, zero telemetry.</p>
+      <p class="hero-lead">The powerful, free macOS cleaner for Apple Silicon. Reclaim tens of gigabytes from hidden caches, developer junk, duplicate files, and leftover app remnants — with native Siri automation and on-device AI. Review every file first. Zero telemetry, only an optional launch update check against GitHub Releases.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">
           Download for macOS <span class="arrow">→</span>
@@ -283,7 +283,7 @@
     <div class="section-header reveal">
       <p class="sec-label">01 · Features</p>
       <h2>Native SwiftUI with On-Device Apple Intelligence</h2>
-      <p>Everything runs locally. No telemetry, no analytics, zero cloud transmission.</p>
+      <p>All scanning runs locally on your Mac with zero telemetry. The only network request is an optional check for new versions against the public GitHub Releases API on launch.</p>
     </div>
     <ul class="cells reveal">
       <li class="bento-span-4">
@@ -293,7 +293,7 @@
           </span>
           On-Device Apple Intelligence
         </h3>
-        <p>Native local AI explanations powered by Apple <code>FoundationModels</code>. Explains files, caches, running processes, and startup agents offline with zero latency or cloud transmission. Tap the sparkles icon anywhere to ask.</p>
+        <p>Native local AI explanations powered by Apple <code>FoundationModels</code>. Explains files, caches, running processes, and startup agents on-device with zero latency and no cloud relay. Tap the sparkles icon anywhere to ask.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -500,7 +500,7 @@
         <p>Post-uninstall leftovers sheet; standalone orphaned remnants (Guaranteed, Very Likely, Possible); installers; iOS backups</p>
       </div>
     </div>
-    <p class="clean-note reveal">Opt-in toggles: Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>, .DS_Store, Project Build Artifacts (30–180d), iCloud Documents, Voice Memos, GarageBand/Logic, iMovie/Final Cut, Sleep Image.</p>
+    <p class="clean-note reveal">Opt-in toggles: <code>.DS_Store</code>, Time Machine snapshots, GarageBand/Logic, iMovie/Final Cut, and Font Cache. Developer caches (Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>) are included in standard cleanup by default without separate toggles.</p>
   </div>
 </section>
 
@@ -527,7 +527,7 @@
         <h3>Pure On-Device Apple Intelligence</h3>
         <ul>
           <li><strong>Structured File &amp; App Explanations</strong> — on-device FoundationModels (<code>SystemLanguageModel</code>) with <code>@Generable</code> structured verdicts (<code>[SAFE]</code>, <code>[CAUTION]</code>, <code>[DANGER]</code>) in uninstaller and residual sheets</li>
-          <li><strong>Streaming Token Response &amp; Zero Cloud Leakage</strong> — real-time token streaming via <code>streamSession</code>; strictly offline without cloud relays; system locale pre-flight check</li>
+          <li><strong>Streaming Token Response &amp; On-Device Execution</strong> — real-time token streaming via <code>streamSession</code>; runs locally on-device without cloud relays; system locale pre-flight check</li>
           <li><strong>Authenticated Siri App Intents</strong> — <code>CleanCategoryIntent</code> and <code>CleanDeveloperCachesIntent</code> enforce biometric authentication (<code>.requiresAuthentication</code>) and confirmation dialogs</li>
         </ul>
       </article>
@@ -640,7 +640,7 @@
           </summary>
           <div class="changelog-content">
             <ul>
-              <li><strong>On-Device Apple Intelligence</strong> — offline analysis of processes, agents, and leftover files via FoundationModels.</li>
+              <li><strong>On-Device Apple Intelligence</strong> — on-device analysis of processes, agents, and leftover files via FoundationModels.</li>
               <li><strong>Liquid Glass Redesign</strong> — native macOS 27 adaptive glass material and micro-animations.</li>
               <li><strong>Disk Space Analyzer</strong> — interactive folder size breakdown and category filters.</li>
               <li><strong>Forensic Uninstaller</strong> — 5-level candidate discovery with 30 evidence scoring types.</li>
@@ -732,7 +732,7 @@
               <li><strong>54 Cleanup Categories</strong> — smart cache scanner for system logs, webkit, mail attachments, and browser caches</li>
               <li><strong>App Uninstaller</strong> — drag and drop app bundle uninstaller with identity and bundle ID matching</li>
               <li><strong>Native macOS UI</strong> — dark &amp; light theme support built with SwiftUI for Apple Silicon</li>
-              <li><strong>100% Privacy &amp; Offline</strong> — fully local execution without telemetry, background daemons, or tracking</li>
+              <li><strong>Zero Telemetry &amp; Privacy</strong> — fully local execution without telemetry, background daemons, or tracking</li>
             </ul>
           </div>
         </details>
@@ -802,7 +802,7 @@
           <span class="terminal-title">zsh — build from source</span>
         </div>
         <div class="terminal-body">
-          <div class="t-line"><span class="cmt"># requires Xcode 18+ and XcodeGen</span></div>
+          <div class="t-line"><span class="cmt"># requires Xcode 26+ and XcodeGen</span></div>
           <div class="t-line"><span class="prompt">$</span> gh repo clone AlexTkDev/MacOSCleaner</div>
           <div class="t-line"><span class="prompt">$</span> cd MacOSCleaner &amp;&amp; xcodegen</div>
           <div class="t-line"><span class="prompt">$</span> open MacOSCleaner.xcodeproj</div>
@@ -816,7 +816,7 @@
       <div class="download-support-content">
         <div class="download-support-badge">
           <span class="cell-icon" aria-hidden="true" style="width: 20px; height: 20px; font-size: 0.75rem;">♥</span>
-          <span>100% Free · Zero Telemetry · Open Source</span>
+          <span>100% Free · Zero Telemetry · Source-Available (GPLv3 + Commons Clause)</span>
         </div>
         <h3>Help keep MacOSCleaner independent &amp; free</h3>
         <p>Commercial cleaners charge $40/year subscriptions with aggressive background upsells. MacOSCleaner is built as honest, craft software for macOS. Community donations help fund our <strong>Apple Developer Program ($99/yr)</strong> to officially code-sign and notarize releases — eliminating the <code>sudo xattr</code> Gatekeeper workaround above for everyone.</p>

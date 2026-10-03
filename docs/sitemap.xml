@@ -14,7 +14,7 @@
     <image:image>
       <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.png</image:loc>
       <image:title>MacOSCleaner Banner</image:title>
-      <image:caption>Free open-source macOS cleaner for Apple Silicon</image:caption>
+      <image:caption>Free source-available macOS cleaner (GPLv3 + Commons Clause) for Apple Silicon</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://alextkdev.github.io/MacOSCleaner/static/assets/logo-96.png</image:loc>
