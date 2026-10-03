@@ -1265,6 +1265,7 @@ footer .container {
   gap: 20px;
 }
 
+footer p { margin: 0; }
 footer a {
   color: var(--text-muted);
   text-decoration: none;
@@ -1272,6 +1273,10 @@ footer a {
 }
 
 footer a:hover { color: var(--text); }
+
+footer a img {
+  display: block;
+}
 
 /* ===== Modal ===== */
 .modal {
