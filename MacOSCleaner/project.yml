@@ -107,6 +107,7 @@ targets:
         CLANG_ANALYZER_NONNULL: YES
         GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
         COPY_PHASE_STRIP: NO
+        EXCLUDED_ARCHS: "x86_64"
       configs:
         Debug:
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
@@ -131,3 +132,4 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
         GENERATE_INFOPLIST_FILE: YES
+        EXCLUDED_ARCHS: "x86_64"

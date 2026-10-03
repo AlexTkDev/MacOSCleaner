@@ -44,7 +44,7 @@
 | Principle | Technical Implementation |
 | :--- | :--- |
 | **No Telemetry** | No background daemons, analytics SDKs, or remote loggers. All scanning runs locally without network access. |
-| **Trash-First** | Files are moved to macOS Trash via `trashItem(at:)` by default, preserving native file recovery. Selective preview ensures unselected files remain untouched; optional immediate bypass requires explicit confirmation. |
+| **Safe Deletion** | Standard cleanup categories (caches, logs, temporary files) are pruned directly via `removeItem(at:)` after strict path validation. App Uninstaller, Disk Space Analyzer, Duplicate Finder, and review-only cleanup categories move files to macOS Trash via `trashItem(at:)` for recoverable deletion. |
 | **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, user documents, IDE settings (`.vscode`, `.idea`, `.zed`), and Finder sidebar favorites (`FavoriteItems.sfl3`). |
 | **Non-Destructive Scanning** | Scanning never terminates running applications or modifies files. Cleanup and uninstallation enforce a 3-second soft quit timeout before forced termination. |
 | **Open Core** | Swift 6 codebase with strict concurrency, actors, and structured task groups. Core engine and heuristics are inspectable. |
@@ -107,7 +107,7 @@ Complete feature breakdowns and path specifications are documented in the [MacOS
 <a id="build-from-source"></a>
 ## 🛠️ Build from Source
 
-**Prerequisites:** macOS 26.0+, Xcode 18+, [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+**Prerequisites:** macOS 26.0+, Xcode 26+, [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```bash
 git clone https://github.com/AlexTkDev/MacOSCleaner.git
