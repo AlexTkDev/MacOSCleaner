@@ -43,6 +43,7 @@ public actor CommandRunner {
         final class ProcessState: @unchecked Sendable {
             private let lock = NSLock()
             private var isResumed = false
+            private var timedOut = false
             private var stdoutData = Data()
             private var stderrData = Data()
 
@@ -56,6 +57,18 @@ public actor CommandRunner {
                 lock.lock()
                 stderrData.append(data)
                 lock.unlock()
+            }
+
+            func markTimedOut() {
+                lock.lock()
+                timedOut = true
+                lock.unlock()
+            }
+
+            var didTimeOut: Bool {
+                lock.lock()
+                defer { lock.unlock() }
+                return timedOut
             }
 
             func finish(process: Process, remainingOut: Data, remainingErr: Data) -> CommandResult {
@@ -130,6 +143,9 @@ public actor CommandRunner {
 
                 group.addTask {
                     try await Task.sleep(for: timeout)
+                    // Flag before terminate: termination handler may win the race
+                    // against this task's throw and report a SIGTERM exit as success.
+                    state.markTimedOut()
                     if process.isRunning {
                         process.terminate()
                     }
@@ -141,6 +157,7 @@ public actor CommandRunner {
                 }
 
                 group.cancelAll()
+                if state.didTimeOut { throw CommandRunnerError.timeout }
                 return result
             }
         } onCancel: {
