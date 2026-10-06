@@ -5,7 +5,7 @@
   </h1>
   <p>
     Free, native, privacy-first cleaner and application uninstaller for macOS.<br>
-    Built with Swift 6 and SwiftUI. Moves files to Trash by default instead of permanently deleting them.
+    Built with Swift 6 and SwiftUI. Review everything before cleaning; uninstalls and duplicates go to Trash.
   </p>
 
   <p>
@@ -163,7 +163,7 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 ## 📄 License
 
 Dual-licensed:
-- **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** for personal, non-commercial use, testing, and open-source contributions. Commercial resale and commercial re-licensing are prohibited.
+- **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** for personal, non-commercial use, testing, and source-available contributions. Commercial resale and commercial re-licensing are prohibited.
 - **Commercial License** for enterprise, commercial, or proprietary distribution. [Contact the author](https://github.com/AlexTkDev) for licensing inquiries.
 
 > **Trademark Notice**: The license does not grant permission to use the project name ("MacOSCleaner"), logos, or branding in derivative works.
