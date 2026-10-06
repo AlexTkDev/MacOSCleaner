@@ -5,7 +5,7 @@
   </h1>
   <p>
     Free, native, privacy-first cleaner and application uninstaller for macOS.<br>
-    Built with Swift 6 and SwiftUI. Review everything before cleaning; uninstalls and duplicates go to Trash.
+    Built with Swift 6 and SwiftUI. Review everything before cleaning. Uninstalls and duplicates go to Trash.
   </p>
 
   <p>
