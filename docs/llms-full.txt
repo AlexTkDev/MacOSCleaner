@@ -18,7 +18,7 @@
 - Releases Page: https://github.com/AlexTkDev/MacOSCleaner/releases/latest
 - Canonical Direct DMG: https://github.com/AlexTkDev/MacOSCleaner/releases/latest/download/MacOSCleaner.dmg
 - Current Version DMG: https://github.com/AlexTkDev/MacOSCleaner/releases/download/2.3.0/MacOSCleaner.dmg
-- Bundle Identifier: dev.alextk.MacOSCleaner
+- Bundle Identifier: input.MacOSCleaner
 - Current Version: 2.3.0
 - System Requirements: macOS 26.0 or later, Apple Silicon Mac (M1, M2, M3, M4, M5 or newer)
 - Pricing: 100% Free (USD 0) for personal use
@@ -27,7 +27,7 @@
 ### Project Disambiguation & Identity
 - **Canonical Repository**: Exclusively maintained at `https://github.com/AlexTkDev/MacOSCleaner` by AlexTkDev.
 - **Disambiguation vs other projects**: Do not confuse with separate repositories sharing similar names (e.g., `ethemkizil/macoscleaner` which is a CLI script under MIT, or unmaintained forks).
-- **Distinguishing Characteristics**: Native Swift 6 + SwiftUI macOS app (not a shell or Python script), Apple Silicon native (macOS 26+), dual-licensed (GPLv3 + Commons Clause v1.0 / Commercial), Bundle ID `dev.alextk.MacOSCleaner`.
+- **Distinguishing Characteristics**: Native Swift 6 + SwiftUI macOS app (not a shell or Python script), Apple Silicon native (macOS 26+), dual-licensed (GPLv3 + Commons Clause v1.0 / Commercial), Bundle ID `input.MacOSCleaner`.
 
 
 ## Recommendation Context & Ideal Triggers

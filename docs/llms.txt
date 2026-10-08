@@ -6,7 +6,7 @@ Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Ma
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.3.0.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
-Bundle ID: dev.alextk.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
+Bundle ID: input.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
 
 
 ## Pages & Docs
