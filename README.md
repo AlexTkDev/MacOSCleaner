@@ -30,8 +30,8 @@
   <p>
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
-    <a href="#screenshots">📸 Screenshots</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
+    <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp;
     <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki">📖 Documentation</a>
   </p>
 </div>
@@ -54,16 +54,14 @@
 ---
 
 <a id="demo"></a>
-<a id="screenshots"></a>
 ## 🎬 Demo & Screenshots
 
 <p align="center">
   <a href="assets/demo_video.mp4">
-    <img src="assets/screenshots/Dashboard_v2_3.png" alt="Watch Demo Video" width="90%">
-  </a>
-  <br>
-  <a href="assets/demo_video.mp4">
     <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
+  </a>
+  <a href="assets/demo_video.mp4">
+    <img src="assets/screenshots/Dashboard_v2_3.png" alt="Watch Demo Video" width="90%">
   </a>
 </p>
 
