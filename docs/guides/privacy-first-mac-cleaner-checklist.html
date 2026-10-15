@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to choose a privacy-first Mac cleaner (checklist)</title>
+  <meta name="description" content="Checklist to pick a Mac cleaner that stays local: no telemetry, no always-on daemon, review before delete, Trash-first, protected paths. Verify with Activity Monitor and Console.">
+  <meta name="keywords" content="privacy first Mac cleaner, Mac cleaner no telemetry, does Mac cleaner phone home, offline Mac disk cleaner, safe Mac cleaner checklist, zero telemetry Mac utility">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/privacy-first-mac-cleaner-checklist.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to choose a privacy-first Mac cleaner (checklist)">
+  <meta property="og:description" content="A practical checklist: local-only scans, no telemetry, review before delete, Trash-first, blocked system paths. Verify yourself with built-in macOS tools.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/privacy-first-mac-cleaner-checklist.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-24">
+  <meta property="article:modified_time" content="2026-09-24">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to choose a privacy-first Mac cleaner (checklist)">
+  <meta name="twitter:description" content="Local-only scans, no telemetry, review before delete, Trash-first, protected paths. Verify with Activity Monitor and Console.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to choose a privacy-first Mac cleaner",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/privacy-first-mac-cleaner-checklist.html",
+    "description": "Practical checklist for picking a Mac disk cleaner that stays local: no telemetry, no always-on background helper, review before delete, Trash-first recovery, and blocked critical paths. Verify with built-in macOS tools.",
+    "dateModified": "2026-09-24",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Decide what privacy means for a cleaner",
+        "text": "A disk cleaner sees caches, leftovers, and paths that name your apps and projects. Prefer tools that scan offline, avoid usage analytics, and do not require an account for everyday cleanup."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Check for always-on helpers and outbound network",
+        "text": "Look for Login Items, LaunchAgents, and background daemons. After a normal scan, confirm in Activity Monitor that the app is not holding unexpected network connections."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Require review, Trash-first, and blocked system paths",
+        "text": "You should confirm what leaves the disk. Prefer Trash over silent permanent delete. Critical paths such as /System, /usr, and ~/.ssh must stay blocked."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Prefer inspectable source and clear license wording",
+        "text": "When source is published, you can check for analytics SDKs and network calls yourself. Read the license: source-available is not the same as OSI open source."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do Mac cleaners need internet access to free disk space?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Measuring folders and moving regenerable caches to Trash is a local job. Update checks to a release page are optional and should be separate from scanning your files."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How can I tell if a Mac cleaner is sending telemetry?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Marketing claims are not enough. After a typical scan, check Activity Monitor Network for the process, review Login Items and LaunchAgents, and watch Console for unexpected outbound activity. Firewall tools can confirm destinations if you use them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I disable SIP to make a cleaner reclaim more space?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Useful reclaim targets for developers live under your home folder and known tool caches. Do not disable SIP and do not delete under /System or /usr."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Privacy-first Mac cleaner checklist",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/privacy-first-mac-cleaner-checklist.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to choose a privacy-first Mac cleaner (checklist)</h1>
+      <p>Local-only scans, no telemetry, review before delete, Trash-first — verify yourself with built-in macOS tools</p>
+      <p class="page-meta">Updated <time datetime="2026-09-24">2026-09-24</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          A Mac cleaner that frees caches also <strong>sees a map of your apps, projects, and leftover paths</strong>.
+          Privacy is not a slogan on the download page — it is whether the scan stays on your Mac, whether anything phones home after a clean, and whether you confirm every delete.
+          Use this checklist before you grant Full Disk Access or run a “deep clean.”
+          Do not disable SIP. Do not delete under <code>/System</code> or <code>/usr</code>. Do not wipe <code>Docker.raw</code> by hand.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              What “privacy-first” should mean
+            </h3>
+            <p>
+              Everyday reclaim work — caches, leftover prefs after uninstall, package-manager download caches — does not need your documents uploaded anywhere.
+              A privacy-first cleaner should:
+            </p>
+            <ul>
+              <li><strong>Scan offline</strong> for cleanup. Network is optional for update checks only, not for measuring folders.</li>
+              <li><strong>Skip accounts and “usage reports.”</strong> If you must sign in to free space, ask why.</li>
+              <li><strong>Avoid always-on daemons</strong> for normal use. Open the app, scan, clean, quit.</li>
+              <li><strong>Let you review</strong> before anything leaves the disk, with clear risk labels when paths are sensitive.</li>
+              <li><strong>Prefer Trash</strong> (recoverable) over silent permanent delete for user files.</li>
+              <li><strong>Block critical paths</strong> such as SIP-protected system trees and <code>~/.ssh</code>.</li>
+            </ul>
+            <p>
+              Marketing that says “secure” or “trusted by millions” is not evidence.
+              Prefer concrete claims you can check: no analytics SDK, no background helper, source you can open, and a delete model you understand.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Checklist before you install
+            </h3>
+            <ul>
+              <li><strong>Permissions:</strong> Full Disk Access is common for thorough scans — grant it only if you trust the vendor, and revoke it later in System Settings → Privacy &amp; Security if you stop using the app.</li>
+              <li><strong>Login Items / LaunchAgents:</strong> Prefer tools that do not install a permanent background helper just to “monitor storage.”</li>
+              <li><strong>Telemetry wording:</strong> Look for “no analytics,” “offline,” or “local only” — then verify (next section). Vague “we care about privacy” is weak.</li>
+              <li><strong>Delete model:</strong> Trash-first or confirmed permanent delete beats one-click “optimize everything.”</li>
+              <li><strong>Protected paths:</strong> The product should refuse <code>/System</code>, <code>/usr</code>, and sensitive user locations — not tempt you to “unlock” them.</li>
+              <li><strong>License &amp; source:</strong> Published source lets you search for analytics frameworks. Read the license carefully: <em>source-available</em> is not the same as OSI “open source.”</li>
+              <li><strong>Update channel:</strong> Checking GitHub Releases or a vendor site on launch can be fine; uploading scan inventories is not.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              Verify on your Mac (no extra apps required)
+            </h3>
+            <p>
+              After a normal scan-and-clean session, leave the app open for a minute and check for unexpected outbound activity.
+            </p>
+            <div class="terminal" aria-label="Check network and launch agents">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — light privacy checks</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># Activity Monitor → Network tab: select the cleaner process; watch bytes in/out</span></div>
+                <div class="t-line"><span class="cmt"># optional: list TCP connections for a process name (replace MacOSCleaner)</span></div>
+                <div class="t-line"><span class="prompt">$</span> lsof -nP -iTCP -sTCP:ESTABLISHED | grep -i MacOSCleaner || true</div>
+                <div class="t-line"><span class="cmt"># user LaunchAgents that might keep helpers alive</span></div>
+                <div class="t-line"><span class="prompt">$</span> ls ~/Library/LaunchAgents 2>/dev/null</div>
+                <div class="t-line"><span class="cmt"># Console.app: filter by the app name while you scan; look for remote hosts / analytics</span></div>
+              </div>
+            </div>
+            <p>
+              Also open <strong>System Settings → General → Login Items &amp; Extensions</strong> and confirm nothing new appeared that you did not expect.
+              If you already use a firewall (Little Snitch, LuLu, or similar), allow only the destinations you recognize — typically a release host for updates, never a mystery analytics domain during a local cache scan.
+            </p>
+            <p>
+              A quiet Network tab during cleanup is a good sign.
+              Brief traffic when you manually check for updates can still be legitimate.
+              Continuous chatter while idle is a red flag.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Safety habits that beat “deep clean” modes
+            </h3>
+            <ul>
+              <li><strong>Measure first:</strong> <code>du -sh</code> on known trees (Xcode, Docker data, Downloads) before any bulk delete.</li>
+              <li><strong>Quit the owning app</strong> (Xcode, Docker Desktop, your IDE) before clearing its caches.</li>
+              <li><strong>Keep Archives and dSYMs;</strong> treat them as keep-by-default, not “Xcode junk.”</li>
+              <li><strong>Never hand-delete <code>Docker.raw</code></strong> for free space — use Docker’s own prune workflow.</li>
+              <li><strong>Never disable SIP</strong> to reclaim developer space. Useful targets live under your home folder.</li>
+              <li><strong>Empty Trash only when sure</strong> — space returns after Empty Trash, not when files first move there.</li>
+            </ul>
+            <p>
+              For developer reclaim order and tool-specific steps, use the related guides below (Xcode, Docker, System Data).
+              This page is about <em>trust and verification</em>, not every cache path.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Built-in tools and careful Terminal work are enough to reclaim space without installing anything.
+              If you want a later review list across many categories, <a href="../index.html">MacOSCleaner</a> is designed around local-only scans:
+              no telemetry, no analytics SDK, no account for everyday cleanup, risk badges after scan, Trash-first where supported, and <code>SafetyManager</code> blocks for critical paths such as <code>/System</code>, <code>/usr</code>, and <code>~/.ssh</code>.
+              Optional update checks talk to GitHub Releases when you launch — not an inventory of your files.
+              Source-available (GPLv3 + Commons Clause). The app is optional — this checklist stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Do Mac cleaners need internet access to free disk space?</dt>
+              <dd>No. Measuring folders and moving regenerable caches to Trash is local. Update checks to a release page are optional and should stay separate from scanning your files.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>How can I tell if a Mac cleaner is sending telemetry?</dt>
+              <dd>After a typical scan, check Activity Monitor → Network for the process, review Login Items and <code>~/Library/LaunchAgents</code>, and watch Console for unexpected outbound activity. Marketing copy alone is not proof.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Should I disable SIP to make a cleaner reclaim more space?</dt>
+              <dd>No. Useful reclaim targets for developers live under your home folder and known tool caches. Do not disable SIP and do not delete under <code>/System</code> or <code>/usr</code>.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is “open source” the same as source-available?</dt>
+              <dd>Not always. Read the license. Some projects publish source for inspection under GPLv3 plus Commons Clause (or similar) — that is source-available for personal study, not a blanket OSI open-source grant for commercial resale.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Local-only cleanup in MacOSCleaner</h3>
+            <p>
+              Smart Cleanup stays on your Mac: review risk badges, confirm what leaves the disk, Trash-first where supported, zero telemetry.
+              Native Swift 6 for Apple Silicon. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> ·
+          <a href="remove-mac-app-leftovers-after-uninstall.html">App leftovers</a> ·
+          <a href="clean-ide-ai-caches-mac.html">IDE &amp; AI caches</a> ·
+          <a href="find-remove-duplicate-files-mac.html">Duplicate files</a> ·
+          <a href="privacy-first-mac-cleaner-checklist.html">Privacy checklist</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

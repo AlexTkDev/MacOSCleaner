@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free space from iPhone backups and Simulator runtimes on Mac</title>
+  <meta name="description" content="How to review local iPhone/iPad backups under MobileSync and remove unused Xcode Simulator runtimes safely: measure with du, use Finder and Platforms UI first, never wipe Backup or CoreSimulator blindly.">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/ios-device-backups-simulator-runtimes-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="Free space from iPhone backups and Simulator runtimes on Mac">
+  <meta property="og:description" content="Review local device backups and unused Simulator runtimes with Finder and Xcode Platforms. Measure first, delete one item at a time, keep the backups and devices you still need.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/ios-device-backups-simulator-runtimes-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-10-12">
+  <meta property="article:modified_time" content="2026-10-12">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free space from iPhone backups and Simulator runtimes on Mac">
+  <meta name="twitter:description" content="Review local device backups and unused Simulator runtimes with Finder and Xcode Platforms. Measure first, delete one item at a time, keep the backups and devices you still need.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to free space from iPhone backups and Simulator runtimes on a Mac",
+  "url": "https://alextkdev.github.io/MacOSCleaner/guides/ios-device-backups-simulator-runtimes-mac.html",
+  "description": "Measure local iPhone and iPad backups and Xcode Simulator runtimes, review each one, then remove only the backups and runtimes you no longer need using Finder and Xcode Platforms.",
+  "dateModified": "2026-10-12",
+  "inLanguage": "en",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Measure backups and Simulator trees",
+      "text": "Run du -sh on ~/Library/Application Support/MobileSync/Backup and ~/Library/Developer/CoreSimulator, then list each backup folder and each CoreSimulator child."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Review local device backups in Finder",
+      "text": "Open Finder, connect or select the device, choose Manage Backups, and delete only backups you no longer need. Prefer Finder over deleting folders by hand."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Remove unused Simulator runtimes in Xcode",
+      "text": "In Xcode open Settings → Platforms (or Components on older Xcode) and delete runtimes you no longer boot. Use Window → Devices and Simulators for unused device records."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Optional Terminal cleanup for unavailable devices",
+      "text": "After quitting Simulator, run xcrun simctl list runtimes and xcrun simctl delete unavailable. Delete a specific runtime only after you have confirmed its identifier."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Verify",
+      "text": "Empty the Trash if you used Finder, re-run du, and reopen Xcode once so Platforms and simctl stay in sync."
+    }
+  ]
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where are iPhone backups stored on a Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Local Finder (and older iTunes) backups live under ~/Library/Application Support/MobileSync/Backup, usually as folders named with a device UDID. iCloud backups are stored in iCloud, not as that folder on disk."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it safe to delete the MobileSync Backup folder?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Do not wipe the whole Backup folder at once. Each subfolder is one local backup. Delete only backups you no longer need, preferably with Finder → Manage Backups, so you keep any restore copy you still care about."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will deleting a local backup delete photos on my iPhone?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Removing a Mac-side backup deletes that restore copy on the Mac. It does not erase the phone. You lose the ability to restore that snapshot unless another backup (local or iCloud) still exists."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between DeviceSupport and MobileSync Backup?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "DeviceSupport under ~/Library/Developer/Xcode holds symbol files Xcode downloads for connected devices. MobileSync Backup holds full local device backups for restore. They are unrelated; see the Xcode caches guide for DeviceSupport."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I delete all Simulator runtimes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only if you no longer need to boot any simulator. Keep at least the runtime for the iOS version you actively test. Remove unused runtimes from Xcode → Settings → Platforms, not by deleting random folders under CoreSimulator."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to disable SIP to free this space?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Backups and Simulator data live under your home folder. Do not disable System Integrity Protection and do not delete anything under /System, /Library, or /usr."
+      }
+    }
+  ]
+}
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>Free space from iPhone backups and Simulator runtimes on Mac</h1>
+      <p>Review local device backups and unused Xcode Simulator runtimes one item at a time — keep what you still need to restore or boot</p>
+      <p class="page-meta">Updated <time datetime="2026-10-12">2026-10-12</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Two folders often hide tens of gigabytes on a developer Mac, and neither is “cache” in the usual sense.
+          Local iPhone and iPad backups live under <code>~/Library/Application Support/MobileSync/Backup</code>.
+          Simulator OS images and device data live under <code>~/Library/Developer/CoreSimulator</code>.
+          The safe loop is: <strong>measure</strong> with <code>du</code>, <strong>review</strong> each backup or runtime in Finder or Xcode, then <strong>delete only</strong> the ones you no longer need.
+          Do not wipe the whole Backup tree, do not <code>rm -rf</code> CoreSimulator, and do not disable SIP.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+              </span>
+              Two different things people mix up
+            </h3>
+            <p>
+              <strong>Local device backups</strong> are full restore copies Finder (and older iTunes) makes when you back up an iPhone or iPad to this Mac.
+              Each backup is a folder, often named with a long device identifier (UDID). Losing the only copy means you cannot restore that snapshot.
+            </p>
+            <p>
+              <strong>Simulator runtimes</strong> are the iOS / iPadOS (and other) OS images Xcode uses to boot simulators.
+              They are large and regenerable by downloading again from Xcode → Settings → Platforms.
+              They are not your phone’s backup, and they are not the same as <a href="clean-xcode-caches-mac.html">Xcode DerivedData or DeviceSupport</a>.
+            </p>
+            <ul>
+              <li><strong>Review carefully:</strong> <code>~/Library/Application Support/MobileSync/Backup</code> (local restore copies).</li>
+              <li><strong>Trim with Xcode UI:</strong> Simulator runtimes and unused simulator devices under <code>~/Library/Developer/CoreSimulator</code>.</li>
+              <li><strong>Not this page:</strong> iCloud backups (in iCloud, not MobileSync), Time Machine snapshots, and Docker disk images.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure first (read only)
+            </h3>
+            <p>
+              Confirm these folders are actually large before you delete anything. On some Macs MobileSync is empty; on others one old encrypted backup is 40&nbsp;GB by itself.
+            </p>
+            <div class="terminal" aria-label="Measure backups and Simulator trees">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/MobileSync/Backup</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/MobileSync/Backup/* 2&gt;/dev/null | sort -h</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/CoreSimulator</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Developer/CoreSimulator/* 2&gt;/dev/null | sort -h</div>
+                <div class="t-line"><span class="cmt"># 'No such file' means that tree was never created on this Mac — skip it</span></div>
+              </div>
+            </div>
+            <p>
+              In Finder, use <strong>Go → Go to Folder…</strong> (<kbd>⇧⌘G</kbd>) and paste the same paths. Get Info on a backup folder shows size on disk.
+              Prefer moving or deleting through Apple’s UI so metadata stays consistent; use Terminal only when you know exactly which folder you mean.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+              </span>
+              Local iPhone / iPad backups — review, don’t wipe
+            </h3>
+            <p>
+              Preferred path: open <strong>Finder</strong>, select your device in the sidebar (or connect it), open the device detail, and use <strong>Manage Backups…</strong>.
+              Delete only backups whose date and device you no longer need. That is safer than guessing UDID folder names by hand.
+            </p>
+            <ul>
+              <li><strong>Keep:</strong> the newest backup of a device you still own, and any backup you might need for a restore or migration.</li>
+              <li><strong>Safe to remove:</strong> backups of phones you sold or wiped years ago, and duplicate older backups of the same device when a newer local or iCloud backup exists.</li>
+              <li><strong>Never:</strong> <code>rm -rf ~/Library/Application\ Support/MobileSync/Backup</code> (destroys every local backup at once).</li>
+            </ul>
+            <p>
+              Deleting a Mac-side backup does <em>not</em> erase the phone. It only removes that restore copy from this Mac.
+              If the backup is encrypted, you still need the backup password to restore it later — another reason to decide per backup, not by bulk wipe.
+            </p>
+            <p>
+              If Terminal shows <em>Operation not permitted</em> on MobileSync, macOS privacy is blocking that app from reading the folder.
+              You do not need to grant Full Disk Access for this job: use Finder’s Manage Backups instead.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              </span>
+              Simulator runtimes — Platforms UI first
+            </h3>
+            <p>
+              Quit the Simulator app and Xcode before you remove runtimes. Then open <strong>Xcode → Settings → Platforms</strong> (on some older Xcode builds this was <strong>Components</strong>).
+              Delete runtimes for iOS versions you no longer boot. Xcode can download them again later if you need them.
+            </p>
+            <p>
+              For simulator <em>devices</em> (the fake iPhone entries), use <strong>Window → Devices and Simulators</strong> and delete devices you never open.
+              That is separate from deleting the OS runtime those devices boot from.
+            </p>
+            <ul>
+              <li><strong>Regenerate:</strong> <code>CoreSimulator/Caches</code>, and device <code>data/Library/Caches</code> / <code>tmp</code> under each simulator (apps rebuild them).</li>
+              <li><strong>Remove when unused:</strong> old runtimes in Platforms, unavailable device records, simulators you never boot.</li>
+              <li><strong>Keep:</strong> at least one runtime matching the iOS version you actively test, and any simulator whose installed app state you still need.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              </span>
+              Optional Terminal: list, then delete unavailable
+            </h3>
+            <p>
+              After quitting Simulator, these commands are read-only until the last one. Use them to confirm what Platforms already shows:
+            </p>
+            <div class="terminal" aria-label="List Simulator runtimes and delete unavailable devices">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — simctl</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> xcrun simctl list runtimes</div>
+                <div class="t-line"><span class="prompt">$</span> xcrun simctl list devices</div>
+                <div class="t-line"><span class="prompt">$</span> xcrun simctl delete unavailable</div>
+                <div class="t-line"><span class="cmt"># remove one runtime only after you copied its exact identifier from `list runtimes`:</span></div>
+                <div class="t-line"><span class="cmt"># xcrun simctl runtime delete &lt;runtime-identifier&gt;</span></div>
+                <div class="t-line"><span class="cmt"># never: rm -rf ~/Library/Developer/CoreSimulator</span></div>
+              </div>
+            </div>
+            <p>
+              <code>simctl delete unavailable</code> drops broken device records left after Xcode upgrades. It does not delete healthy simulators you still use.
+              Deleting a runtime by identifier is permanent until you download that OS again from Platforms — read the identifier twice.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              </span>
+              What not to do
+            </h3>
+            <ul>
+              <li><strong>Don’t wipe all of MobileSync/Backup</strong> with one command. Delete backups one at a time after you know which device and date they belong to.</li>
+              <li><strong>Don’t <code>rm -rf ~/Library/Developer/CoreSimulator</code></strong>. That can corrupt Xcode’s simulator registry; use Platforms, Devices and Simulators, or <code>simctl</code> instead.</li>
+              <li><strong>Don’t confuse DeviceSupport with backups.</strong> DeviceSupport symbols under <code>~/Library/Developer/Xcode</code> are covered in the <a href="clean-xcode-caches-mac.html">Xcode caches guide</a>; they are not restore backups.</li>
+              <li><strong>Don’t disable SIP</strong> or delete anything under <code>/System</code>, <code>/Library</code>, or <code>/usr</code>. None of this needs elevated system access.</li>
+              <li><strong>Don’t delete <code>Docker.raw</code></strong> or other VM disks while hunting “backup” space. Those are unrelated and destructive if removed.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Check the result
+            </h3>
+            <p>
+              If you used Finder, empty the Trash — space returns when Trash is emptied, not when the item first moves there.
+              Re-run the <code>du</code> commands above and reopen Xcode once so Platforms and <code>simctl list</code> match what is on disk.
+              If MobileSync and CoreSimulator were already small, the space is elsewhere: continue with the <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>, and check <a href="clean-xcode-caches-mac.html">Xcode caches</a> and <a href="clean-docker-mac-disk-space.html">Docker disk space</a> next.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Finder Manage Backups, Xcode Platforms, Devices and Simulators, and <code>simctl</code> are enough for this job.
+              If you’d rather see sizes in a scan list first, <a href="../index.html">MacOSCleaner</a> Smart Cleanup can surface iOS Backup and Simulator categories.
+              Those items stay deselected until you tick them, so nothing is removed by default.
+              Prefer Apple’s UI when you want to be sure which backup date or runtime you are deleting.
+              The app is optional — this page stands on its own.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Where are iPhone backups stored on a Mac?</dt>
+              <dd>Local Finder (and older iTunes) backups live under ~/Library/Application Support/MobileSync/Backup, usually as folders named with a device UDID. iCloud backups are stored in iCloud, not as that folder on disk.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is it safe to delete the MobileSync Backup folder?</dt>
+              <dd>Do not wipe the whole Backup folder at once. Each subfolder is one local backup. Delete only backups you no longer need, preferably with Finder → Manage Backups, so you keep any restore copy you still care about.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Will deleting a local backup delete photos on my iPhone?</dt>
+              <dd>No. Removing a Mac-side backup deletes that restore copy on the Mac. It does not erase the phone. You lose the ability to restore that snapshot unless another backup (local or iCloud) still exists.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>What is the difference between DeviceSupport and MobileSync Backup?</dt>
+              <dd>DeviceSupport under ~/Library/Developer/Xcode holds symbol files Xcode downloads for connected devices. MobileSync Backup holds full local device backups for restore. They are unrelated; see the Xcode caches guide for DeviceSupport.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Can I delete all Simulator runtimes?</dt>
+              <dd>Only if you no longer need to boot any simulator. Keep at least the runtime for the iOS version you actively test. Remove unused runtimes from Xcode → Settings → Platforms, not by deleting random folders under CoreSimulator.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to free this space?</dt>
+              <dd>No. Backups and Simulator data live under your home folder. Do not disable System Integrity Protection and do not delete anything under /System, /Library, or /usr.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review backup and Simulator sizes with MacOSCleaner</h3>
+            <p>
+              Scan-first Smart Cleanup that can list iOS Backup and Simulator categories with items deselected until you choose them.
+              Native Swift 6, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

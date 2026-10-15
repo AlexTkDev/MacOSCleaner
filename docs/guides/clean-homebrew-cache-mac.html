@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to reclaim Homebrew disk space on Mac safely</title>
+  <meta name="description" content="Free Homebrew disk space on Mac: measure brew --cache and the prefix, dry-run brew cleanup, prune old bottles, remove unused formulae. No Cellar wipes, no SIP changes.">
+  <meta name="keywords" content="Homebrew cleanup Mac, brew cleanup disk space, Homebrew cache Mac, brew --cache, free up Homebrew space macOS, brew autoremove">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-homebrew-cache-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to reclaim Homebrew disk space on Mac safely">
+  <meta property="og:description" content="Measure first, dry-run brew cleanup, prune the download cache, remove unused packages. Leave the Cellar alone until brew uninstalls packages for you.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-homebrew-cache-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-28">
+  <meta property="article:modified_time" content="2026-09-28">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to reclaim Homebrew disk space on Mac safely">
+  <meta name="twitter:description" content="brew cleanup dry-run, prune bottles, autoremove unused formulae. Safe Homebrew space reclaim without Cellar wipes or SIP changes.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to reclaim Homebrew disk space on Mac safely",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-homebrew-cache-mac.html",
+    "description": "Safely reclaim disk space used by Homebrew on macOS. Measure the download cache and prefix, dry-run brew cleanup, prune old bottles when needed, remove unused formulae with brew's own commands. No Cellar wipes, no SIP changes.",
+    "dateModified": "2026-09-28",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Measure cache and prefix first",
+        "text": "Run brew --cache and du -sh on the cache path and brew --prefix so you know whether downloads or installed kegs dominate disk use."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Dry-run brew cleanup",
+        "text": "Run brew cleanup --dry-run (or -n) to preview stale locks, old downloads, and old formula versions before removing anything."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Apply cleanup, then prune if needed",
+        "text": "Run brew cleanup. If the cache is still large and re-downloading bottles is acceptable, use brew cleanup --prune=all after another dry-run."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Remove unused packages with brew",
+        "text": "Use brew autoremove and review brew leaves before uninstalling tools you no longer need. Prefer brew uninstall over deleting Cellar folders by hand."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Where does Homebrew store its download cache on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Run brew --cache. On most Macs that path is ~/Library/Caches/Homebrew. Measuring that folder with du shows how much bottle and source download space you can reclaim with brew cleanup."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to delete ~/Library/Caches/Homebrew?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Prefer brew cleanup (with --dry-run first). brew cleanup --prune=all or scrub options remove cache files through Homebrew's own rules. Blind rm -rf of the cache works for downloads but skips keg cleanup and may surprise you if another brew command is running. Never delete the Cellar or /opt/homebrew wholesale while packages are still installed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to clean Homebrew?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Homebrew's cache lives under your home folder, and the default Apple Silicon prefix is /opt/homebrew. Do not disable SIP and do not delete anything under /System or /usr to free Homebrew space."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Homebrew disk space",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/clean-homebrew-cache-mac.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to reclaim Homebrew disk space on Mac safely</h1>
+      <p>Measure cache and prefix, dry-run brew cleanup, prune old bottles, uninstall unused formulae — leave the Cellar to brew</p>
+      <p class="page-meta">Updated <time datetime="2026-09-28">2026-09-28</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Homebrew keeps downloaded bottles and older keg versions so installs and upgrades can reuse local files.
+          After months of <code>brew upgrade</code> churn, that cache and leftover kegs can look like “mystery” disk use under Storage.
+          The safe loop is: <strong>measure</strong> the download cache and the Homebrew prefix, <strong>preview</strong> with <code>brew cleanup --dry-run</code>, then let Homebrew remove stale downloads and old versions.
+          Prefer <code>brew uninstall</code> / <code>brew autoremove</code> over deleting Cellar folders by hand.
+          Do not disable SIP. Do not wipe <code>/opt/homebrew</code> or <code>/usr/local</code> wholesale while packages are still installed.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure cache vs installed kegs
+            </h3>
+            <p>
+              Two different trees matter. The <strong>download cache</strong> holds bottle and source archives you can usually prune.
+              The <strong>prefix</strong> (Cellar, Caskroom, linked bins) holds software you still use — reclaim that only by uninstalling packages, not by deleting folders at random.
+            </p>
+            <div class="terminal" aria-label="Measure Homebrew cache and prefix">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure Homebrew disk use</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> brew --cache</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh "$(brew --cache)"</div>
+                <div class="t-line"><span class="prompt">$</span> brew --prefix</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh "$(brew --prefix)"</div>
+                <div class="t-line"><span class="cmt"># common Apple Silicon layout (confirm with brew --prefix first)</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh /opt/homebrew/Cellar /opt/homebrew/Caskroom 2>/dev/null</div>
+              </div>
+            </div>
+            <p>
+              On most Macs, <code>brew --cache</code> prints <code>~/Library/Caches/Homebrew</code>.
+              Apple Silicon installs usually live under <code>/opt/homebrew</code>; older Intel installs often use <code>/usr/local</code>.
+              Always trust <code>brew --prefix</code> and <code>brew --cache</code> over a guessed path.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              Dry-run <code>brew cleanup</code> first
+            </h3>
+            <p>
+              <code>brew cleanup</code> removes stale lock files, outdated downloads, and old versions of installed formulae.
+              By default it targets downloads older than about 120 days (adjustable with <code>HOMEBREW_CLEANUP_MAX_AGE_DAYS</code>).
+              Preview before you commit:
+            </p>
+            <div class="terminal" aria-label="Dry-run brew cleanup">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — preview cleanup</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> brew cleanup --dry-run</div>
+                <div class="t-line"><span class="cmt"># same preview with short flag</span></div>
+                <div class="t-line"><span class="prompt">$</span> brew cleanup -n</div>
+              </div>
+            </div>
+            <p>
+              If the dry-run list looks right, run <code>brew cleanup</code> with no flags.
+              Do not run cleanup while another <code>brew install</code>, <code>brew upgrade</code>, or <code>brew uninstall</code> is already changing the prefix.
+              Homebrew also runs cleanup periodically after upgrades unless you set <code>HOMEBREW_NO_INSTALL_CLEANUP=1</code> — a large cache often means you disabled auto-cleanup or you accumulate downloads faster than the default age window.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </span>
+              When standard cleanup is not enough
+            </h3>
+            <p>
+              If <code>du</code> still shows a large cache after a normal cleanup, prune older downloads more aggressively — only when re-downloading bottles later is acceptable (you have network, and offline reinstall of the same bottles is not required).
+            </p>
+            <div class="terminal" aria-label="Prune Homebrew cache">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — prune cache (after dry-run)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> brew cleanup --prune=all --dry-run</div>
+                <div class="t-line"><span class="prompt">$</span> brew cleanup --prune=all</div>
+                <div class="t-line"><span class="cmt"># optional: scrub cache downloads even for current versions</span></div>
+                <div class="t-line"><span class="cmt"># (installed kegs stay; bottles may need re-download later)</span></div>
+                <div class="t-line"><span class="prompt">$</span> brew cleanup -s</div>
+              </div>
+            </div>
+            <p>
+              <code>--prune=all</code> removes cache files that the default age window may keep for reuse.
+              <code>brew cleanup -s</code> scrubs more of the cache, including downloads for current versions, while still leaving installed formulae in place.
+              Official docs also note that deleting the entire cache directory with <code>rm -rf "$(brew --cache)"</code> is possible for a full wipe of downloads — prefer the <code>brew cleanup</code> flags first so keg cleanup and Homebrew’s own rules stay consistent.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Unused packages vs cache
+            </h3>
+            <p>
+              Cache cleanup does not uninstall tools you installed and forgot about.
+              Those live in the Cellar / Caskroom and only shrink when you remove the package through Homebrew:
+            </p>
+            <div class="terminal" aria-label="Find and remove unused Homebrew packages">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — unused formulae</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># formulae you installed that nothing else depends on</span></div>
+                <div class="t-line"><span class="prompt">$</span> brew leaves</div>
+                <div class="t-line"><span class="cmt"># remove orphaned dependencies left after uninstalls</span></div>
+                <div class="t-line"><span class="prompt">$</span> brew autoremove --dry-run</div>
+                <div class="t-line"><span class="prompt">$</span> brew autoremove</div>
+                <div class="t-line"><span class="cmt"># uninstall a specific tool you no longer need</span></div>
+                <div class="t-line"><span class="prompt">$</span> brew uninstall FORMULA_OR_CASK</div>
+                <div class="t-line"><span class="prompt">$</span> brew cleanup</div>
+              </div>
+            </div>
+            <p>
+              Review <code>brew leaves</code> before mass uninstalls — “leaf” only means nothing else in Homebrew depends on it; you may still use that CLI every day.
+              Prefer named <code>brew uninstall</code> over deleting directories under <code>Cellar</code> or <code>Caskroom</code> in Finder.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              What to leave alone
+            </h3>
+            <ul>
+              <li><strong>Safe reclaim targets:</strong> download cache via <code>brew cleanup</code> / <code>--prune</code>, old keg versions cleanup removes, packages you deliberately uninstall, orphaned deps via <code>brew autoremove</code>.</li>
+              <li><strong>Keep until you uninstall the package:</strong> current Cellar kegs, Caskroom apps you still use, linked binaries under the prefix.</li>
+              <li><strong>Never as “Homebrew cleanup”:</strong> wiping all of <code>/opt/homebrew</code> or <code>/usr/local</code> while software is installed, deleting <code>/System</code> or <code>/usr</code>, disabling SIP, or treating Docker.raw / Xcode DerivedData as Homebrew cache.</li>
+              <li><strong>If Storage is still tight after brew work:</strong> measure developer trees next — <a href="clean-xcode-caches-mac.html">Xcode caches</a>, <a href="clean-docker-mac-disk-space.html">Docker disk space</a>, and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> — those often dwarf the bottle cache.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Terminal and Homebrew’s own commands are enough for a careful cleanup.
+              If you want a later review list alongside other package-manager and developer caches,
+              <a href="../index.html">MacOSCleaner</a> Smart Cleanup includes a Homebrew category among package managers and uses native cleanup commands where available — you still confirm before anything is removed.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Where does Homebrew store its download cache on Mac?</dt>
+              <dd>Run <code>brew --cache</code>. On most Macs that path is <code>~/Library/Caches/Homebrew</code>. Measure it with <code>du -sh "$(brew --cache)"</code> before deciding how aggressive to prune.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is it safe to delete <code>~/Library/Caches/Homebrew</code>?</dt>
+              <dd>Prefer <code>brew cleanup</code> (dry-run first). Prune with <code>--prune=all</code> or scrub with <code>-s</code> when you accept re-downloads. Do not delete the Cellar or the whole Homebrew prefix while packages are still installed, and do not run cleanup during another brew install/upgrade.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to clean Homebrew?</dt>
+              <dd>No. The download cache lives under your home folder, and the default Apple Silicon prefix is <code>/opt/homebrew</code>. Do not disable SIP and do not delete anything under <code>/System</code> or <code>/usr</code> to free Homebrew space.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review package-manager caches in MacOSCleaner</h3>
+            <p>
+              Smart Cleanup lists Homebrew alongside other package managers and developer paths, with risk badges after scan so you confirm before cleanup.
+              Native Swift 6, trash-first where supported, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> ·
+          <a href="remove-mac-app-leftovers-after-uninstall.html">App leftovers</a> ·
+          <a href="clean-ide-ai-caches-mac.html">IDE &amp; AI caches</a> ·
+          <a href="find-remove-duplicate-files-mac.html">Duplicate files</a> ·
+          <a href="privacy-first-mac-cleaner-checklist.html">Privacy-first checklist</a> ·
+          <a href="clean-homebrew-cache-mac.html">Homebrew disk space</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

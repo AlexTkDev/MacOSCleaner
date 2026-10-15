@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to find and remove duplicate files safely on Mac</title>
+  <meta name="description" content="Find exact duplicate files on Mac with size and SHA-256 checks. Keep one master copy, move extras to Trash. Downloads, Desktop, and developer folders — no SIP hacks.">
+  <meta name="keywords" content="find duplicate files Mac, remove duplicates Mac safely, duplicate downloads Mac, SHA-256 duplicate finder Mac, free up space duplicate files macOS">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/find-remove-duplicate-files-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to find and remove duplicate files safely on Mac">
+  <meta property="og:description" content="Exact byte duplicates only. Measure folders, verify with SHA-256, keep one master, Trash the rest. No SIP changes.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/find-remove-duplicate-files-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-21">
+  <meta property="article:modified_time" content="2026-09-21">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to find and remove duplicate files safely on Mac">
+  <meta name="twitter:description" content="Exact duplicates via size and SHA-256. Keep one master copy; move extras to Trash. Safe for Downloads and developer folders.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to find and remove duplicate files safely on Mac",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/find-remove-duplicate-files-mac.html",
+    "description": "Safely reclaim disk space from exact duplicate files on macOS. Measure folders first, confirm identical content with SHA-256, keep one master copy, move extras to Trash. No SIP changes.",
+    "dateModified": "2026-09-21",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Know what counts as a duplicate",
+        "text": "Target exact byte-identical files only. Same name or similar photos are not enough. Do not treat package-manager trees like node_modules as free duplicate space."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure high-yield folders",
+        "text": "Run du -sh on Downloads, Desktop, Documents, and other folders where copies accumulate, then decide where to scan."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Confirm with size then SHA-256",
+        "text": "Group same-sized candidates, then verify with shasum -a 256 before removing anything."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Keep one master and Trash extras",
+        "text": "In each duplicate group keep one master path. Move extras to Trash, never delete every copy, and empty Trash only when sure."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does macOS Finder have a built-in duplicate file remover?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Finder does not offer a full-disk exact-duplicate scanner. You can sort a folder by size or name and compare manually, or use Terminal hashing (size then SHA-256) for proof before moving extras to Trash."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to delete duplicate files on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes when they are exact content matches and you keep at least one master copy. Prefer Trash over permanent delete. Do not remove the only remaining copy, do not wipe package-manager trees as duplicates, and do not delete under /System or /usr."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to remove duplicates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. User duplicates live under your home folder. Do not disable SIP and do not delete anything under /System or /usr."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Duplicate files",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/find-remove-duplicate-files-mac.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to find and remove duplicate files safely on Mac</h1>
+      <p>Exact byte matches only — measure folders, verify with SHA-256, keep one master, move extras to Trash</p>
+      <p class="page-meta">Updated <time datetime="2026-09-21">2026-09-21</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Duplicate files waste space when the same bytes sit in two places: a second download, a “copy” on the Desktop, an exported ZIP next to the unzipped folder, or an installer <code>.dmg</code> you already installed.
+          The safe loop is: <strong>decide what “duplicate” means</strong>, <strong>measure high-yield folders</strong>, <strong>confirm identical content</strong>, then keep one master and move extras to Trash.
+          Same filename is not proof. Similar photos are not exact duplicates. Do not disable SIP. Do not delete under <code>/System</code> or <code>/usr</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              Exact duplicates vs lookalikes
+            </h3>
+            <p>
+              For reclaiming disk space, you want <strong>exact content duplicates</strong>: two files with identical bytes.
+              Matching names (<code>report.pdf</code> vs <code>report (1).pdf</code>) are a hint, not proof — one may be an edited version.
+              Near-duplicate photos (same scene, different crop or re-export) need a photo tool, not a byte hash.
+            </p>
+            <p>
+              On APFS, hard links and some copy-on-write clones can share storage without looking like two full copies in every tool.
+              If two paths share an inode or you are unsure, leave both alone until you understand the link.
+              This guide focuses on ordinary separate files that hash the same — the usual Downloads and Desktop clutter case.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure high-yield folders first
+            </h3>
+            <p>
+              Start where copies accumulate, not with a whole-disk panic scan of system trees.
+              Run these in Terminal, then open the largest folders in Finder:
+            </p>
+            <div class="terminal" aria-label="Measure folders that often hold duplicates">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure common duplicate hotspots</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Downloads ~/Desktop ~/Documents ~/Movies ~/Pictures 2>/dev/null</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Mobile\ Documents 2>/dev/null</div>
+                <div class="t-line"><span class="cmt"># optional: large project archives you keep outside git</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Archives ~/Backups 2>/dev/null</div>
+              </div>
+            </div>
+            <p>
+              Typical reclaim wins: installer <code>.dmg</code> / <code>.pkg</code> copies after install, ZIP next to the extracted folder, Screenshots and screen recordings saved twice, exported media sitting beside the library original, and “Final” / “Final 2” copies of the same PDF or design export.
+            </p>
+            <p>
+              Skip package-manager and build trees as duplicate hunts. Folders like <code>node_modules</code>, <code>Pods</code>, <code>.gradle</code>, and <code>DerivedData</code> repeat filenames by design; cleaning those belongs to dependency and Xcode cache workflows, not a duplicate pass.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              Confirm with size, then SHA-256
+            </h3>
+            <p>
+              Fast tools group by size first (different sizes cannot be exact duplicates), then hash candidates.
+              You can do a careful one-folder check yourself with built-in macOS tools.
+              Example: find same-sized files under Downloads that are larger than 10&nbsp;MB, then compare hashes for a specific pair:
+            </p>
+            <div class="terminal" aria-label="Size filter and SHA-256 verify">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — verify two candidates</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># list large files (review names; do not delete from this list alone)</span></div>
+                <div class="t-line"><span class="prompt">$</span> find ~/Downloads -type f -size +10M -print0 | xargs -0 ls -lhS | head -40</div>
+                <div class="t-line"><span class="cmt"># prove two paths are identical bytes</span></div>
+                <div class="t-line"><span class="prompt">$</span> shasum -a 256 "/path/to/file-a" "/path/to/file-b"</div>
+                <div class="t-line"><span class="cmt"># identical SHA-256 digests ⇒ exact duplicate; keep one, Trash the other</span></div>
+              </div>
+            </div>
+            <p>
+              Prefer moving the extra to Trash in Finder (or <code>osascript</code> / a tool that uses Trash) over <code>rm</code>, so a wrong pick is recoverable.
+              Empty Trash only after you confirm the master still opens and you no longer need the spare.
+              Space returns when Trash is emptied, not when the file first moves there.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+              </span>
+              Keep one master in every group
+            </h3>
+            <p>
+              For each set of identical files, pick a <strong>master</strong> and protect it:
+            </p>
+            <ul>
+              <li>Prefer the copy in the folder you actually use (project folder, Photos library export destination, Documents archive).</li>
+              <li>Prefer the path that is already backed up or organized over a stray Downloads copy.</li>
+              <li>Prefer the original name without <code> copy</code>, <code>(1)</code>, or <code>FinalFinal</code> suffixes when content matches.</li>
+              <li>Never select every file in a group for removal — always leave at least one.</li>
+            </ul>
+            <p>
+              If a duplicate sits inside iCloud Drive or another sync folder, wait for sync to finish after Trashing so you do not fight a half-uploaded state.
+              For Time Machine–related local snapshots and “System Data,” use a reclaim-order guide instead of treating snapshots as ordinary duplicates.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              What to leave alone
+            </h3>
+            <ul>
+              <li><strong>Good duplicate targets:</strong> Downloads, Desktop, Documents, Movies, Pictures exports, personal archive folders with installer and ZIP copies.</li>
+              <li><strong>Not duplicate hunts:</strong> <code>node_modules</code>, CocoaPods, Gradle/Maven caches, Xcode DerivedData, Docker data, IDE caches — use their own cleanup paths.</li>
+              <li><strong>Never delete as “duplicates”:</strong> anything under <code>/System</code>, <code>/usr</code>, <code>/bin</code>, <code>~/.ssh</code>, Keychain, or the only remaining copy of a file you still need.</li>
+              <li><strong>Never:</strong> disable SIP, wipe Docker.raw “for free space,” or run blind <code>rm -rf</code> across your home folder from a hash list you have not reviewed.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Finder and Terminal are enough for a careful pass on one or two folders.
+              If you want a later review list across larger trees, <a href="../index.html">MacOSCleaner</a> Duplicate Finder uses a staged pipeline
+              (file size → 4&nbsp;KB checksum → full SHA-256) so only exact matches are grouped, and you keep a master while extras can go to Trash.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Does macOS Finder have a built-in duplicate file remover?</dt>
+              <dd>No full-disk exact-duplicate scanner. You can sort a folder by size or name and compare manually, or verify pairs with <code>shasum -a 256</code> before moving extras to Trash.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is it safe to delete duplicate files on Mac?</dt>
+              <dd>Yes when they are exact content matches and you keep at least one master. Prefer Trash. Do not remove every copy in a group, do not wipe dependency trees as duplicates, and do not delete under <code>/System</code> or <code>/usr</code>.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to remove duplicates?</dt>
+              <dd>No. User duplicates live under your home folder. Do not disable SIP and do not delete anything under <code>/System</code> or <code>/usr</code>.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review exact duplicates in MacOSCleaner</h3>
+            <p>
+              Duplicate Finder groups exact matches with a size → 4&nbsp;KB → SHA-256 pipeline so you keep a master and send extras to Trash.
+              Native Swift 6, trash-first where supported, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> ·
+          <a href="remove-mac-app-leftovers-after-uninstall.html">App leftovers</a> ·
+          <a href="clean-ide-ai-caches-mac.html">IDE &amp; AI caches</a> ·
+          <a href="find-remove-duplicate-files-mac.html">Duplicate files</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

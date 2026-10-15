@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mac storage not freeing up? Time Machine local snapshots &amp; purgeable space</title>
+  <meta name="description" content="Deleted big files but Mac free space barely moved? Local Time Machine snapshots and purgeable space explain it. List snapshots with tmutil, thin them safely, verify with df. No snapshot wipes, no SIP changes.">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/time-machine-local-snapshots-purgeable-space-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="Mac storage not freeing up? Time Machine local snapshots &amp; purgeable space">
+  <meta property="og:description" content="Why deleted files keep using space on APFS, how to read Finder&#x2019;s purgeable number, and how to thin local snapshots with tmutil instead of wiping them.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/time-machine-local-snapshots-purgeable-space-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-10-05">
+  <meta property="article:modified_time" content="2026-10-05">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mac storage not freeing up? Time Machine local snapshots &amp; purgeable space">
+  <meta name="twitter:description" content="Why deleted files keep using space on APFS, how to read Finder&#x2019;s purgeable number, and how to thin local snapshots with tmutil instead of wiping them.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to free space held by Time Machine local snapshots on Mac",
+  "url": "https://alextkdev.github.io/MacOSCleaner/guides/time-machine-local-snapshots-purgeable-space-mac.html",
+  "description": "Find out why deleted files still use space on an APFS Mac, read purgeable space correctly, list local Time Machine snapshots, and thin them with tmutil instead of wiping them.",
+  "dateModified": "2026-10-05",
+  "inLanguage": "en",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Empty the Trash and compare free space",
+      "text": "Empty the Trash, then compare Finder's Get Info Available figure (which includes purgeable space) with df -h / (which does not)."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "List local snapshots",
+      "text": "Run tmutil listlocalsnapshots / to see local Time Machine snapshots on the startup disk."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Thin snapshots to a byte target",
+      "text": "Run tmutil thinlocalsnapshots / with a byte target and urgency 1 to 4. macOS removes purgeable snapshots until it reaches the target."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Verify and move on",
+      "text": "Re-run df -h / and the snapshot list. If little changed, the space is used by something else, such as Xcode, Docker, or caches; continue with a System Data reclaim order."
+    }
+  ]
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why didn’t my Mac free up space after I deleted files?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Three usual reasons: the files are still in the Trash, a local Time Machine snapshot still references the deleted data, or the space was freed but shows up as purgeable instead of plain free space. Empty the Trash, then check for local snapshots with tmutil listlocalsnapshots / and thin them if needed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does purgeable space mean on a Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Purgeable space is storage macOS can reclaim on its own when something needs room, such as local Time Machine snapshots and some cached or iCloud-optimized content. Finder’s Get Info shows it in brackets next to Available. Command-line tools like df do not count it as free."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it safe to thin Time Machine local snapshots?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. tmutil thinlocalsnapshots asks macOS to remove snapshots it already considers purgeable until it reaches the byte target you give it. You lose some recent restore points, but your backups on the Time Machine disk are not touched."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I delete all local snapshots?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Thinning is enough in almost every case and keeps the newest restore points. Deleting the whole set removes your safety net for accidental deletions between backups, and some snapshots, such as macOS update snapshots, are part of how the system works and should be left alone."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does an installer say there isn’t enough space when Finder shows plenty?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Finder’s Available figure includes purgeable space. Some installers, VM tools, and command-line programs only look at the plain free space, which excludes it. Thinning local snapshots turns purgeable space into regular free space those tools can see."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to disable SIP to remove snapshots?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. tmutil is a standard macOS tool and works with SIP on. Do not disable SIP or delete anything under /System to free space."
+      }
+    }
+  ]
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://alextkdev.github.io/MacOSCleaner/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Guides",
+      "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Local snapshots & purgeable space",
+      "item": "https://alextkdev.github.io/MacOSCleaner/guides/time-machine-local-snapshots-purgeable-space-mac.html"
+    }
+  ]
+}
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>Mac storage not freeing up? Time Machine local snapshots and purgeable space</h1>
+      <p>Why deleted files can keep using space on APFS, how to read the purgeable number, and how to thin snapshots instead of wiping them</p>
+      <p class="page-meta">Updated <time datetime="2026-10-05">2026-10-05</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          You delete a 40 GB VM image or an old Xcode archive, empty the Trash, and Storage barely moves.
+          Or Finder says you have plenty of room while an installer insists the disk is full.
+          On a Mac with an APFS startup disk and Time Machine turned on, the usual cause is <strong>local snapshots</strong>: point-in-time copies that keep referencing data you already deleted, which macOS reports as <strong>purgeable</strong> space.
+          The safe loop is: <strong>empty</strong> the Trash, <strong>read</strong> the right free-space number, <strong>list</strong> snapshots with <code>tmutil</code>, then <strong>thin</strong> them to a byte target.
+          Do not wipe every snapshot, do not touch macOS update snapshots, and do not disable SIP.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+              </span>
+              Why deleted files can keep using space
+            </h3>
+            <p>
+              APFS snapshots are cheap because they share blocks with the live disk.
+              The catch is that when you delete a file, any snapshot taken before the delete still points at those blocks, so the space is not returned until that snapshot goes away.
+            </p>
+            <p>
+              When Time Machine is set up, macOS keeps local snapshots on the startup disk so you can restore recent changes even when the backup drive isn&#x2019;t connected.
+              Apple describes them as hourly snapshots kept for about 24 hours, plus a snapshot of the last successful backup kept until space is needed.
+              macOS removes them on its own as they age or when the disk gets tight, which is why the space is labelled purgeable rather than used.
+            </p>
+            <ul>
+              <li><strong>Still in the Trash?</strong> Files in the Trash count as used space. Empty it first.</li>
+              <li><strong>Held by a snapshot?</strong> The blocks come back when the snapshot expires or is thinned.</li>
+              <li><strong>Shown as purgeable?</strong> The space is reclaimable, but some tools don&#x2019;t treat it as free yet.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Read the right free-space number
+            </h3>
+            <p>
+              Different parts of macOS answer &#x201C;how much space is free?&#x201D; differently.
+              Finder&#x2019;s <strong>Get Info</strong> on your startup disk shows <em>Available</em> with the purgeable part in brackets, for example &#x201C;Available: 120 GB (35 GB purgeable)&#x201D;.
+              <code>df</code> in Terminal shows only plain free space, without purgeable.
+            </p>
+            <div class="terminal" aria-label="Compare free space with df">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — compare free space (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> df -h /</div>
+                <div class="t-line"><span class="cmt"># Avail here excludes purgeable space</span></div>
+                <div class="t-line"><span class="cmt"># compare with Finder: select Macintosh HD, File, Get Info</span></div>
+              </div>
+            </div>
+            <p>
+              If Finder shows a large purgeable figure and <code>df</code> shows much less, snapshots or other purgeable data are the gap.
+              That gap is also why an installer, a VM tool, or a command-line program can refuse to run: many of them check plain free space only.
+              For developers: Apple&#x2019;s <code>volumeAvailableCapacityForImportantUsageKey</code> includes space the system can purge, while <code>volumeAvailableCapacityKey</code> does not, so two apps can honestly report different numbers for the same disk.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              List local snapshots
+            </h3>
+            <p>
+              These commands only read. They show the Time Machine snapshots on the startup disk, named by date and time.
+            </p>
+            <div class="terminal" aria-label="List Time Machine local snapshots">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — list local snapshots (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> tmutil listlocalsnapshots /</div>
+                <div class="t-line"><span class="cmt"># e.g. com.apple.TimeMachine.2026-10-05-093015.local</span></div>
+                <div class="t-line"><span class="prompt">$</span> tmutil listlocalsnapshotdates /</div>
+              </div>
+            </div>
+            <p>
+              An empty list means snapshots aren&#x2019;t your problem; skip ahead to the last step.
+              Seeing a few snapshots from the last day is normal and healthy.
+              <code>tmutil</code> doesn&#x2019;t print a size per snapshot, because snapshots share blocks with each other and with the live disk; Finder&#x2019;s purgeable figure is the practical estimate.
+            </p>
+            <p>
+              If you also run <code>diskutil apfs listSnapshots /</code>, you may see a snapshot named like <code>com.apple.os.update-&#x2026;</code>.
+              That one belongs to macOS itself and is used for the signed system volume and updates. Leave it alone.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </span>
+              Thin snapshots to a byte target
+            </h3>
+            <p>
+              <code>tmutil thinlocalsnapshots</code> asks macOS to remove snapshots it already considers purgeable until it frees the amount you request.
+              It takes a mount point, a target in <strong>bytes</strong>, and an urgency from 1 (gentle) to 4 (most aggressive).
+              Shell arithmetic saves you from counting zeros.
+            </p>
+            <div class="terminal" aria-label="Thin Time Machine local snapshots">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — thin local snapshots</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># ask for about 20 GB at urgency 4</span></div>
+                <div class="t-line"><span class="prompt">$</span> tmutil thinlocalsnapshots / $((20 * 1024 * 1024 * 1024)) 4</div>
+                <div class="t-line"><span class="cmt"># if it reports a permission error, run the same line with sudo</span></div>
+                <div class="t-line"><span class="prompt">$</span> tmutil listlocalsnapshots /</div>
+                <div class="t-line"><span class="prompt">$</span> df -h /</div>
+              </div>
+            </div>
+            <p>
+              Pick a target close to what you actually need, such as the size of the install that failed plus some headroom.
+              macOS may free less than you ask for if the remaining snapshots aren&#x2019;t purgeable yet, and it may keep the newest ones.
+              That&#x2019;s by design: thinning gives back space without throwing away every recent restore point.
+              Your backups on the external Time Machine disk are not affected.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              If thinning freed little, look elsewhere
+            </h3>
+            <p>
+              When the snapshot list was short or thinning barely changed <code>df</code>, the space is held by real files, not snapshots.
+              On a developer Mac the usual suspects are Xcode data, Docker&#x2019;s disk image, simulator runtimes, and package or IDE caches, all of which Storage lumps into System Data.
+              Measure before you remove anything, and work through them in order: see <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>, <a href="clean-xcode-caches-mac.html">Xcode caches</a>, and <a href="clean-docker-mac-disk-space.html">Docker disk space</a>.
+            </p>
+            <p>
+              One more APFS quirk worth knowing: right after a big cleanup, free space can lag for a few minutes while macOS finishes reclaiming blocks. Check again before trying anything drastic.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              What not to do
+            </h3>
+            <ul>
+              <li><strong>Don&#x2019;t wipe the whole snapshot set.</strong> Thinning is enough almost every time, and deleting everything removes your safety net for mistakes made since the last backup.</li>
+              <li><strong>Don&#x2019;t delete <code>com.apple.os.update-&#x2026;</code> or other system snapshots</strong> with <code>diskutil</code>. They aren&#x2019;t Time Machine clutter.</li>
+              <li><strong>Don&#x2019;t disable SIP</strong> or delete anything under <code>/System</code>. It won&#x2019;t shrink snapshots and it weakens the Mac&#x2019;s security.</li>
+              <li><strong>Don&#x2019;t follow old guides</strong> that mention <code>tmutil disablelocal</code> or a <code>/.MobileBackups</code> folder. Those come from pre-APFS macOS and don&#x2019;t apply to current systems.</li>
+              <li><strong>Don&#x2019;t turn Time Machine off just to free space.</strong> Local snapshots are temporary by design, and the backups matter more than a few gigabytes.</li>
+              <li><strong>Don&#x2019;t delete <code>Docker.raw</code> by hand</strong> when the real space hog turns out to be Docker. Use Docker&#x2019;s own cleanup instead (see <a href="clean-docker-mac-disk-space.html">Docker disk space</a>).</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              The Terminal steps above are all you need.
+              If you&#x2019;d rather see snapshots next to your other cleanup categories, <a href="../index.html">MacOSCleaner</a> Smart Cleanup has a <strong>Time Machine Snapshots</strong> item.
+              During a scan it lists your local snapshots and an estimate of purgeable space, and it stays unselected unless you tick it.
+              When you do, it asks for your admin password and runs the same <code>tmutil thinlocalsnapshots</code> thinning shown here, then reports how much space came back.
+              It thins; it doesn&#x2019;t delete the snapshot set.
+              The app is optional, and this page stands on its own.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Why didn&#x2019;t my Mac free up space after I deleted files?</dt>
+              <dd>Three usual reasons: the files are still in the Trash, a local Time Machine snapshot still references the deleted data, or the space was freed but shows up as purgeable instead of plain free space. Empty the Trash, then check for local snapshots with <code>tmutil listlocalsnapshots /</code> and thin them if needed.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>What does purgeable space mean on a Mac?</dt>
+              <dd>Purgeable space is storage macOS can reclaim on its own when something needs room, such as local Time Machine snapshots and some cached or iCloud-optimized content. Finder&#x2019;s Get Info shows it in brackets next to Available. Command-line tools like <code>df</code> do not count it as free.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is it safe to thin Time Machine local snapshots?</dt>
+              <dd>Yes. <code>tmutil thinlocalsnapshots</code> asks macOS to remove snapshots it already considers purgeable until it reaches the byte target you give it. You lose some recent restore points, but your backups on the Time Machine disk are not touched.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Should I delete all local snapshots?</dt>
+              <dd>No. Thinning is enough in almost every case and keeps the newest restore points. Deleting the whole set removes your safety net for accidental deletions between backups, and some snapshots, such as macOS update snapshots, are part of how the system works and should be left alone.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Why does an installer say there isn&#x2019;t enough space when Finder shows plenty?</dt>
+              <dd>Finder&#x2019;s Available figure includes purgeable space. Some installers, VM tools, and command-line programs only look at the plain free space, which excludes it. Thinning local snapshots turns purgeable space into regular free space those tools can see.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to remove snapshots?</dt>
+              <dd>No. tmutil is a standard macOS tool and works with SIP on. Do not disable SIP or delete anything under <code>/System</code> to free space.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Thin snapshots alongside your other cleanup in MacOSCleaner</h3>
+            <p>
+              Opt-in Time Machine Snapshots item that lists local snapshots and purgeable space, then thins them with tmutil after you confirm.
+              No snapshot wipes. Native Swift 6, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

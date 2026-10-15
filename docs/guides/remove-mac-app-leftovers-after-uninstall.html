@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to remove leftover files after uninstalling Mac apps</title>
+  <meta name="description" content="Trash does not finish a Mac uninstall. Find leftover caches, preferences, containers, and launch agents by bundle ID. Prefer Trash over rm; no SIP hacks.">
+  <meta name="keywords" content="remove leftover files Mac uninstall, Mac app leftovers, orphaned Mac app files, uninstall Mac app completely, Library leftovers after Trash">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/remove-mac-app-leftovers-after-uninstall.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to remove leftover files after uninstalling Mac apps">
+  <meta property="og:description" content="Trash removes the .app, not Library leftovers. Find remnants by bundle ID, review LaunchAgents carefully, prefer Trash over rm. No SIP hacks.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/remove-mac-app-leftovers-after-uninstall.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-14">
+  <meta property="article:modified_time" content="2026-09-14">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to remove leftover files after uninstalling Mac apps">
+  <meta name="twitter:description" content="Trash removes the .app, not Library leftovers. Find remnants by bundle ID; prefer Trash over rm.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to remove leftover files after uninstalling Mac apps",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/remove-mac-app-leftovers-after-uninstall.html",
+    "description": "Find and safely remove Mac app leftovers after Trash or a partial uninstall: vendor uninstallers first, then Library paths matched by bundle ID. Prefer Trash over rm. No SIP changes.",
+    "dateModified": "2026-09-14",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Prefer the vendor uninstaller when present",
+        "text": "For VPNs, antivirus, drivers, Adobe, Microsoft, and similar apps, run the vendor Uninstall tool before any Library walk."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Quit the app and note its bundle ID",
+        "text": "Quit the app and helpers. Read CFBundleIdentifier from Contents/Info.plist inside the .app before you remove the bundle."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Review common Library locations",
+        "text": "Search ~/Library Application Support, Caches, Preferences, Containers, Group Containers, Logs, Saved Application State, LaunchAgents, and related folders by bundle ID or developer name."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Move confirmed leftovers to Trash",
+        "text": "Leave ambiguous shared containers alone. Prefer Trash over rm -rf. Empty Trash only after a normal reboot-free test period."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does moving a Mac app to Trash uninstall it completely?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Trash removes the .app bundle. Preferences, caches, containers, logs, and sometimes launch agents often remain under ~/Library (and occasionally /Library for privileged helpers)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I find leftovers after the app is already gone?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Search ~/Library by the app’s former bundle ID (com.vendor.product) or the developer name. Without that identity, name-only matches are weaker — leave uncertain folders alone."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to remove app leftovers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Ordinary leftovers live under your home Library. Do not disable SIP and do not delete anything under /System or /usr. Treat /Library helpers with extra caution and prefer vendor uninstallers."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Remove Mac app leftovers",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/remove-mac-app-leftovers-after-uninstall.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to remove leftover files after uninstalling Mac apps</h1>
+      <p>Trash removes the <code>.app</code> — not Library leftovers. Match by bundle ID, review helpers carefully, prefer Trash over <code>rm</code></p>
+      <p class="page-meta">Updated <time datetime="2026-09-14">2026-09-14</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Dragging an app to Trash deletes the bundle under <code>/Applications</code> (or <code>~/Applications</code>).
+          Preferences, caches, sandbox containers, logs, and sometimes launch agents stay behind under <code>~/Library</code>.
+          The safe loop is: <strong>vendor uninstaller first when it exists</strong>, <strong>quit the app</strong>,
+          <strong>record the bundle ID</strong>, then review matching Library paths and move confirmed leftovers to Trash.
+          Do not disable SIP. Do not delete under <code>/System</code> or <code>/usr</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              Vendor uninstaller first
+            </h3>
+            <p>
+              Apps with drivers, network extensions, privileged helpers, or license daemons often ship their own Uninstall tool
+              (common for VPNs, antivirus, audio plugins, Adobe, Microsoft, and similar suites).
+              Run that before any manual Library walk. File deletion alone is a poor substitute for tearing down registered extensions.
+            </p>
+            <p>
+              If you installed via Homebrew Cask, prefer <code>brew uninstall --cask …</code> over trashing the bundle so receipts stay consistent.
+              App Store apps can be removed from Launchpad or Applications; leftovers in <code>~/Library</code> may still remain.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+              </span>
+              Quit, then capture the bundle ID
+            </h3>
+            <p>
+              Fully quit the app and any visible helpers. While the <code>.app</code> still exists, note its identity:
+            </p>
+            <ul>
+              <li>Right-click the app → <strong>Show Package Contents</strong> → open <code>Contents/Info.plist</code>.</li>
+              <li>Copy <code>CFBundleIdentifier</code> (looks like <code>com.vendor.product</code>).</li>
+              <li>Also note the developer / company name used in folder names under Application Support.</li>
+            </ul>
+            <p>
+              Bundle ID beats display name. Name-only matches are weaker and more likely to collide with similarly named apps.
+              If the app is already gone and you never saved the ID, search carefully by developer name and leave ambiguous hits alone.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Where leftovers usually live
+            </h3>
+            <p>
+              In Finder, use <strong>Go → Go to Folder…</strong> (<code>⇧⌘G</code>) and open <code>~/Library</code>.
+              Search each of these trees for the bundle ID or developer folder name:
+            </p>
+            <div class="terminal" aria-label="Common leftover locations under Library">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — common leftover roots</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># user Library (most leftovers)</span></div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Application\ Support</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Caches</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Preferences</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Containers</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Group\ Containers</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Logs</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/Saved\ Application\ State</div>
+                <div class="t-line"><span class="prompt">$</span> open ~/Library/LaunchAgents</div>
+                <div class="t-line"><span class="cmt"># optional size check once you know a path</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/VENDOR_OR_APP</div>
+              </div>
+            </div>
+            <p>
+              Also check <code>~/Library/WebKit</code>, <code>~/Library/HTTPStorages</code>, and crash reports when the app was Electron-heavy or crashy.
+              Prefer moving confirmed items to Trash over <code>rm -rf</code> so you can restore a mistake.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Shared containers and weak matches
+            </h3>
+            <p>
+              Sandboxed apps often use <code>~/Library/Containers/&lt;bundle-id&gt;</code> — those are usually attributable.
+              <code>Group Containers</code> and vendor-named Application Support folders can be shared across several apps from the same developer.
+              If another product from that vendor is still installed, leave the shared folder alone.
+            </p>
+            <p>
+              Preferences named <code>com.vendor.product.plist</code> are strong matches.
+              Folders that only vaguely resemble a display name are weak matches — skip them unless you recognize the contents.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              Launch agents and privileged helpers
+            </h3>
+            <p>
+              Background leftovers often live in:
+            </p>
+            <ul>
+              <li><code>~/Library/LaunchAgents</code> — user agents (usually removable after review)</li>
+              <li><code>/Library/LaunchAgents</code> and <code>/Library/LaunchDaemons</code> — system-wide; admin rights</li>
+              <li><code>/Library/PrivilegedHelperTools</code> — root helpers paired with daemons</li>
+            </ul>
+            <p>
+              Check <strong>System Settings → General → Login Items &amp; Extensions</strong> for orphaned login items or background tasks
+              pointing at a missing path. Prefer the vendor uninstaller for helpers and extensions.
+              Do not casually delete under <code>/Library</code> without recognizing the exact helper name and plist.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Review checklist
+            </h3>
+            <ul>
+              <li><strong>Do first:</strong> vendor uninstaller / <code>brew uninstall --cask</code> when applicable; quit the app.</li>
+              <li><strong>Strong matches:</strong> paths and plists that include the exact bundle ID.</li>
+              <li><strong>Review carefully:</strong> Group Containers, vendor Application Support shared by multiple apps, LaunchDaemons, PrivilegedHelperTools.</li>
+              <li><strong>Leave alone:</strong> Keychain items you still need, iCloud documents, other apps’ data, anything under <code>/System</code> or <code>/usr</code>.</li>
+              <li><strong>Never:</strong> SIP off, blind <code>rm -rf ~/Library</code>, or deleting folders you cannot attribute.</li>
+            </ul>
+            <p>
+              After moving confirmed leftovers to Trash, use the Mac normally for a bit, then empty Trash when you are sure.
+              Space returns when Trash is emptied, not when files first move there.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Finder and Terminal are enough for a careful manual pass.
+              If you want a review list with evidence, <a href="../index.html">MacOSCleaner</a> can:
+            </p>
+            <ul>
+              <li>Drag &amp; drop a <code>.app</code> into the forensic uninstaller and scan related paths using evidence such as Bundle ID, Team ID, Spotlight hits, plists, and Launch Services.</li>
+              <li>Show a post-uninstall leftovers sheet so you inspect remnants right after removal.</li>
+              <li>Run a standalone orphan scanner for remnants from apps already gone, grouped into confidence tiers (Guaranteed, Very Likely, Possible).</li>
+            </ul>
+            <p>
+              Removals go to Trash where supported; you confirm before anything leaves.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Does moving a Mac app to Trash uninstall it completely?</dt>
+              <dd>No. Trash removes the <code>.app</code> bundle. Preferences, caches, containers, logs, and sometimes launch agents often remain under <code>~/Library</code> (and occasionally <code>/Library</code> for privileged helpers).</dd>
+            </div>
+            <div class="faq-item">
+              <dt>How do I find leftovers after the app is already gone?</dt>
+              <dd>Search <code>~/Library</code> by the former bundle ID (<code>com.vendor.product</code>) or the developer name. Without that identity, name-only matches are weaker — leave uncertain folders alone.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to remove app leftovers?</dt>
+              <dd>No. Ordinary leftovers live under your home Library. Do not disable SIP and do not delete anything under <code>/System</code> or <code>/usr</code>. Treat <code>/Library</code> helpers with extra caution and prefer vendor uninstallers.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review leftovers with MacOSCleaner’s forensic uninstaller</h3>
+            <p>
+              Drop a <code>.app</code>, inspect evidence-backed matches, then clear confirmed remnants — or scan orphans from apps already gone.
+              Native Swift 6, trash-first where supported, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> ·
+          <a href="remove-mac-app-leftovers-after-uninstall.html">App leftovers</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

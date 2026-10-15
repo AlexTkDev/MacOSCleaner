@@ -6,3 +6,13 @@ https://alextkdev.github.io/MacOSCleaner/llms-full.txt
 https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html
 https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html
 https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html
+https://alextkdev.github.io/MacOSCleaner/guides/remove-mac-app-leftovers-after-uninstall.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-ide-ai-caches-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/find-remove-duplicate-files-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/privacy-first-mac-cleaner-checklist.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-homebrew-cache-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-project-build-artifacts-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/time-machine-local-snapshots-purgeable-space-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-user-caches-logs-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/ios-device-backups-simulator-runtimes-mac.html
+https://alextkdev.github.io/MacOSCleaner/guides/clean-chrome-chromium-caches-mac.html

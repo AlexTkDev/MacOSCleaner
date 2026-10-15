@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Chrome and Chromium caches on Mac without losing logins</title>
+  <meta name="description" content="Chrome taking gigabytes on your Mac? Measure ~/Library/Caches/Google/Chrome and profile folders with du, clear only Cached images and files in Chrome, and keep cookies, passwords and history. Covers Edge, Brave, Arc and Vivaldi.">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-chrome-chromium-caches-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="Clear Chrome and Chromium caches on Mac without losing logins">
+  <meta property="og:description" content="Measure Chrome’s cache and profile folders first, clear Cached images and files from Chrome itself, and leave cookies, saved passwords and history alone. Same method for Edge, Brave, Arc and Vivaldi.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-chrome-chromium-caches-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-10-15">
+  <meta property="article:modified_time" content="2026-10-15">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Clear Chrome and Chromium caches on Mac without losing logins">
+  <meta name="twitter:description" content="Measure Chrome’s cache and profile folders first, clear Cached images and files from Chrome itself, and leave cookies, saved passwords and history alone. Same method for Edge, Brave, Arc and Vivaldi.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to clear Chrome and Chromium browser caches on a Mac without losing logins",
+  "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-chrome-chromium-caches-mac.html",
+  "description": "Measure Chrome’s cache tree and profile folders, clear only Cached images and files from Chrome’s own Delete browsing data dialog in each profile, remove large non-cache items with Chrome’s own settings, and use Finder only for regenerable cache folders after quitting the browser.",
+  "dateModified": "2026-10-15",
+  "inLanguage": "en",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Measure Chrome’s two folders",
+      "text": "Run du -sh on ~/Library/Caches/Google/Chrome and ~/Library/Application Support/Google/Chrome, then list the largest children of each, including each profile folder such as Default or Profile 1."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Sort what you found into cache, site data and your data",
+      "text": "Cache, Code Cache, GPUCache and shader caches regenerate. Cookies, Local Storage and IndexedDB are site data that keep you signed in. History, Bookmarks, Login Data, Web Data and Preferences are your data and should not be touched."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Clear Cached images and files in Chrome",
+      "text": "In each Chrome profile press Shift-Command-Delete, set the time range to All time, tick only Cached images and files, and click Delete data. Leave Cookies and other site data, passwords and history unticked."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Remove big non-cache items with Chrome’s own settings",
+      "text": "Turn off On-device AI in Chrome Settings if you do not use it, remove unused extensions in chrome://extensions, delete stored data for individual sites you no longer use, and delete unused profiles from the profile picker."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Optional Finder fallback for cache folders only",
+      "text": "Quit Chrome completely, open the profile’s cache folder with Finder Go to Folder, move only Cache, Code Cache or GPUCache to the Trash, relaunch Chrome, then empty the Trash."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Verify",
+      "text": "Re-run the du commands, check System Settings → General → Storage, and expect the cache to grow back gradually as you browse."
+    }
+  ]
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where is the Chrome cache on a Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Chrome keeps its disk cache under ~/Library/Caches/Google/Chrome, with one subfolder per profile (Default, Profile 1, and so on). Your profile data, including cookies, history, bookmarks and saved passwords, lives separately under ~/Library/Application Support/Google/Chrome."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will clearing the Chrome cache log me out of websites?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not if you tick only Cached images and files. Sign-ins are stored in cookies and other site data, which is a separate checkbox. Leave it unticked unless you deliberately want to be signed out."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it safe to delete ~/Library/Application Support/Google/Chrome?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. That folder is your Chrome profile: bookmarks, history, saved passwords, cookies, extensions and settings. Deleting it is a full reset. Clear cache from Chrome’s Delete browsing data dialog instead, and only move individual cache subfolders such as Cache or GPUCache by hand."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does the Chrome cache come back after I clear it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cache is meant to regrow. Chrome stores copies of pages and scripts so sites load faster, and it sizes its cache on its own. Clearing it is a one-time reclaim and a fix for stale pages, not a permanent saving."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the large OptGuideOnDeviceModel folder in Chrome?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It holds the on-device AI model some Chrome features use. Google’s supported way to remove it is to turn off On-device AI in Chrome Settings (under System or AI Innovations, depending on version). Chrome then deletes the model and does not download it again while the setting stays off. Deleting the folder by hand may not stop re-downloads."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does this work for Edge, Brave, Arc and Vivaldi?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, the layout is the same idea. Chromium-based browsers keep profile data under ~/Library/Application Support/<browser folder> and put the disk cache at the matching path under ~/Library/Caches. Clear Cached images and files from each browser’s own privacy settings first."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need sudo, Full Disk Access or to disable SIP to clear browser caches?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Browser caches live in your home folder and the browser clears them itself. Do not use sudo rm on browser folders, do not disable System Integrity Protection, and do not delete anything under /System, /Library or /usr."
+      }
+    }
+  ]
+}
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>Clear Chrome and Chromium caches on Mac without losing logins</h1>
+      <p>Measure the cache and profile folders first, clear only cached files from the browser itself, and keep cookies, saved passwords and history where they are</p>
+      <p class="page-meta">Updated <time datetime="2026-10-15">2026-10-15</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Chrome splits its files between two places on a Mac. The disk cache sits in <code>~/Library/Caches/Google/Chrome</code>, and your actual profile (bookmarks, history, saved passwords, cookies, extensions) sits in <code>~/Library/Application Support/Google/Chrome</code>.
+          Only the first one, plus a few cache subfolders inside the second, is safe to throw away.
+          The safe loop is: <strong>measure</strong> both folders with <code>du</code>, <strong>clear Cached images and files</strong> from Chrome’s own Delete browsing data dialog in each profile, and use Finder only for cache folders you have identified by name.
+          Never delete the whole Chrome folder in Application Support, never clear cookies as a “cleanup” step, and never reach for <code>sudo rm</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+              </span>
+              Why Chrome shows up as System Data or “Other”
+            </h3>
+            <p>
+              macOS storage settings don’t have a “browser” bar. Files under <code>~/Library</code> that don’t belong to Apps, Documents, Photos and similar buckets are usually counted under <strong>System Data</strong> (called <em>Other</em> on older macOS versions).
+              Browser caches and profiles live in <code>~/Library</code>, so a heavy Chrome setup quietly adds to that grey bar.
+            </p>
+            <p>
+              Chromium-based browsers on macOS follow one rule: if a profile lives under <code>~/Library/Application Support/&lt;browser&gt;/&lt;profile&gt;</code>, its disk cache goes to the matching path under <code>~/Library/Caches/&lt;browser&gt;/&lt;profile&gt;</code>.
+              That is why Chrome’s cache for the <code>Default</code> profile ends up in <code>~/Library/Caches/Google/Chrome/Default</code>, while its cookies and history stay in Application Support.
+            </p>
+            <p>
+              Cache also grows back: by default Chrome picks its cache size itself, based on free disk space, so clearing it is a one-time reclaim, not a permanent saving.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure first (read only)
+            </h3>
+            <p>
+              These commands only read sizes. Run them before changing anything, so you know whether Chrome is the problem and which folder is heavy.
+            </p>
+            <div class="terminal" aria-label="Measure Chrome cache and profile folders">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/Google/Chrome</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Google/Chrome</div>
+                <div class="t-line"><span class="cmt"># per profile in the cache tree (Default, Profile 1, ...)</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/Google/Chrome/* 2&gt;/dev/null | sort -h</div>
+                <div class="t-line"><span class="cmt"># largest items in the profile tree, then inside one profile</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Google/Chrome/* 2&gt;/dev/null | sort -h | tail -15</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Google/Chrome/Default/* 2&gt;/dev/null | sort -h | tail -15</div>
+                <div class="t-line"><span class="cmt"># 'No such file' means that folder doesn't exist on this Mac — skip it</span></div>
+              </div>
+            </div>
+            <p>
+              Stay inside <code>Google/Chrome</code>. The parent <code>~/Library/Caches/Google</code> and <code>~/Library/Application Support/Google</code> folders can also hold Google’s updater and other Google apps, so measure the Chrome subfolder rather than the whole Google tree.
+            </p>
+            <p>
+              To match a folder name to a real profile, open <strong>chrome://version</strong> in each Chrome window. The <em>Profile Path</em> line shows whether that window is <code>Default</code>, <code>Profile 1</code>, <code>Profile 2</code> and so on.
+              You can open any of these paths in Finder with <strong>Go → Go to Folder…</strong> (<kbd>⇧⌘G</kbd>).
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+              </span>
+              Cache vs cookies vs history vs profile: what each folder is
+            </h3>
+            <p>Sort the names <code>du</code> shows into three groups before you do anything:</p>
+            <ul>
+              <li><strong>Cache: regenerates, no sign-in loss.</strong> <code>Cache</code> (the HTTP disk cache, with <code>Cache_Data</code> inside) and <code>Code Cache</code> in the profile’s folder under <code>~/Library/Caches/Google/Chrome</code>; <code>GPUCache</code> inside each profile in Application Support; <code>GrShaderCache</code> and <code>ShaderCache</code> at the top of the Chrome folder. Chrome rebuilds all of these. Pages and graphics just load a little slower the first time.</li>
+              <li><strong>Site data: regenerates, but signs you out or drops offline copies.</strong> <code>Cookies</code>, <code>Local Storage</code>, <code>IndexedDB</code>, <code>Session Storage</code>, <code>File System</code> and the <code>Service Worker</code> folder. These hold logins, web-app state and offline data. Clear them per site on purpose, never as a blanket cleanup.</li>
+              <li><strong>Your data: don’t touch.</strong> <code>History</code>, <code>Bookmarks</code>, <code>Login Data</code> (saved passwords), <code>Web Data</code> (autofill), <code>Preferences</code> and <code>Secure Preferences</code>, <code>Extensions</code> and their settings. Deleting these files is how people lose passwords that were never synced.</li>
+            </ul>
+            <p>
+              A whole profile folder (<code>Default</code>, <code>Profile 1</code>) contains all three groups mixed together. That is why “delete the Default folder” is never the right fix for disk space.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </span>
+              Preferred: clear Cached images and files in Chrome
+            </h3>
+            <p>Chrome’s own dialog knows which files are cache and which are your data. Use it first:</p>
+            <ol>
+              <li>In Chrome, press <kbd>⇧⌘⌫</kbd> (Shift-Command-Delete), or open <strong>Settings → Privacy and security → Delete browsing data</strong>. Older versions call it <em>Clear browsing data</em>.</li>
+              <li>Set the time range to <strong>All time</strong> if you want the whole cache gone.</li>
+              <li>Tick <strong>Cached images and files</strong> only.</li>
+              <li>Leave <strong>Cookies and other site data</strong>, <strong>Browsing history</strong>, <strong>Passwords</strong> and <strong>Autofill</strong> unticked.</li>
+              <li>Click <strong>Delete data</strong>.</li>
+            </ol>
+            <p>
+              The dialog works on the profile whose window is in front. If you use several profiles, switch to each one and repeat. With sync on, history you delete is removed on your other devices too, one more reason to tick only the cache box.
+            </p>
+            <p>
+              Cookies are not a disk-space problem. They are small, and clearing them signs you out of every site and resets per-site settings. Only clear them when that is what you actually want, for example on a shared Mac or to fix one misbehaving site.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+              </span>
+              Big items that aren’t cache: use Chrome’s own switches
+            </h3>
+            <p>If the Application Support tree is the heavy one, the culprit is often not cache. Each of these has a supported switch inside Chrome:</p>
+            <ul>
+              <li><strong>On-device AI model</strong> (<code>OptGuideOnDeviceModel</code> at the top of the Chrome folder). Some Chrome features download a local AI model that can take several gigabytes. Google’s supported way to remove it is <strong>Settings → System → On-device AI</strong> (in some versions under <em>AI Innovations</em>). Turning it off deletes the model and stops re-downloads, and features that rely on it stop working. Deleting the folder by hand may not stop Chrome from fetching it again.</li>
+              <li><strong>Storage from one heavy web app.</strong> Large <code>IndexedDB</code> or <code>Service Worker</code> folders usually belong to a few sites (mail, docs, chat, streaming). Open <strong>chrome://settings/content/all</strong>, sort or search, and delete data only for sites you no longer use. That signs you out of those sites only, which is a deliberate choice rather than a blanket wipe.</li>
+              <li><strong>Extensions you forgot about.</strong> Remove them in <strong>chrome://extensions</strong>. Chrome removes their files and stored settings together, which is cleaner than deleting folders inside <code>Extensions</code>.</li>
+              <li><strong>Profiles you no longer use.</strong> Each extra profile has its own cache and site data. Delete one from the profile picker (the card’s menu → Delete) after you have checked its bookmarks and passwords are synced or exported. Don’t delete <code>Profile N</code> folders in Finder.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              </span>
+              Finder fallback: quit first, Trash only cache folders
+            </h3>
+            <p>
+              Use this only when the dialog isn’t an option, for example a profile that won’t open or a beta you no longer launch:
+            </p>
+            <ol>
+              <li><strong>Quit Chrome completely</strong> with <kbd>⌘Q</kbd> (closing windows isn’t enough). Check that nothing is left running:
+                <code>pgrep -l "Google Chrome"</code> should print nothing. Activity Monitor works too.</li>
+              <li>In Finder, <strong>Go → Go to Folder…</strong> and paste <code>~/Library/Caches/Google/Chrome/Default</code> (or the profile you measured).</li>
+              <li>Move only <code>Cache</code> and <code>Code Cache</code> to the Trash. For GPU caches, the same applies to <code>GPUCache</code> inside the profile in Application Support and <code>GrShaderCache</code> / <code>ShaderCache</code> at the top of the Chrome folder.</li>
+              <li>Relaunch Chrome and open a couple of sites. Chrome recreates the folders automatically.</li>
+              <li>When everything looks normal, empty the Trash. The space comes back only when the Trash is emptied.</li>
+            </ol>
+            <p>
+              Leave everything else in the profile alone, including <code>Cookies</code>, <code>Login Data</code>, <code>History</code>, <code>Preferences</code> and <code>Service Worker</code>.
+              Finder keeps an undo until you empty the Trash, which is why it beats <code>rm</code> here.
+            </p>
+            <p>
+              If a browser is already uninstalled, its folder under <code>~/Library/Caches</code> is safe to Trash. Its Application Support folder still holds that browser’s bookmarks and passwords, so export anything you want before removing it.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              Edge, Brave, Arc, Vivaldi and other Chromium browsers
+            </h3>
+            <p>
+              Chromium-based browsers use the same layout under their own folder names. Swap the folder into the <code>du</code> commands above, both under <code>~/Library/Application Support/</code> and under <code>~/Library/Caches/</code>:
+            </p>
+            <ul>
+              <li><strong>Chrome Beta / Dev / Canary:</strong> sibling folders such as <code>Google/Chrome Beta</code> and <code>Google/Chrome Canary</code>, each with its own profiles and cache.</li>
+              <li><strong>Microsoft Edge:</strong> <code>Microsoft Edge</code></li>
+              <li><strong>Brave:</strong> <code>BraveSoftware/Brave-Browser</code></li>
+              <li><strong>Vivaldi:</strong> <code>Vivaldi</code></li>
+              <li><strong>Chromium:</strong> <code>Chromium</code></li>
+              <li><strong>Arc:</strong> <code>Arc/User Data</code></li>
+            </ul>
+            <div class="terminal" aria-label="Measure another Chromium browser">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — example: Brave (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/BraveSoftware/Brave-Browser</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/BraveSoftware/Brave-Browser/* 2&gt;/dev/null | sort -h | tail -10</div>
+                <div class="t-line"><span class="cmt"># browsers can change folder names between versions — if a path is missing, skip it</span></div>
+              </div>
+            </div>
+            <p>
+              The same three groups apply: cache folders regenerate, site data signs you out, profile files are yours. Clear cache from each browser’s own privacy settings first. Most Chromium browsers open their clear-data dialog with <kbd>⇧⌘⌫</kbd>.
+              Safari and Firefox use different layouts and aren’t covered here. Electron apps (chat apps, editors) embed Chromium too, but clear those from each app’s own settings.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              </span>
+              What not to do
+            </h3>
+            <ul>
+              <li><strong>Don’t delete <code>~/Library/Application Support/Google/Chrome</code></strong> or a whole profile folder like <code>Default</code>. That is a full reset; unsynced passwords and bookmarks go with it.</li>
+              <li><strong>Don’t clear cookies, passwords or history to save space.</strong> They are small; losing them costs more than the space is worth.</li>
+              <li><strong>Don’t delete <code>Preferences</code>, <code>Secure Preferences</code>, <code>Login Data</code> or <code>Web Data</code></strong> to “reset” something. Use Chrome’s <em>Reset settings</em> page if you really need a reset.</li>
+              <li><strong>Don’t run <code>sudo rm -rf</code> on browser folders.</strong> Nothing here needs admin rights.</li>
+              <li><strong>Don’t touch the whole <code>~/Library/Caches/Google</code> folder.</strong> Stay inside <code>Google/Chrome</code>; the parent folder can hold Google’s updater.</li>
+              <li><strong>Don’t disable SIP</strong> or delete anything under <code>/System</code>, <code>/Library</code> or <code>/usr</code>. Browser data lives in your home folder.</li>
+              <li><strong>Don’t delete <code>Docker.raw</code></strong> or VM disk images while hunting System Data. That destroys their contents; see the <a href="clean-docker-mac-disk-space.html">Docker guide</a> instead.</li>
+              <li><strong>You don’t need Full Disk Access</strong> for any of this. If Terminal shows <em>Operation not permitted</em>, use Chrome’s dialog or Finder instead of widening permissions.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Check the result
+            </h3>
+            <p>
+              Re-run the <code>du</code> commands from the measure step. The cache tree should be much smaller right away. If you used Finder, empty the Trash first.
+              <strong>System Settings → General → Storage</strong> can take a few minutes to recalculate.
+            </p>
+            <p>
+              Expect the cache to grow back over the next days of browsing. If it climbs back fast, a few heavy sites are usually the reason, and the per-site storage list in <code>chrome://settings/content/all</code> tells you which ones.
+              If Chrome was never large, keep going with the <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>, then <a href="clean-xcode-caches-mac.html">Xcode caches</a> and <a href="clean-docker-mac-disk-space.html">Docker disk space</a> on a developer Mac.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Chrome’s Delete browsing data dialog and <code>du</code> are enough for this job.
+              If you’d rather see every browser’s cache folders and their sizes in one list, <a href="../index.html">MacOSCleaner</a> Smart Cleanup scans first and shows each path before anything is removed, and you can untick any of them.
+              For Chrome it targets <code>~/Library/Caches/Google/Chrome</code> plus the <code>Cache</code>, <code>Code Cache</code> and <code>GPUCache</code> folders of the <code>Default</code> profile, the Service Worker <code>CacheStorage</code> and <code>ScriptCache</code> folders (some web apps keep offline copies there), and the top-level shader caches. It has similar cache paths for Edge, Brave, Arc and Vivaldi.
+              Cookies, saved logins, history and session storage aren’t on its browser path list.
+              Cache contents are deleted directly, not moved to the Trash, so quit the browser first, the same as with the Finder method.
+              The app is optional. This page works without it.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Where is the Chrome cache on a Mac?</dt>
+              <dd>Chrome keeps its disk cache under ~/Library/Caches/Google/Chrome, with one subfolder per profile (Default, Profile 1, and so on). Your profile data, including cookies, history, bookmarks and saved passwords, lives separately under ~/Library/Application Support/Google/Chrome.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Will clearing the Chrome cache log me out of websites?</dt>
+              <dd>Not if you tick only Cached images and files. Sign-ins are stored in cookies and other site data, which is a separate checkbox. Leave it unticked unless you deliberately want to be signed out.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Is it safe to delete ~/Library/Application Support/Google/Chrome?</dt>
+              <dd>No. That folder is your Chrome profile: bookmarks, history, saved passwords, cookies, extensions and settings. Deleting it is a full reset. Clear cache from Chrome’s Delete browsing data dialog instead, and only move individual cache subfolders such as Cache or GPUCache by hand.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Why does the Chrome cache come back after I clear it?</dt>
+              <dd>Cache is meant to regrow. Chrome stores copies of pages and scripts so sites load faster, and it sizes its cache on its own. Clearing it is a one-time reclaim and a fix for stale pages, not a permanent saving.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>What is the large OptGuideOnDeviceModel folder in Chrome?</dt>
+              <dd>It holds the on-device AI model some Chrome features use. Google’s supported way to remove it is to turn off On-device AI in Chrome Settings (under System or AI Innovations, depending on version). Chrome then deletes the model and does not download it again while the setting stays off. Deleting the folder by hand may not stop re-downloads.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Does this work for Edge, Brave, Arc and Vivaldi?</dt>
+              <dd>Yes, the layout is the same idea. Chromium-based browsers keep profile data under ~/Library/Application Support/&lt;browser folder&gt; and put the disk cache at the matching path under ~/Library/Caches. Clear Cached images and files from each browser’s own privacy settings first.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need sudo, Full Disk Access or to disable SIP to clear browser caches?</dt>
+              <dd>No. Browser caches live in your home folder and the browser clears them itself. Do not use sudo rm on browser folders, do not disable System Integrity Protection, and do not delete anything under /System, /Library or /usr.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review browser cache sizes with MacOSCleaner</h3>
+            <p>
+              Scan-first Smart Cleanup that lists Chrome, Edge, Brave and Arc cache folders with sizes before you clean, and leaves cookies and saved logins alone.
+              Native Swift 6, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to reclaim disk space from old project build folders on Mac</title>
+  <meta name="description" content="Free disk space from old node_modules, Rust target, Python .venv, Flutter .dart_tool, and build folders on Mac. Measure with find and du, age-filter, move selected folders to Trash — leave active projects alone.">
+  <meta name="keywords" content="node_modules disk space Mac, delete old target folder Mac, clean project build artifacts macOS, reclaim disk space developer Mac, find node_modules du, Rust target folder size, Python .venv disk space">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-project-build-artifacts-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to reclaim disk space from old project build folders on Mac">
+  <meta property="og:description" content="Measure regenerable build trees under your projects root, age-filter with find, move selected folders to Trash. Leave active repos, lockfiles, and .git alone.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-project-build-artifacts-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-10-01">
+  <meta property="article:modified_time" content="2026-10-01">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to reclaim disk space from old project build folders on Mac">
+  <meta name="twitter:description" content="find + du for node_modules, target, .venv, .dart_tool, build. Age filter, Trash selected folders, leave active projects alone.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to reclaim disk space from old project build folders on Mac",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-project-build-artifacts-mac.html",
+    "description": "Safely reclaim disk space from regenerable per-project build folders on macOS: node_modules, Rust target, Python .venv, Flutter .dart_tool, and generic build/dist trees. Measure under a projects root, age-filter, review, move selected folders to Trash.",
+    "dateModified": "2026-10-01",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Scope a projects root",
+        "text": "Choose a folder you own for repos (for example ~/Developer or ~/Projects). Do not scan all of ~, Library, .Trash, or system paths."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure regenerable folders with find and du",
+        "text": "List node_modules, target, .venv, .dart_tool, and build directories with find -prune and du -sh. Optionally filter with -mtime for folders older than 30, 60, 90, or 180 days."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Review before removing anything",
+        "text": "Skip repos you opened this week. Keep source, lockfiles, package manifests, and .git. Only regenerable artifact folders are candidates."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Move selected folders to Trash",
+        "text": "Move reviewed folders to ~/.Trash one at a time (or via Finder). Prefer Trash over bulk rm -rf. Restore later with npm ci, cargo build, a new venv, or flutter pub get as needed."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is it safe to delete node_modules on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes for regenerable install trees you no longer need, as long as you keep package.json and the lockfile (package-lock.json, yarn.lock, or pnpm-lock.yaml). Reinstall with npm ci, yarn install, or pnpm install. Prefer moving the folder to Trash so you can undo a mistake. Do not delete source or lockfiles."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between npm cache and node_modules?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "node_modules is a per-project install tree next to your package.json. The npm cache is a shared download cache (see npm config get cache; often ~/.npm). Clearing the cache with npm cache clean --force can reclaim some space but is a secondary win compared to removing old project folders you will not reopen."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will deleting build folders break git?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, if you only remove regenerable folders that are already gitignored (node_modules, target, .venv, .dart_tool, typical build/dist). Never delete the .git directory, and do not remove tracked source or lockfiles."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use an age filter like 30, 60, 90, or 180 days?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Folders you touched recently often belong to active work. find -mtime +N lists directories whose contents were last modified more than N days ago, so you can skip this week's repos and focus on abandoned trees. Align N with how often you revisit old projects."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to clean project build folders?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Project artifacts live under your home directory in repos you own. Do not disable SIP and do not delete anything under /System or /usr to free developer disk space."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Project build artifacts",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/clean-project-build-artifacts-mac.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to reclaim disk space from old project build folders on Mac</h1>
+      <p>Measure regenerable trees under your projects root, age-filter, move selected folders to Trash — leave active work alone</p>
+      <p class="page-meta">Updated <time datetime="2026-10-01">2026-10-01</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Every clone that ran <code>npm install</code>, <code>cargo build</code>, or a Python venv leaves a regenerable tree next to the source.
+          After a year of side projects, those <code>node_modules</code>, Rust <code>target</code>, <code>.venv</code>, Flutter <code>.dart_tool</code>, and generic <code>build</code> folders can dominate Storage even though none of them are “mystery system data.”
+          The safe loop is: <strong>scope</strong> a projects root you choose, <strong>measure</strong> with <code>find</code> and <code>du</code>, <strong>age-filter</strong> abandoned trees (30 / 60 / 90 / 180 days), then move <em>selected</em> folders to Trash.
+          Leave repos you opened this week alone. Keep source, lockfiles, and <code>.git</code>.
+          Do not disable SIP. Do not wipe <code>Docker.raw</code> or run a whole-home <code>find … -exec rm</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+              </span>
+              Two buckets: project folders vs global caches
+            </h3>
+            <p>
+              <strong>(A) Per-project artifacts</strong> live inside a repo: <code>node_modules</code>, Rust <code>target</code>, Python <code>.venv</code> / <code>venv</code>, Flutter/Dart <code>.dart_tool</code>, and regenerable <code>build</code> / <code>dist</code> when your toolchain can recreate them from source and lockfiles.
+              These are usually the largest reclaimable trees on a developer Mac.
+            </p>
+            <p>
+              <strong>(B) Global package caches</strong> are shared download stores — npm’s cache, Yarn’s cache, the pnpm store.
+              Cleaning them is a smaller, secondary win and uses each tool’s own CLI (covered briefly below).
+              This guide focuses on <strong>bucket A</strong>.
+              Homebrew bottles are a separate path — measure and clean them with <code>brew cleanup</code> (see the package-cache step in the <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> guide until a dedicated Homebrew page is live).
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+              </span>
+              Scope the scan to a projects root
+            </h3>
+            <p>
+              Pick one root you control — commonly <code>~/Developer</code>, <code>~/Projects</code>, or <code>~/src</code>.
+              Restrict the search there so you never walk <code>~/Library</code>, <code>~/.Trash</code>, system prefixes, or unrelated home clutter.
+              When <code>find</code> hits a matching folder name, <strong>prune</strong> so it does not recurse into every nested package inside <code>node_modules</code> (that wastes time and double-counts noise).
+            </p>
+            <div class="terminal" aria-label="Choose projects root">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — set a projects root</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># change this to the folder that holds your repos</span></div>
+                <div class="t-line"><span class="prompt">$</span> PROJECTS="$HOME/Developer"</div>
+                <div class="t-line"><span class="prompt">$</span> ls "$PROJECTS"</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure with <code>find</code> + <code>du</code> (dry-run list)
+            </h3>
+            <p>
+              List candidates and sizes first. Nothing below deletes files — it only prints paths and disk use.
+              Adjust names if your stack uses different conventions (for example <code>venv</code> instead of <code>.venv</code>).
+            </p>
+            <div class="terminal" aria-label="List project build artifact folders with sizes">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — list sizes (measure only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> find "$PROJECTS" -type d \( \</div>
+                <div class="t-line">&nbsp;&nbsp;-name node_modules -o -name target -o \</div>
+                <div class="t-line">&nbsp;&nbsp;-name .venv -o -name venv -o \</div>
+                <div class="t-line">&nbsp;&nbsp;-name .dart_tool -o -name build \) \</div>
+                <div class="t-line">&nbsp;&nbsp;-prune -exec du -sh {} +</div>
+              </div>
+            </div>
+            <p>
+              Age filter next. <code>-mtime +N</code> keeps directories whose contents were last modified more than <strong>N</strong> days ago — the same windows many people use for abandoned work: 30, 60, 90, or 180 days.
+              Start conservative (e.g. 90) if you reopen old repos often.
+            </p>
+            <div class="terminal" aria-label="Age-filter project artifact folders">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — older than 90 days</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># change +90 to +30, +60, or +180 as needed</span></div>
+                <div class="t-line"><span class="prompt">$</span> find "$PROJECTS" -type d \( \</div>
+                <div class="t-line">&nbsp;&nbsp;-name node_modules -o -name target -o \</div>
+                <div class="t-line">&nbsp;&nbsp;-name .venv -o -name venv -o \</div>
+                <div class="t-line">&nbsp;&nbsp;-name .dart_tool -o -name build \) \</div>
+                <div class="t-line">&nbsp;&nbsp;-mtime +90 -prune -print</div>
+              </div>
+            </div>
+            <p>
+              Treat <code>build</code> and <code>dist</code> carefully: some projects store non-regenerable assets under those names.
+              Prefer deleting only when you know the toolchain recreates the folder (e.g. a Flutter/Gradle/webpack output you can rebuild), or skip those names and stick to <code>node_modules</code> / <code>target</code> / <code>.venv</code> / <code>.dart_tool</code>.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              Review the list before anything moves
+            </h3>
+            <ul>
+              <li><strong>Skip</strong> any repo you opened or built this week — even if the folder name matches.</li>
+              <li><strong>Keep</strong> source trees, <code>package.json</code> / <code>Cargo.toml</code> / <code>pyproject.toml</code> / <code>pubspec.yaml</code>, lockfiles, and the entire <code>.git</code> directory.</li>
+              <li><strong>Candidates</strong> are regenerable sibling folders only: install trees and compiler outputs you can recreate from those manifests.</li>
+              <li><strong>Monorepos:</strong> several <code>node_modules</code> may appear; prune still stops recursion into each one — review package paths before moving them.</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </span>
+              Remove safely: Trash selected folders
+            </h3>
+            <p>
+              Prefer Trash over permanent <code>rm -rf</code> so Finder → Put Back can undo a mistake.
+              Move <strong>one reviewed path at a time</strong> — never pipe a bulk <code>find</code> into <code>rm</code>.
+            </p>
+            <div class="terminal" aria-label="Move one reviewed folder to Trash">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — Trash one folder you already reviewed</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># EXAMPLE only — replace with a path from YOUR review list</span></div>
+                <div class="t-line"><span class="prompt">$</span> FOLDER="$PROJECTS/old-api/node_modules"</div>
+                <div class="t-line"><span class="prompt">$</span> test -d "$FOLDER" &amp;&amp; mv "$FOLDER" ~/.Trash/</div>
+                <div class="t-line"><span class="cmt"># or: Finder → move the folder to Trash</span></div>
+              </div>
+            </div>
+            <p>
+              <strong>Do not</strong> run whole-home <code>find ~ … -exec rm -rf {} +</code>, delete <code>package.json</code> / lockfiles, or wipe active project trees “to be thorough.”
+              Empty Trash only after you are sure nothing important landed there.
+            </p>
+            <p>
+              <strong>Restore / rebuild</strong> when you reopen a project:
+            </p>
+            <div class="terminal" aria-label="Restore regenerable folders">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — typical reinstall / rebuild</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> npm ci&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># or: yarn / pnpm install</span></div>
+                <div class="t-line"><span class="prompt">$</span> cargo build&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># recreates target/</span></div>
+                <div class="t-line"><span class="prompt">$</span> python3 -m venv .venv&nbsp;&amp;&amp; . .venv/bin/activate</div>
+                <div class="t-line"><span class="prompt">$</span> flutter pub get&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># recreates .dart_tool</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional secondary: global package caches
+            </h3>
+            <p>
+              After old project folders, shared caches can free a bit more space.
+              Measure with each tool’s path command first — do not guess store locations.
+              Official CLIs:
+            </p>
+            <div class="terminal" aria-label="Measure and clean npm yarn pnpm caches">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — global caches (secondary)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh "$(npm config get cache)"</div>
+                <div class="t-line"><span class="cmt"># npm docs: clean needs --force to reclaim space</span></div>
+                <div class="t-line"><span class="prompt">$</span> npm cache clean --force</div>
+                <div class="t-line"><span class="prompt">$</span> yarn cache clean&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># classic / Berry local</span></div>
+                <div class="t-line"><span class="prompt">$</span> yarn cache clean --all&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># Berry: local + global</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh "$(pnpm store path)"</div>
+                <div class="t-line"><span class="prompt">$</span> pnpm store prune&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt"># unreferenced packages only</span></div>
+              </div>
+            </div>
+            <p>
+              npm’s docs note the cache is self-healing; <code>npm cache clean</code> requires <code>--force</code> specifically when the goal is reclaiming disk space.
+              Yarn Berry’s <code>--all</code> removes both the project-local cache and the global mirror files.
+              <code>pnpm store prune</code> drops packages no project still references — safe, but future installs may re-download.
+              None of these replace removing abandoned <code>node_modules</code> trees.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              What not to delete
+            </h3>
+            <ul>
+              <li><strong>Active project trees</strong> — anything you still open weekly; skip it even if the age filter matches a nested cache.</li>
+              <li><strong>Docker.raw / Docker Desktop data</strong> — not a project build folder; reclaim with Docker’s own prune flow in the <a href="clean-docker-mac-disk-space.html">Docker disk space</a> guide. Never wipe the raw disk file by hand.</li>
+              <li><strong>SIP / <code>/System</code> / <code>/usr</code></strong> — unrelated to <code>node_modules</code>; disabling SIP will not help and is unsafe.</li>
+              <li><strong>SSH keys and secrets</strong> — never touch <code>~/.ssh</code> or credential stores while “cleaning disk.”</li>
+              <li><strong>Xcode Archives / dSYMs / DerivedData</strong> — different tools; see <a href="clean-xcode-caches-mac.html">Xcode caches</a>.</li>
+              <li><strong>Homebrew Cellar</strong> — uninstall with <code>brew uninstall</code> / clean with <code>brew cleanup</code>; do not delete Cellar folders by hand (package-cache notes in <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>).</li>
+            </ul>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Terminal <code>find</code> / <code>du</code> and Trash moves are enough for a careful cleanup.
+              If you want a later review list with age filters for regenerable project folders,
+              <a href="../index.html">MacOSCleaner</a> Smart Cleanup includes a dedicated <strong>Project Build Artifacts</strong> category
+              (<code>node_modules</code>, <code>target</code>, <code>.venv</code>, <code>.dart_tool</code>, <code>build</code>) that is <strong>default off</strong>,
+              supports 30 / 60 / 90 / 180-day age filters, uses sibling verification, and still asks you to confirm before anything is removed —
+              Trash-first where supported, with <code>SafetyManager</code> blocking <code>/System</code>, <code>/usr</code>, <code>~/.ssh</code>, and other critical paths.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Is it safe to delete <code>node_modules</code> on Mac?</dt>
+              <dd>Yes for regenerable install trees you no longer need, as long as you keep <code>package.json</code> and the lockfile. Reinstall with <code>npm ci</code>, <code>yarn install</code>, or <code>pnpm install</code>. Prefer Trash over permanent delete. Do not remove source or lockfiles.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>What is the difference between npm cache and <code>node_modules</code>?</dt>
+              <dd><code>node_modules</code> is per-project next to your app. The npm cache is a shared download store — locate it with <code>npm config get cache</code> (often <code>~/.npm</code>). Clearing the cache is a secondary win; old project folders usually free more space.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Will deleting build folders break git?</dt>
+              <dd>No, if you only remove regenerable, typically gitignored folders and leave <code>.git</code>, source, and lockfiles alone. Deleting <code>.git</code> or tracked files would break the repo — that is not part of this cleanup.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Why use an age filter (30 / 60 / 90 / 180 days)?</dt>
+              <dd><code>find -mtime +N</code> surfaces folders you have not touched recently, so active work stays off the list. Pick a larger N if you jump between old branches often; tighten it only after reviewing a dry-run list.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to clean project build folders?</dt>
+              <dd>No. These folders live under your home directory in repos you own. Do not disable SIP and do not delete anything under <code>/System</code> or <code>/usr</code> for this task.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review Project Build Artifacts in MacOSCleaner</h3>
+            <p>
+              Opt-in Project Build Artifacts category (default off) with 30–180 day age filters for regenerable folders,
+              sibling verification, confirm-before-remove, and Trash-first where supported.
+              Native Swift 6, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What’s safe to delete in ~/Library/Caches and ~/Library/Logs on Mac</title>
+  <meta name="description" content="How to review Mac user caches and logs one folder at a time: measure with du, find which app owns a cache, quit it, clear it, and age-filter old logs. No wholesale wipes, no system folders, no SIP changes.">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-user-caches-logs-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="What’s safe to delete in ~/Library/Caches and ~/Library/Logs on Mac">
+  <meta property="og:description" content="Measure ~/Library/Caches and ~/Library/Logs, match each cache to its app, clear one folder at a time, and prune old logs without touching settings, containers, or system folders.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-user-caches-logs-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-10-08">
+  <meta property="article:modified_time" content="2026-10-08">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="What’s safe to delete in ~/Library/Caches and ~/Library/Logs on Mac">
+  <meta name="twitter:description" content="Measure ~/Library/Caches and ~/Library/Logs, match each cache to its app, clear one folder at a time, and prune old logs without touching settings, containers, or system folders.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to safely clean user caches and logs on a Mac",
+  "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-user-caches-logs-mac.html",
+  "description": "Measure ~/Library/Caches and ~/Library/Logs, match each cache folder to its app, clear one folder at a time, and prune old logs without touching settings, containers, or system folders.",
+  "dateModified": "2026-10-08",
+  "inLanguage": "en",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Measure caches and logs",
+      "text": "Run du -sh on ~/Library/Caches and ~/Library/Logs, then list the largest subfolders with du -sh ~/Library/Caches/* | sort -h."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Find which app owns each cache",
+      "text": "Most folder names are bundle IDs such as com.example.app. Look the ID up with mdfind to find the app."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Quit the app and clear one folder",
+      "text": "Quit the owning app, move just that cache folder to the Trash, relaunch the app, and empty the Trash once it works."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Use the tool’s own cleanup for package caches",
+      "text": "For Homebrew, npm, pip, and similar tools, prefer brew cleanup, npm cache clean --force, or pip cache purge over deleting their folders."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Prune old logs",
+      "text": "List log files older than 30 days with find ~/Library/Logs -type f -mtime +30, review, then delete them with -delete."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Verify",
+      "text": "Empty the Trash and re-run du. If little changed, the space is elsewhere; continue with a System Data reclaim order."
+    }
+  ]
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is it safe to delete ~/Library/Caches on a Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Mostly, yes, because apps are supposed to keep only data they can rebuild there. The safe way is one folder at a time: quit the app that owns it, move that folder to the Trash, relaunch the app, and empty the Trash once it works. Avoid deleting the whole folder in one go while apps are running."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will clearing caches make my Mac faster?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually not. Caches exist to make apps faster, so an app may feel a little slower right after you clear its cache while it rebuilds it. Clear a cache to get disk space back or to fix an app that misbehaves, not as routine speed maintenance."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why did the cache come back after I deleted it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That is normal. Apps recreate their caches as you use them. If one cache keeps growing back to many gigabytes, look for a cache-size or offline-storage setting in that app, or use the tool’s own cleanup command, such as brew cleanup for Homebrew."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I delete everything in ~/Library/Logs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Log files there are written for troubleshooting and are not needed for apps to run. Removing files older than about 30 days is a reasonable default. Keep recent crash reports if you are chasing a bug or want to send them to a developer."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What about /Library/Caches, /System/Library/Caches, and /private/var/folders?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Leave them alone. /System is protected by System Integrity Protection, /Library/Caches is shared by every user and system services, and /private/var/folders holds per-user temporary files that macOS manages itself. Clearing them by hand with sudo can break things and rarely frees much."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Will deleting caches sign me out of apps or delete my settings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Settings live in ~/Library/Preferences and app data in ~/Library/Application Support or ~/Library/Containers, so clearing a cache normally keeps both. A few apps may ask you to sign in again or re-download offline content, which is one more reason to clear one app at a time."
+      }
+    }
+  ]
+}
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>What’s safe to delete in ~/Library/Caches and ~/Library/Logs on Mac</h1>
+      <p>How to review user caches and logs one folder at a time, so you get space back without breaking apps or losing settings</p>
+      <p class="page-meta">Updated <time datetime="2026-10-08">2026-10-08</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Sooner or later every Mac guide says “clear your caches”, and every cautious person asks the same thing: which ones, and is it safe?
+          For the two folders in your own Library, <code>~/Library/Caches</code> and <code>~/Library/Logs</code>, the honest answer is mostly yes, if you do it in the right order.
+          The safe loop is: <strong>measure</strong> with <code>du</code>, <strong>identify</strong> which app owns each big folder, <strong>quit</strong> that app, <strong>clear</strong> one folder, and <strong>age-filter</strong> old logs.
+          Don’t wipe the whole folder at once, don’t touch <code>Application Support</code>, <code>Containers</code>, or system folders, and don’t disable SIP.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+              </span>
+              What these two folders are
+            </h3>
+            <p>
+              <code>~/Library/Caches</code> is where apps keep data they can rebuild: thumbnails, downloaded web content, compiled shaders, package downloads, update files.
+              Apple’s guidance for developers is that anything in Caches must be safe to lose, and macOS itself may clear it when the disk runs low.
+              <code>~/Library/Logs</code> holds text logs and crash reports apps write for troubleshooting. Nothing needs them to run.
+            </p>
+            <p>
+              Both live in <em>your</em> Library (the <code>~</code> means your home folder), not the system one. That is what makes them reasonable to review by hand.
+              They sit next to folders that are <strong>not</strong> disposable, so keep the scope tight:
+            </p>
+            <ul>
+              <li><strong>Review:</strong> <code>~/Library/Caches</code>, <code>~/Library/Logs</code>.</li>
+              <li><strong>Leave alone:</strong> <code>~/Library/Application Support</code>, <code>Containers</code>, <code>Group Containers</code>, <code>Preferences</code>, <code>Keychains</code>, <code>Mail</code>, <code>Messages</code>. These hold real data and settings.</li>
+              <li><strong>Not yours to clear:</strong> <code>/System</code>, <code>/Library/Caches</code>, <code>/private/var/folders</code>, and the unified system log. macOS manages them.</li>
+            </ul>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure first (read only)
+            </h3>
+            <p>
+              Start by finding out whether these folders are even the problem. On many Macs they total a few gigabytes; on a developer Mac or a heavy browser and chat setup they can reach tens.
+            </p>
+            <div class="terminal" aria-label="Measure user caches and logs">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches ~/Library/Logs</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/* 2&gt;/dev/null | sort -h | tail -20</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Logs/* 2&gt;/dev/null | sort -h | tail -10</div>
+                <div class="t-line"><span class="cmt"># 'Operation not permitted' lines are protected folders: skip them</span></div>
+              </div>
+            </div>
+            <p>
+              The second command lists the 20 biggest cache folders, largest last. Work from the bottom of that list up; clearing a 3 GB folder is worth the effort, a 40 MB one usually isn’t.
+              If Terminal reports <em>Operation not permitted</em>, that folder is protected by macOS privacy controls. You don’t need to give Terminal Full Disk Access for this job; skip those entries.
+            </p>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              Find out which app owns each cache
+            </h3>
+            <p>
+              Most folder names are bundle identifiers in reverse-domain form, like <code>com.apple.Safari</code> or <code>com.microsoft.VSCode</code>. Others are plain tool names such as <code>Homebrew</code> or <code>pip</code>.
+              When the owner isn’t obvious, ask Spotlight which installed app uses that identifier:
+            </p>
+            <div class="terminal" aria-label="Find the app that owns a cache folder">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — who owns this cache? (read only)</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> mdfind "kMDItemCFBundleIdentifier == 'com.example.app'"</div>
+                <div class="t-line"><span class="cmt"># no result: the app may be gone (a leftover) or the folder belongs to a command-line tool</span></div>
+              </div>
+            </div>
+            <ul>
+              <li><strong>App you use:</strong> safe to clear after quitting it. It will rebuild what it needs.</li>
+              <li><strong>App you already deleted:</strong> a leftover. Safe to remove; nothing will recreate it.</li>
+              <li><strong>Name you can’t identify at all:</strong> leave it for now, or search the name before deciding. Unknown is not the same as junk.</li>
+            </ul>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Clear one cache folder at a time
+            </h3>
+            <p>
+              The reliable pattern is quit, move, relaunch, then empty the Trash. Apps can hold cache files open and rewrite them while running, so deleting under a running app wastes effort and can confuse it.
+            </p>
+            <ol>
+              <li>Quit the app that owns the folder (⌘Q, not just closing the window). For menu-bar apps, use their Quit item.</li>
+              <li>In Finder choose <strong>Go → Go to Folder…</strong> (⇧⌘G), type <code>~/Library/Caches</code>, and press Return.</li>
+              <li>Drag that one folder to the Trash. The Trash keeps it recoverable, but it still uses space until you empty it.</li>
+              <li>Open the app again and use it normally for a day. Then empty the Trash.</li>
+            </ol>
+            <p>
+              Prefer Terminal? Remove only the exact folder you checked, by full path, with no wildcards. This is permanent, so read the path twice:
+            </p>
+            <div class="terminal" aria-label="Remove a single cache folder">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — one folder, exact path</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> osascript -e 'quit app "Example"'</div>
+                <div class="t-line"><span class="prompt">$</span> rm -rf "$HOME/Library/Caches/com.example.app"</div>
+                <div class="t-line"><span class="cmt"># never: rm -rf ~/Library/Caches/*   (wipes every app’s cache at once while apps run)</span></div>
+              </div>
+            </div>
+            <p>
+              Web browsers are the exception to “just delete the folder”: use the browser’s own <em>clear browsing data</em> or <em>empty caches</em> option, which knows what is cache and what is history, cookies, or saved logins.
+            </p>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Package-manager caches: use the tool’s own cleanup
+            </h3>
+            <p>
+              Developer tools often keep the biggest folders in <code>~/Library/Caches</code>, and almost all of them ship a cleanup command that knows which files are still in use.
+              Use those first; they are safer than deleting the folder and leave the tool in a consistent state.
+            </p>
+            <div class="terminal" aria-label="Clean package-manager caches with their own commands">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — tool-native cleanup</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> brew cleanup --prune=all        # Homebrew downloads and old versions</div>
+                <div class="t-line"><span class="prompt">$</span> npm cache clean --force         # npm download cache</div>
+                <div class="t-line"><span class="prompt">$</span> pip cache purge                 # pip wheel cache</div>
+                <div class="t-line"><span class="cmt"># run only the ones for tools you actually have installed</span></div>
+              </div>
+            </div>
+            <p>
+              For Xcode and Docker, which keep most of their bulk outside <code>~/Library/Caches</code>, follow the dedicated guides: <a href="clean-xcode-caches-mac.html">Xcode caches</a> and <a href="clean-docker-mac-disk-space.html">Docker disk space</a>.
+              Don’t remove Docker’s or OrbStack’s data by hand from any folder; use their own prune and reset commands.
+            </p>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </span>
+              Prune old logs and crash reports
+            </h3>
+            <p>
+              Logs are simpler than caches: nothing depends on them, so an age filter is a sensible rule. Thirty days keeps anything you might still need for a recent problem.
+              List first, check the output looks like logs, then delete the same set.
+            </p>
+            <div class="terminal" aria-label="Prune logs older than 30 days">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — logs older than 30 days</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> find ~/Library/Logs -type f -mtime +30 | wc -l</div>
+                <div class="t-line"><span class="prompt">$</span> find ~/Library/Logs -type f -mtime +30 | head -30</div>
+                <div class="t-line"><span class="prompt">$</span> find ~/Library/Logs -type f -mtime +30 -delete</div>
+              </div>
+            </div>
+            <p>
+              Crash reports live in <code>~/Library/Logs/DiagnosticReports</code>, and you can read them in the Console app under <strong>Crash Reports</strong>.
+              Keep the recent ones if an app keeps crashing and you plan to report it; developers find them useful. Otherwise they are safe to remove with everything else above.
+            </p>
+            <p>
+              Leave the system logs alone. <code>/Library/Logs</code>, <code>/private/var/log</code>, and the unified log that the <code>log</code> command reads are rotated and trimmed by macOS on its own schedule.
+            </p>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              What not to do
+            </h3>
+            <ul>
+              <li><strong>Don’t wipe all of <code>~/Library/Caches</code> at once</strong> with apps running. You lose the ability to tell which app misbehaves afterwards, and some apps crash when their open cache files vanish.</li>
+              <li><strong>Don’t use <code>sudo</code></strong> on cache or log folders, and don’t clear <code>/Library/Caches</code> or <code>/private/var/folders</code> by hand. Reboot if you suspect stale temporary files; macOS cleans them itself.</li>
+              <li><strong>Don’t disable SIP</strong> or delete anything under <code>/System</code>. It won’t free meaningful space and it weakens the Mac’s security.</li>
+              <li><strong>Don’t treat caches as a speed fix.</strong> Clearing them is a one-time space reclaim or a troubleshooting step. Apps refill them, and that is expected.</li>
+              <li><strong>Don’t delete <code>Docker.raw</code></strong> or VM disk images to “clean caches”. They are not caches, and deleting them destroys containers and images.</li>
+            </ul>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Check the result
+            </h3>
+            <p>
+              Empty the Trash, then re-run <code>du -sh ~/Library/Caches ~/Library/Logs</code> and compare.
+              If the number dropped but Storage in System Settings barely moved, local Time Machine snapshots may still hold the deleted data for a while, and Settings can take some time to recalculate.
+              If these folders were small to begin with, the space is somewhere else: work through the <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>, which starts with the folders that are usually much bigger on a developer Mac.
+            </p>
+          </div>
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 19h16"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Everything above works with Finder and Terminal alone.
+              If you’d rather review it in a list, <a href="../index.html">MacOSCleaner</a> Smart Cleanup scans first and shows what it found before anything is removed.
+              Its cache discovery lists folders in <code>~/Library/Caches</code> of 5 MB or more, marks reverse-domain app caches it can clear, flags the rest as <em>review manually</em>, and skips Docker and VM containers.
+              Its user logs item targets log files in <code>~/Library/Logs</code> older than seven days plus crash-report folders.
+              You can untick anything before cleaning. One thing to know: standard cache and log categories are removed directly rather than moved to the Trash, so read the scan list before you run it.
+              The app is optional, and this page stands on its own.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Is it safe to delete ~/Library/Caches on a Mac?</dt>
+              <dd>Mostly, yes, because apps are supposed to keep only data they can rebuild there. The safe way is one folder at a time: quit the app that owns it, move that folder to the Trash, relaunch the app, and empty the Trash once it works. Avoid deleting the whole folder in one go while apps are running.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Will clearing caches make my Mac faster?</dt>
+              <dd>Usually not. Caches exist to make apps faster, so an app may feel a little slower right after you clear its cache while it rebuilds it. Clear a cache to get disk space back or to fix an app that misbehaves, not as routine speed maintenance.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Why did the cache come back after I deleted it?</dt>
+              <dd>That is normal. Apps recreate their caches as you use them. If one cache keeps growing back to many gigabytes, look for a cache-size or offline-storage setting in that app, or use the tool’s own cleanup command, such as brew cleanup for Homebrew.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Can I delete everything in ~/Library/Logs?</dt>
+              <dd>Log files there are written for troubleshooting and are not needed for apps to run. Removing files older than about 30 days is a reasonable default. Keep recent crash reports if you are chasing a bug or want to send them to a developer.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>What about /Library/Caches, /System/Library/Caches, and /private/var/folders?</dt>
+              <dd>Leave them alone. /System is protected by System Integrity Protection, /Library/Caches is shared by every user and system services, and /private/var/folders holds per-user temporary files that macOS manages itself. Clearing them by hand with sudo can break things and rarely frees much.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Will deleting caches sign me out of apps or delete my settings?</dt>
+              <dd>Settings live in ~/Library/Preferences and app data in ~/Library/Application Support or ~/Library/Containers, so clearing a cache normally keeps both. A few apps may ask you to sign in again or re-download offline content, which is one more reason to clear one app at a time.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review caches and logs in a list with MacOSCleaner</h3>
+            <p>
+              Scan-first Smart Cleanup that shows large cache folders and old logs before removing anything, with manual-review flags for caches it doesn’t recognize.
+              Native Swift 6, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>

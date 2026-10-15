@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to clean Cursor, VS Code, JetBrains &amp; AI caches on Mac</title>
+  <meta name="description" content="Quit the editor, measure with du, then clear regenerable IDE and AI tool caches on Mac. Keep settings and models managed by their own CLIs. No SIP hacks.">
+  <meta name="keywords" content="clean Cursor cache Mac, VS Code cache taking up space Mac, JetBrains cache Mac, Ollama models disk space, Claude Code cache Mac, IDE AI cache cleanup">
+  <meta name="author" content="AlexTkDev (ORCID 0009-0002-8907-5406)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/guides/clean-ide-ai-caches-mac.html">
+
+  <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
+  <link rel="alternate" type="text/plain" title="llms-full.txt" href="https://alextkdev.github.io/MacOSCleaner/llms-full.txt">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MacOSCleaner">
+  <meta property="og:title" content="How to clean Cursor, VS Code, JetBrains &amp; AI caches on Mac">
+  <meta property="og:description" content="Measure first, clear regenerable IDE/AI caches, keep settings and model stores managed by vendor tools. No SIP hacks.">
+  <meta property="og:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MacOSCleaner banner">
+  <meta property="og:url" content="https://alextkdev.github.io/MacOSCleaner/guides/clean-ide-ai-caches-mac.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-09-17">
+  <meta property="article:modified_time" content="2026-09-17">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to clean Cursor, VS Code, JetBrains &amp; AI caches on Mac">
+  <meta name="twitter:description" content="Quit the editor, measure with du, clear regenerable caches. Manage Ollama and Hugging Face models with their CLIs.">
+  <meta name="twitter:image" content="https://alextkdev.github.io/MacOSCleaner/static/og-banner.png">
+  <meta name="twitter:image:alt" content="MacOSCleaner banner">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to clean Cursor, VS Code, JetBrains and AI tool caches on Mac",
+    "url": "https://alextkdev.github.io/MacOSCleaner/guides/clean-ide-ai-caches-mac.html",
+    "description": "Safely reclaim disk space from Cursor, VS Code, JetBrains, Claude, Ollama, and related AI/IDE caches on macOS. Measure first, clear regenerable caches, manage model stores with vendor CLIs. No SIP changes.",
+    "dateModified": "2026-09-17",
+    "inLanguage": "en",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Quit editors and AI helpers",
+        "text": "Fully quit Cursor, VS Code, JetBrains IDEs, Claude Desktop, Ollama, and related helpers so cache files are not locked."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure with du",
+        "text": "Run du -sh on Application Support, Caches, extensions, and model store paths to see what is worth reclaiming."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Clear regenerable IDE caches",
+        "text": "Move Cache, CachedData, CachedExtensionVSIXs, logs, and JetBrains cache trees to Trash after quitting. Leave User settings alone unless you intend a reset."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Manage local AI models with vendor tools",
+        "text": "Remove unused Ollama models with ollama rm and Hugging Face cache entries with hf cache commands. Do not delete content-addressed blob trees by hand."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is it safe to delete Cursor or VS Code cache folders on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes for regenerable caches (Cache, CachedData, CachedExtensionVSIXs, logs) after quitting the app. Settings under User/ and installed extensions are separate. Clearing workspaceStorage resets per-project UI state, not your source code."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I free space from Ollama models on Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "List models with ollama list, then remove unused ones with ollama rm MODEL. Do not delete hashed files under ~/.ollama/models/blobs by hand — blobs are shared and the CLI knows which are still referenced."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to disable SIP to clean IDE or AI caches?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. These caches live under your home folder. Do not disable SIP and do not delete anything under /System or /usr."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://alextkdev.github.io/MacOSCleaner/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Guides",
+        "item": "https://alextkdev.github.io/MacOSCleaner/about.html#guides"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "IDE and AI caches",
+        "item": "https://alextkdev.github.io/MacOSCleaner/guides/clean-ide-ai-caches-mac.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="96x96" href="../static/assets/logo-96.png">
+  <link rel="apple-touch-icon" href="../static/assets/logo-96.png">
+  <script>
+    (function () {
+      var savedTheme = localStorage.getItem('theme');
+      var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="../static/src/style.css?v=3">
+</head>
+<body>
+
+<nav id="main-nav">
+  <div class="container">
+    <a class="nav-brand" href="../index.html" aria-label="MacOSCleaner home">
+      <img src="../static/assets/logo-96.png" width="40" height="40" alt="">
+      MacOSCleaner
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="../index.html#features">features</a>
+      <a href="../index.html#screenshots">screenshots</a>
+      <a href="../index.html#cleaned">cleaned</a>
+      <a href="../index.html#release">changelog</a>
+      <a href="../about.html">about</a>
+      <a href="../index.html#how-it-works">how&nbsp;it&nbsp;works</a>
+      <a href="../index.html#download">download</a>
+      <a href="../support.html" style="color: var(--accent);">support&nbsp;♥</a>
+      <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
+    </div>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+        </svg>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" id="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="page-header">
+    <div class="container">
+      <a href="../index.html" class="back-link">← Back to home</a>
+      <h1>How to clean Cursor, VS Code, JetBrains &amp; AI caches on Mac</h1>
+      <p>Quit the tools, measure with <code>du</code>, clear regenerable caches — manage local models with their own CLIs</p>
+      <p class="page-meta">Updated <time datetime="2026-09-17">2026-09-17</time></p>
+    </div>
+  </header>
+
+  <section class="about-seo guide-seo" style="border-bottom: none;">
+    <div class="container">
+
+      <article class="seo-layout">
+        <p class="seo-lead reveal">
+          Editors and AI assistants cache indexes, Electron/Chromium data, extension VSIXs, language-server artifacts, and sometimes multi-gigabyte local models under your home folder.
+          None of that is your git repo. The safe loop is: <strong>quit the apps</strong>, <strong>measure with <code>du</code></strong>, then move regenerable caches to Trash.
+          Settings, API configs, conversation stores, and model blobs need a different rule: review carefully or use the vendor CLI.
+          Do not disable SIP. Do not delete under <code>/System</code> or <code>/usr</code>.
+        </p>
+
+        <div class="seo-topics">
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+              </span>
+              Quit first
+            </h3>
+            <p>
+              Fully quit Cursor, Visual Studio Code, Windsurf, Zed, JetBrains IDEs (IntelliJ, WebStorm, PyCharm, and siblings), Claude Desktop, Ollama, and any visible helper processes.
+              Cache and index files stay open while those processes run. Cleaning with the app still running can fail, look like “nothing happened,” or leave a half-written session.
+            </p>
+            <p>
+              In Activity Monitor, confirm no leftover <code>Code Helper</code>, <code>Cursor Helper</code>, or JetBrains daemon is still holding files.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+              </span>
+              Measure with <code>du</code> before deleting
+            </h3>
+            <p>
+              Allocated size is what Storage cares about. Run these in Terminal after quitting the tools, then decide what is worth reclaiming:
+            </p>
+            <div class="terminal" aria-label="Measure IDE and AI disk usage">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — measure IDE &amp; AI trees</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="cmt"># Electron / VS Code family</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Cursor ~/Library/Caches/Cursor ~/.cursor 2>/dev/null</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Code ~/Library/Caches/com.microsoft.VSCode ~/.vscode 2>/dev/null</div>
+                <div class="t-line"><span class="cmt"># JetBrains</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Caches/JetBrains ~/Library/Logs/JetBrains ~/Library/Application\ Support/JetBrains 2>/dev/null</div>
+                <div class="t-line"><span class="cmt"># Claude / Ollama / Hugging Face (paths vary by install)</span></div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/Library/Application\ Support/Claude ~/.claude ~/Library/Caches/claude-cli-nodejs 2>/dev/null</div>
+                <div class="t-line"><span class="prompt">$</span> du -sh ~/.ollama ~/Library/Caches/com.anthropic.claudefordesktop ~/.cache/huggingface 2>/dev/null</div>
+              </div>
+            </div>
+            <p>
+              In Finder, use <strong>Go → Go to Folder…</strong> (<code>⇧⌘G</code>) and paste the same paths. Prefer moving items to Trash over <code>rm -rf</code> so you can restore a mistake.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+              </span>
+              Cursor, VS Code, Windsurf — regenerable vs keep
+            </h3>
+            <p>
+              Cursor and VS Code (and similar Electron editors) split data across Application Support, Caches, and a home extensions folder.
+              After quitting, these are usually safe to clear because the app recreates them:
+            </p>
+            <ul>
+              <li><code>…/Cache</code>, <code>…/CachedData</code>, <code>…/CachedExtensionVSIXs</code>, <code>…/Code Cache</code>, <code>…/GPUCache</code>, <code>…/logs</code></li>
+              <li>Old <code>CachedData</code> subfolders left behind after version upgrades</li>
+              <li><code>~/Library/Caches/Cursor</code> and <code>~/Library/Caches/com.microsoft.VSCode</code></li>
+            </ul>
+            <p>
+              Treat these as review-before-delete (not automatic wipe):
+            </p>
+            <ul>
+              <li><code>User/workspaceStorage</code> — per-project extension state and indexes; clearing it resets UI/state for those workspaces, not your source trees.</li>
+              <li><code>User/globalStorage</code> and <code>User/settings.json</code> — settings and extension global data; leave alone unless you intend a reset.</li>
+              <li><code>~/.cursor/extensions</code> and <code>~/.vscode/extensions</code> — installed extensions; remove unused ones deliberately rather than deleting the whole tree.</li>
+            </ul>
+            <p>
+              If you run both Cursor and VS Code, you may carry duplicate extensions. Prune by name in each extensions folder after you confirm you no longer need that pack.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+              </span>
+              JetBrains caches and leftover versions
+            </h3>
+            <p>
+              IntelliJ-based IDEs store regenerable caches under <code>~/Library/Caches/JetBrains/</code> and logs under <code>~/Library/Logs/JetBrains/</code>.
+              After quitting the IDE, those trees are safe to move to Trash. Indexes rebuild on the next open (slower first launch).
+            </p>
+            <p>
+              Upgrades often leave old version folders under Application Support and Caches.
+              Keep the folder matching the version you still run; remove abandoned version directories only when you recognize them as leftovers from an uninstall or major upgrade.
+              Do not delete project sources or the <code>.idea</code> folder inside a git repo as part of “cache cleanup.”
+            </p>
+            <p>
+              JetBrains Toolbox can also remove unused IDE installs from its own UI — prefer that for whole-product uninstalls.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+              </span>
+              Claude, Ollama, Hugging Face — caches vs models
+            </h3>
+            <p>
+              Local AI tools mix small regenerable caches with large model and session stores. Treat them differently.
+            </p>
+            <ul>
+              <li><strong>Usually regenerable:</strong> <code>~/Library/Caches/com.anthropic.claudefordesktop</code>, <code>~/Library/Caches/claude-cli-nodejs</code>, UI caches, and similar Electron cache trees after quitting.</li>
+              <li><strong>Review carefully:</strong> <code>~/.claude/</code> project/session data, Claude Desktop Application Support (including any VM/bundle folders), and config files that may hold MCP or API settings.</li>
+              <li><strong>Models — use the CLI:</strong> Ollama models live under <code>~/.ollama</code> with content-addressed blobs. List and remove with the official commands, not by deleting hashed blob files:</li>
+            </ul>
+            <div class="terminal" aria-label="Ollama model management">
+              <div class="terminal-bar">
+                <span></span><span></span><span></span>
+                <span class="terminal-title">zsh — Ollama model hygiene</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="prompt">$</span> ollama list</div>
+                <div class="t-line"><span class="prompt">$</span> ollama rm MODEL_NAME</div>
+                <div class="t-line"><span class="cmt"># do not rm -rf ~/.ollama/models/blobs — blobs are shared</span></div>
+              </div>
+            </div>
+            <p>
+              For Hugging Face caches under <code>~/.cache/huggingface</code>, prefer the Hugging Face CLI cache list/remove flow (or the Hub docs for your installed version) so shared snapshots stay consistent.
+              Deleting blob trees by hand can orphan models the same way Ollama does.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </span>
+              Regenerate vs keep checklist
+            </h3>
+            <ul>
+              <li><strong>Regenerate:</strong> IDE Cache / CachedData / CachedExtensionVSIXs / logs, JetBrains Caches and Logs, Claude/Electron UI caches after quit.</li>
+              <li><strong>Review:</strong> workspaceStorage, unused extensions, abandoned JetBrains version folders, Claude session/project folders, large Application Support trees you recognize.</li>
+              <li><strong>CLI-managed:</strong> Ollama models (<code>ollama rm</code>), Hugging Face cache entries via the Hub/CLI tools you already use.</li>
+              <li><strong>Keep:</strong> <code>settings.json</code> and intentional configs, API/MCP config you still need, project source trees, Keychain items.</li>
+              <li><strong>Never:</strong> SIP off, deletes under <code>/System</code> or <code>/usr</code>, blind <code>rm -rf ~/.ollama/models/blobs</code>, wiping Docker.raw “for free space,” or deleting critical system paths.</li>
+            </ul>
+            <p>
+              After Trash, empty Trash only when you are sure. Space returns when Trash is emptied, not when files first move there.
+              Then reopen each editor once so indexes and caches come back.
+            </p>
+          </div>
+
+          <div class="seo-topic reveal">
+            <h3>
+              <span class="cell-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </span>
+              Optional review UI
+            </h3>
+            <p>
+              Finder and Terminal are enough for a careful pass.
+              If you want a later review list, <a href="../index.html">MacOSCleaner</a> Smart Cleanup can show IDE and AI assistant categories
+              (including Cursor, VS Code, JetBrains, Claude Code CLI, Ollama, and related toolchains) with risk badges so you confirm before anything is removed.
+              The app is optional — this page stands on its own.
+              Related: <a href="clean-xcode-caches-mac.html">Xcode caches</a>,
+              <a href="clean-docker-mac-disk-space.html">Docker disk space</a>,
+              and <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="seo-faq reveal">
+          <h3>Frequently asked questions</h3>
+          <dl>
+            <div class="faq-item">
+              <dt>Is it safe to delete Cursor or VS Code cache folders on Mac?</dt>
+              <dd>Yes for regenerable caches (<code>Cache</code>, <code>CachedData</code>, <code>CachedExtensionVSIXs</code>, logs) after quitting the app. Settings under <code>User/</code> and installed extensions are separate. Clearing <code>workspaceStorage</code> resets per-project UI state, not your source code.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>How do I free space from Ollama models on Mac?</dt>
+              <dd>List models with <code>ollama list</code>, then remove unused ones with <code>ollama rm MODEL</code>. Do not delete hashed files under <code>~/.ollama/models/blobs</code> by hand — blobs are shared and the CLI knows which are still referenced.</dd>
+            </div>
+            <div class="faq-item">
+              <dt>Do I need to disable SIP to clean IDE or AI caches?</dt>
+              <dd>No. These caches live under your home folder. Do not disable SIP and do not delete anything under <code>/System</code> or <code>/usr</code>.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="guide-cta-card reveal">
+          <div class="guide-cta-content">
+            <h3>Review IDE &amp; AI caches in MacOSCleaner</h3>
+            <p>
+              Smart Cleanup lists Cursor, VS Code, JetBrains, Claude, Ollama, and related developer/AI paths with risk badges — you choose what to remove.
+              Native Swift 6, trash-first where supported, zero telemetry. Source-available (GPLv3 + Commons Clause).
+            </p>
+          </div>
+          <div class="guide-cta-actions">
+            <a href="../index.html#download" class="btn btn-primary">Download Free</a>
+            <a href="../support.html" class="btn btn-secondary">Support Project ♥</a>
+          </div>
+        </div>
+
+        <p class="guide-related reveal">
+          <strong>Guides:</strong>
+          <a href="clean-xcode-caches-mac.html">Xcode caches</a> ·
+          <a href="clean-docker-mac-disk-space.html">Docker disk space</a> ·
+          <a href="macos-system-data-too-large-developers.html">System Data reclaim order</a> ·
+          <a href="remove-mac-app-leftovers-after-uninstall.html">App leftovers</a> ·
+          <a href="clean-ide-ai-caches-mac.html">IDE &amp; AI caches</a>
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../about.html#guides">Guides</a>
+      <a href="../support.html">Support</a>
+      <a href="../llms.txt">llms.txt</a>
+      <a href="../llms-full.txt">llms-full.txt</a>
+      <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
+      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
+      <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../static/src/script.js?v=3" defer></script>
+</body>
+</html>
