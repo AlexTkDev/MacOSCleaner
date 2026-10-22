@@ -15,7 +15,7 @@
   <p>
     <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest"><img src="https://img.shields.io/badge/Direct_Download-.dmg-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG"></a>
     &nbsp;
-    <a href="https://alextkdev.github.io/MacOSCleaner/"><img src="https://img.shields.io/badge/Official_Website-Visit_Site-238636?style=for-the-badge&logo=safari&logoColor=white" alt="Official Website"></a>
+    <a href="https://alextkdev.github.io/MacOSCleaner/"><img src="https://img.shields.io/badge/Official_Website-Visit_Site-238636?style=for-the-badge&logo=safari&logoColor=white" alt="Official Website"></a> &nbsp; <a href="https://github.com/AlexTkDev/MacOSCleaner"><img src="https://img.shields.io/github/stars/AlexTkDev/MacOSCleaner?style=for-the-badge&logo=github&label=Star%20on%20GitHub&color=f5c518" alt="Star MacOSCleaner on GitHub"></a>
   </p>
 
   <p>
