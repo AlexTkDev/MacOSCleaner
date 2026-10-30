@@ -84,11 +84,16 @@
 
 1. **Direct Download:** Grab the latest `.dmg` from [GitHub Releases](https://github.com/AlexTkDev/MacOSCleaner/releases/latest).
 2. **Mount & Drag:** Open the `.dmg` and drag `MacOSCleaner.app` into `/Applications`.
-3. **First Launch (Gatekeeper):** If macOS shows a Gatekeeper warning on locally built/unnotarized apps:
-   ```bash
-   sudo xattr -r -c /Applications/MacOSCleaner.app
-   ```
-   > *Note: This removes the quarantine attribute set by macOS. It does not modify app files, system security, or grant persistent permissions.*
+3. **If macOS says it can't verify MacOSCleaner:** On macOS 26, Gatekeeper can block the first open (“Apple could not verify “MacOSCleaner” is free of malware”, or a dialog that it cannot verify the app is free of malware) because the app is ad-hoc signed. Only do this with the DMG from the official [GitHub Releases](https://github.com/AlexTkDev/MacOSCleaner/releases/latest) page.
+   1. Move `MacOSCleaner.app` to `/Applications` (step 2).
+   2. Try to open it once. Then go to **System Settings → Privacy & Security**, scroll down, click **Open Anyway**, and confirm.
+   3. Or, in Terminal:
+
+      ```bash
+      xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app
+      ```
+
+      > *This clears the quarantine flag macOS sets on that download. It does not change the app or system security.*
 
 ---
 
