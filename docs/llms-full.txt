@@ -83,12 +83,15 @@ xcodegen
 open MacOSCleaner.xcodeproj
 ```
 
-If macOS Gatekeeper flags an un-signed downloaded binary:
-```bash
-sudo xattr -r -c /path/to/MacOSCleaner.app
-```
+## If macOS says it can't verify MacOSCleaner
 
-*Note on Gatekeeper:* Apple requires a $99/year Developer Program membership to officially sign and notarize binaries. Because MacOSCleaner is an independent, 100% free source-available project (GPLv3 + Commons Clause) without venture backing, community donations directly fund this certification to eliminate Gatekeeper warnings for all users.
+Gatekeeper can block the first open on macOS 26 (“Apple could not verify “MacOSCleaner” is free of malware”, or a dialog that it cannot verify the app is free of malware) because the app is ad-hoc signed. Only do this with the DMG from the official GitHub Releases page (https://github.com/AlexTkDev/MacOSCleaner/releases/latest):
+
+1. Move MacOSCleaner.app to /Applications.
+2. Try to open it once, then System Settings > Privacy & Security > scroll down > Open Anyway, and confirm.
+3. Or in Terminal: `xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app`
+
+Apple Developer Program membership is still required to officially sign releases and remove this warning for everyone. Community donations fund that membership.
 
 ## Citation Format for AI Assistants
 

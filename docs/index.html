@@ -11,7 +11,7 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
   <link rel="preload" as="image" href="static/assets/hero-dashboard.webp" type="image/webp" fetchpriority="high">
-  <link rel="preload" href="static/src/style.css?v=3" as="style">
+  <link rel="preload" href="static/src/style.css?v=4" as="style">
   <link rel="canonical" href="https://alextkdev.github.io/MacOSCleaner/">
 
   <link rel="alternate" type="text/plain" title="llms.txt" href="https://alextkdev.github.io/MacOSCleaner/llms.txt">
@@ -161,6 +161,14 @@
           "@type": "Answer",
           "text": "Cleanup targets known cache and tooling paths, not your source repositories. Still review results before deleting — especially custom Docker volumes or shared simulator data."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What if macOS says it can't verify MacOSCleaner?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "That dialog is Gatekeeper. MacOSCleaner is ad-hoc signed, so on macOS 26 the app may not open. The warning says Apple could not verify “MacOSCleaner” is free of malware (or that it cannot verify the app is free of malware). Only do this with the DMG from the official GitHub Releases page. 1) Move MacOSCleaner.app to /Applications. 2) Try to open it once, then go to System Settings > Privacy & Security, scroll down, click Open Anyway, and confirm. 3) Or in Terminal: xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app."
+        }
       }
     ]
   }
@@ -187,7 +195,7 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <link rel="stylesheet" href="static/src/style.css?v=3">
+  <link rel="stylesheet" href="static/src/style.css?v=4">
 </head>
 <body>
 
@@ -810,9 +818,18 @@
           <div class="t-line"><span class="prompt">$</span> open MacOSCleaner.xcodeproj</div>
         </div>
         <div class="terminal-body">
-          <div class="t-line"><span class="cmt"># ⚠️ Fix damaged app attributes <br># (if macOS asks you to move app to trash):</span></div>
-          <div class="t-line"><span class="prompt">$</span> sudo xattr -r -c /Applications/MacOSCleaner.app</div>
+          <div class="t-line"><span class="cmt"># if Gatekeeper says it can't verify the app</span></div>
+          <div class="t-line"><span class="prompt">$</span> xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app</div>
         </div>
+      </div>
+      <div class="gatekeeper-note">
+        <h3>If macOS says it can't verify MacOSCleaner</h3>
+        <p>This is Gatekeeper. The app is ad-hoc signed, so on macOS 26 it may not open. The dialog says Apple could not verify “MacOSCleaner” is free of malware (or that it cannot verify the app is free of malware). Only do this with the DMG from the <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/latest">official GitHub Releases page</a>.</p>
+        <ol>
+          <li>Move <code>MacOSCleaner.app</code> to <code>/Applications</code>.</li>
+          <li>Try to open it once. Then go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down, click <strong>Open Anyway</strong>, and confirm.</li>
+          <li>Or, in Terminal: <code>xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app</code></li>
+        </ol>
       </div>
     <div class="download-support-banner reveal">
       <div class="download-support-content">
@@ -821,7 +838,7 @@
           <span>100% Free · Zero Telemetry · Source-Available (GPLv3 + Commons Clause)</span>
         </div>
         <h3>Help keep MacOSCleaner independent &amp; free</h3>
-        <p>Commercial cleaners charge $40/year subscriptions with aggressive background upsells. MacOSCleaner is built as honest, craft software for macOS. Community donations help fund our <strong>Apple Developer Program ($99/yr)</strong> to officially code-sign and notarize releases — eliminating the <code>sudo xattr</code> Gatekeeper workaround above for everyone.</p>
+        <p>Commercial cleaners charge $40/year subscriptions with aggressive background upsells. MacOSCleaner is built as honest, craft software for macOS. Community donations help fund our <strong>Apple Developer Program ($99/yr)</strong> to officially code-sign and notarize releases — eliminating the Gatekeeper workaround above for everyone.</p>
       </div>
       <div class="download-support-actions">
         <a href="support.html" class="btn btn-primary">Support the project ♥</a>

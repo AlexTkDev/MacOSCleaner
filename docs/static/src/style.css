@@ -1125,6 +1125,40 @@ section {
 .terminal-body .prompt { color: #3dd68c; user-select: none; }
 .terminal-body .t-line { white-space: nowrap; }
 
+.gatekeeper-note {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.gatekeeper-note h3 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.gatekeeper-note p,
+.gatekeeper-note li {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.gatekeeper-note p { margin: 0; }
+
+.gatekeeper-note a { color: var(--text); }
+
+.gatekeeper-note ol {
+  margin: 12px 0 0;
+  padding-left: 1.25rem;
+}
+
+.gatekeeper-note li + li { margin-top: 6px; }
+
+.gatekeeper-note strong { color: var(--text); font-weight: 600; }
+
 /* ===== SEO / About ===== */
 .about-seo .section-header {
   max-width: 36rem;

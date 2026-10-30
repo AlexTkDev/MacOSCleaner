@@ -7,6 +7,7 @@ Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.3.0.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 Bundle ID: input.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
+First launch: if macOS says it can't verify MacOSCleaner (“Apple could not verify “MacOSCleaner” is free of malware”, or that it cannot verify the app is free of malware), Gatekeeper is blocking an ad-hoc signed app on macOS 26. Only for the DMG from the official GitHub Releases page: move MacOSCleaner.app to /Applications, try to open it once, then System Settings > Privacy & Security > scroll down > Open Anyway. Or: `xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app`.
 
 
 ## Pages & Docs
