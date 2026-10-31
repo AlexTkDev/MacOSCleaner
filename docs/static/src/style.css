@@ -1294,6 +1294,15 @@ footer .container {
   color: var(--text-muted);
 }
 
+footer > .container:not(.footer-badges) {
+  justify-content: flex-start;
+}
+
+footer > .container:not(.footer-badges) > p,
+footer > .container:not(.footer-badges) > .footer-links {
+  flex: 1 1 100%;
+}
+
 .footer-links {
   display: flex;
   gap: 20px;
