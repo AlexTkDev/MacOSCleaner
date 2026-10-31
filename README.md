@@ -28,10 +28,6 @@
   </p>
 
   <p>
-    <a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
-  </p>
-
-  <p>
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
@@ -144,6 +140,10 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/19"><img src="https://img.shields.io/badge/Roadmap-v2.4.0_In_Development-007AFF?style=flat&logo=github&logoColor=white" alt="v2.4.0 in Development" align="absmiddle"></a> — [Explore the v2.4.0 development roadmap, share feedback, and suggest new features.](https://github.com/AlexTkDev/MacOSCleaner/discussions/19)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
+
+    <p>
+<a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
+  </p>
 
 > *Note: Contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md).*
 
