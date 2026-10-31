@@ -28,6 +28,10 @@
   </p>
 
   <p>
+    <a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
+  </p>
+
+  <p>
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
