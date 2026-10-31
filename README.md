@@ -142,7 +142,7 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
 
 <p>
-    <a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
+<a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
 </p>
 
 > *Note: Contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md).*
