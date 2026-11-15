@@ -1027,3 +1027,8 @@
 "cleanup_skip_reason_in_use" = "الملف قيد الاستخدام حالياً";
 "cleanup_complete_trash_sub" = "تم نقل %@ إلى سلة المهملات (سيتم تحرير المساحة عند إفراغها).";
 "cleanup_complete_perm_sub" = "تم تحرير %@ من مساحة القرص نهائياً.";
+
+"settings_auto_check_updates" = "التحقق من التحديثات تلقائيًا";
+"settings_auto_check_updates_sub" = "التحقق تلقائيًا من إصدارات GitHub عند التشغيل";
+"settings_remove_from_dock" = "الإزالة من شريط Dock عند إلغاء التثبيت";
+"settings_remove_from_dock_sub" = "إزالة أيقونات التطبيقات المُزالة من شريط Dock في macOS";

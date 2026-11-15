@@ -53,10 +53,21 @@ public struct ProcessesView: View {
             whitelistSheet
         }
         .onAppear {
+            viewModel.sortOption = settings.processSortOption
+            viewModel.refreshInterval = settings.processRefreshInterval
             if settings.enableAI {
                 AIExplanationService.shared.prewarm(promptPrefix: "Process")
             }
             Task { await viewModel.scan() }
+        }
+        .onDisappear {
+            viewModel.stopAutoRefresh()
+        }
+        .onChange(of: settings.processRefreshInterval) { _, newValue in
+            viewModel.startAutoRefresh(interval: newValue)
+        }
+        .onChange(of: settings.processSortOption) { _, newValue in
+            viewModel.sortOption = newValue
         }
     }
 

@@ -167,7 +167,8 @@ public final class AppSettings {
         static let emptyTrashDuringCleanup = "settings_emptyTrashDuringCleanup"
         static let bypassTrashOnUninstall = "settings_bypassTrashOnUninstall"
         static let showRelatedFiles = "settings_showRelatedFiles"
-        static let emptyTrashImmediately = "settings_emptyTrashImmediately"
+        static let removeFromDockOnUninstall = "settings_removeFromDockOnUninstall"
+        static let automaticallyCheckForUpdates = "settings_automaticallyCheckForUpdates"
         static let processRefreshInterval = "settings_processRefreshInterval"
         static let processSortOption = "settings_processSortOption"
         static let uninstallerScanMode = "settings_uninstallerScanMode"
@@ -326,8 +327,12 @@ public final class AppSettings {
         didSet { UserDefaults.standard.set(showRelatedFiles, forKey: Keys.showRelatedFiles) }
     }
 
-    public var emptyTrashImmediately: Bool {
-        didSet { UserDefaults.standard.set(emptyTrashImmediately, forKey: Keys.emptyTrashImmediately) }
+    public var removeFromDockOnUninstall: Bool {
+        didSet { UserDefaults.standard.set(removeFromDockOnUninstall, forKey: Keys.removeFromDockOnUninstall) }
+    }
+
+    public var automaticallyCheckForUpdates: Bool {
+        didSet { UserDefaults.standard.set(automaticallyCheckForUpdates, forKey: Keys.automaticallyCheckForUpdates) }
     }
 
     public var isDebugMode: Bool {
@@ -362,7 +367,8 @@ public final class AppSettings {
         self.projectArtifactsOlderThanDays = defaults.object(forKey: Keys.projectArtifactsOlderThanDays) as? Int ?? 60
         self.bypassTrashOnUninstall = defaults.bool(forKey: Keys.bypassTrashOnUninstall)
         self.showRelatedFiles = defaults.object(forKey: Keys.showRelatedFiles) as? Bool ?? true
-        self.emptyTrashImmediately = defaults.bool(forKey: Keys.emptyTrashImmediately)
+        self.removeFromDockOnUninstall = defaults.object(forKey: Keys.removeFromDockOnUninstall) as? Bool ?? true
+        self.automaticallyCheckForUpdates = defaults.object(forKey: Keys.automaticallyCheckForUpdates) as? Bool ?? true
         self.processRefreshInterval = RefreshInterval(rawValue: defaults.string(forKey: Keys.processRefreshInterval) ?? "") ?? .manual
         self.processSortOption = ProcessSortOption(rawValue: defaults.string(forKey: Keys.processSortOption) ?? "") ?? .cpu
         self.uninstallerScanMode = ScanMode(rawValue: defaults.string(forKey: Keys.uninstallerScanMode) ?? "") ?? .balanced
@@ -410,14 +416,17 @@ public final class AppSettings {
         let allKeys = [
             Keys.language, Keys.theme, Keys.showNotifications,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
-            Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.isDebugMode,
+            Keys.showRelatedFiles, Keys.removeFromDockOnUninstall, Keys.automaticallyCheckForUpdates,
+            Keys.isDebugMode,
             Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
             Keys.projectArtifactsOlderThanDays,
             Keys.enableAI, Keys.enableSiri, Keys.enableShortcutsAndAutomator,
             Keys.enableDeveloperCachesCommand, Keys.enableStorageStatusCommand,
             Keys.enableCleanCategoryCommand, Keys.enableScheduledCleanupCommand,
             Keys.enableEmptyTrashCommand,
-            Keys.customSiriCommands
+            Keys.customSiriCommands,
+            "settings_emptyTrashImmediately",
+            "settings_startupVendorPrefixes"
         ]
         for key in allKeys {
             defaults.removeObject(forKey: key)
@@ -431,7 +440,8 @@ public final class AppSettings {
         projectArtifactsOlderThanDays = 60
         bypassTrashOnUninstall = false
         showRelatedFiles = true
-        emptyTrashImmediately = false
+        removeFromDockOnUninstall = true
+        automaticallyCheckForUpdates = true
         isDebugMode = false
         processRefreshInterval = .manual
         processSortOption = .cpu
@@ -443,9 +453,16 @@ public final class AppSettings {
         enableStorageStatusCommand = true
         enableCleanCategoryCommand = true
         enableScheduledCleanupCommand = true
+        enableEmptyTrashCommand = true
         customSiriCommands = CustomSiriCommand.makeDefaultCommands()
 
         LanguageManager.shared.setLanguage(.english)
+    }
+
+    public func resetAllAppData(journal: TransactionJournal) async {
+        resetAll()
+        try? await journal.clearAll()
+        FileManager.clearSizeCache()
     }
 
     // MARK: - Theme

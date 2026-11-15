@@ -14,7 +14,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
+            "settings_showRelatedFiles", "settings_removeFromDockOnUninstall",
+            "settings_automaticallyCheckForUpdates",
             "settings_enableAI", "settings_isDebugMode",
             "settings_projectArtifactsOlderThanDays"
         ]
@@ -26,7 +27,8 @@ final class AppSettingsTests: XCTestCase {
             "settings_language", "settings_theme", "settings_showNotifications",
             "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
-            "settings_showRelatedFiles", "settings_emptyTrashImmediately",
+            "settings_showRelatedFiles", "settings_removeFromDockOnUninstall",
+            "settings_automaticallyCheckForUpdates",
             "settings_enableAI", "settings_isDebugMode",
             "settings_projectArtifactsOlderThanDays"
         ]
@@ -44,7 +46,8 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.emptyTrashDuringCleanup)
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
-        XCTAssertFalse(settings.emptyTrashImmediately)
+        XCTAssertTrue(settings.removeFromDockOnUninstall)
+        XCTAssertTrue(settings.automaticallyCheckForUpdates)
         XCTAssertTrue(settings.enableAI)
         XCTAssertFalse(settings.isDebugMode)
         XCTAssertEqual(settings.projectArtifactsOlderThanDays, 60)
@@ -76,7 +79,8 @@ final class AppSettingsTests: XCTestCase {
         settings.emptyTrashDuringCleanup = true
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
-        settings.emptyTrashImmediately = true
+        settings.removeFromDockOnUninstall = false
+        settings.automaticallyCheckForUpdates = false
         settings.enableAI = false
         settings.isDebugMode = true
  
@@ -84,7 +88,8 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashDuringCleanup"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_bypassTrashOnUninstall"))
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_showRelatedFiles"))
-        XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_emptyTrashImmediately"))
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_removeFromDockOnUninstall"))
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_automaticallyCheckForUpdates"))
         XCTAssertFalse(UserDefaults.standard.bool(forKey: "settings_enableAI"))
         XCTAssertTrue(UserDefaults.standard.bool(forKey: "settings_isDebugMode"))
     }
@@ -100,7 +105,8 @@ final class AppSettingsTests: XCTestCase {
         settings.emptyTrashDuringCleanup = true
         settings.bypassTrashOnUninstall = true
         settings.showRelatedFiles = false
-        settings.emptyTrashImmediately = true
+        settings.removeFromDockOnUninstall = false
+        settings.automaticallyCheckForUpdates = false
         settings.enableAI = false
         settings.isDebugMode = true
         settings.projectArtifactsOlderThanDays = 180
@@ -114,7 +120,8 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.emptyTrashDuringCleanup)
         XCTAssertFalse(settings.bypassTrashOnUninstall)
         XCTAssertTrue(settings.showRelatedFiles)
-        XCTAssertFalse(settings.emptyTrashImmediately)
+        XCTAssertTrue(settings.removeFromDockOnUninstall)
+        XCTAssertTrue(settings.automaticallyCheckForUpdates)
         XCTAssertTrue(settings.enableAI)
         XCTAssertFalse(settings.isDebugMode)
         XCTAssertEqual(settings.projectArtifactsOlderThanDays, 60)

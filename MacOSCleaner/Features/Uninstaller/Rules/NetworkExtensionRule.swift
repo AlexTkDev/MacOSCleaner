@@ -50,7 +50,9 @@ public struct NetworkExtensionRule: ApplicationRule {
             if path.contains("/application support/little snitch") {
                 evidence.append(ArtifactEvidence(source: .appName, weight: 70))
             }
-            if path.contains("/extensions/littlesnitch") {
+            if path.contains("/extensions/littlesnitch"),
+               !path.contains("/systemextensions/"),
+               !path.contains("/stagedextensions/") {
                 evidence.append(ArtifactEvidence(source: .bundleID, weight: 80))
             }
             if path.contains("/launchdaemons/at.obdev.") {

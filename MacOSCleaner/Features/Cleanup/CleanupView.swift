@@ -226,26 +226,6 @@ public struct CleanupView: View {
                 )
             ),
             CleanupOptionItem(
-                title: "cleanup_option_garageband_logic".localized,
-                subtitle: "cleanup_option_garageband_logic_sub".localized,
-                icon: "music.note",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanGarageBandLogic },
-                    set: { vm.options.cleanGarageBandLogic = $0 }
-                )
-            ),
-            CleanupOptionItem(
-                title: "cleanup_option_imovie_final_cut".localized,
-                subtitle: "cleanup_option_imovie_final_cut_sub".localized,
-                icon: "film",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanIMovieFinalCut },
-                    set: { vm.options.cleanIMovieFinalCut = $0 }
-                )
-            ),
-            CleanupOptionItem(
                 title: "cleanup_option_font_cache".localized,
                 subtitle: "cleanup_option_font_cache_sub".localized,
                 icon: "textformat",

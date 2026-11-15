@@ -37,9 +37,8 @@ struct MacOSCleanerApp: App {
         let engine = CleanupEngine(commandRunner: commandRunner)
         self.cleanupViewModel = CleanupViewModel(engine: engine, journal: journal, settings: appSettings)
 
-        // Preload Launch Services cache and register AppShortcuts
+        // Register AppShortcuts
         Task {
-            await LSRegisterCache().warmup()
             MacOSCleanerShortcuts.updateAppShortcutParameters()
         }
     }
@@ -81,7 +80,9 @@ struct MacOSCleanerApp: App {
                 availableUpdate: $availableUpdate
             )
             .task {
-                availableUpdate = await updateChecker.checkForUpdate()
+                if appSettings.automaticallyCheckForUpdates {
+                    availableUpdate = await updateChecker.checkForUpdate()
+                }
             }
         }
         .windowStyle(.hiddenTitleBar)
@@ -145,14 +146,6 @@ struct MacOSCleanerApp: App {
         .windowResizability(.contentSize)
         .defaultPosition(.center)
         
-        Window("permissions_window_title".localized, id: "permissions") {
-            PermissionsView(permissionsManager: permissionsManager)
-                .applyAppLanguage(appSettings.language)
-                .id(appSettings.language)
-        }
-        .windowResizability(.contentSize)
-        .defaultPosition(.center)
-        
         Window("history_window_title".localized, id: "cleanup-history") {
             CleanupHistoryView(journal: journal)
                 .applyAppLanguage(appSettings.language)
@@ -169,7 +162,7 @@ struct MacOSCleanerApp: App {
                 permissionsManager: permissionsManager,
                 onForget: {
                     Task {
-                        try? await journal.clear()
+                        await appSettings.resetAllAppData(journal: journal)
                     }
                 },
                 availableUpdate: $availableUpdate

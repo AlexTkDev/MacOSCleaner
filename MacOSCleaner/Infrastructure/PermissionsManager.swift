@@ -1,7 +1,6 @@
 import Foundation
 import AppKit
 import os.log
-import ApplicationServices
 
 private extension Logger {
     static let permissions = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macoscleaner", category: "PermissionsManager")
@@ -12,15 +11,6 @@ private extension Logger {
 public final class PermissionsManager {
     /// Whether the app has Full Disk Access.
     public private(set) var hasFullDiskAccess = false
-    
-    /// Whether the app has Accessibility access.
-    public private(set) var hasAccessibility = false
-    
-    /// Whether the app has Automation (Apple Events) access.
-    public private(set) var hasAutomation = false
-    
-    /// Whether Trash access was granted.
-    public private(set) var hasTrashAccess = false
     
     /// Whether the guidance panel should be shown.
     public var showGuidance = false
@@ -45,9 +35,6 @@ public final class PermissionsManager {
 
         let liveFDA = check()
         self.hasFullDiskAccess = liveFDA
-        self.hasAccessibility = Self.checkAccessibility()
-        self.hasAutomation = Self.checkAutomation()
-        self.hasTrashAccess = Self.checkTrashAccess()
         if liveFDA {
             persistFDAState()
         }
@@ -109,35 +96,10 @@ public final class PermissionsManager {
         return false
     }
     
-    /// Checks if the app has Accessibility (AX) access.
-    nonisolated public static func checkAccessibility() -> Bool {
-        AXIsProcessTrustedWithOptions(nil)
-    }
-    
-    /// Checks if the app can send Apple Events (Automation).
-    public static func checkAutomation() -> Bool {
-        let script = NSAppleScript(source: "return \"ok\"")
-        var error: NSDictionary?
-        let result = script?.executeAndReturnError(&error)
-        let success = error == nil && result?.stringValue == "ok"
-        Logger.permissions.info("Automation access: \(success ? "granted" : "denied")")
-        return success
-    }
-    
-    /// Checks if the app can access Trash.
-    public static func checkTrashAccess() -> Bool {
-        let fm = FileManager.default
-        let trashURL = fm.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
-        return (try? fm.contentsOfDirectory(atPath: trashURL.path)) != nil
-    }
-    
-    /// Refreshes all permission statuses.
+    /// Refreshes Full Disk Access status.
     public func refresh() {
         let liveFDA = fdaCheckClosure()
         hasFullDiskAccess = liveFDA
-        hasAccessibility = Self.checkAccessibility()
-        hasAutomation = Self.checkAutomation()
-        hasTrashAccess = Self.checkTrashAccess()
         if liveFDA {
             persistFDAState()
         }
@@ -154,29 +116,6 @@ public final class PermissionsManager {
         Logger.permissions.info("Full Disk Access persisted as granted")
     }
     
-    /// Returns true if all critical permissions are granted.
-    public var allCriticalPermissionsGranted: Bool {
-        hasFullDiskAccess
-    }
-    
-    /// Returns a list of missing permission descriptions.
-    public var missingPermissions: [String] {
-        var missing: [String] = []
-        if !hasFullDiskAccess {
-            missing.append("permissions.full_disk_access".localized)
-        }
-        if !hasAccessibility {
-            missing.append("permissions.accessibility".localized)
-        }
-        if !hasAutomation {
-            missing.append("permissions.automation".localized)
-        }
-        if !hasTrashAccess {
-            missing.append("permissions.trash_access".localized)
-        }
-        return missing
-    }
-    
     /// Opens the Full Disk Access section in System Settings.
     public func openFullDiskAccessSettings() {
         // macOS 13+ (Ventura/Sonoma/Sequoia) URL scheme for Full Disk Access
@@ -189,50 +128,6 @@ public final class PermissionsManager {
         for urlString in urls {
             if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
                 Logger.permissions.info("Opened Full Disk Access settings via: \(urlString, privacy: .public)")
-                return
-            }
-        }
-    }
-    
-    /// Opens Accessibility settings in System Settings.
-    public func openAccessibilitySettings() {
-        let urls = [
-            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
-            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
-            "x-apple.systempreferences:com.apple.preference.security"
-        ]
-        for urlString in urls {
-            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
-                Logger.permissions.info("Opened Accessibility settings via: \(urlString, privacy: .public)")
-                return
-            }
-        }
-    }
-    
-    /// Opens Automation settings in System Settings.
-    public func openAutomationSettings() {
-        let urls = [
-            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Automation",
-            "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation",
-            "x-apple.systempreferences:com.apple.preference.security"
-        ]
-        for urlString in urls {
-            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
-                Logger.permissions.info("Opened Automation settings via: \(urlString, privacy: .public)")
-                return
-            }
-        }
-    }
-    
-    /// Opens System Settings Privacy & Security main page.
-    public func openPrivacySettings() {
-        let urls = [
-            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension",
-            "x-apple.systempreferences:com.apple.preference.security"
-        ]
-        for urlString in urls {
-            if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
-                Logger.permissions.info("Opened Privacy settings via: \(urlString, privacy: .public)")
                 return
             }
         }

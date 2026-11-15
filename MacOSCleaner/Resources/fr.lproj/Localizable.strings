@@ -989,3 +989,8 @@
 "cleanup_skip_reason_in_use" = "Le fichier est en cours d'utilisation";
 "cleanup_complete_trash_sub" = "%@ déplacé vers la Corbeille (l'espace sera libéré une fois vidée).";
 "cleanup_complete_perm_sub" = "%@ d'espace disque libéré définitivement.";
+
+"settings_auto_check_updates" = "Rechercher les mises à jour automatiquement";
+"settings_auto_check_updates_sub" = "Vérifier automatiquement les versions GitHub au lancement";
+"settings_remove_from_dock" = "Retirer du Dock lors de la désinstallation";
+"settings_remove_from_dock_sub" = "Supprimer du Dock macOS les icônes des apps désinstallées";

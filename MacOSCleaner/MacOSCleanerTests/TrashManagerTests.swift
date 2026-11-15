@@ -149,15 +149,4 @@ final class TrashManagerTests: XCTestCase {
         XCTAssertEqual(moved, "new")
         XCTAssertNotEqual(trashed.standardizedFileURL.path, existing.standardizedFileURL.path)
     }
-
-    func testEmptyTrashWholesaleThrows() async {
-        do {
-            _ = try await trashManager.emptyTrash()
-            XCTFail("Expected wholesale emptyTrash to throw")
-        } catch is TrashError {
-            // Expected
-        } catch {
-            XCTFail("Expected TrashError, got \(error)")
-        }
-    }
 }

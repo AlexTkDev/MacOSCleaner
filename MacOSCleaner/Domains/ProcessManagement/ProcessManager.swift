@@ -24,16 +24,6 @@ public actor ProcessManager {
         try await processInfoProvider.listAllProcesses()
     }
 
-    public func searchProcesses(named query: String) async throws -> [RunningProcess] {
-        let all = try await listProcesses()
-        let lowered = query.lowercased()
-        return all.filter {
-            $0.name.lowercased().contains(lowered) ||
-            $0.path?.lowercased().contains(lowered) == true ||
-            $0.bundleID?.lowercased().contains(lowered) == true
-        }
-    }
-
     public func terminate(_ process: RunningProcess) async throws {
         let permission = safetyPolicy.isKillable(process)
         if case .blocked(let reason) = permission {
@@ -84,54 +74,6 @@ public actor ProcessManager {
         }
     }
 
-    public func gracefulShutdown(
-        _ process: RunningProcess,
-        timeout: TimeInterval = 5.0
-    ) async throws {
-        let permission = safetyPolicy.isKillable(process)
-        if case .blocked(let reason) = permission {
-            throw ProcessManagerError.operationBlocked(
-                processName: process.name,
-                reason: reason
-            )
-        }
-
-        logger.info("Graceful shutdown of \(process.name) (PID \(process.pid))")
-
-        try await terminate(process)
-
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if try await !isProcessAlive(process.pid) {
-                logger.info("\(process.name) terminated gracefully")
-                return
-            }
-            try await Task.sleep(for: .milliseconds(200))
-        }
-
-        logger.warning("\(process.name) did not exit, force killing")
-        try await forceKill(process)
-    }
-
-    public func isProcessAlive(_ pid: pid_t) async throws -> Bool {
-        let result = try await commandRunner.run(
-            command: "/bin/kill",
-            arguments: ["-0", "\(pid)"],
-            timeout: .seconds(3)
-        )
-        if result.exitCode == 0 {
-            return true
-        }
-        
-        // Fallback: use ps to check if process exists
-        let psResult = try await commandRunner.run(
-            command: "/bin/ps",
-            arguments: ["-p", "\(pid)"],
-            timeout: .seconds(3)
-        )
-        return psResult.exitCode == 0 && psResult.stdout.contains("\(pid)")
-    }
-
     public func checkPermission(_ process: RunningProcess) -> KillPermission {
         safetyPolicy.isKillable(process)
     }
@@ -168,34 +110,18 @@ public actor ProcessManager {
     public func getWhitelist() -> Set<String> {
         safetyPolicy.whitelist
     }
-
-    public func getProtected() -> Set<String> {
-        safetyPolicy.protected
-    }
 }
 
 public enum ProcessManagerError: Error, LocalizedError {
-    case psFailed(String)
     case operationBlocked(processName: String, reason: String)
     case killFailed(processName: String, exitCode: Int32, stderr: String)
 
     public var errorDescription: String? {
         switch self {
-        case .psFailed(let stderr):
-            return String(format: "error_ps_failed_format".localized, stderr)
         case .operationBlocked(let name, let reason):
             return String(format: "error_operation_blocked_format".localized, name, reason)
         case .killFailed(let name, let code, let stderr):
             return String(format: "error_kill_failed_format".localized, name, code, stderr)
-        }
-    }
-}
-
-private extension KillPermission {
-    var blockReason: String? {
-        switch self {
-        case .blocked(let reason): return reason
-        default: return nil
         }
     }
 }

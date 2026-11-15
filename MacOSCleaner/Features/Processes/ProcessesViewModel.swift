@@ -13,9 +13,6 @@ public final class ProcessesViewModel {
     }
     public var isLoading: Bool = false
     public var lastError: String? = nil
-    public var confirmKill: RunningProcess? = nil
-    public var confirmForceKill: RunningProcess? = nil
-    public var lastKilledName: String? = nil
     public var blacklist: [String] = []
     public var whitelist: [String] = []
     public var showBlacklistAlert = false
@@ -29,7 +26,6 @@ public final class ProcessesViewModel {
     }
     public var refreshInterval: RefreshInterval = .manual
     public var viewMode: ViewMode = .grouped
-    public var expandedGroups: Set<String> = []
 
     public private(set) var visibleProcessCount: Int = 60
     public private(set) var visibleGroupCount: Int = 30
@@ -150,14 +146,6 @@ public final class ProcessesViewModel {
         return mapped
     }
 
-    public var userProcesses: [RunningProcess] {
-        filteredProcesses.filter { $0.isUserProcess }
-    }
-
-    public var systemProcesses: [RunningProcess] {
-        filteredProcesses.filter { !$0.isUserProcess }
-    }
-
     public var memoryHogs: [RunningProcess] {
         processes
             .filter { $0.memoryBytes > 0 }
@@ -219,7 +207,6 @@ public final class ProcessesViewModel {
         lastError = nil
         do {
             try await processManager.terminate(process)
-            lastKilledName = process.name
             selection.remove(process.pid)
             await scan()
         } catch {
@@ -232,25 +219,11 @@ public final class ProcessesViewModel {
         lastError = nil
         do {
             try await processManager.forceKill(process)
-            lastKilledName = process.name
             selection.remove(process.pid)
             await scan()
         } catch {
             lastError = error.localizedDescription
             logger.error("Force kill failed: \(error.localizedDescription)")
-        }
-    }
-
-    public func gracefulShutdown(_ process: RunningProcess) async {
-        lastError = nil
-        do {
-            try await processManager.gracefulShutdown(process)
-            lastKilledName = process.name
-            selection.remove(process.pid)
-            await scan()
-        } catch {
-            lastError = error.localizedDescription
-            logger.error("Graceful shutdown failed: \(error.localizedDescription)")
         }
     }
 
@@ -330,17 +303,5 @@ public final class ProcessesViewModel {
 
     public func deselectAll() {
         selection.removeAll()
-    }
-
-    public func toggleGroup(_ groupID: String) {
-        if expandedGroups.contains(groupID) {
-            expandedGroups.remove(groupID)
-        } else {
-            expandedGroups.insert(groupID)
-        }
-    }
-
-    public func isGroupExpanded(_ groupID: String) -> Bool {
-        expandedGroups.contains(groupID)
     }
 }

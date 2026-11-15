@@ -990,3 +990,8 @@
 "cleanup_skip_reason_in_use" = "ファイルは現在使用中です";
 "cleanup_complete_trash_sub" = "%@ をゴミ箱に移動しました（ゴミ箱を空にすると空き容量が増えます）。";
 "cleanup_complete_perm_sub" = "%@ のディスク容量を完全に解放しました。";
+
+"settings_auto_check_updates" = "アップデートを自動的に確認";
+"settings_auto_check_updates_sub" = "起動時に GitHub Releases を自動的に確認する";
+"settings_remove_from_dock" = "アンインストール時に Dock から削除";
+"settings_remove_from_dock_sub" = "アンインストールしたアプリのアイコンを macOS Dock から削除します";

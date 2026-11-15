@@ -158,9 +158,9 @@ struct SettingsCleanupView: View {
                     SettingsDivider()
 
                     SettingsToggleRow(
-                        "settings_empty_trash_immediately".localized,
-                        subtitle: "settings_empty_trash_immediately_sub".localized,
-                        isOn: $settings.emptyTrashImmediately
+                        "settings_remove_from_dock".localized,
+                        subtitle: "settings_remove_from_dock_sub".localized,
+                        isOn: $settings.removeFromDockOnUninstall
                     )
                 }
             }

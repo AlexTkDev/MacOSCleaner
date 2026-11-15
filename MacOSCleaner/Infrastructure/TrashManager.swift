@@ -35,8 +35,18 @@ public actor TrashManager {
         return first
     }
 
-    /// Trashes multiple items efficiently, batching any privileged operations so the user
-    /// is prompted for authentication at most ONCE for the entire operation.
+    /// Moves a single item to Trash or permanently deletes it when `bypassTrash` is true.
+    public func removeItem(at url: URL, bypassTrash: Bool, policy: DeletionPolicy = .cleanup) async throws {
+        try safetyManager.validate(url: url, policy: policy)
+        guard fileManager.fileExists(atPath: url.path) else { return }
+        if bypassTrash {
+            try fileManager.removeItem(at: url)
+        } else {
+            try await trashItem(at: url, policy: policy)
+        }
+    }
+
+    /// Trashes multiple items using standard user-level FileManager APIs (no privileged elevation).
     @discardableResult
     public func trashItems(urls: [URL], policy: DeletionPolicy = .cleanup) async throws -> [URL] {
         guard !urls.isEmpty else { return [] }
@@ -70,12 +80,14 @@ public actor TrashManager {
             if trashedURLs.isEmpty, !missingURLs.isEmpty {
                 throw TrashError.trashOperationFailed("Item does not exist")
             }
+            if trashedURLs.isEmpty, !failedURLs.isEmpty {
+                throw TrashError.trashOperationFailed("Failed to move \(failedURLs.count) item(s) to Trash")
+            }
             return trashedURLs
         }
 
-        // 1. Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
+        // Try standard FileManager.trashItem on MainActor for all items (0 prompts for user files)
         for url in urls {
-            // Missing paths must not fall through to runAsAdmin — AppleScript auth dialog hangs headless CI.
             guard fileManager.fileExists(atPath: url.path) else {
                 missingURLs.append(url)
                 Logger.trash.debug("Trash skipped missing item: \(url.path, privacy: .public)")
@@ -102,61 +114,25 @@ public actor TrashManager {
             }
         }
 
-        guard !failedURLs.isEmpty else {
-            if trashedURLs.isEmpty, !missingURLs.isEmpty {
-                throw TrashError.trashOperationFailed("Item does not exist")
-            }
-            return trashedURLs
+        if trashedURLs.isEmpty, !failedURLs.isEmpty {
+            throw TrashError.trashOperationFailed("Failed to move \(failedURLs.count) item(s) to Trash")
         }
-
-        // 2. For items that need elevated permissions, batch them into a single privileged command (1 prompt max)
-        let trashDir = trashDirectoryURL
-        let escapedTrashRoot = ShellQuoting.shellQuoted(trashDir.path)
-        let uid = getuid()
-        let gid = getgid()
-
-        var commands: [String] = []
-        var batchTargetURLs: [URL] = []
-
-        for url in failedURLs {
-            let targetURL = uniqueDestination(for: url, in: trashDir)
-            let escapedSource = ShellQuoting.shellQuoted(url.path)
-            let escapedTarget = ShellQuoting.shellQuoted(targetURL.path)
-            commands.append("/bin/mv \(escapedSource) \(escapedTrashRoot)/ && /usr/sbin/chown -R \(uid):\(gid) \(escapedTarget)")
-            batchTargetURLs.append(targetURL)
+        if trashedURLs.isEmpty, !missingURLs.isEmpty {
+            throw TrashError.trashOperationFailed("Item does not exist")
         }
-
-        let singleBatchCmd = commands.joined(separator: " && ")
-        do {
-            _ = try await PrivilegedTaskRunner.runAsAdmin(command: singleBatchCmd)
-            trashedURLs.append(contentsOf: batchTargetURLs)
-            Logger.trash.info("Trashed \(failedURLs.count) privileged item(s) in a single batch")
-        } catch {
-            Logger.trash.error("Batch privileged trash failed: \(error.localizedDescription, privacy: .public)")
-            throw TrashError.trashOperationFailed(error.localizedDescription)
+        if !failedURLs.isEmpty {
+            Logger.trash.warning("Trash skipped \(failedURLs.count) item(s) due to insufficient permissions")
         }
 
         return trashedURLs
     }
-    
-    /// Wholesale `~/.Trash` empty is disabled — would delete unrelated user items.
-    /// Use `permanentlyDelete(urls:)` with session-selected / just-trashed URLs only.
-    @discardableResult
-    public func emptyTrash() async throws -> Int64 {
-        Logger.trash.error("emptyTrash() refused — wholesale Trash wipe disabled")
-        throw TrashError.trashOperationFailed(
-            "Wholesale emptyTrash is disabled; permanently delete only explicitly selected URLs."
-        )
-    }
 
     /// Permanently deletes only the given URLs (typically items just moved into Trash, or contents of ~/.Trash).
-    /// Batches any privileged items so authentication is requested at most ONCE.
     @discardableResult
     public func permanentlyDelete(urls: [URL]) async throws -> Int64 {
         try await ensureAccess()
 
         var totalFreed: Int64 = 0
-        var failedItems: [(url: URL, size: Int64)] = []
 
         let systemTrashURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent(".Trash").standardizedFileURL
         let customTrashURL = trashDirectoryURL.standardizedFileURL
@@ -175,34 +151,13 @@ public actor TrashManager {
                 }
                 guard fileManager.fileExists(atPath: stdURL.path) else { continue }
                 let size = fileManager.getPhysicalDirectorySize(url: stdURL)
-                do {
-                    try fileManager.removeItem(at: stdURL)
-                    totalFreed += size
-                    Logger.trash.debug("Permanently deleted: \(stdURL.path, privacy: .public) (\(size) bytes)")
-                } catch {
-                    if (error as NSError).code == NSFileWriteNoPermissionError || (error as NSError).code == Int(EPERM) || (error as NSError).code == Int(EACCES) {
-                        failedItems.append((url: stdURL, size: size))
-                    } else {
-                        throw error
-                    }
-                }
+                try fileManager.removeItem(at: stdURL)
+                totalFreed += size
+                Logger.trash.debug("Permanently deleted: \(stdURL.path, privacy: .public) (\(size) bytes)")
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
                 Logger.trash.error("Failed to delete '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
-            }
-        }
-
-        if !failedItems.isEmpty {
-            do {
-                let remaining = try await PrivilegedTaskRunner.removeAsAdmin(failedItems.map(\.url))
-                let remainingPaths = Set(remaining.map(\.path))
-                for item in failedItems where !remainingPaths.contains(item.url.path) {
-                    totalFreed += item.size
-                }
-                Logger.trash.info("Permanently deleted \(failedItems.count) privileged item(s) in a single batch")
-            } catch {
-                Logger.trash.error("Batch privileged delete failed: \(error.localizedDescription, privacy: .public)")
             }
         }
 

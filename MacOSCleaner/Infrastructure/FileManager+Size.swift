@@ -90,16 +90,9 @@ extension FileManager {
         return false
     }
 
-    /// Detects sparse virtual disk files where logical size is much larger than
-    /// physical allocated size. These are VM/container sparse images not yet
-    /// covered by the explicit exclusion lists.
-    public static func isSparseFile(url: URL) -> Bool {
-        guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]),
-              let logical = values.fileSize,
-              let allocated = values.totalFileAllocatedSize,
-              allocated > 0
-        else { return false }
-        return logical / allocated >= sparseFileRatioThreshold
+    /// True when the item is an iCloud dataless placeholder whose contents must not be read or materialized.
+    public static func isNotDownloadedUbiquitous(_ values: URLResourceValues) -> Bool {
+        values.isUbiquitousItem == true && values.ubiquitousItemDownloadingStatus == .notDownloaded
     }
 
     public func getDirectorySize(
@@ -116,9 +109,17 @@ extension FileManager {
 
         var size: Int64 = 0
         var cancelled = false
+        let keys: [URLResourceKey] = [
+            .fileSizeKey,
+            .totalFileAllocatedSizeKey,
+            .isRegularFileKey,
+            .isDirectoryKey,
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ]
         let enumerator = self.enumerator(
             at: url,
-            includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isRegularFileKey],
+            includingPropertiesForKeys: keys,
             options: []
         )
         while let fileURL = enumerator?.nextObject() as? URL {
@@ -142,7 +143,11 @@ extension FileManager {
                 continue
             }
 
-            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
+            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
+                continue
+            }
+            if FileManager.isNotDownloadedUbiquitous(values) {
+                if values.isDirectory == true { enumerator?.skipDescendants() }
                 continue
             }
 
@@ -188,13 +193,29 @@ extension FileManager {
 
         var size: Int64 = 0
         var cancelled = false
-        if let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .totalFileAllocatedSizeKey]),
+        if let values = try? url.resourceValues(forKeys: [
+            .isRegularFileKey,
+            .fileSizeKey,
+            .totalFileAllocatedSizeKey,
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ]),
            values.isRegularFile == true {
+            if FileManager.isNotDownloadedUbiquitous(values) {
+                return 0
+            }
             size = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
         } else {
+            let keys: [URLResourceKey] = [
+                .fileSizeKey,
+                .totalFileAllocatedSizeKey,
+                .isDirectoryKey,
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey
+            ]
             let enumerator = self.enumerator(
                 at: url,
-                includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey],
+                includingPropertiesForKeys: keys,
                 options: []
             )
             while let fileURL = enumerator?.nextObject() as? URL {
@@ -218,8 +239,12 @@ extension FileManager {
                     continue
                 }
 
-                guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]),
-                      let fileSize = values.fileSize else { continue }
+                guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
+                if FileManager.isNotDownloadedUbiquitous(values) {
+                    if values.isDirectory == true { enumerator?.skipDescendants() }
+                    continue
+                }
+                guard let fileSize = values.fileSize else { continue }
 
                 size += Int64(values.totalFileAllocatedSize ?? fileSize)
             }

@@ -163,6 +163,7 @@ public final class CleanupCoordinator {
                 
                 var runOptions = options
                 runOptions.selectedPaths = self.itemManager.allSelectedPaths()
+                runOptions.bypassTrash = self.settings.bypassTrashOnUninstall
                 FileManager.clearSizeCache()
 
                 let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: runOptions) { event in
@@ -208,8 +209,9 @@ public final class CleanupCoordinator {
                 }
 
 
-                // Move selected review-only items to Trash (never category-level wipe).
+                // Move selected review-only items to Trash (or delete directly if bypassTrashOnUninstall).
                 var trashedThisRun: [URL] = []
+                let bypassTrash = self.settings.bypassTrashOnUninstall
                 for category in CleanupCategory.reviewOnly {
                     let logLabel = category.localizedTitle
                     let selectedURLs = self.selectedReviewLeafURLs(for: category)
@@ -217,22 +219,28 @@ public final class CleanupCoordinator {
                     self.currentStep += 1
                     self.stepTitle = category.localizedTitle
                     var freed: Int64 = 0
+                    var categoryPartialFailure = false
                     for url in selectedURLs {
                         do {
                             try Task.checkCancellation()
                             let size = await Task.detached { Self.directorySize(url) }.value
-                            let trashed = try await self.trashManager.trashItem(at: url, policy: .cleanup)
-                            trashedThisRun.append(trashed)
+                            if bypassTrash {
+                                try await self.trashManager.removeItem(at: url, bypassTrash: true, policy: .cleanup)
+                            } else {
+                                let trashed = try await self.trashManager.trashItem(at: url, policy: .cleanup)
+                                trashedThisRun.append(trashed)
+                            }
                             freed += size
                         } catch is CancellationError {
                             throw CancellationError()
                         } catch {
+                            categoryPartialFailure = true
                             hadPartialFailure = true
                             self.skippedItems.append(SkippedCleanupItem(
                                 label: url.lastPathComponent,
                                 reason: Self.humanReadableSkipReason(from: error.localizedDescription)
                             ))
-                            Logger.coordinator.error("\(logLabel, privacy: .public) trash failed: \(error.localizedDescription, privacy: .public)")
+                            Logger.coordinator.error("\(logLabel, privacy: .public) delete failed: \(error.localizedDescription, privacy: .public)")
                         }
                     }
                     let mb = Int(freed / (1024 * 1024))
@@ -249,7 +257,7 @@ public final class CleanupCoordinator {
                     records.append(OperationRecord(
                         id: UUID(),
                         itemPath: category.localizedTitle,
-                        status: hadPartialFailure ? "partial" : "success",
+                        status: categoryPartialFailure ? "partial" : "success",
                         bytesFreed: freed
                     ))
                 }
@@ -259,27 +267,28 @@ public final class CleanupCoordinator {
                     let selectedTrash = isTrashSelected
                         ? self.itemManager.selectedLeafURLs(underParentLabel: trashLabel)
                         : []
-                    var seen = Set<String>()
-                    var urlsToDelete: [URL] = []
-                    for url in selectedTrash + trashedThisRun {
-                        let key = url.standardizedFileURL.path
-                        if seen.insert(key).inserted {
-                            urlsToDelete.append(url)
-                        }
-                    }
-                    if !urlsToDelete.isEmpty {
+                    let selectedTrashSet = Set(selectedTrash.map { $0.standardizedFileURL.path })
+                    let uniqueTrashedThisRun = trashedThisRun.filter { !selectedTrashSet.contains($0.standardizedFileURL.path) }
+                    if !selectedTrash.isEmpty || !uniqueTrashedThisRun.isEmpty {
                         self.totalSteps = self.currentStep + 1
                         self.currentStep += 1
                         self.stepTitle = "cleanup_emptying_trash".localized
                         try await self.trashManager.requestTrashAccess()
-                        let deletedBytes = try await self.trashManager.permanentlyDelete(urls: urlsToDelete)
+                        let deletedBytes = selectedTrash.isEmpty
+                            ? 0
+                            : try await self.trashManager.permanentlyDelete(urls: selectedTrash)
+                        if !uniqueTrashedThisRun.isEmpty {
+                            _ = try await self.trashManager.permanentlyDelete(urls: uniqueTrashedThisRun)
+                        }
                         let deletedMB = Int(deletedBytes / (1024 * 1024))
                         self.totalFreedMB += deletedMB
                         self.totalFreedBytes += deletedBytes
                         if deletedBytes > 0 {
                             self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes, iconName: "trash"))
                         }
-                        records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
+                        if !selectedTrash.isEmpty {
+                            records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
+                        }
                     }
                 }
 
@@ -351,6 +360,13 @@ public final class CleanupCoordinator {
             (.teamsCache, ["Teams"]),
             (.adobeCaches, ["Adobe"]),
             (.chromeExtraCaches, ["Chrome"]),
+            (.sharedFileLists, ["Shared File Lists"]),
+            (.photosCache, ["Photos Cache"]),
+            (.garminFitbit, ["Garmin"]),
+            (.oldBackups, ["Old Backups"]),
+            (.aiModels, ["AI Models"]),
+            (.installerPackages, ["Installer Packages"]),
+            (.projectBuildArtifacts, ["Project build artifacts"]),
         ]
 
         guard let matched = patterns.first(where: { $0.keywords.contains(where: { log.contains($0) }) }) else {
@@ -402,6 +418,7 @@ public final class CleanupCoordinator {
         cleanedItems = []
         skippedItems = []
         totalFreedMB = 0
+        totalFreedBytes = 0
         currentStep = 0
         stepTitle = ""
         lastError = nil

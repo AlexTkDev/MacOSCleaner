@@ -990,3 +990,8 @@
 "cleanup_skip_reason_in_use" = "O arquivo está em uso no momento";
 "cleanup_complete_trash_sub" = "%@ movido para o Lixo (o espaço será liberado ao esvaziá-lo).";
 "cleanup_complete_perm_sub" = "%@ de espaço em disco liberado permanentemente.";
+
+"settings_auto_check_updates" = "Verificar atualizações automaticamente";
+"settings_auto_check_updates_sub" = "Verificar automaticamente lançamentos no GitHub ao abrir";
+"settings_remove_from_dock" = "Remover do Dock ao desinstalar";
+"settings_remove_from_dock_sub" = "Remove os ícones de apps desinstalados do Dock do macOS";

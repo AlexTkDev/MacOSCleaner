@@ -101,28 +101,38 @@ struct SettingsGeneralView: View {
                 SettingsSectionHeader("settings_software_updates".localized, subtitle: "settings_software_updates_sub".localized, iconName: "arrow.clockwise.circle.fill", iconColor: .blue)
             },
             content: {
-                SettingsLabeledControl(
-                    "settings_current_version".localized,
-                    subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.0.0")"
-                ) {
-                    if isCheckingForUpdates {
-                        ProgressView().controlSize(.small)
-                    } else if let update = availableUpdate {
-                        Button(String(format: "update.available".localized, update.version)) {
-                            UpdatePromptController.open(update)
-                        }
-                        .prominentGlassButtonStyle(tint: .orange)
-                    } else {
-                        Button(hasCheckedForUpdates ? "update.up_to_date".localized : "update.check".localized) {
-                            Task {
-                                isCheckingForUpdates = true
-                                availableUpdate = await UpdateChecker().checkForUpdate()
-                                hasCheckedForUpdates = true
-                                isCheckingForUpdates = false
+                VStack(alignment: .leading, spacing: 12) {
+                    SettingsLabeledControl(
+                        "settings_current_version".localized,
+                        subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.0.0")"
+                    ) {
+                        if isCheckingForUpdates {
+                            ProgressView().controlSize(.small)
+                        } else if let update = availableUpdate {
+                            Button(String(format: "update.available".localized, update.version)) {
+                                UpdatePromptController.open(update)
                             }
+                            .prominentGlassButtonStyle(tint: .orange)
+                        } else {
+                            Button(hasCheckedForUpdates ? "update.up_to_date".localized : "update.check".localized) {
+                                Task {
+                                    isCheckingForUpdates = true
+                                    availableUpdate = await UpdateChecker().checkForUpdate()
+                                    hasCheckedForUpdates = true
+                                    isCheckingForUpdates = false
+                                }
+                            }
+                            .prominentGlassButtonStyle(tint: hasCheckedForUpdates ? .green : .accentColor)
                         }
-                        .prominentGlassButtonStyle(tint: hasCheckedForUpdates ? .green : .accentColor)
                     }
+
+                    SettingsDivider()
+
+                    SettingsToggleRow(
+                        "settings_auto_check_updates".localized,
+                        subtitle: "settings_auto_check_updates_sub".localized,
+                        isOn: $settings.automaticallyCheckForUpdates
+                    )
                 }
             }
         )

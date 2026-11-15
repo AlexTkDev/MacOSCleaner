@@ -1027,3 +1027,8 @@
 "cleanup_skip_reason_in_use" = "파일이 현재 사용 중입니다";
 "cleanup_complete_trash_sub" = "%@을(를) 휴지통으로 이동했습니다(휴지통을 비우면 공간이 확보됩니다).";
 "cleanup_complete_perm_sub" = "%@의 디스크 공간을 영구적으로 확보했습니다.";
+
+"settings_auto_check_updates" = "자동으로 업데이트 확인";
+"settings_auto_check_updates_sub" = "실행 시 GitHub Releases를 자동으로 확인합니다";
+"settings_remove_from_dock" = "제거 시 Dock에서 삭제";
+"settings_remove_from_dock_sub" = "제거된 앱 아이콘을 macOS Dock에서 제거합니다";

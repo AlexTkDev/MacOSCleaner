@@ -38,6 +38,7 @@ public enum PathToken: String, Sendable, CaseIterable {
             (.userLib, Self.userLib.basePath(home: home)),
             (.userConfig, Self.userConfig.basePath(home: home)),
             (.userCache, Self.userCache.basePath(home: home)),
+            (.userLocalShare, Self.userLocalShare.basePath(home: home)),
             (.varFolders, Self.varFolders.basePath(home: home)),
             (.sysLib, Self.sysLib.basePath(home: home)),
             (.sysAppSupport, Self.sysAppSupport.basePath(home: home)),

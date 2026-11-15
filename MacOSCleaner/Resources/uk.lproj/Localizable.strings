@@ -1023,3 +1023,8 @@
 "cleanup_skip_reason_in_use" = "Файл зараз використовується";
 "cleanup_complete_trash_sub" = "Переміщено до Кошика: %@ (місце звільниться після очищення Кошика).";
 "cleanup_complete_perm_sub" = "Остаточно звільнено %@ на диску.";
+
+"settings_auto_check_updates" = "Автоматично перевіряти оновлення";
+"settings_auto_check_updates_sub" = "Перевіряти нові релізи на GitHub під час запуску";
+"settings_remove_from_dock" = "Видаляти з Dock при видаленні";
+"settings_remove_from_dock_sub" = "Прибирати іконки видалених програм із macOS Dock";

@@ -1,7 +1,7 @@
 import Foundation
 
 public actor ApplicationRuleRegistry {
-    public static let shared = ApplicationRuleRegistry()
+    public static let shared = createDefault()
     private var rules: [ApplicationRule] = []
 
     public init() {}
@@ -32,11 +32,11 @@ public actor ApplicationRuleRegistry {
             AlfredRule(),
             RaycastRule(),
             // Existing Rules
-            ElectronRule(), BrowserRule(), JetBrainsRule(),
+            BrowserRule(), JetBrainsRule(),
             DockerRule(), XcodeRule(), AndroidStudioRule(),
             AdobeRule(), MicrosoftOfficeRule(), SteamRule(),
             EpicGamesRule(), UnityRule(), HomebrewRule(),
-            NetworkExtensionRule(),
+            ElectronRule(), NetworkExtensionRule(),
         ])
     }
 

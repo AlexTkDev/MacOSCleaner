@@ -30,7 +30,7 @@ public struct JetBrainsRule: ApplicationRule {
         let ide = Self.ideName(from: identity.bundleID)?.lowercased() ?? identity.appName.lowercased()
         var evidence: [ArtifactEvidence] = []
 
-        if path.contains("/applicationsupport/jetbrains/\(ide)") {
+        if path.contains("/application support/jetbrains/\(ide)") {
             evidence.append(ArtifactEvidence(source: .appName, weight: 60))
         }
         if path.contains("/caches/jetbrains/\(ide)") {

@@ -9,11 +9,14 @@ import UniformTypeIdentifiers
 import ImageIO
 
 public struct DuplicatesView: View {
+    let settings: AppSettings
     @State private var viewModel = DuplicatesViewModel()
     @State private var selectedGroupId: UUID?
     @State private var quickLookURL: URL?
 
-    public init() {}
+    public init(settings: AppSettings) {
+        self.settings = settings
+    }
 
     private var selectedGroup: DuplicateGroup? {
         if let selectedGroupId, let group = viewModel.filteredGroups.first(where: { $0.id == selectedGroupId }) {
@@ -54,7 +57,7 @@ public struct DuplicatesView: View {
         .quickLookPreview($quickLookURL)
         .alert("duplicate_trash_confirm_title".localized, isPresented: $viewModel.showConfirmationAlert) {
             Button("duplicate_trash_confirm_action".localized, role: .destructive) {
-                viewModel.trashSelected()
+                viewModel.trashSelected(bypassTrash: settings.bypassTrashOnUninstall)
             }
             Button("cancel".localized, role: .cancel) {}
         } message: {
@@ -555,5 +558,5 @@ private struct DuplicateThumbnailView: View {
 }
 
 #Preview {
-    DuplicatesView()
+    DuplicatesView(settings: AppSettings())
 }

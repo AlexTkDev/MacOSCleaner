@@ -47,6 +47,10 @@ public struct StartupService: Identifiable, Codable, Sendable {
     public let isEnabled: Bool
     public let category: ServiceCategory
 
+    public var requiresRoot: Bool {
+        path.hasPrefix("/Library/LaunchDaemons/") || path.hasPrefix("/System/")
+    }
+
     public init(id: String, name: String, path: String, isEnabled: Bool, category: ServiceCategory) {
         self.id = id
         self.name = name

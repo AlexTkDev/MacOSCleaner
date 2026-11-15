@@ -1027,3 +1027,8 @@
 "cleanup_skip_reason_in_use" = "Plik jest obecnie używany";
 "cleanup_complete_trash_sub" = "Przeniesiono %@ do Kosza (miejsce zostanie zwolnione po jego opróżnieniu).";
 "cleanup_complete_perm_sub" = "Trwale zwolniono %@ miejsca na dysku.";
+
+"settings_auto_check_updates" = "Automatycznie sprawdzaj aktualizacje";
+"settings_auto_check_updates_sub" = "Automatycznie sprawdzaj GitHub Releases przy uruchomieniu";
+"settings_remove_from_dock" = "Usuń z Docka po odinstalowaniu";
+"settings_remove_from_dock_sub" = "Usuwaj ikony odinstalowanych aplikacji z paska Dock";

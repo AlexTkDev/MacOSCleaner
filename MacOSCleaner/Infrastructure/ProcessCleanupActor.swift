@@ -1,9 +1,4 @@
 import Foundation
-import OSLog
-
-private extension Logger {
-    static let processActor = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "ProcessCleanupActor")
-}
 
 public actor ProcessCleanupActor {
     private let commandRunner: any CommandRunning
@@ -51,13 +46,5 @@ public actor ProcessCleanupActor {
             \(command)
             """
         }
-    }
-
-    func runBash(_ command: String, timeout: Duration = .seconds(30)) async throws -> CommandResult {
-        try await commandRunner.run(command: "/bin/bash", arguments: ["-c", command], timeout: timeout)
-    }
-
-    func runWithUserPath(_ command: String, timeout: Duration = .seconds(30)) async throws -> CommandResult {
-        try await runBash(withUserPath(command), timeout: timeout)
     }
 }

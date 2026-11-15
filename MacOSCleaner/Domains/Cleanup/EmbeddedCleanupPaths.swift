@@ -31,7 +31,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Caches/com.microsoft.teams2", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.slack.Slack", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.tinyspeck.slackmacgap", category: .appCaches),
-        CleanupPath(path: "/Library/Caches", category: .appCaches, requiresSudo: true),
     ]
 
     // MARK: - Browser Caches
@@ -291,7 +290,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cache/bazel", category: .dotfileCaches),
         CleanupPath(path: "~/.ccache", category: .dotfileCaches),
         CleanupPath(path: "~/.vcpkg/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.local/share/Trash", category: .dotfileCaches),
     ]
 
     // MARK: - User Logs
@@ -305,8 +303,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Logs/Retired", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/MobileSlideshows", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/stackshot", category: .userLogs),
-        CleanupPath(path: "/Library/Logs", category: .userLogs, requiresSudo: true),
-        CleanupPath(path: "/var/log", category: .userLogs, requiresSudo: true),
         CleanupPath(path: "~/Library/Logs/Adobe", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/Microsoft", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/Docker Desktop", category: .userLogs),
@@ -340,7 +336,6 @@ public enum EmbeddedCleanupPaths {
     public static let crashReporter: [CleanupPath] = [
         CleanupPath(path: "~/Library/Application Support/CrashReporter", category: .crashReporter),
         CleanupPath(path: "~/Library/Logs/DiagnosticReports", category: .crashReporter),
-        CleanupPath(path: "/Library/Logs/DiagnosticReports", category: .crashReporter, requiresSudo: true),
     ]
 
     // MARK: - Mail Downloads
@@ -350,76 +345,16 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads", category: .mailDownloads),
     ]
 
-    // MARK: - Launch Agents (NEW)
-
-    public static let launchAgents: [CleanupPath] = [
-        CleanupPath(path: "~/Library/LaunchAgents", category: .launchAgents),
-    ]
-
-    // MARK: - Launch Daemons (NEW)
-
-    public static let launchDaemons: [CleanupPath] = [
-        CleanupPath(path: "/Library/LaunchDaemons", category: .launchDaemons, requiresSudo: true),
-    ]
-
-    // MARK: - Privileged Helper Tools (NEW)
-
-    public static let privilegedHelpers: [CleanupPath] = [
-        CleanupPath(path: "/Library/PrivilegedHelperTools", category: .privilegedHelpers, requiresSudo: true),
-    ]
-
-    // MARK: - Package Receipts (NEW)
-
-    public static let pkgReceipts: [CleanupPath] = [
-        CleanupPath(path: "/Library/Receipts", category: .pkgReceipts, requiresSudo: true),
-        CleanupPath(path: "~/Library/Receipts", category: .pkgReceipts),
-    ]
-
-    // MARK: - Internet Plugins (NEW)
-
-    public static let internetPlugins: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Internet Plug-Ins", category: .internetPlugins),
-        CleanupPath(path: "/Library/Internet Plug-Ins", category: .internetPlugins, requiresSudo: true),
-    ]
-
     // MARK: - Shared File Lists (NEW)
 
     public static let sharedFileLists: [CleanupPath] = [
         CleanupPath(path: "~/Library/Application Support/com.apple.sharedfilelist", category: .sharedFileLists),
     ]
 
-    // MARK: - Cloud Docs (NEW)
-
-    public static let cloudDocs: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Application Support/CloudDocs", category: .cloudDocs),
-    ]
-
     // MARK: - Photos Cache (NEW)
 
     public static let photosCache: [CleanupPath] = [
         CleanupPath(path: "~/Library/Containers/com.apple.Photos/Data/Library/Caches", category: .photosCache),
-    ]
-
-    // MARK: - Voice Memos (NEW)
-
-    public static let voiceMemos: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Application Support/com.apple.VoiceMemos/Recordings", category: .voiceMemos),
-    ]
-
-    // MARK: - GarageBand / Logic Pro (NEW)
-
-    public static let garageBandLogic: [CleanupPath] = [
-        CleanupPath(path: "~/Music/GarageBand", category: .garageBandLogic),
-        CleanupPath(path: "~/Music/Logic", category: .garageBandLogic),
-        CleanupPath(path: "~/Library/Containers/com.apple.garageband10/Data/Library/Caches", category: .garageBandLogic),
-    ]
-
-    // MARK: - iMovie / Final Cut (NEW)
-
-    public static let iMovieFinalCut: [CleanupPath] = [
-        CleanupPath(path: "~/Movies/iMovie Library.imovielibrary", category: .iMovieFinalCut),
-        CleanupPath(path: "~/Movies/Final Cut Pro Libraries", category: .iMovieFinalCut),
-        CleanupPath(path: "~/Library/Caches/com.apple.iMovieApp", category: .iMovieFinalCut),
     ]
 
     // MARK: - Garmin / Fitbit (NEW)
@@ -439,16 +374,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Downloads/*.backup", category: .oldBackups),
     ]
 
-    // MARK: - Commands
-
-    public static let dnsFlushCommands: [CleanupCommand] = [
-        CleanupCommand(command: "sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder", description: "Flush DNS cache", requiresSudo: true, safe: true),
-    ]
-
-    public static let fontCacheCommands: [CleanupCommand] = [
-        CleanupCommand(command: "sudo atsutil databases -remove", description: "Remove font databases", requiresSudo: true, safe: true, requiresRestart: true),
-    ]
-
     // MARK: - Accessor
 
     public static func paths(for category: CleanupCategory) -> [CleanupPath] {
@@ -465,17 +390,8 @@ public enum EmbeddedCleanupPaths {
         case .savedAppState: base = savedAppState
         case .crashReporter: base = crashReporter
         case .mailDownloads: base = mailDownloads
-        case .launchAgents: base = launchAgents
-        case .launchDaemons: base = launchDaemons
-        case .privilegedHelpers: base = privilegedHelpers
-        case .pkgReceipts: base = pkgReceipts
-        case .internetPlugins: base = internetPlugins
         case .sharedFileLists: base = sharedFileLists
-        case .cloudDocs: base = cloudDocs
         case .photosCache: base = photosCache
-        case .voiceMemos: base = voiceMemos
-        case .garageBandLogic: base = garageBandLogic
-        case .iMovieFinalCut: base = iMovieFinalCut
         case .garminFitbit: base = garminFitbit
         case .oldBackups: base = oldBackups
         default: base = []
@@ -489,13 +405,5 @@ public enum EmbeddedCleanupPaths {
             merged.append(path)
         }
         return merged
-    }
-
-    public static func commands(for category: CleanupCategory) -> [CleanupCommand] {
-        switch category {
-        case .dnsFlush: return dnsFlushCommands
-        case .fontCache: return fontCacheCommands
-        default: return []
-        }
     }
 }

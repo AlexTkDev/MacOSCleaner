@@ -991,3 +991,8 @@
 "cleanup_skip_reason_in_use" = "Datei wird derzeit verwendet";
 "cleanup_complete_trash_sub" = "%@ in den Papierkorb verschoben (Speicherplatz wird beim Leeren freigegeben).";
 "cleanup_complete_perm_sub" = "%@ Speicherplatz dauerhaft freigegeben.";
+
+"settings_auto_check_updates" = "Automatisch nach Updates suchen";
+"settings_auto_check_updates_sub" = "Beim Start automatisch auf GitHub Releases prüfen";
+"settings_remove_from_dock" = "Beim Deinstallieren aus dem Dock entfernen";
+"settings_remove_from_dock_sub" = "Symbole deinstallierter Apps aus dem macOS-Dock entfernen";

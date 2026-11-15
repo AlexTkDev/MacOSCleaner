@@ -138,14 +138,14 @@ final class LaunchServiceManagerTests: XCTestCase {
         XCTAssertEqual(result, .thirdParty)
     }
 
-    func testCategorizeUserTakesPrecedenceOverLabel() {
+    func testCategorizeSystemPrefixTakesPrecedenceOverUserPath() {
         let result = manager.categorize(
             path: "\(fixtureHome)/Library/LaunchAgents/com.apple.Safari.plist",
             label: "com.apple.Safari",
             prefixes: ["com.apple."],
             homeDirectory: fixtureHome
         )
-        XCTAssertEqual(result, .user)
+        XCTAssertEqual(result, .system)
     }
 
     func testCategorizeCustomVendor() {

@@ -22,30 +22,22 @@ public struct CodeSignatureInfo: Sendable {
         self.cdhash = cdhash
     }
 
-    public static func check(path: String) -> CodeSignatureInfo {
+    public static func check(path: String, commandRunner: any CommandRunning = CommandRunner()) async -> CodeSignatureInfo {
         let url = URL(fileURLWithPath: path)
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
-        task.arguments = ["--display", "--verbose=2", "--signing", "-", url.path]
-
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.standardError = pipe
-
         do {
-            try task.run()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            task.waitUntilExit()
-
-            let output = String(data: data, encoding: .utf8) ?? ""
-
-            guard task.terminationStatus == 0 else {
+            let result = try await commandRunner.run(
+                command: "/usr/bin/codesign",
+                arguments: ["--display", "--verbose=2", "--signing", "-", url.path]
+            )
+            guard result.exitCode == 0 else {
                 return CodeSignatureInfo(isSigned: false)
             }
 
-            let teamID = extractValue(from: output, key: "TeamIdentifier")
-            let authority = extractValue(from: output, key: "Authority")
-            let isAppleSigned = authority?.contains("Apple") == true || teamID == nil
+            let output = result.stdout + "\n" + result.stderr
+            let teamID = extractValues(from: output, key: "TeamIdentifier").first
+            let authorities = extractValues(from: output, key: "Authority")
+            let authority = authorities.first
+            let isAppleSigned = authorities.contains { $0.contains("Apple") }
 
             return CodeSignatureInfo(
                 isSigned: true,
@@ -59,16 +51,17 @@ public struct CodeSignatureInfo: Sendable {
         }
     }
 
-    private static func extractValue(from output: String, key: String) -> String? {
-        let lines = output.components(separatedBy: .newlines)
-        for line in lines {
-            if line.contains(key) {
-                let components = line.components(separatedBy: ":")
-                guard components.count >= 2 else { continue }
-                let value = components.dropFirst().joined(separator: ":").trimmingCharacters(in: .whitespaces)
-                if !value.isEmpty { return value }
+    private static func extractValues(from output: String, key: String) -> [String] {
+        output.components(separatedBy: .newlines).compactMap { rawLine in
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            for separator in ["=", ":"] {
+                let prefix = key + separator
+                if line.hasPrefix(prefix) {
+                    let value = String(line.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
+                    if !value.isEmpty { return value }
+                }
             }
+            return nil
         }
-        return nil
     }
 }

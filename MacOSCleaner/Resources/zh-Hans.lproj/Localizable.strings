@@ -990,3 +990,8 @@
 "cleanup_skip_reason_in_use" = "文件正在使用中";
 "cleanup_complete_trash_sub" = "已将 %@ 移至废纸篓（清倒废纸篓后将释放空间）。";
 "cleanup_complete_perm_sub" = "已永久释放 %@ 磁盘空间。";
+
+"settings_auto_check_updates" = "自动检查更新";
+"settings_auto_check_updates_sub" = "启动时自动检查 GitHub Releases";
+"settings_remove_from_dock" = "卸载时从程序坞移除";
+"settings_remove_from_dock_sub" = "从 macOS 程序坞中移除已卸载应用的图标";

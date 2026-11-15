@@ -51,24 +51,6 @@ final class TransactionJournalTests: XCTestCase {
         XCTAssertTrue(all.isEmpty)
     }
     
-    func testJournalSize() async throws {
-        let initialSize = try await journal.journalSize()
-        XCTAssertEqual(initialSize, 0)
-        
-        let transaction = CleanupTransaction(
-            id: UUID(),
-            timestamp: Date(),
-            operations: [
-                OperationRecord(id: UUID(), itemPath: "/path/1", status: "success", bytesFreed: 100)
-            ]
-        )
-        
-        try await journal.log(transaction: transaction)
-        
-        let afterWriteSize = try await journal.journalSize()
-        XCTAssertGreaterThan(afterWriteSize, 0, "Journal should have content after writing")
-    }
-    
     func testClear() async throws {
         let transaction = CleanupTransaction(
             id: UUID(),
@@ -79,12 +61,12 @@ final class TransactionJournalTests: XCTestCase {
         )
         
         try await journal.log(transaction: transaction)
-        let sizeBeforeClear = try await journal.journalSize()
-        XCTAssertGreaterThan(sizeBeforeClear, 0, "Journal should have content before clear")
+        let loadedBeforeClear = try await journal.loadAll()
+        XCTAssertEqual(loadedBeforeClear.count, 1)
         
         try await journal.clear()
-        let sizeAfterClear = try await journal.journalSize()
-        XCTAssertEqual(sizeAfterClear, 0, "Journal should be empty after clear")
+        let loadedAfterClear = try await journal.loadAll()
+        XCTAssertTrue(loadedAfterClear.isEmpty, "Journal should be empty after clear")
     }
     
     func testClearAll() async throws {

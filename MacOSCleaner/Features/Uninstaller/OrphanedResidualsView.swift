@@ -450,7 +450,11 @@ public struct OrphanedResidualsView: View {
 
         scanTask = Task {
             do {
-                let found = try await service.scanOrphanedResiduals()
+                let found = try await service.scanOrphanedResiduals { message in
+                    Task { @MainActor in
+                        self.scanProgressMessage = message
+                    }
+                }
                 await MainActor.run {
                     self.items = found
                     self.isLoading = false

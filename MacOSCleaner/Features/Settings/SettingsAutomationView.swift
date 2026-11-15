@@ -3,8 +3,6 @@ import FoundationModels
 
 struct SettingsAutomationView: View {
     @Bindable var settings: AppSettings
-    @State private var editingCommand: CustomSiriCommand? = nil
-    @State private var isAddCommandSheetPresented: Bool = false
     @State private var modelAvailability: SystemLanguageModel.Availability = SystemLanguageModel.default.availability
     @State private var isCheckingAvailability: Bool = false
 
@@ -25,18 +23,6 @@ struct SettingsAutomationView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             refreshModelAvailability(prewarmIfReady: false)
-        }
-        .sheet(isPresented: $isAddCommandSheetPresented) {
-            CustomSiriCommandEditSheet { newCmd in
-                settings.customSiriCommands.append(newCmd)
-            }
-        }
-        .sheet(item: $editingCommand) { cmd in
-            CustomSiriCommandEditSheet(commandToEdit: cmd) { updatedCmd in
-                if let idx = settings.customSiriCommands.firstIndex(where: { $0.id == updatedCmd.id }) {
-                    settings.customSiriCommands[idx] = updatedCmd
-                }
-            }
         }
     }
 
@@ -88,35 +74,7 @@ struct SettingsAutomationView: View {
     private var siriCommandsCard: some View {
         GlassCard(
             header: {
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top) {
-                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                        Spacer(minLength: 8)
-                        Button {
-                            isAddCommandSheetPresented = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                Text("siri_add_command_button".localized)
-                            }
-                        }
-                        .prominentGlassButtonStyle(tint: .accentColor)
-                        .fixedSize()
-                        .layoutPriority(1)
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
-                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                        Button {
-                            isAddCommandSheetPresented = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                Text("siri_add_command_button".localized)
-                            }
-                        }
-                        .prominentGlassButtonStyle(tint: .accentColor)
-                    }
-                }
+                SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
             },
             content: {
                 VStack(spacing: 8) {
@@ -147,25 +105,6 @@ struct SettingsAutomationView: View {
                                 }
 
                                 Spacer()
-
-                                Button {
-                                    editingCommand = cmd
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    if let key = cmd.settingKey {
-                                        UserDefaults.standard.set(false, forKey: key)
-                                    }
-                                    settings.customSiriCommands.removeAll(where: { $0.id == cmd.id })
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .foregroundStyle(.red)
-                                }
-                                .buttonStyle(.plain)
                             }
                             SettingsDivider()
                         }

@@ -298,7 +298,7 @@ struct ServiceRow: View {
                 }
                 .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
                 .controlSize(.small)
-                .disabled(service.category == .system)
+                .disabled(service.category == .system || service.requiresRoot)
 
                 Button {
                     let url = URL(fileURLWithPath: service.path)
@@ -311,7 +311,7 @@ struct ServiceRow: View {
                 .buttonStyle(.plain)
                 .help("startup_show_in_finder".localized)
 
-                if service.category != .system {
+                if service.category != .system && !service.requiresRoot {
                     Button(role: .destructive) {
                         onDelete()
                     } label: {
@@ -331,7 +331,7 @@ struct ServiceRow: View {
                     Label("startup_show_in_finder".localized, systemImage: "folder")
                 }
 
-                if service.category != .system {
+                if service.category != .system && !service.requiresRoot {
                     Divider()
                     Button(role: .destructive) {
                         onDelete()

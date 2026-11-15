@@ -45,20 +45,20 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
     }
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
-        let isShortcutsEnabled = UserDefaults.standard.object(forKey: "settings_enableShortcutsAndAutomator") as? Bool ?? true
-        let isSiriEnabled = UserDefaults.standard.object(forKey: "settings_enableSiri") as? Bool ?? true
-        let isCommandEnabled = UserDefaults.standard.object(forKey: "settings_cmd_developer_caches") as? Bool ?? true
-        guard (isShortcutsEnabled || isSiriEnabled) && isCommandEnabled else {
+        guard IntentCleanupRunner.isCommandEnabled("settings_cmd_developer_caches") else {
             return .result(dialog: "Clean Developer Caches command is disabled in macOS Cleaner settings.")
         }
 
-        let isRunningInTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
-        let shouldDryRun = dryRun || isRunningInTests
+        let shouldDryRun = dryRun || IntentCleanupRunner.isRunningInTests
 
-        let engine = CleanupEngine()
         let categories: [CleanupCategory] = {
             switch target {
-            case .all: return [.xcode, .packageManagers, .docker]
+            case .all:
+                return [
+                    .xcode, .iosSimulators, .packageManagers, .gradleMaven,
+                    .flutterDart, .androidCaches, .androidSDK, .ideCaches,
+                    .languageCaches, .swiftPMCache, .carthageCache, .docker,
+                ]
             case .xcode: return [.xcode]
             case .packageManagers: return [.packageManagers]
             case .docker: return [.docker]
@@ -66,42 +66,36 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
         }()
 
         if shouldDryRun {
-            let results: [CleanupEngineResult]
+            let freedBytes: Int64
             do {
-                results = try await engine.run(categories: categories, dryRun: true)
+                freedBytes = try await IntentCleanupRunner.run(categories: categories, dryRun: true)
             } catch {
                 return .result(dialog: "Could not preview developer caches: \(error.localizedDescription)")
             }
-            let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-            let mb = Double(freedBytes) / (1024 * 1024)
-            let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
+            let formatted = IntentCleanupRunner.formatBytes(freedBytes)
             return .result(dialog: "[Preview] Estimated space to free from developer caches (\(target.rawValue)): \(formatted).")
         }
 
         if confirm {
-            let previewResults: [CleanupEngineResult]
+            let previewBytes: Int64
             do {
-                previewResults = try await engine.run(categories: categories, dryRun: true)
+                previewBytes = try await IntentCleanupRunner.run(categories: categories, dryRun: true)
             } catch {
                 return .result(dialog: "Could not preview developer caches: \(error.localizedDescription)")
             }
-            let previewBytes = previewResults.reduce(0) { $0 + $1.freedBytes }
-            let mb = Double(previewBytes) / (1024 * 1024)
-            let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
+            let formatted = IntentCleanupRunner.formatBytes(previewBytes)
             try await requestConfirmation(
                 dialog: "Found \(formatted) of developer caches (\(target.rawValue)). Do you want to clean?"
             )
         }
 
-        let results: [CleanupEngineResult]
+        let freedBytes: Int64
         do {
-            results = try await engine.run(categories: categories, dryRun: false)
+            freedBytes = try await IntentCleanupRunner.run(categories: categories, dryRun: false)
         } catch {
             return .result(dialog: "Could not clean developer caches: \(error.localizedDescription)")
         }
-        let freedBytes = results.reduce(0) { $0 + $1.freedBytes }
-        let mb = Double(freedBytes) / (1024 * 1024)
-        let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
+        let formatted = IntentCleanupRunner.formatBytes(freedBytes)
         return .result(dialog: "Successfully cleaned developer caches (\(target.rawValue)). Freed: \(formatted).")
     }
 }

@@ -133,7 +133,8 @@ public actor DuplicateFinderEngine {
             .isDirectoryKey,
             .isPackageKey,
             .isSymbolicLinkKey,
-            .contentModificationDateKey
+            .contentModificationDateKey,
+            .ubiquitousItemDownloadingStatusKey
         ]
 
         guard let enumerator = fm.enumerator(
@@ -163,6 +164,10 @@ public actor DuplicateFinderEngine {
             }
 
             if resourceValues.isSymbolicLink == true || resourceValues.isPackage == true {
+                continue
+            }
+
+            if FileManager.isNotDownloadedUbiquitous(resourceValues) {
                 continue
             }
 
@@ -363,9 +368,10 @@ public actor DuplicateFinderEngine {
         }
     }
 
-    /// Trashes selected files using macOS trashItem.
+    /// Trashes selected files using macOS trashItem, or deletes permanently when `bypassTrash` is true.
     public func trashSelectedFiles(
         groups: [DuplicateGroup],
+        bypassTrash: Bool = false,
         progress: (@Sendable (Int, Int) -> Void)? = nil
     ) async throws -> (removedCount: Int, freedBytes: Int64) {
         var removedCount = 0
@@ -385,13 +391,17 @@ public actor DuplicateFinderEngine {
             }
             if fm.fileExists(atPath: url.path) {
                 do {
-                    var trashedURL: NSURL?
-                    try fm.trashItem(at: url, resultingItemURL: &trashedURL)
+                    if bypassTrash {
+                        try fm.removeItem(at: url)
+                    } else {
+                        var trashedURL: NSURL?
+                        try fm.trashItem(at: url, resultingItemURL: &trashedURL)
+                    }
                     removedCount += 1
                     freedBytes += item.sizeBytes
-                    Logger.duplicateEngine.info("Trashed duplicate file: \(url.path, privacy: .public)")
+                    Logger.duplicateEngine.info("Removed duplicate file: \(url.path, privacy: .public)")
                 } catch {
-                    Logger.duplicateEngine.error("Failed to trash duplicate file \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    Logger.duplicateEngine.error("Failed to remove duplicate file \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         }

@@ -193,7 +193,7 @@ struct RootView: View {
         case .diskSpace:
             DiskAnalyzerView(settings: appSettings)
         case .duplicates:
-            DuplicatesView()
+            DuplicatesView(settings: appSettings)
         case .processes:
             ProcessesView(settings: appSettings)
         case .startupServices:
@@ -210,7 +210,7 @@ struct RootView: View {
                 permissionsManager: permissionsManager,
                 onForget: {
                     Task {
-                        try? await journal.clear()
+                        await appSettings.resetAllAppData(journal: journal)
                     }
                 },
                 availableUpdate: $availableUpdate

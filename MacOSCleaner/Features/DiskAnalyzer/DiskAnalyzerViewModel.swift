@@ -126,15 +126,15 @@ public final class DiskAnalyzerViewModel {
         }
     }
     
-    public func moveToTrash(item: DiskItem) {
+    public func moveToTrash(item: DiskItem, bypassTrash: Bool = false) {
         Task {
             do {
-                _ = try await trashManager.trashItem(at: item.url)
+                try await trashManager.removeItem(at: item.url, bypassTrash: bypassTrash)
                 
                 // Remove item from currentItem's children in memory
                 removeItemFromTree(item: item)
             } catch {
-                self.logger.error("Failed to move item to trash: \(error.localizedDescription)")
+                self.logger.error("Failed to remove item: \(error.localizedDescription)")
             }
         }
     }

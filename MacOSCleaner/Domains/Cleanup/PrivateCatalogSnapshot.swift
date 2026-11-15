@@ -170,7 +170,7 @@ enum PrivateCatalogCodec {
             )
             target[entry.key] = appPaths
 
-            for path in paths where path.purpose == .cache {
+            for path in paths where path.purpose == .cache && !path.requiresAdmin {
                 let expanded = tildePath(path.template)
                 cacheByCategory[category, default: []].insert(expanded)
             }

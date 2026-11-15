@@ -1140,37 +1140,6 @@ extension CleanupEngineTests {
         _ = try await engine.run(categories: [.iosSimulators], dryRun: false, options: options)
         #expect(!box.values.contains { $0.contains("simctl delete") || $0.contains("runtime delete") })
     }
-
-    @Test("media options clean caches and leave user libraries alone")
-    func mediaOptionsDoNotDeleteUserLibraries() async throws {
-        let ctx = try FileSystemContext.isolatedTestRoot()
-        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
-        let fm = FileManager.default
-        let music = ctx.homePath + "/Music/GarageBand/song.band"
-        let movies = ctx.homePath + "/Movies/iMovie Library.imovielibrary/clip"
-        let memo = ctx.homePath + "/Library/Application Support/com.apple.VoiceMemos/Recordings/note.m4a"
-        let gbCache = ctx.homePath + "/Library/Caches/com.apple.garageband10/cache.bin"
-        let movieCache = ctx.homePath + "/Library/Caches/com.apple.iMovieApp/cache.bin"
-        for path in [music, movies, memo, gbCache, movieCache] {
-            try fm.createDirectory(atPath: (path as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
-            try "x".write(toFile: path, atomically: true, encoding: .utf8)
-        }
-        let engine = CleanupEngine(fileSystemContext: ctx)
-        var options = CleanupOptions()
-        options.cleanGarageBandLogic = true
-        options.cleanIMovieFinalCut = true
-        options.cleanVoiceMemos = true
-        _ = try await engine.run(
-            categories: [.garageBandLogic, .iMovieFinalCut, .voiceMemos],
-            dryRun: false,
-            options: options
-        )
-        #expect(fm.fileExists(atPath: music))
-        #expect(fm.fileExists(atPath: movies))
-        #expect(fm.fileExists(atPath: memo))
-        #expect(!fm.fileExists(atPath: gbCache))
-        #expect(!fm.fileExists(atPath: movieCache))
-    }
 }
 
 private final class CommandLog: @unchecked Sendable {

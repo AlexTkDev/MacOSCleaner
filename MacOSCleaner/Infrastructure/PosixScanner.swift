@@ -9,20 +9,17 @@ public struct PosixScanner: Sendable {
         public let excludedDirectoryNames: Set<String>
         public let maxDepth: Int?
         public let batchSize: Int
-        public let yieldInterval: Duration
 
         public init(
             excludedPrefixes: [String] = ["/Library/", "/.Trash/", "/.git/"],
             excludedDirectoryNames: Set<String> = [".git", ".Trash", "node_modules", "__MACOSX"],
             maxDepth: Int? = nil,
-            batchSize: Int = 1000,
-            yieldInterval: Duration = .seconds(1)
+            batchSize: Int = 1000
         ) {
             self.excludedPrefixes = excludedPrefixes
             self.excludedDirectoryNames = excludedDirectoryNames
             self.maxDepth = maxDepth
             self.batchSize = batchSize
-            self.yieldInterval = yieldInterval
         }
     }
 
@@ -125,16 +122,32 @@ public struct PosixScanner: Sendable {
                 if name == "." || name == ".." { continue }
                 if config.excludedDirectoryNames.contains(name) { continue }
 
-                let isDir = entry.pointee.d_type == DT_DIR
-                let isLink = entry.pointee.d_type == DT_LNK
                 let inode = entry.pointee.d_ino
                 let fullPath = currentPath + "/" + name
+                let dType = entry.pointee.d_type
+                let isDir: Bool
+                let isLink: Bool
+                if dType == DT_UNKNOWN {
+                    var st = Darwin.stat()
+                    if lstat(fullPath, &st) == 0 {
+                        let mode = st.st_mode & S_IFMT
+                        isDir = mode == S_IFDIR
+                        isLink = mode == S_IFLNK
+                    } else {
+                        isDir = false
+                        isLink = false
+                    }
+                } else {
+                    isDir = dType == DT_DIR
+                    isLink = dType == DT_LNK
+                }
 
                 scanned += 1
 
                 var excluded = false
                 for prefix in config.excludedPrefixes {
-                    if fullPath.contains(prefix) {
+                    let trimmedPrefix = prefix.hasSuffix("/") && prefix.count > 1 ? String(prefix.dropLast()) : prefix
+                    if fullPath.contains(prefix) || fullPath.hasSuffix(trimmedPrefix) {
                         excluded = true
                         break
                     }

@@ -3,7 +3,7 @@ import Foundation
 extension CleanupCategory {
     /// Shown in preview, never wiped as a whole. Selected leaves go to Trash.
     public static let reviewOnly: [CleanupCategory] = [
-        .oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
+        .oldBackups, .iosBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
     ]
 
     public var localizedTitle: String {
@@ -18,7 +18,7 @@ extension CleanupCategory {
              .androidCaches, .androidSDK, .ideCaches, .ideOldVersions, .languageCaches,
              .swiftPMCache, .carthageCache, .projectBuildArtifacts:
             return "hammer"
-        case .browserCaches, .chromeExtraCaches, .internetPlugins:
+        case .browserCaches, .chromeExtraCaches:
             return "globe"
         case .messagingMedia, .teamsCache:
             return "bubble.left.and.bubble.right"
@@ -32,10 +32,8 @@ extension CleanupCategory {
             return "clock.arrow.circlepath"
         case .mailDownloads:
             return "envelope"
-        case .photosCache, .iMovieFinalCut:
+        case .photosCache:
             return "photo.on.rectangle"
-        case .voiceMemos, .garageBandLogic:
-            return "waveform"
         case .aiModels:
             return "sparkles"
         case .installerPackages:
@@ -153,28 +151,10 @@ extension CleanupCategory {
         case .ideOldVersions:
             labels.insert("Old IDE Versions")
             labels.insert("Old IDE versions")
-        case .launchAgents:
-            labels.insert("Launch Agents")
-        case .launchDaemons:
-            labels.insert("Launch Daemons")
-        case .privilegedHelpers:
-            labels.insert("Privileged Helper Tools")
-        case .pkgReceipts:
-            labels.insert("Package Receipts")
-        case .internetPlugins:
-            labels.insert("Internet Plugins")
         case .sharedFileLists:
             labels.insert("Shared File Lists")
-        case .cloudDocs:
-            labels.insert("Cloud Docs")
         case .photosCache:
             labels.insert("Photos Cache")
-        case .voiceMemos:
-            labels.insert("Voice Memos")
-        case .garageBandLogic:
-            labels.insert("GarageBand / Logic Pro")
-        case .iMovieFinalCut:
-            labels.insert("iMovie / Final Cut")
         case .garminFitbit:
             labels.insert("Garmin / Fitbit")
         case .oldBackups:
@@ -187,8 +167,6 @@ extension CleanupCategory {
             labels.insert("DNS Cache")
         case .fontCache:
             labels.insert("Font Cache")
-        case .unusedApps:
-            labels.insert("Unused Apps")
         case .projectBuildArtifacts:
             labels.insert("Project build artifacts")
             labels.insert("Project-local build artifacts")
@@ -219,22 +197,12 @@ extension CleanupCategory {
             return [.orphanedFiles]
         case .applicationScripts:
             return [.orphanedRemnants]
-        case .launchAgents:
-            return [.launchAgents]
-        case .launchDaemons:
-            return [.launchDaemons]
-        case .privilegedHelperTools:
-            return [.privilegedHelpers]
-        case .pkgReceipts:
-            return [.pkgReceipts]
-        case .internetPlugins:
-            return [.internetPlugins]
+        case .launchAgents, .launchDaemons, .privilegedHelperTools, .pkgReceipts, .internetPlugins, .cloudDocs:
+            return []
         case .cookies:
             return [.orphanedFiles]
         case .diagnosticReports:
             return [.crashReporter]
-        case .cloudDocs:
-            return [.cloudDocs]
         case .sharedFileLists:
             return [.sharedFileLists]
         case .developerArtifacts:
@@ -252,9 +220,7 @@ extension CleanupCategory {
         case "simulator_scanner": return .iosSimulators
         case "quicklook_cache_scanner": return .systemCaches
         case "photo_library_cache_scanner": return .photosCache
-        case "voice_memos_scanner": return .voiceMemos
-        case "garageband_logic_scanner": return .garageBandLogic
-        case "imovie_final_cut_scanner": return .iMovieFinalCut
+        case "voice_memos_scanner", "garageband_logic_scanner", "imovie_final_cut_scanner", "unused_apps_scanner": return nil
         case "garmin_fitbit_scanner": return .garminFitbit
         case "old_backups_scanner": return .oldBackups
         case "mail_attachments_scanner": return .mailDownloads
@@ -262,7 +228,6 @@ extension CleanupCategory {
         case "font_cache_scanner": return .fontCache
         case "sleep_image_scanner": return nil
         case "duplicate_files_scanner": return nil
-        case "unused_apps_scanner": return .unusedApps
         case "docker_scanner": return .docker
         case "downloads_scanner": return .largeFiles
         case "trash_scanner": return .scatteredJunk

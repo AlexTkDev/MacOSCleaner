@@ -1025,3 +1025,8 @@
 "cleanup_skip_reason_in_use" = "El archivo está en uso";
 "cleanup_complete_trash_sub" = "Se movieron %@ a la Papelera (el espacio se liberará al vaciarla).";
 "cleanup_complete_perm_sub" = "Se liberaron permanentemente %@ de espacio en disco.";
+
+"settings_auto_check_updates" = "Buscar actualizaciones automáticamente";
+"settings_auto_check_updates_sub" = "Comprobar automáticamente GitHub Releases al iniciar";
+"settings_remove_from_dock" = "Eliminar del Dock al desinstalar";
+"settings_remove_from_dock_sub" = "Quitar del Dock de macOS los iconos de apps desinstaladas";

@@ -243,7 +243,7 @@ public struct DiskAnalyzerView: View {
                             viewModel.showInFinder(item: item)
                         },
                         onDelete: {
-                            viewModel.moveToTrash(item: item)
+                            viewModel.moveToTrash(item: item, bypassTrash: settings.bypassTrashOnUninstall)
                         }
                     )
                     .onTapGesture(count: 2) {
@@ -273,7 +273,7 @@ public struct DiskAnalyzerView: View {
                             Label("disk_analyzer_show_in_finder".localized, systemImage: "magnifyingglass")
                         }
                         Divider()
-                        Button(role: .destructive, action: { viewModel.moveToTrash(item: item) }) {
+                        Button(role: .destructive, action: { viewModel.moveToTrash(item: item, bypassTrash: settings.bypassTrashOnUninstall) }) {
                             Label("disk_analyzer_move_to_trash".localized, systemImage: "trash")
                         }
                     }

@@ -389,7 +389,8 @@ struct UninstallerView: View {
                 let report = try await service.uninstall(
                     app: app,
                     bypassTrash: settings.bypassTrashOnUninstall,
-                    emptyTrashImmediately: settings.emptyTrashImmediately
+                    emptyTrashImmediately: settings.emptyTrashDuringCleanup,
+                    removeFromDock: settings.removeFromDockOnUninstall
                 )
                 
                 await MainActor.run {
@@ -421,7 +422,8 @@ struct UninstallerView: View {
                 let report = try await service.uninstall(
                     app: versionApp,
                     bypassTrash: settings.bypassTrashOnUninstall,
-                    emptyTrashImmediately: settings.emptyTrashImmediately
+                    emptyTrashImmediately: settings.emptyTrashDuringCleanup,
+                    removeFromDock: settings.removeFromDockOnUninstall
                 )
                 
                 await MainActor.run {
@@ -533,7 +535,8 @@ struct UninstallerView: View {
                 guard let url = url, url.pathExtension == "app" else { return }
                 Task { @MainActor in
                     if let scanned = try? await service.scan(appURL: url) {
-                        self.selectedApp = scanned
+                        let deep = (try? await service.deepScan(scanned)) ?? scanned
+                        self.selectedApp = deep
                     }
                 }
             }
@@ -1024,15 +1027,28 @@ struct UninstallerView: View {
             if selectedApp?.id == app.id {
                 selectedApp = allApps[appIndex]
             }
+            return
+        }
+        if var current = selectedApp, current.id == app.id,
+           let fileIndex = current.relatedFiles.firstIndex(where: { $0.id == file.id }) {
+            current.relatedFiles[fileIndex].isSelected.toggle()
+            selectedApp = current
         }
     }
 
     private func toggleDeveloperComponent(in app: UninstallerService.AppInfo, at index: Int, value: Bool) {
-        if let appIndex = allApps.firstIndex(where: { $0.id == app.id }) {
+        if let appIndex = allApps.firstIndex(where: { $0.id == app.id }),
+           allApps[appIndex].developerComponents.indices.contains(index) {
             allApps[appIndex].developerComponents[index].isSelected = value
             if selectedApp?.id == app.id {
                 selectedApp = allApps[appIndex]
             }
+            return
+        }
+        if var current = selectedApp, current.id == app.id,
+           current.developerComponents.indices.contains(index) {
+            current.developerComponents[index].isSelected = value
+            selectedApp = current
         }
     }
 }

@@ -40,7 +40,6 @@ public actor LaunchServiceManager {
             let home = NSHomeDirectory()
             self.searchPaths = [
                 "\(home)/Library/LaunchAgents",
-                "\(home)/Library/LaunchDaemons",
                 "/Library/LaunchAgents",
                 "/Library/LaunchDaemons"
             ]
@@ -150,12 +149,11 @@ public actor LaunchServiceManager {
     }
 
     public nonisolated func categorize(path: String, label: String, prefixes: [String], homeDirectory: String = NSHomeDirectory()) -> ServiceCategory {
-        let home = homeDirectory
-        if path.hasPrefix("\(home)/Library/") {
-            return .user
-        }
         if prefixes.contains(where: label.hasPrefix) {
             return .system
+        }
+        if path.hasPrefix("\(homeDirectory)/Library/") {
+            return .user
         }
         return .thirdParty
     }
@@ -169,12 +167,14 @@ public actor LaunchServiceManager {
     }
 
     public func disable(service: StartupService) async throws {
-        try await stopService(service.id, path: service.path)
+        guard service.category != .system, !service.requiresRoot else {
+            throw LaunchServiceError.toggleFailed("System services require administrator privileges")
+        }
 
-        let result = try await commandRunner.run(
-            command: "/bin/launchctl",
-            arguments: ["unload", "-w", service.path]
-        )
+        let domain = "gui/\(getuid())"
+        let target = "\(domain)/\(service.id)"
+        _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["disable", target])
+        let result = try await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", target])
 
         if result.exitCode != 0 {
             let stderr = result.stderr.lowercased()
@@ -186,14 +186,21 @@ public actor LaunchServiceManager {
     }
 
     public func enable(service: StartupService) async throws {
+        guard service.category != .system, !service.requiresRoot else {
+            throw LaunchServiceError.toggleFailed("System services require administrator privileges")
+        }
+
+        let domain = "gui/\(getuid())"
+        let target = "\(domain)/\(service.id)"
+        _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["enable", target])
         let result = try await commandRunner.run(
             command: "/bin/launchctl",
-            arguments: ["load", "-w", service.path]
+            arguments: ["bootstrap", domain, service.path]
         )
 
         if result.exitCode != 0 {
             let stderr = result.stderr.lowercased()
-            if stderr.contains("already loaded") {
+            if stderr.contains("already loaded") || result.exitCode == 37 {
                 return
             }
             throw LaunchServiceError.toggleFailed(result.stderr)
@@ -201,34 +208,16 @@ public actor LaunchServiceManager {
     }
 
     public func delete(service: StartupService) async throws {
-        guard service.category != .system, !service.path.hasPrefix("/System/") else {
+        guard service.category != .system, !service.requiresRoot, !service.path.hasPrefix("/System/") else {
             throw SafetyError.protectedPath(service.path)
         }
 
         await LaunchdControl.bootout(plistPath: service.path, runner: commandRunner)
-        try await stopService(service.id, path: service.path)
+        _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["disable", "gui/\(getuid())/\(service.id)"])
 
         // Trash the plist file with .uninstall policy
         let plistURL = URL(fileURLWithPath: service.path)
         try await trashManager.trashItem(at: plistURL, policy: .uninstall)
-    }
-
-    private func stopService(_ label: String, path: String) async throws {
-        let needsPrivileges = path.hasPrefix("/Library/LaunchDaemons")
-
-        if needsPrivileges {
-            let escapedLabel = label
-                .replacingOccurrences(of: "\\", with: "\\\\")
-                .replacingOccurrences(of: "\"", with: "\\\"")
-            let script = "do shell script \"/bin/launchctl stop \\\"\(escapedLabel)\\\"\" with administrator privileges"
-            _ = try? await commandRunner.run(command: "/usr/bin/osascript", arguments: ["-e", script])
-        } else {
-            do {
-                _ = try await commandRunner.run(command: "/bin/launchctl", arguments: ["stop", label])
-            } catch {
-                // Ignore — process may not be running
-            }
-        }
     }
 
     public func addVendorPrefix(_ prefix: String) {

@@ -990,3 +990,8 @@
 "cleanup_skip_reason_in_use" = "檔案目前正在使用中";
 "cleanup_complete_trash_sub" = "已將 %@ 移至垃圾桶（清空垃圾桶後將釋放空間）。";
 "cleanup_complete_perm_sub" = "已永久釋放 %@ 磁碟空間。";
+
+"settings_auto_check_updates" = "自動檢查更新";
+"settings_auto_check_updates_sub" = "啟動時自動檢查 GitHub Releases";
+"settings_remove_from_dock" = "解除安裝時從 Dock 移除";
+"settings_remove_from_dock_sub" = "從 macOS Dock 移除已解除安裝 App 的圖示";

@@ -1027,3 +1027,8 @@
 "cleanup_skip_reason_in_use" = "File is currently in use";
 "cleanup_complete_trash_sub" = "Moved %@ to Trash (space will be freed when Trash is emptied).";
 "cleanup_complete_perm_sub" = "Permanently freed %@ of disk space.";
+
+"settings_auto_check_updates" = "Check for Updates Automatically";
+"settings_auto_check_updates_sub" = "Automatically check GitHub Releases on launch";
+"settings_remove_from_dock" = "Remove from Dock on Uninstall";
+"settings_remove_from_dock_sub" = "Remove uninstalled app icons from the macOS Dock";

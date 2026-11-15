@@ -123,9 +123,24 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Logs",
             "\(home)/Library/Application Support",
             "\(home)/Library/Containers",
-            "\(home)/.cache",
-            "\(home)/.config",
-            "\(home)/.local",
+            "\(home)/.cache/pip",
+            "\(home)/.cache/huggingface",
+            "\(home)/.cache/torch",
+            "\(home)/.cache/pre-commit",
+            "\(home)/.cache/yarn",
+            "\(home)/.cache/electron",
+            "\(home)/.cache/node-gyp",
+            "\(home)/.cache/uv",
+            "\(home)/.cache/ruff",
+            "\(home)/.cache/mypy",
+            "\(home)/.cache/go-build",
+            "\(home)/.cache/JetBrains",
+            "\(home)/.cache/spotify",
+            "\(home)/.cache/typescript",
+            "\(home)/.config/yarn",
+            "\(home)/.local/share/pnpm",
+            "\(home)/.local/share/virtualenv",
+            "\(home)/.local/state/nvim",
             "\(home)/.gradle",
             "\(home)/.pub-cache",
             "\(home)/.dartServer",
@@ -395,14 +410,6 @@ public struct SafetyManager: Sendable {
         return isSymlink(at: url)
     }
 
-    /// Leaf symlink: operate on the link itself, never follow to the target.
-    public func isLeafSymlink(_ url: URL) -> Bool {
-        var isDir: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
-        guard exists, !isDir.boolValue else { return false }
-        return isSymlink(at: url)
-    }
-
     private func isUnderImmutableRefuseRoot(_ path: String) -> Bool {
         immutableRefuseRoots.contains { path == $0 || path.hasPrefix($0 + "/") }
     }
@@ -528,8 +535,11 @@ public struct SafetyManager: Sendable {
         let protectedConfigFiles: Set<String> = [
             "settings.json", "launch.json", "tasks.json",
             "extensions.json", "keybindings.json",
+            ".env", "credentials", "credentials.toml",
+            ".npmrc", ".yarnrc", ".pypirc",
+            "gradle.properties", "settings.xml", ".claude.json",
         ]
-        if protectedConfigFiles.contains(fileName) {
+        if protectedConfigFiles.contains(fileName) || fileName.hasPrefix(".env.") {
             return path
         }
 

@@ -1026,3 +1026,8 @@
 "cleanup_skip_reason_in_use" = "Файл сейчас используется";
 "cleanup_complete_trash_sub" = "Перемещено в Корзину: %@ (место освободится после очистки Корзины).";
 "cleanup_complete_perm_sub" = "Безвозвратно освобождено %@ на диске.";
+
+"settings_auto_check_updates" = "Автоматически проверять обновления";
+"settings_auto_check_updates_sub" = "Проверять новые релизы на GitHub при запуске";
+"settings_remove_from_dock" = "Удалять из Dock при удалении";
+"settings_remove_from_dock_sub" = "Убирать иконки удалённых приложений из macOS Dock";
