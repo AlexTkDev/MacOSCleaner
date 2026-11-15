@@ -163,7 +163,6 @@ public final class AppSettings {
         static let language = "settings_language"
         static let theme = "settings_theme"
         static let showNotifications = "settings_showNotifications"
-        static let showTooltips = "settings_showTooltips"
         static let autoScanOnStartup = "settings_autoScanOnStartup"
         static let emptyTrashDuringCleanup = "settings_emptyTrashDuringCleanup"
         static let bypassTrashOnUninstall = "settings_bypassTrashOnUninstall"
@@ -211,10 +210,6 @@ public final class AppSettings {
                 NotificationManager.shared.requestAuthorization()
             }
         }
-    }
-
-    public var showTooltips: Bool {
-        didSet { UserDefaults.standard.set(showTooltips, forKey: Keys.showTooltips) }
     }
 
     public var autoScanOnStartup: Bool {
@@ -362,7 +357,6 @@ public final class AppSettings {
         self.language = lang
         self.theme = AppTheme(rawValue: defaults.string(forKey: Keys.theme) ?? "") ?? .system
         self.showNotifications = defaults.object(forKey: Keys.showNotifications) as? Bool ?? false
-        self.showTooltips = defaults.object(forKey: Keys.showTooltips) as? Bool ?? true
         self.autoScanOnStartup = defaults.bool(forKey: Keys.autoScanOnStartup)
         self.emptyTrashDuringCleanup = defaults.bool(forKey: Keys.emptyTrashDuringCleanup)
         self.projectArtifactsOlderThanDays = defaults.object(forKey: Keys.projectArtifactsOlderThanDays) as? Int ?? 60
@@ -414,7 +408,7 @@ public final class AppSettings {
     public func resetAll() {
         let defaults = UserDefaults.standard
         let allKeys = [
-            Keys.language, Keys.theme, Keys.showNotifications, Keys.showTooltips,
+            Keys.language, Keys.theme, Keys.showNotifications,
             Keys.autoScanOnStartup, Keys.emptyTrashDuringCleanup, Keys.bypassTrashOnUninstall,
             Keys.showRelatedFiles, Keys.emptyTrashImmediately, Keys.isDebugMode,
             Keys.processRefreshInterval, Keys.processSortOption, Keys.uninstallerScanMode,
@@ -432,7 +426,6 @@ public final class AppSettings {
         language = .english
         theme = .system
         showNotifications = false
-        showTooltips = true
         autoScanOnStartup = false
         emptyTrashDuringCleanup = false
         projectArtifactsOlderThanDays = 60

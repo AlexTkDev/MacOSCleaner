@@ -24,7 +24,10 @@ public struct CleanupCardView: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.accentColor)
                 .frame(width: 28, height: 28)
-                .glassEffect(Glass.regular.tint(.accentColor), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.14))
+                )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(dateString)
@@ -48,26 +51,7 @@ public struct CleanupCardView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.white.opacity(0.04))
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 3)
+        .glassCard(cornerRadius: 12)
     }
 }
 

@@ -195,7 +195,6 @@
 "theme_light" = "浅色";
 "theme_dark" = "深色";
 "settings_notifications" = "通知";
-"settings_tooltips" = "工具提示";
 "settings_auto_scan" = "启动时自动扫描";
 "settings_processes" = "进程";
 "settings_refresh_interval" = "刷新间隔";
@@ -743,7 +742,6 @@
 "settings_appearance_language_sub" = "个性化设置应用界面";
 "settings_language_sub" = "界面显示语言";
 "settings_theme_sub" = "色彩方案外观";
-"settings_tooltips_sub" = "悬停时的提示气泡";
 "settings_system_maintenance_title" = "系统维护";
 "settings_system_maintenance_sub" = "针对 macOS 的系统优化";
 "settings_touchid_sudo_title" = "用于 sudo 的 Touch ID";
@@ -987,3 +985,8 @@
 "startup_delete_confirm_message" = "确定要删除“%@”吗？\n文件：%@\n服务将被停止，其 plist 文件将移至废纸篓。";
 "startup_delete_action" = "移至废纸篓";
 "scan_incomplete_without_fda" = "没有完全磁盘访问权限时，部分受保护的文件夹不会出现在结果中。";
+"cleanup_skip_reason_sip" = "受系统完整性保护 (SIP) 保护";
+"cleanup_skip_reason_permission" = "权限被拒绝";
+"cleanup_skip_reason_in_use" = "文件正在使用中";
+"cleanup_complete_trash_sub" = "已将 %@ 移至废纸篓（清倒废纸篓后将释放空间）。";
+"cleanup_complete_perm_sub" = "已永久释放 %@ 磁盘空间。";

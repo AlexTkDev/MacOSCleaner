@@ -10,8 +10,6 @@ struct StartupVendorSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            header
-
             description
             vendorList
             addSection
@@ -19,16 +17,15 @@ struct StartupVendorSettingsView: View {
         .task {
             await loadPrefixes()
         }
+        .alert("error".localized, isPresented: $showAddError) {
+            Button("ok".localized, role: .cancel) {}
+        } message: {
+            Text(addErrorMessage)
+        }
     }
 
     private func loadPrefixes() async {
         prefixes = await manager.systemVendorPrefixes
-    }
-
-    private var header: some View {
-        Label("startup_vendors_title".localized, systemImage: "list.bullet.rectangle")
-            .font(.headline)
-            .foregroundColor(.primary)
     }
 
     private var description: some View {

@@ -247,9 +247,6 @@ struct SettingsAutomationView: View {
                 }
                 .buttonStyle(.plain)
                 .help("settings_ai_refresh_status".localized)
-                .onHover { inside in
-                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
-                }
             }
         }
     }
@@ -324,9 +321,6 @@ struct SettingsAutomationView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 21)
-                .onHover { inside in
-                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
-                }
             }
         }
         .padding(10)

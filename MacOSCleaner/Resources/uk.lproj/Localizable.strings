@@ -196,7 +196,6 @@
 "theme_light" = "Світла";
 "theme_dark" = "Темна";
 "settings_notifications" = "Сповіщення";
-"settings_tooltips" = "Підказки";
 "settings_auto_scan" = "Автосканування при запуску";
 "settings_processes" = "Процеси";
 "settings_refresh_interval" = "Інтервал оновлення";
@@ -845,7 +844,6 @@
 "settings_appearance_language_sub" = "Персоналізація інтерфейсу";
 "settings_language_sub" = "Мова відображення інтерфейсу";
 "settings_theme_sub" = "Колірна схема додатку";
-"settings_tooltips_sub" = "Підказки при наведенні";
 "settings_system_maintenance_title" = "Системне обслуговування";
 "settings_system_maintenance_sub" = "Системні оптимізації для macOS";
 "settings_touchid_sudo_title" = "Touch ID для sudo";
@@ -1020,3 +1018,8 @@
 "startup_delete_confirm_message" = "Ви впевнені, що хочете видалити «%@»?\nФайл: %@\nСлужбу буде зупинено, а її plist-файл переміщено до Смітника.";
 "startup_delete_action" = "Перемістити у Смітник";
 "scan_incomplete_without_fda" = "Без повного доступу до диска частину захищених папок не видно в результаті.";
+"cleanup_skip_reason_sip" = "Захищено System Integrity Protection (SIP)";
+"cleanup_skip_reason_permission" = "Немає прав доступу";
+"cleanup_skip_reason_in_use" = "Файл зараз використовується";
+"cleanup_complete_trash_sub" = "Переміщено до Кошика: %@ (місце звільниться після очищення Кошика).";
+"cleanup_complete_perm_sub" = "Остаточно звільнено %@ на диску.";

@@ -90,15 +90,6 @@ struct SettingsGeneralView: View {
                             label: { $0.localizedName }
                         )
                     }
-
-                    SettingsDivider()
-
-                    SettingsToggleRow(
-                        "settings_tooltips".localized,
-                        subtitle: "settings_tooltips_sub".localized,
-                        iconName: "info.circle",
-                        isOn: $settings.showTooltips
-                    )
                 }
             }
         )

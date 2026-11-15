@@ -196,7 +196,6 @@
 "theme_light" = "فاتح";
 "theme_dark" = "داكن";
 "settings_notifications" = "الإشعارات";
-"settings_tooltips" = "تلميحات";
 "settings_auto_scan" = "فحص تلقائي عند بدء التشغيل";
 "settings_processes" = "العمليات";
 "settings_refresh_interval" = "فاصل التحديث";
@@ -851,7 +850,6 @@
 "settings_appearance_language_sub" = "خصّص واجهة التطبيق";
 "settings_language_sub" = "لغة عرض الواجهة";
 "settings_theme_sub" = "مظهر نظام الألوان";
-"settings_tooltips_sub" = "تلميحات مفيدة عند التمرير";
 "settings_system_maintenance_title" = "صيانة النظام";
 "settings_system_maintenance_sub" = "تحسينات النظام لنظام macOS";
 "settings_touchid_sudo_title" = "Touch ID لأمر sudo";
@@ -1024,3 +1022,8 @@
 "startup_delete_confirm_message" = "هل أنت متأكد من رغبتك في حذف '%@'؟\nالملف: %@\nسيتم إيقاف الخدمة ونقل ملف plist الخاص بها إلى سلة المهملات.";
 "startup_delete_action" = "نقل إلى سلة المهملات";
 "scan_incomplete_without_fda" = "بدون الوصول الكامل إلى القرص، لا تظهر بعض المجلدات المحمية في هذه النتائج.";
+"cleanup_skip_reason_sip" = "محمي بواسطة حماية سلامة النظام (SIP)";
+"cleanup_skip_reason_permission" = "تم رفض الإذن";
+"cleanup_skip_reason_in_use" = "الملف قيد الاستخدام حالياً";
+"cleanup_complete_trash_sub" = "تم نقل %@ إلى سلة المهملات (سيتم تحرير المساحة عند إفراغها).";
+"cleanup_complete_perm_sub" = "تم تحرير %@ من مساحة القرص نهائياً.";

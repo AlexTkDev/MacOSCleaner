@@ -6,9 +6,9 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
     case cleanup = "Cleanup"
     case diskSpace = "Disk Space"
     case duplicates = "Duplicates"
+    case uninstaller = "Uninstaller"
     case processes = "Processes"
     case startupServices = "Startup Services"
-    case uninstaller = "Uninstaller"
     case settings = "Settings"
     
     var id: String { rawValue }
@@ -59,9 +59,9 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .cleanup: return "2"
         case .diskSpace: return "3"
         case .duplicates: return "4"
-        case .processes: return "5"
-        case .startupServices: return "6"
-        case .uninstaller: return "7"
+        case .uninstaller: return "5"
+        case .processes: return "6"
+        case .startupServices: return "7"
         case .settings: return "8"
         }
     }

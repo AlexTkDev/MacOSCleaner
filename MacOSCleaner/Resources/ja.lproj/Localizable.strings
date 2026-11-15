@@ -195,7 +195,6 @@
 "theme_light" = "ライト";
 "theme_dark" = "ダーク";
 "settings_notifications" = "通知";
-"settings_tooltips" = "ツールチップ";
 "settings_auto_scan" = "起動時に自動スキャン";
 "settings_processes" = "プロセス";
 "settings_refresh_interval" = "更新間隔";
@@ -743,7 +742,6 @@
 "settings_appearance_language_sub" = "インターフェースをカスタマイズ";
 "settings_language_sub" = "表示言語";
 "settings_theme_sub" = "カラースキーム";
-"settings_tooltips_sub" = "ホバー時のツールチップ";
 "settings_system_maintenance_title" = "システムメンテナンス";
 "settings_system_maintenance_sub" = "macOS 向けシステム最適化";
 "settings_touchid_sudo_title" = "sudo 用 Touch ID";
@@ -987,3 +985,8 @@
 "startup_delete_confirm_message" = "「%@」を削除してもよろしいですか？\nファイル: %@\nサービスを停止し、plistファイルをゴミ箱に移動します。";
 "startup_delete_action" = "ゴミ箱に入れる";
 "scan_incomplete_without_fda" = "フルディスクアクセスがないため、保護された一部のフォルダは結果に含まれていません。";
+"cleanup_skip_reason_sip" = "システム整合性保護（SIP）により保護されています";
+"cleanup_skip_reason_permission" = "アクセス権がありません";
+"cleanup_skip_reason_in_use" = "ファイルは現在使用中です";
+"cleanup_complete_trash_sub" = "%@ をゴミ箱に移動しました（ゴミ箱を空にすると空き容量が増えます）。";
+"cleanup_complete_perm_sub" = "%@ のディスク容量を完全に解放しました。";

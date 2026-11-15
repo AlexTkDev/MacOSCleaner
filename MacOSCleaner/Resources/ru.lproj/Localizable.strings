@@ -196,7 +196,6 @@
 "theme_light" = "Светлая";
 "theme_dark" = "Тёмная";
 "settings_notifications" = "Уведомления";
-"settings_tooltips" = "Подсказки";
 "settings_auto_scan" = "Автосканирование при запуске";
 "settings_processes" = "Процессы";
 "settings_refresh_interval" = "Интервал обновления";
@@ -848,7 +847,6 @@
 "settings_appearance_language_sub" = "Персонализация интерфейса";
 "settings_language_sub" = "Язык отображения интерфейса";
 "settings_theme_sub" = "Цветовая схема приложения";
-"settings_tooltips_sub" = "Подсказки при наведении";
 "settings_system_maintenance_title" = "Системное обслуживание";
 "settings_system_maintenance_sub" = "Системные оптимизации для macOS";
 "settings_touchid_sudo_title" = "Touch ID для sudo";
@@ -1023,3 +1021,8 @@
 "startup_delete_confirm_message" = "Вы уверены, что хотите удалить «%@»?\nФайл: %@\nСлужба будет выгружена и остановлена, а её plist-файл перемещён в Корзину.";
 "startup_delete_action" = "Переместить в Корзину";
 "scan_incomplete_without_fda" = "Без полного доступа к диску часть защищённых папок не попала в результат.";
+"cleanup_skip_reason_sip" = "Защищено System Integrity Protection (SIP)";
+"cleanup_skip_reason_permission" = "Нет прав доступа";
+"cleanup_skip_reason_in_use" = "Файл сейчас используется";
+"cleanup_complete_trash_sub" = "Перемещено в Корзину: %@ (место освободится после очистки Корзины).";
+"cleanup_complete_perm_sub" = "Безвозвратно освобождено %@ на диске.";

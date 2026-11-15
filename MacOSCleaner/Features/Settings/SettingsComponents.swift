@@ -194,24 +194,7 @@ struct GlassCard<Header: View, Content: View, Footer: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(isDestructive ? Color.red.opacity(0.08) : Color.white.opacity(0.04))
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(.regularMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(
-                            isDestructive
-                                ? LinearGradient(colors: [Color.red.opacity(0.4), Color.red.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                : LinearGradient(colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 1
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 4)
-        }
+        .glassCard(cornerRadius: 14, isDestructive: isDestructive)
     }
 }
 

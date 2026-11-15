@@ -285,7 +285,7 @@ struct ProcessSplitButton: View {
                     isHoveredMain ? Color.red.opacity(0.3) : Color.clear
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(ProcessTerminateButtonStyle())
             .help("processes_terminate".localized)
             .onHover { hovering in
                 isHoveredMain = hovering
@@ -338,5 +338,14 @@ struct ProcessSplitButton: View {
         )
         .animation(.easeInOut(duration: 0.12), value: isHoveredMain)
         .animation(.easeInOut(duration: 0.12), value: isHoveredChevron)
+    }
+}
+
+private struct ProcessTerminateButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color.red.opacity(0.45) : Color.clear)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
     }
 }

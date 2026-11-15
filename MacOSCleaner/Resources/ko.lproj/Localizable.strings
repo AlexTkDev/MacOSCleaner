@@ -196,7 +196,6 @@
 "theme_light" = "라이트";
 "theme_dark" = "다크";
 "settings_notifications" = "알림";
-"settings_tooltips" = "도움말";
 "settings_auto_scan" = "시동 시 자동 스캔";
 "settings_processes" = "프로세스";
 "settings_refresh_interval" = "새로 고침 간격";
@@ -851,7 +850,6 @@
 "settings_appearance_language_sub" = "앱 인터페이스 개인 설정";
 "settings_language_sub" = "인터페이스 표시 언어";
 "settings_theme_sub" = "색상 구성";
-"settings_tooltips_sub" = "가리키면 표시되는 도움말";
 "settings_system_maintenance_title" = "시스템 유지 관리";
 "settings_system_maintenance_sub" = "macOS용 시스템 최적화";
 "settings_touchid_sudo_title" = "sudo용 Touch ID";
@@ -1024,3 +1022,8 @@
 "startup_delete_confirm_message" = "'%@'을(를) 삭제하시겠습니까?\n파일: %@\n서비스가 중지되고 plist 파일이 휴지통으로 이동합니다.";
 "startup_delete_action" = "휴지통으로 이동";
 "scan_incomplete_without_fda" = "전체 디스크 접근 권한이 없으면 보호된 폴더 일부가 결과에 나오지 않습니다.";
+"cleanup_skip_reason_sip" = "시스템 무결성 보호(SIP)로 보호됨";
+"cleanup_skip_reason_permission" = "권한이 거부됨";
+"cleanup_skip_reason_in_use" = "파일이 현재 사용 중입니다";
+"cleanup_complete_trash_sub" = "%@을(를) 휴지통으로 이동했습니다(휴지통을 비우면 공간이 확보됩니다).";
+"cleanup_complete_perm_sub" = "%@의 디스크 공간을 영구적으로 확보했습니다.";

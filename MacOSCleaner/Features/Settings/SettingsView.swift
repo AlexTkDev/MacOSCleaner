@@ -21,22 +21,32 @@ struct SettingsView: View {
             detailView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .searchable(text: $searchText, prompt: Text("settings_search_prompt".localized))
         .frame(minWidth: 780, minHeight: 520)
     }
 
     // MARK: - Custom Sidebar
 
     private var sidebarContent: some View {
-        ScrollView {
-            VStack(spacing: 4) {
-                ForEach(SettingsCategory.allCases) { category in
-                    sidebarRow(for: category)
-                }
-            }
+        VStack(spacing: 0) {
+            CompactSearchField(
+                placeholder: "settings_search_prompt".localized,
+                text: $searchText,
+                width: nil
+            )
             .padding(.horizontal, 10)
             .padding(.top, 14)
-            .padding(.bottom, 10)
+            .padding(.bottom, 6)
+
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(SettingsCategory.allCases) { category in
+                        sidebarRow(for: category)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.top, 6)
+                .padding(.bottom, 10)
+            }
         }
     }
 

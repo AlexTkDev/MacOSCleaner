@@ -195,7 +195,6 @@
 "theme_light" = "Hell";
 "theme_dark" = "Dunkel";
 "settings_notifications" = "Mitteilungen";
-"settings_tooltips" = "Tooltips";
 "settings_auto_scan" = "Automatischer Scan beim Start";
 "settings_processes" = "Prozesse";
 "settings_refresh_interval" = "Aktualisierungsintervall";
@@ -753,7 +752,6 @@
 "settings_appearance_language_sub" = "App-Oberfläche anpassen";
 "settings_language_sub" = "Sprache der Benutzeroberfläche";
 "settings_theme_sub" = "Farbschema";
-"settings_tooltips_sub" = "Hilfreiche Tooltips beim Hovern";
 "settings_system_maintenance_title" = "Systemwartung";
 "settings_system_maintenance_sub" = "Systemoptimierungen für macOS";
 "settings_touchid_sudo_title" = "Touch ID für sudo";
@@ -988,3 +986,8 @@
 "startup_delete_confirm_message" = "Möchten Sie „%@“ wirklich löschen?\nDatei: %@\nDer Dienst wird beendet und die plist-Datei in den Papierkorb verschoben.";
 "startup_delete_action" = "In den Papierkorb legen";
 "scan_incomplete_without_fda" = "Ohne vollen Festplattenzugriff fehlen einige geschützte Ordner in diesen Ergebnissen.";
+"cleanup_skip_reason_sip" = "Durch System Integrity Protection (SIP) geschützt";
+"cleanup_skip_reason_permission" = "Zugriff verweigert";
+"cleanup_skip_reason_in_use" = "Datei wird derzeit verwendet";
+"cleanup_complete_trash_sub" = "%@ in den Papierkorb verschoben (Speicherplatz wird beim Leeren freigegeben).";
+"cleanup_complete_perm_sub" = "%@ Speicherplatz dauerhaft freigegeben.";

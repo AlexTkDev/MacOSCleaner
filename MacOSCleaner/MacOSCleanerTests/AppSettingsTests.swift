@@ -12,7 +12,7 @@ final class AppSettingsTests: XCTestCase {
     override func setUp() async throws {
         let keysToReset = [
             "settings_language", "settings_theme", "settings_showNotifications",
-            "settings_showTooltips", "settings_autoScanOnStartup",
+            "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
             "settings_enableAI", "settings_isDebugMode",
@@ -24,7 +24,7 @@ final class AppSettingsTests: XCTestCase {
     override func tearDown() async throws {
         let keysToReset = [
             "settings_language", "settings_theme", "settings_showNotifications",
-            "settings_showTooltips", "settings_autoScanOnStartup",
+            "settings_autoScanOnStartup",
             "settings_emptyTrashDuringCleanup", "settings_bypassTrashOnUninstall",
             "settings_showRelatedFiles", "settings_emptyTrashImmediately",
             "settings_enableAI", "settings_isDebugMode",
@@ -40,7 +40,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(settings.theme, .system)
         XCTAssertFalse(settings.showNotifications)
-        XCTAssertTrue(settings.showTooltips)
         XCTAssertFalse(settings.autoScanOnStartup)
         XCTAssertFalse(settings.emptyTrashDuringCleanup)
         XCTAssertFalse(settings.bypassTrashOnUninstall)
@@ -97,7 +96,6 @@ final class AppSettingsTests: XCTestCase {
         settings.language = .russian
         settings.theme = .dark
         settings.showNotifications = false
-        settings.showTooltips = false
         settings.autoScanOnStartup = true
         settings.emptyTrashDuringCleanup = true
         settings.bypassTrashOnUninstall = true
@@ -112,7 +110,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(settings.theme, .system)
         XCTAssertFalse(settings.showNotifications)
-        XCTAssertTrue(settings.showTooltips)
         XCTAssertFalse(settings.autoScanOnStartup)
         XCTAssertFalse(settings.emptyTrashDuringCleanup)
         XCTAssertFalse(settings.bypassTrashOnUninstall)

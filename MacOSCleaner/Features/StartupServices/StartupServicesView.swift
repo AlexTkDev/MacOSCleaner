@@ -8,8 +8,18 @@ public struct StartupServicesView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                filterPicker
-                    .padding()
+                WorkspaceHeaderBar {
+                    Spacer()
+                    filterPicker
+                    Spacer()
+                    Button(action: { Task { await viewModel.scan() } }) {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .glassButtonStyle()
+                    .help("startup_refresh".localized)
+                }
+
+                Divider()
 
                 if viewModel.isLoading {
                     AnimatedScanView(
@@ -28,14 +38,6 @@ public struct StartupServicesView: View {
                 } else {
                     serviceList
                 }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                Button(action: { Task { await viewModel.scan() } }) {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("startup_refresh".localized)
             }
         }
         .alert(

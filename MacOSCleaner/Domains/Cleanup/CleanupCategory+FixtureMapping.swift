@@ -10,6 +10,53 @@ extension CleanupCategory {
         "category.\(rawValue)".localized
     }
 
+    public var iconName: String {
+        switch self {
+        case .appCaches, .systemCaches, .appContainers, .dotfileCaches, .dynamicCacheDiscovery:
+            return "internaldrive"
+        case .packageManagers, .gradleMaven, .flutterDart, .xcode, .iosSimulators,
+             .androidCaches, .androidSDK, .ideCaches, .ideOldVersions, .languageCaches,
+             .swiftPMCache, .carthageCache, .projectBuildArtifacts:
+            return "hammer"
+        case .browserCaches, .chromeExtraCaches, .internetPlugins:
+            return "globe"
+        case .messagingMedia, .teamsCache:
+            return "bubble.left.and.bubble.right"
+        case .docker:
+            return "shippingbox"
+        case .userLogs, .crashReporter, .savedAppState, .sharedFileLists:
+            return "doc.plaintext"
+        case .largeFiles, .scatteredJunk, .orphanedRemnants, .orphanedFiles:
+            return "doc.badge.ellipsis"
+        case .timeMachineSnapshots, .iosBackups, .oldBackups:
+            return "clock.arrow.circlepath"
+        case .mailDownloads:
+            return "envelope"
+        case .photosCache, .iMovieFinalCut:
+            return "photo.on.rectangle"
+        case .voiceMemos, .garageBandLogic:
+            return "waveform"
+        case .aiModels:
+            return "sparkles"
+        case .installerPackages:
+            return "shippingbox.fill"
+        case .dnsFlush, .fontCache:
+            return "gearshape.2"
+        default:
+            return "folder.fill"
+        }
+    }
+
+    public static func iconName(forResultLabel label: String) -> String {
+        if label == "trash_user_label".localized {
+            return "trash"
+        }
+        for category in CleanupCategory.allCases where category.previewLabels.contains(label) {
+            return category.iconName
+        }
+        return "sparkles"
+    }
+
     /// Maps scanner/engine group labels to the localized category title used in the preview UI.
     public static func localizedGroupTitle(for scannerLabel: String) -> String {
         for category in CleanupCategory.allCases where category.previewLabels.contains(scannerLabel) {

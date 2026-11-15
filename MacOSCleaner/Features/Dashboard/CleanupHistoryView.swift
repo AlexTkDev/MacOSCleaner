@@ -147,13 +147,6 @@ public struct CleanupHistoryView: View {
                         .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .onHover { inside in
-                        if inside {
-                            NSCursor.pointingHand.push()
-                        } else {
-                            NSCursor.pop()
-                        }
-                    }
                     
                     Spacer()
                     

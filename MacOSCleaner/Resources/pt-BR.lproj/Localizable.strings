@@ -195,7 +195,6 @@
 "theme_light" = "Claro";
 "theme_dark" = "Escuro";
 "settings_notifications" = "Notificações";
-"settings_tooltips" = "Dicas de ferramentas";
 "settings_auto_scan" = "Escaneamento automático ao iniciar";
 "settings_processes" = "Processos";
 "settings_refresh_interval" = "Intervalo de atualização";
@@ -743,7 +742,6 @@
 "settings_appearance_language_sub" = "Personalizar interface do app";
 "settings_language_sub" = "Idioma de exibição";
 "settings_theme_sub" = "Esquema de cores";
-"settings_tooltips_sub" = "Dicas ao passar o mouse";
 "settings_system_maintenance_title" = "Manutenção do Sistema";
 "settings_system_maintenance_sub" = "Otimizações do sistema para macOS";
 "settings_touchid_sudo_title" = "Touch ID para sudo";
@@ -987,3 +985,8 @@
 "startup_delete_confirm_message" = "Tem certeza de que deseja excluir '%@'?\nArquivo: %@\nO serviço será descarregado e seu arquivo plist será movido para o Lixo.";
 "startup_delete_action" = "Mover para o Lixo";
 "scan_incomplete_without_fda" = "Sem Acesso Total ao Disco, algumas pastas protegidas não aparecem nestes resultados.";
+"cleanup_skip_reason_sip" = "Protegido pela Proteção de Integridade do Sistema (SIP)";
+"cleanup_skip_reason_permission" = "Permissão negada";
+"cleanup_skip_reason_in_use" = "O arquivo está em uso no momento";
+"cleanup_complete_trash_sub" = "%@ movido para o Lixo (o espaço será liberado ao esvaziá-lo).";
+"cleanup_complete_perm_sub" = "%@ de espaço em disco liberado permanentemente.";

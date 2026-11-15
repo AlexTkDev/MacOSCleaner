@@ -14,6 +14,10 @@ public struct ProcessesView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                processesHeaderBar
+
+                Divider()
+
                 if isEditMode {
                     selectionToolbar
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -41,10 +45,7 @@ public struct ProcessesView: View {
                     }
                 }
             }
-            .padding(.top, 4)
         }
-        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "processes_search".localized)
-        .toolbar(content: toolbarContent)
         .sheet(isPresented: $viewModel.showBlacklistAlert) {
             blacklistSheet
         }
@@ -59,9 +60,8 @@ public struct ProcessesView: View {
         }
     }
 
-    @ToolbarContentBuilder
-    private func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .automatic) {
+    private var processesHeaderBar: some View {
+        WorkspaceHeaderBar {
             if !viewModel.memoryHogs.isEmpty {
                 HStack(spacing: 4) {
                     Image(systemName: "memorychip")
@@ -73,17 +73,18 @@ public struct ProcessesView: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .foregroundStyle(Color.red)
-                .background(
-                    Capsule().fill(Color.red.opacity(0.1))
-                )
-                .overlay(
-                    Capsule().strokeBorder(Color.red.opacity(0.3), lineWidth: 1)
-                )
-                .padding(.horizontal, 6)
+                .background(Capsule().fill(Color.red.opacity(0.1)))
+                .overlay(Capsule().strokeBorder(Color.red.opacity(0.3), lineWidth: 1))
             }
-        }
 
-        ToolbarItem(placement: .automatic) {
+            Spacer()
+
+            CompactSearchField(
+                placeholder: "processes_search".localized,
+                text: $viewModel.searchText,
+                width: 210
+            )
+
             Menu {
                 Picker("view_mode".localized, selection: $viewModel.viewMode) {
                     ForEach(ProcessesViewModel.ViewMode.allCases) { mode in
@@ -111,9 +112,9 @@ public struct ProcessesView: View {
             } label: {
                 Image(systemName: "ellipsis.circle")
             }
-        }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
 
-        ToolbarItem(placement: .automatic) {
             Button(action: { viewModel.showBlacklistAlert = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "xmark.circle")
@@ -123,10 +124,9 @@ public struct ProcessesView: View {
                     }
                 }
             }
+            .glassButtonStyle()
             .help("processes_tooltip_blacklist".localized)
-        }
 
-        ToolbarItem(placement: .automatic) {
             Button(action: { viewModel.showWhitelistAlert = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "lock.circle")
@@ -136,13 +136,13 @@ public struct ProcessesView: View {
                     }
                 }
             }
+            .glassButtonStyle()
             .help("processes_tooltip_whitelist".localized)
-        }
 
-        ToolbarItem(placement: .automatic) {
             Button(action: { Task { await viewModel.scan() } }) {
                 Image(systemName: "arrow.clockwise")
             }
+            .glassButtonStyle()
             .help("processes_tooltip_refresh".localized)
         }
     }

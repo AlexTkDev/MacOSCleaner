@@ -8,6 +8,7 @@ public struct DiskRingsChartView: View {
     let totalDisk: Int64
     
     @State private var hoveredID: UUID? = nil
+    @State private var selectedID: UUID? = nil
     
     public init(items: [DiskCategoryItem], totalUsed: Int64, totalDisk: Int64) {
         self.items = items
@@ -43,8 +44,12 @@ public struct DiskRingsChartView: View {
         }
     }
     
+    private var activeID: UUID? {
+        hoveredID ?? selectedID
+    }
+
     private var hoveredItem: DiskCategoryItem? {
-        sortedItems.first { $0.id == hoveredID }
+        sortedItems.first { $0.id == activeID }
     }
     
     public var body: some View {
@@ -163,14 +168,14 @@ public struct DiskRingsChartView: View {
                             .transition(.opacity)
                     }
                 }
-                .animation(.easeInOut(duration: 0.15), value: hoveredID)
+                .animation(.easeInOut(duration: 0.15), value: activeID)
                 
                 // Concentric Activity Rings
                 ForEach(Array(sortedItems.enumerated()), id: \.element.id) { index, item in
                     let radius = (size / 2) - CGFloat(index) * (ringWidth + spacing) - ringWidth / 2
                     let progress = totalUsed > 0 ? max(0.015, Double(item.bytes) / Double(totalUsed)) : 0.0
-                    let isHovered = hoveredID == item.id
-                    let isDimmed = hoveredID != nil && !isHovered
+                    let isHovered = activeID == item.id
+                    let isDimmed = activeID != nil && !isHovered
                     
                     ZStack {
                         // Background Track
@@ -197,6 +202,11 @@ public struct DiskRingsChartView: View {
                             hoveredID = hover ? item.id : nil
                         }
                     }
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            selectedID = (selectedID == item.id) ? nil : item.id
+                        }
+                    }
                 }
             }
             .frame(width: size, height: size)
@@ -215,8 +225,8 @@ public struct DiskRingsChartView: View {
     }
     
     private func legendCard(item: DiskCategoryItem) -> some View {
-        let isHovered = hoveredID == item.id
-        let isDimmed = hoveredID != nil && !isHovered
+        let isHovered = activeID == item.id
+        let isDimmed = activeID != nil && !isHovered
         let pctString = formattedCategoryPercent(for: item.bytes)
         
         return HStack(spacing: 8) {
@@ -268,6 +278,11 @@ public struct DiskRingsChartView: View {
         .onHover { isHover in
             withAnimation(.easeInOut(duration: 0.15)) {
                 hoveredID = isHover ? item.id : nil
+            }
+        }
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                selectedID = (selectedID == item.id) ? nil : item.id
             }
         }
     }

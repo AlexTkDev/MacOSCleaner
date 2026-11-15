@@ -196,7 +196,6 @@
 "theme_light" = "Light";
 "theme_dark" = "Dark";
 "settings_notifications" = "Notifications";
-"settings_tooltips" = "Tooltips";
 "settings_auto_scan" = "Automatic Scan on Startup";
 "settings_processes" = "Processes";
 "settings_refresh_interval" = "Refresh Interval";
@@ -851,7 +850,6 @@
 "settings_appearance_language_sub" = "Personalize app interface";
 "settings_language_sub" = "Interface display language";
 "settings_theme_sub" = "Color scheme appearance";
-"settings_tooltips_sub" = "Helpful popovers on hover";
 "settings_system_maintenance_title" = "System Maintenance";
 "settings_system_maintenance_sub" = "System optimizations for macOS";
 "settings_touchid_sudo_title" = "Touch ID for sudo";
@@ -1024,3 +1022,8 @@
 "startup_delete_confirm_message" = "Are you sure you want to delete '%@'?\nFile: %@\nThis will stop the service and move its property list to the Trash.";
 "startup_delete_action" = "Move to Trash";
 "scan_incomplete_without_fda" = "Without Full Disk Access, some protected folders are missing from these results.";
+"cleanup_skip_reason_sip" = "Protected by System Integrity Protection (SIP)";
+"cleanup_skip_reason_permission" = "Permission denied";
+"cleanup_skip_reason_in_use" = "File is currently in use";
+"cleanup_complete_trash_sub" = "Moved %@ to Trash (space will be freed when Trash is emptied).";
+"cleanup_complete_perm_sub" = "Permanently freed %@ of disk space.";

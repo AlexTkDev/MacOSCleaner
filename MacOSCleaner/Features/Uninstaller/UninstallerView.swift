@@ -76,6 +76,10 @@ struct UninstallerView: View {
     var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                uninstallerHeaderBar
+
+                Divider()
+
                 if scanLimited {
                     Label("scan_incomplete_without_fda".localized, systemImage: "exclamationmark.triangle")
                         .font(.callout)
@@ -89,45 +93,6 @@ struct UninstallerView: View {
                 } else {
                     OrphanedResidualsView(service: service, settings: settings)
                 }
-            }
-        }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                GlassPillPicker(
-                    items: UninstallerTab.allCases,
-                    selection: $selectedTab,
-                    icon: { $0.iconName },
-                    label: { $0.localizedTitle }
-                )
-            }
-            ToolbarItem(placement: .automatic) {
-                // Scan mode badge
-                HStack(spacing: 4) {
-                    Image(systemName: settings.uninstallerScanMode == .safe ? "shield.checkmark" : "scale.3d")
-                    Text(settings.uninstallerScanMode.localizedName)
-                }
-                .font(.caption)
-                .fontWeight(.medium)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .foregroundStyle(
-                    settings.uninstallerScanMode == .safe ? Color.blue : Color.green
-                )
-                .background(
-                    Capsule().fill(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
-                )
-                .overlay(
-                    Capsule().strokeBorder(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
-                )
-                .padding(.horizontal, 6)
-            }
-            ToolbarItem(placement: .automatic) {
-                Button(action: loadApps) {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .glassButtonStyle()
-                .help("uninstaller_reload".localized)
             }
         }
         .sheet(isPresented: $showingPostUninstallSheet) {
@@ -218,6 +183,51 @@ struct UninstallerView: View {
                 } else {
                     Text(String(format: "uninstaller_uninstall_version_warning_trash".localized, versionApp.version, parentApp.name, Int64(count)))
                 }
+            }
+        }
+    }
+
+    private var uninstallerHeaderBar: some View {
+        WorkspaceHeaderBar {
+            GlassPillPicker(
+                items: UninstallerTab.allCases,
+                selection: $selectedTab,
+                icon: { $0.iconName },
+                label: { $0.localizedTitle }
+            )
+
+            Spacer()
+
+            HStack(spacing: 4) {
+                Image(systemName: settings.uninstallerScanMode == .safe ? "shield.checkmark" : "scale.3d")
+                Text(settings.uninstallerScanMode.localizedName)
+            }
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .foregroundStyle(
+                settings.uninstallerScanMode == .safe ? Color.blue : Color.green
+            )
+            .background(
+                Capsule().fill(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+            )
+            .overlay(
+                Capsule().strokeBorder(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
+            )
+
+            if selectedTab == .applications {
+                CompactSearchField(
+                    placeholder: "uninstaller_search".localized,
+                    text: $searchText,
+                    width: 200
+                )
+
+                Button(action: loadApps) {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .glassButtonStyle()
+                .help("uninstaller_reload".localized)
             }
         }
     }
@@ -1541,8 +1551,7 @@ private struct AppMetadataSection: View {
         .task(id: bundleID) {
             metadata = nil
             guard let bundleID, !bundleID.isEmpty else { return }
-            // Fresh provider avoids stale empty cache if Bundle.main resources were not ready yet.
-            metadata = await UIMetadataProvider().metadata(forBundleID: bundleID)
+            metadata = await UIMetadataProvider.shared.metadata(forBundleID: bundleID)
         }
     }
 }

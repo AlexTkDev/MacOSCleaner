@@ -196,7 +196,6 @@
 "theme_light" = "Jasny";
 "theme_dark" = "Ciemny";
 "settings_notifications" = "Powiadomienia";
-"settings_tooltips" = "Podpowiedzi";
 "settings_auto_scan" = "Automatyczne skanowanie przy uruchomieniu";
 "settings_processes" = "Procesy";
 "settings_refresh_interval" = "Częstotliwość odświeżania";
@@ -851,7 +850,6 @@
 "settings_appearance_language_sub" = "Dostosuj interfejs aplikacji";
 "settings_language_sub" = "Język wyświetlania interfejsu";
 "settings_theme_sub" = "Schemat kolorów";
-"settings_tooltips_sub" = "Podpowiedzi po wskazaniu";
 "settings_system_maintenance_title" = "Konserwacja systemu";
 "settings_system_maintenance_sub" = "Optymalizacje systemu macOS";
 "settings_touchid_sudo_title" = "Touch ID dla sudo";
@@ -1024,3 +1022,8 @@
 "startup_delete_confirm_message" = "Czy na pewno chcesz usunąć „%@”?\nPlik: %@\nUsługa zostanie zatrzymana, a jej plik plist zostanie przeniesiony do Kosza.";
 "startup_delete_action" = "Przenieś do Kosza";
 "scan_incomplete_without_fda" = "Bez pełnego dostępu do dysku części chronionych folderów nie ma w tych wynikach.";
+"cleanup_skip_reason_sip" = "Chronione przez System Integrity Protection (SIP)";
+"cleanup_skip_reason_permission" = "Brak uprawnień";
+"cleanup_skip_reason_in_use" = "Plik jest obecnie używany";
+"cleanup_complete_trash_sub" = "Przeniesiono %@ do Kosza (miejsce zostanie zwolnione po jego opróżnieniu).";
+"cleanup_complete_perm_sub" = "Trwale zwolniono %@ miejsca na dysku.";

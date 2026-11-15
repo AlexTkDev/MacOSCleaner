@@ -195,7 +195,6 @@
 "theme_light" = "淺色";
 "theme_dark" = "深色";
 "settings_notifications" = "通知";
-"settings_tooltips" = "工具提示";
 "settings_auto_scan" = "啟動時自動掃描";
 "settings_processes" = "進程";
 "settings_refresh_interval" = "重新整理間隔";
@@ -743,7 +742,6 @@
 "settings_appearance_language_sub" = "個性化設定應用介面";
 "settings_language_sub" = "介面顯示語言";
 "settings_theme_sub" = "色彩方案外觀";
-"settings_tooltips_sub" = "懸停時的提示氣泡";
 "settings_system_maintenance_title" = "系統維護";
 "settings_system_maintenance_sub" = "針對 macOS 的系統最佳化";
 "settings_touchid_sudo_title" = "用於 sudo 的 Touch ID";
@@ -987,3 +985,8 @@
 "startup_delete_confirm_message" = "確定要刪除「%@」嗎？\n檔案：%@\n服務將會停止，其 plist 檔案將移至垃圾桶。";
 "startup_delete_action" = "移至垃圾桶";
 "scan_incomplete_without_fda" = "沒有完整磁碟取用權限時，部分受保護的資料夾不會出現在結果中。";
+"cleanup_skip_reason_sip" = "受系統完整性保護 (SIP) 保護";
+"cleanup_skip_reason_permission" = "權限遭拒";
+"cleanup_skip_reason_in_use" = "檔案目前正在使用中";
+"cleanup_complete_trash_sub" = "已將 %@ 移至垃圾桶（清空垃圾桶後將釋放空間）。";
+"cleanup_complete_perm_sub" = "已永久釋放 %@ 磁碟空間。";

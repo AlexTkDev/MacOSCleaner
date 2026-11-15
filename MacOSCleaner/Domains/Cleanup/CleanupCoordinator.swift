@@ -181,7 +181,12 @@ public final class CleanupCoordinator {
                     self.totalFreedMB += result.freedMB
                     self.totalFreedBytes += result.freedBytes
                     if result.freedBytes > 0 {
-                        self.cleanedItems.append(CleanupResultItem(label: result.label, freedMB: result.freedMB, freedBytes: result.freedBytes))
+                        self.cleanedItems.append(CleanupResultItem(
+                            label: result.label,
+                            freedMB: result.freedMB,
+                            freedBytes: result.freedBytes,
+                            iconName: CleanupCategory.iconName(forResultLabel: result.label)
+                        ))
                     }
                     if result.isPartialFailure {
                         hadPartialFailure = true
@@ -225,6 +230,10 @@ public final class CleanupCoordinator {
                             throw CancellationError()
                         } catch {
                             hadPartialFailure = true
+                            self.skippedItems.append(SkippedCleanupItem(
+                                label: url.lastPathComponent,
+                                reason: Self.humanReadableSkipReason(from: error.localizedDescription)
+                            ))
                             Logger.coordinator.error("\(logLabel, privacy: .public) trash failed: \(error.localizedDescription, privacy: .public)")
                         }
                     }
@@ -232,7 +241,12 @@ public final class CleanupCoordinator {
                     self.totalFreedMB += mb
                     self.totalFreedBytes += freed
                     if freed > 0 {
-                        self.cleanedItems.append(CleanupResultItem(label: category.localizedTitle, freedMB: mb, freedBytes: freed))
+                        self.cleanedItems.append(CleanupResultItem(
+                            label: category.localizedTitle,
+                            freedMB: mb,
+                            freedBytes: freed,
+                            iconName: category.iconName
+                        ))
                     }
                     records.append(OperationRecord(
                         id: UUID(),
@@ -265,7 +279,7 @@ public final class CleanupCoordinator {
                         self.totalFreedMB += deletedMB
                         self.totalFreedBytes += deletedBytes
                         if deletedBytes > 0 {
-                            self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes))
+                            self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes, iconName: "trash"))
                         }
                         records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
                     }
@@ -364,7 +378,21 @@ public final class CleanupCoordinator {
             reason = "unknown"
         }
 
-        return SkippedCleanupItem(label: label, reason: reason)
+        return SkippedCleanupItem(label: label, reason: Self.humanReadableSkipReason(from: reason))
+    }
+
+    private static func humanReadableSkipReason(from raw: String) -> String {
+        let lower = raw.lowercased()
+        if lower.contains("sip") || lower.contains("operation not permitted") || lower.contains("eperm") {
+            return "cleanup_skip_reason_sip".localized
+        }
+        if lower.contains("permission denied") || lower.contains("eacces") || lower.contains("root") || lower.contains("admin") {
+            return "cleanup_skip_reason_permission".localized
+        }
+        if lower.contains("in use") || lower.contains("busy") || lower.contains("ebusy") {
+            return "cleanup_skip_reason_in_use".localized
+        }
+        return raw
     }
     
     @MainActor

@@ -84,6 +84,7 @@ struct MacOSCleanerApp: App {
                 availableUpdate = await updateChecker.checkForUpdate()
             }
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -157,6 +158,7 @@ struct MacOSCleanerApp: App {
                 .applyAppLanguage(appSettings.language)
                 .id(appSettings.language)
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentMinSize)
         .defaultPosition(.center)
         .defaultSize(width: 480, height: 600)

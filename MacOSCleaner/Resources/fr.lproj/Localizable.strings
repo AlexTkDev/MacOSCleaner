@@ -195,7 +195,6 @@
 "theme_light" = "Clair";
 "theme_dark" = "Sombre";
 "settings_notifications" = "Notifications";
-"settings_tooltips" = "Info-bulles";
 "settings_auto_scan" = "Analyse automatique au démarrage";
 "settings_processes" = "Processus";
 "settings_refresh_interval" = "Intervalle de rafraîchissement";
@@ -751,7 +750,6 @@
 "settings_appearance_language_sub" = "Personnaliser l'interface";
 "settings_language_sub" = "Langue d'affichage de l'interface";
 "settings_theme_sub" = "Schéma de couleurs";
-"settings_tooltips_sub" = "Infobulles au survol";
 "settings_system_maintenance_title" = "Maintenance système";
 "settings_system_maintenance_sub" = "Optimisations système pour macOS";
 "settings_touchid_sudo_title" = "Touch ID pour sudo";
@@ -986,3 +984,8 @@
 "startup_delete_confirm_message" = "Voulez-vous vraiment supprimer « %@ » ?\nFichier : %@\nLe service sera arrêté et son fichier plist sera placé dans la corbeille.";
 "startup_delete_action" = "Placer dans la corbeille";
 "scan_incomplete_without_fda" = "Sans accès complet au disque, certains dossiers protégés manquent dans ces résultats.";
+"cleanup_skip_reason_sip" = "Protégé par System Integrity Protection (SIP)";
+"cleanup_skip_reason_permission" = "Autorisation refusée";
+"cleanup_skip_reason_in_use" = "Le fichier est en cours d'utilisation";
+"cleanup_complete_trash_sub" = "%@ déplacé vers la Corbeille (l'espace sera libéré une fois vidée).";
+"cleanup_complete_perm_sub" = "%@ d'espace disque libéré définitivement.";
