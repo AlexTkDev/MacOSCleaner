@@ -1,9 +1,9 @@
 import Foundation
 
 public actor BackgroundItemsReader {
-    private let commandRunner: CommandRunner
+    private let commandRunner: any CommandRunning
 
-    public init(commandRunner: CommandRunner = CommandRunner()) {
+    public init(commandRunner: any CommandRunning = CommandRunner()) {
         self.commandRunner = commandRunner
     }
 
@@ -29,14 +29,22 @@ public actor BackgroundItemsReader {
     public func readLoginItems() async -> Set<URL> {
         var urls = Set<URL>()
         let result = try? await commandRunner.run(
-            command: "/usr/bin/osascript",
-            arguments: ["-e", "tell application \"System Events\" to get the path of every login item"]
+            command: "/usr/bin/sfltool",
+            arguments: ["dumpbtm"]
         )
         if let output = result?.stdout {
-            for line in output.components(separatedBy: ",") where !line.isEmpty {
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty {
-                    urls.insert(NormalizedPath.url(trimmed))
+            for rawLine in output.components(separatedBy: .newlines) {
+                let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+                if line.hasPrefix("URL:") {
+                    let rawURL = String(line.dropFirst("URL:".count)).trimmingCharacters(in: .whitespaces)
+                    if let parsed = URL(string: rawURL), parsed.isFileURL {
+                        urls.insert(NormalizedPath.canonicalize(parsed))
+                    }
+                } else if line.hasPrefix("Executable Path:") {
+                    let path = String(line.dropFirst("Executable Path:".count)).trimmingCharacters(in: .whitespaces)
+                    if path.hasPrefix("/") {
+                        urls.insert(NormalizedPath.url(path))
+                    }
                 }
             }
         }

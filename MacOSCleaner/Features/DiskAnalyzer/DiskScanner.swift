@@ -199,7 +199,12 @@ public actor DiskScanner {
     private func calculatePackageSize(url: URL) async -> (size: Int64, fileCount: Int) {
         if Task.isCancelled { return (0, 0) }
         let fm = FileManager.default
-        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .fileSizeKey, .isDirectoryKey]
+        let keys: [URLResourceKey] = [
+            .totalFileAllocatedSizeKey,
+            .fileSizeKey,
+            .isDirectoryKey,
+            .ubiquitousItemDownloadingStatusKey,
+        ]
         
         guard let enumerator = fm.enumerator(
             at: url,
@@ -207,6 +212,9 @@ public actor DiskScanner {
             options: [.skipsHiddenFiles]
         ) else {
             let values = try? url.resourceValues(forKeys: Set(keys))
+            if let values, FileManager.isNotDownloadedUbiquitous(values) {
+                return (0, 0)
+            }
             let s = Int64(values?.totalFileAllocatedSize ?? values?.fileSize ?? 0)
             return (s, 1)
         }
@@ -217,6 +225,7 @@ public actor DiskScanner {
         while let fileURL = enumerator.nextObject() as? URL {
             if Task.isCancelled { break }
             guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
+            if FileManager.isNotDownloadedUbiquitous(values) { continue }
             let isDir = values.isDirectory ?? false
             if !isDir {
                 totalSize += Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)

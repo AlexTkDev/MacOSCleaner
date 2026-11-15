@@ -17,7 +17,7 @@ public struct DiskRingsChartView: View {
     }
     
     private var usedCategoryItems: [DiskCategoryItem] {
-        items.filter { !$0.isFree && $0.bytes > 0 }
+        items.filter { $0.bytes > 0 }
     }
     
     private var sortedItems: [DiskCategoryItem] {

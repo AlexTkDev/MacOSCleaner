@@ -33,13 +33,13 @@ public struct CleanupTimeouts: Sendable {
 
     public func timeout(for category: CleanupCategory) -> Duration {
         switch category {
-        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .ideOldVersions, .userLogs:
+        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .userLogs:
             return system
         case .xcode, .iosSimulators, .appCaches, .ideCaches, .flutterDart, .systemCaches, .androidCaches, .gradleMaven, .dotfileCaches, .browserCaches, .chromeExtraCaches, .steamCache, .teamsCache, .adobeCaches, .cloudKitCache, .swiftPMCache, .carthageCache, .photosCache:
             return full
         case .scatteredJunk:
             return scatteredJunk
-        case .orphanedRemnants, .appContainers, .dynamicCacheDiscovery, .largeFiles, .orphanedFiles:
+        case .appContainers, .dynamicCacheDiscovery, .largeFiles:
             return full
         default:
             return fast
@@ -109,8 +109,6 @@ public enum CleanupCategory: String, Sendable, CaseIterable, Identifiable {
     case appContainers = "app_containers"
     case dotfileCaches = "dotfile_caches"
     case scatteredJunk = "scattered_junk"
-    case orphanedRemnants = "orphaned_remnants"
-    case orphanedFiles = "orphaned_files"
     case largeFiles = "large_files"
     case dynamicCacheDiscovery = "dynamic_cache_discovery"
     case timeMachineSnapshots = "time_machine_snapshots"
@@ -130,7 +128,6 @@ public enum CleanupCategory: String, Sendable, CaseIterable, Identifiable {
     case mailDownloads = "mail_downloads"
     case savedAppState = "saved_app_state"
     case crashReporter = "crash_reporter"
-    case ideOldVersions = "ide_old_versions"
     case assetsV2 = "assets_v2"
     case cloudKitCache = "cloudkit_cache"
     case swiftPMCache = "swiftpm_cache"
@@ -313,7 +310,7 @@ public actor CleanupEngine {
         case .appCaches: return try await cleanAppCaches(dryRun: dryRun, progress: progress)
         case .packageManagers: return try await cleanPackageManagers(dryRun: dryRun, progress: progress)
         case .gradleMaven: return try await cleanGradleMaven(dryRun: dryRun, progress: progress, cleanMaven: options.cleanMaven)
-        case .flutterDart: return try await cleanFlutterDart(dryRun: dryRun, progress: progress, cleanProjects: options.cleanProjects)
+        case .flutterDart: return try await cleanFlutterDart(dryRun: dryRun, progress: progress)
         case .xcode: return try await cleanXcode(dryRun: dryRun, progress: progress, archiveOlderThanDays: options.xcodeArchivesOlderThanDays)
         case .iosSimulators: return try await cleanIOSSimulators(dryRun: dryRun, progress: progress)
         case .androidCaches: return try await cleanAndroidCaches(dryRun: dryRun, progress: progress)
@@ -328,8 +325,6 @@ public actor CleanupEngine {
         case .appContainers: return try await cleanAppContainers(dryRun: dryRun, progress: progress)
         case .dotfileCaches: return try await cleanDotfileCaches(dryRun: dryRun, progress: progress)
         case .scatteredJunk: return try await cleanScatteredJunk(dryRun: dryRun, cleanDSStore: options.cleanDSStore, progress: progress)
-        case .orphanedRemnants: return try await cleanOrphanedRemnants(dryRun: dryRun, progress: progress)
-        case .orphanedFiles: return try await cleanOrphanedFiles(dryRun: dryRun, progress: progress)
         case .largeFiles: return try await cleanLargeFiles(dryRun: dryRun, progress: progress)
         case .dynamicCacheDiscovery: return try await cleanDynamicCacheDiscovery(dryRun: dryRun, progress: progress)
         case .timeMachineSnapshots: return try await cleanTimeMachineSnapshots(dryRun: dryRun, progress: progress)
@@ -337,7 +332,6 @@ public actor CleanupEngine {
         case .mailDownloads: return try await cleanMailDownloads(dryRun: dryRun, progress: progress)
         case .savedAppState: return try await cleanSavedAppState(dryRun: dryRun, progress: progress)
         case .crashReporter: return try await cleanCrashReporter(dryRun: dryRun, progress: progress)
-        case .ideOldVersions: return try await cleanIDEOldVersions(dryRun: dryRun, progress: progress)
         case .assetsV2: return try await cleanAssetsV2(dryRun: dryRun, progress: progress)
         case .cloudKitCache: return try await cleanCloudKitCache(dryRun: dryRun, progress: progress)
         case .swiftPMCache: return try await cleanSwiftPMCache(dryRun: dryRun, progress: progress)
@@ -445,8 +439,6 @@ public struct CleanupOptions: Sendable, Equatable {
     public var cleanMaven: Bool = true
     /// When true, cleans Go module cache (GOMODCACHE).
     public var cleanModCache: Bool = true
-    /// When true, deep cleans project artifacts (.dart_tool directories).
-    public var cleanProjects: Bool = true
     /// When true, cleans project-local build artifacts. Default is false (review-only).
     public var cleanProjectArtifacts: Bool = false
     /// Project build artifacts older than this many days will be cleaned (default: 60).
@@ -455,6 +447,8 @@ public struct CleanupOptions: Sendable, Equatable {
     public var xcodeArchivesOlderThanDays: Int = 90
     /// When true, cleans Time Machine local snapshots.
     public var cleanTimeMachineSnapshots: Bool = false
+    /// When true, flushes DNS cache. Default is false (opt-in).
+    public var cleanDNSFlush: Bool = false
     /// When true, clears font cache databases (atsutil). Default is false (requires restart/breaks rendering).
     public var cleanFontCache: Bool = false
     /// When true, bypasses Trash and permanently deletes cleaned files.
@@ -466,11 +460,11 @@ public struct CleanupOptions: Sendable, Equatable {
         cleanDSStore: Bool = false,
         cleanMaven: Bool = true,
         cleanModCache: Bool = true,
-        cleanProjects: Bool = true,
         cleanProjectArtifacts: Bool = false,
         projectArtifactsOlderThanDays: Int = 60,
         xcodeArchivesOlderThanDays: Int = 90,
         cleanTimeMachineSnapshots: Bool = false,
+        cleanDNSFlush: Bool = false,
         cleanFontCache: Bool = false,
         bypassTrash: Bool = false
     ) {
@@ -479,11 +473,11 @@ public struct CleanupOptions: Sendable, Equatable {
         self.cleanDSStore = cleanDSStore
         self.cleanMaven = cleanMaven
         self.cleanModCache = cleanModCache
-        self.cleanProjects = cleanProjects
         self.cleanProjectArtifacts = cleanProjectArtifacts
         self.projectArtifactsOlderThanDays = projectArtifactsOlderThanDays
         self.xcodeArchivesOlderThanDays = xcodeArchivesOlderThanDays
         self.cleanTimeMachineSnapshots = cleanTimeMachineSnapshots
+        self.cleanDNSFlush = cleanDNSFlush
         self.cleanFontCache = cleanFontCache
         self.bypassTrash = bypassTrash
     }
@@ -507,9 +501,8 @@ public struct CleanupOptions: Sendable, Equatable {
     ///
     /// Dangerous categories are excluded from automatic cleanup until they have
     /// per-item ownership proofs and explicit user selection:
-    /// orphaned remnants/files, old backups, AI/LLM user_content, installer packages,
-    /// large-file review items, launch agents/daemons,
-    /// privileged helpers, package receipts, internet plugins, project build artifacts.
+    /// old backups, iOS backups, AI/LLM user_content, installer packages,
+    /// large-file review items, project build artifacts.
     public func categories() -> [CleanupCategory] {
         if let targetCategories {
             return targetCategories
@@ -534,7 +527,6 @@ public struct CleanupOptions: Sendable, Equatable {
             .languageCaches,
             .largeFiles,
             .dynamicCacheDiscovery,
-            .iosBackups,
             .mailDownloads,
             .savedAppState,
             .crashReporter,
@@ -546,15 +538,16 @@ public struct CleanupOptions: Sendable, Equatable {
             .teamsCache,
             .adobeCaches,
             .chromeExtraCaches,
-            .ideOldVersions,
             .sharedFileLists,
             .photosCache,
             .garminFitbit,
-            .dnsFlush,
         ]
 
         if cleanDSStore {
             categories.append(.scatteredJunk)
+        }
+        if cleanDNSFlush {
+            categories.append(.dnsFlush)
         }
         if cleanFontCache {
             categories.append(.fontCache)
@@ -691,11 +684,6 @@ extension CleanupEngine {
         let pathsToClean = paths.filter { !skipsUnselected($0, dryRun: dryRun) }
         guard !pathsToClean.isEmpty else { return 0 }
         return try await fileActor.cleanContentsBatch(pathsToClean, dryRun: dryRun, bypassTrash: CleanupEngine.currentBypassTrash, progress: progress)
-    }
-
-    @available(*, deprecated, renamed: "cleanContentsBatch")
-    func cleanContentsParallel(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
-        try await cleanContentsBatch(paths, dryRun: dryRun, progress: progress)
     }
 
     /// Absolute existing paths from EmbeddedCleanupPaths (+ GeneratedCleanupPaths merge).
@@ -1029,7 +1017,7 @@ extension CleanupEngine {
 
     // MARK: 3. Gradle + Maven
 
-    func cleanGradleMaven(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanMaven: Bool = false) async throws -> [CleanupEngineResult] {
+    func cleanGradleMaven(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanMaven: Bool = true) async throws -> [CleanupEngineResult] {
         let home = fileSystemContext.homePath
         progress?(.log("Scanning Gradle + Maven caches..."))
         var freed: Int64 = 0
@@ -1071,7 +1059,7 @@ extension CleanupEngine {
 
     // MARK: 4. Flutter / Dart
 
-    func cleanFlutterDart(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanProjects: Bool = false) async throws -> [CleanupEngineResult] {
+    func cleanFlutterDart(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         let home = fileSystemContext.homePath
         progress?(.log("Scanning Flutter / Dart caches..."))
         var freed: Int64 = 0
@@ -1086,40 +1074,6 @@ extension CleanupEngine {
             let (f, item) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
             freed += f
             if dryRun { emitFileItem(item, category: "Flutter / Dart", parentName: nil, progress: progress) }
-        }
-
-        // .dart_tool in projects — OPT-IN only
-        if cleanProjects {
-            progress?(.log("  Scanning for .dart_tool directories..."))
-            let projectBases = [
-                "\(home)/Documents",
-                "\(home)/Projects",
-                "\(home)/Developer",
-                "\(home)/dev",
-                "\(home)/code",
-                "\(home)/repos"
-            ]
-            for base in projectBases {
-                guard fm.fileExists(atPath: base) else { continue }
-                if let enumerator = fm.enumerator(atPath: base) {
-                    while let item = enumerator.nextObject() as? String {
-                        let fullPath = "\(base)/\(item)"
-                        // Skip heavy directories (Docker, VMs)
-                        if Self.isHeavyDirectory(fullPath) {
-                            enumerator.skipDescendants()
-                            continue
-                        }
-                        if item == ".dart_tool" {
-                            let (f, item) = try await cleanContents(of: fullPath, dryRun: dryRun, progress: progress)
-                            freed += f
-                            if dryRun { emitFileItem(item, category: "Flutter / Dart", parentName: ".dart_tool", progress: progress) }
-                            enumerator.skipDescendants()
-                        } else if (fullPath as NSString).pathComponents.count - (base as NSString).pathComponents.count > 5 {
-                            enumerator.skipDescendants()
-                        }
-                    }
-                }
-            }
         }
 
         let mb = Int(freed / (1024 * 1024))
@@ -1509,23 +1463,6 @@ extension CleanupEngine {
         let sdkPath = "\(home)/Library/Android/sdk"
         progress?(.log("Scanning Android SDK..."))
 
-        // Find sdkmanager
-        var sdkmanager: String?
-        let candidates = [
-            "\(sdkPath)/cmdline-tools/latest/bin/sdkmanager",
-            "\(sdkPath)/tools/bin/sdkmanager"
-        ]
-        for path in candidates {
-            if fm.isExecutableFile(atPath: path) {
-                sdkmanager = path
-                progress?(.log("  sdkmanager found at \(shortPath(path))"))
-                break
-            }
-        }
-        if sdkmanager == nil {
-            progress?(.log("  sdkmanager not found"))
-        }
-
         var freed: Int64 = 0
 
         // Clean build-tools (keep latest stable)
@@ -1634,193 +1571,6 @@ extension CleanupEngine {
         progress?(.log("IDE / Electron total: \(Self.formatBytes(totalFreed))"))
         progress?(.result(label: "IDE / Electron caches", freedMB: mb))
         return [CleanupEngineResult(label: "IDE / Electron caches", freedMB: mb)]
-    }
-
-    // MARK: 9b. Old IDE Versions
-
-    func cleanIDEOldVersions(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        let home = fileSystemContext.homePath
-        progress?(.log("Scanning old IDE versions and leftover caches..."))
-        var freed: Int64 = 0
-
-        // 1. System-level IDE caches (safe, regenerated automatically)
-        let systemCacheDirs = [
-            // VS Code
-            "\(home)/Library/Caches/com.microsoft.VSCode",
-            // Cursor
-            "\(home)/Library/Caches/Cursor",
-            // Windsurf
-            "\(home)/Library/Caches/com.exafunction.windsurf",
-            "\(home)/Library/Caches/com.exafunction.windsurf.ShipIt",
-            // Zed
-            "\(home)/Library/Caches/dev.zed.Zed",
-            "\(home)/.cache/zed",
-            // Nova
-            "\(home)/Library/Caches/com.panic.Nova",
-            // Sublime Text
-            "\(home)/Library/Caches/com.sublimetext.4",
-            "\(home)/Library/Caches/com.sublimetext.sublime-merge",
-            // Eclipse
-            "\(home)/Library/Caches/org.eclipse.platform.ide",
-            // Atom (legacy)
-            "\(home)/Library/Caches/com.github.atom",
-            "\(home)/Library/Caches/Atom",
-        ]
-
-        for dir in systemCacheDirs {
-            try Task.checkCancellation()
-            let (f, item) = try await cleanContents(of: dir, dryRun: dryRun, progress: progress)
-            freed += f
-            if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: nil, progress: progress) }
-        }
-
-        // 2. JetBrains: detect old product version dirs for no-longer-installed IDEs
-        progress?(.log("  Checking JetBrains products..."))
-        let installedJetBrainsProducts = collectInstalledJetBrainsProducts()
-        let jetBrainsCacheBase = "\(home)/Library/Caches/JetBrains"
-        let jetBrainsLogBase = "\(home)/Library/Logs/JetBrains"
-
-        for base in [jetBrainsCacheBase, jetBrainsLogBase] {
-            guard fm.fileExists(atPath: base) else { continue }
-            let entries = (try? fm.contentsOfDirectory(atPath: base)) ?? []
-            for entry in entries {
-                try Task.checkCancellation()
-                guard !entry.hasPrefix(".") else { continue }
-                // Check if this product dir matches an installed IDE
-                let isInstalled = installedJetBrainsProducts.contains { product in
-                    entry.lowercased().hasPrefix(product.lowercased())
-                }
-                if !isInstalled {
-                    let entryPath = "\(base)/\(entry)"
-                    let (f, item) = try await removeDirectory(entryPath, dryRun: dryRun, progress: progress)
-                    freed += f
-                    if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "JetBrains leftover: \(entry)", progress: progress) }
-                } else {
-                    // Product IS installed — still clean caches (safe, regenerated)
-                    // but only for the cache dir, not logs
-                    if base == jetBrainsCacheBase {
-                        let entryPath = "\(base)/\(entry)"
-                        let (f, item) = try await cleanContents(of: entryPath, dryRun: dryRun, progress: progress)
-                        freed += f
-                        if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "JetBrains cache: \(entry)", progress: progress) }
-                    }
-                }
-            }
-        }
-
-        // 3. Android Studio: clean caches for old versions (keep only latest per product line)
-        progress?(.log("  Checking Android Studio caches..."))
-        let asCandidates = [
-            "\(home)/Library/Caches/Google/AndroidStudio",
-            "\(home)/Library/Caches/AndroidStudio",
-        ]
-        for candidateBase in asCandidates {
-            let baseDir = URL(fileURLWithPath: candidateBase).deletingLastPathComponent().path
-            let prefix = URL(fileURLWithPath: candidateBase).lastPathComponent
-            guard fm.fileExists(atPath: baseDir) else { continue }
-            let entries = (try? fm.contentsOfDirectory(atPath: baseDir)) ?? []
-            let matching = entries.filter { $0.hasPrefix(prefix) && !$0.hasPrefix(".") }.sorted()
-            // Keep the last one (latest version), remove older ones
-            if matching.count > 1 {
-                for old in matching.dropLast() {
-                    let oldPath = "\(baseDir)/\(old)"
-                    let (f, item) = try await removeDirectory(oldPath, dryRun: dryRun, progress: progress)
-                    freed += f
-                    if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "Android Studio old: \(old)", progress: progress) }
-                }
-            }
-        }
-
-        // 4. VS Code / Cursor / Windsurf CachedData — each subdir is a version, old ones can be cleaned
-        let electronAppSupportBases = [
-            ("\(home)/Library/Application Support/Code", "Code"),
-            ("\(home)/Library/Application Support/Code - Insiders", "Code - Insiders"),
-            ("\(home)/Library/Application Support/Cursor", "Cursor"),
-            ("\(home)/Library/Application Support/Windsurf", "Windsurf"),
-        ]
-        for (appSupportPath, appName) in electronAppSupportBases {
-            let cachedDataPath = "\(appSupportPath)/CachedData"
-            guard fm.fileExists(atPath: cachedDataPath) else { continue }
-            let entries = (try? fm.contentsOfDirectory(atPath: cachedDataPath)) ?? []
-            if entries.count > 1 {
-                // Has multiple version subdirs — clean old ones
-                let sorted = entries.filter { $0 != "CachedData" && !$0.hasPrefix(".") }.sorted()
-                if sorted.count > 1 {
-                    for old in sorted.dropLast() {
-                        let oldPath = "\(cachedDataPath)/\(old)"
-                        var isDir: ObjCBool = false
-                        fm.fileExists(atPath: oldPath, isDirectory: &isDir)
-                        guard isDir.boolValue else { continue }
-                        let (f, item) = try await removeDirectory(oldPath, dryRun: dryRun, progress: progress)
-                        freed += f
-                        if dryRun { emitFileItem(item, category: "Old IDE Versions", parentName: "\(appName) old CachedData", progress: progress) }
-                    }
-                }
-            }
-        }
-
-        let mb = Int(freed / (1024 * 1024))
-        progress?(.log("Old IDE versions total: \(Self.formatBytes(freed))"))
-        progress?(.result(label: "Old IDE versions", freedMB: mb))
-        return [CleanupEngineResult(label: "Old IDE Versions", freedMB: mb)]
-    }
-
-    /// Collects installed JetBrains product names from /Applications.
-    private func collectInstalledJetBrainsProducts() -> [String] {
-        let searchPaths = ["/Applications", "\(fileSystemContext.homePath)/Applications"]
-        var products: [String] = []
-        let jetBrainsBundlePrefixes = [
-            "com.jetbrains.", "com.google.AndroidStudio"
-        ]
-        // Map bundle ID suffixes to product directory name used in caches/logs
-        let productNameMap: [String: String] = [
-            "intellij": "IntelliJIdea",
-            "intellij.ce": "IntelliJIdea",
-            "intellij.ue": "IntelliJIdea",
-            "pycharm": "PyCharm",
-            "pycharm.ce": "PyCharm",
-            "pycharm.pe": "PyCharm",
-            "webstorm": "WebStorm",
-            "clion": "CLion",
-            "goland": "GoLand",
-            "goland.ce": "GoLand",
-            "rider": "Rider",
-            "dataspell": "DataSpell",
-            "rubymine": "RubyMine",
-            "phpstorm": "PhpStorm",
-            "dotmemory": "dotMemory",
-            "dotcover": "dotCover",
-            "dottrace": "dotTrace",
-            "resharper": "ReSharper",
-            "fleet": "Fleet",
-            "aqua": "Aqua",
-            "idea": "IntelliJIdea",
-            "AndroidStudio": "AndroidStudio",
-        ]
-        for basePath in searchPaths {
-            guard let contents = try? fm.contentsOfDirectory(atPath: basePath) else { continue }
-            for item in contents where item.hasSuffix(".app") {
-                let appPath = "\(basePath)/\(item)"
-                guard let bundle = Bundle(url: URL(fileURLWithPath: appPath)),
-                      let bundleID = bundle.bundleIdentifier?.lowercased() else { continue }
-                guard jetBrainsBundlePrefixes.contains(where: { bundleID.hasPrefix($0) }) else { continue }
-                // Extract the product part after prefix
-                let productKey = bundleID
-                    .replacingOccurrences(of: "com.jetbrains.", with: "")
-                    .replacingOccurrences(of: "com.google.", with: "")
-                    .replacingOccurrences(of: "-eap", with: "")
-                if let mapped = productNameMap[productKey] {
-                    products.append(mapped)
-                } else {
-                    // Fallback: use capitalized last component
-                    let parts = productKey.components(separatedBy: ".")
-                    if let last = parts.last?.capitalized {
-                        products.append(last)
-                    }
-                }
-            }
-        }
-        return products
     }
 
     // MARK: 10. Browser Caches
@@ -1953,7 +1703,7 @@ extension CleanupEngine {
 
     // MARK: 13. Language Caches
 
-    func cleanLanguageCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanModCache: Bool = false) async throws -> [CleanupEngineResult] {
+    func cleanLanguageCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?, cleanModCache: Bool = true) async throws -> [CleanupEngineResult] {
         var results = try await cleanFromEmbeddedPaths(.languageCaches, label: "Language caches", dryRun: dryRun, progress: progress)
         let home = fileSystemContext.homePath
         var extraFreedBytes: Int64 = 0
@@ -2301,22 +2051,6 @@ extension CleanupEngine {
         case oldLogFile(String, Int64)
         case windowsMeta(String)
         case brokenSymlink(String)
-    }
-
-    func cleanOrphanedRemnants(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        // Unattended orphan deletion is disabled — heuristics can match live apps.
-        // Scan remains available for UI review; never auto-trash from cleanup/scheduled.
-        progress?(.log("Orphaned remnants: skipped (manual review only; never auto-delete)"))
-        progress?(.result(label: "Orphaned remnants", freedMB: 0))
-        return [CleanupEngineResult(label: "Orphaned remnants", freedMB: 0)]
-    }
-
-    // MARK: 20. Orphaned Files
-
-    func cleanOrphanedFiles(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
-        progress?(.log("Orphaned files: skipped (manual review only; never auto-delete)"))
-        progress?(.result(label: "Orphaned files", freedMB: 0))
-        return [CleanupEngineResult(label: "Orphaned files", freedMB: 0)]
     }
 
     // MARK: - Heavy Directory Skip List
@@ -2924,7 +2658,7 @@ extension CleanupEngine {
             let fullPath = "\(dir)/\(entry)"
             let (f, item) = try await removeFile(fullPath, dryRun: dryRun, progress: progress)
             freed += f
-            if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, progress: progress) }
+            if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, isSelected: false, progress: progress) }
         }
         let mb = Int(freed / (1024 * 1024))
         progress?(.result(label: "Shared File Lists", freedMB: mb))
@@ -3173,7 +2907,7 @@ extension CleanupEngine {
         progress?(.log("Flushing DNS cache..."))
         if dryRun {
             progress?(.log("  Would run: dscacheutil -flushcache && killall -HUP mDNSResponder"))
-            emitFileItem(CleanupFileItem(path: "command://dns/flush", sizeBytes: 0, modificationDate: nil, isDirectory: false), category: "DNS Cache", parentName: nil, isSelected: true, isCommandBacked: true, progress: progress)
+            emitFileItem(CleanupFileItem(path: "command://dns/flush", sizeBytes: 0, modificationDate: nil, isDirectory: false), category: "DNS Cache", parentName: nil, isSelected: false, isCommandBacked: true, progress: progress)
             progress?(.result(label: "DNS Cache", freedMB: 0))
             return [CleanupEngineResult(label: "DNS Cache", freedMB: 0)]
         }
@@ -3209,21 +2943,15 @@ extension CleanupEngine {
         if skipsUnselected("command://font/cache-clear", dryRun: dryRun) {
             return [CleanupEngineResult(label: "Font Cache", freedMB: 0, skippedCount: 1)]
         }
-        let runningTests = NSClassFromString("XCTestCase") != nil
-            || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-        if runningTests {
-            progress?(.log("  Font cache clear skipped in tests"))
-        } else {
-            do {
-                let result = try await commandRunner.run(command: "/usr/bin/atsutil", arguments: ["databases", "-remove"])
-                if result.exitCode == 0 {
-                    progress?(.log("  Font cache cleared — restart required"))
-                } else {
-                    progress?(.log("  Font cache clear requires administrator privileges"))
-                }
-            } catch {
-                progress?(.log("  Font cache clear failed: \(error.localizedDescription)"))
+        do {
+            let result = try await commandRunner.run(command: "/usr/bin/atsutil", arguments: ["databases", "-remove"])
+            if result.exitCode == 0 {
+                progress?(.log("  Font cache cleared — restart required"))
+            } else {
+                progress?(.log("  Font cache clear requires administrator privileges"))
             }
+        } catch {
+            progress?(.log("  Font cache clear failed: \(error.localizedDescription)"))
         }
         progress?(.result(label: "Font Cache", freedMB: 0))
         return [CleanupEngineResult(label: "Font Cache", freedMB: 0)]

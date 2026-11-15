@@ -5,8 +5,6 @@ import Foundation
 public enum HelperAppCollapser {
     public struct Result: Sendable {
         public let apps: [UninstallerService.AppInfo]
-        /// Parent bundle path → helper URLs absorbed (for deep-scan attachment).
-        public let absorbedHelpers: [String: [URL]]
     }
 
     public static func collapse(_ apps: [UninstallerService.AppInfo]) -> Result {
@@ -51,7 +49,7 @@ public enum HelperAppCollapser {
             return copy
         }
 
-        return Result(apps: updated, absorbedHelpers: absorbed)
+        return Result(apps: updated)
     }
 
     public static func isHelperApp(_ app: UninstallerService.AppInfo) -> Bool {

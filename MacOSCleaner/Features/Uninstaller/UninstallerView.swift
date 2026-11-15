@@ -109,7 +109,7 @@ struct UninstallerView: View {
         }
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Application")
+                AIExplanationService.shared.prewarm()
             }
             if allApps.isEmpty {
                 loadApps()

@@ -108,10 +108,6 @@ extension Sequence where Element == Evidence {
         }
         return result
     }
-
-    public func totalScore(weights: ScoringWeights = .default) -> Int {
-        artifactEvidence(weights: weights).reduce(0) { $0 + $1.weight }
-    }
 }
 
 // MARK: — ScoringWeights adds source-based lookup

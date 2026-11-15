@@ -168,57 +168,6 @@ struct StatRow: View {
     }
 }
 
-struct TransactionRow: View {
-    let transaction: CleanupTransaction
-    
-    var totalFreed: Int64 {
-        transaction.operations.reduce(0) { $0 + $1.bytesFreed }
-    }
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(transaction.timestamp.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
-                    .fontWeight(.medium)
-                Text(transaction.timestamp.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale)))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text(String(format: "dashboard_freed_prefix".localized, totalFreed.formattedByteCount()))
-                .foregroundColor(.green)
-                .fontWeight(.bold)
-        }
-        .padding()
-    }
-}
-
-struct DiskStatItem: View {
-    let title: String
-    let value: Int64
-    let color: Color?
-    var alignment: HorizontalAlignment = .leading
-    
-    var body: some View {
-        VStack(alignment: alignment) {
-            HStack(spacing: 4) {
-                if let color = color {
-                    Circle()
-                        .fill(color)
-                        .frame(width: 8, height: 8)
-                }
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Text(value.formattedByteCount())
-                .fontWeight(.medium)
-        }
-    }
-}
-
 struct SystemInfoItem: View {
     let title: String
     let value: String

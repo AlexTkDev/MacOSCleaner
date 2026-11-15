@@ -24,7 +24,6 @@ public final class CleanupCoordinator {
     public var currentStep: Int = 0
     public var totalSteps: Int = 1
     public var stepTitle: String = ""
-    public var totalFreedMB: Int = 0
     public var totalFreedBytes: Int64 = 0
     public var cleanedItems: [CleanupResultItem] = []
     public var skippedItems: [SkippedCleanupItem] = []
@@ -129,7 +128,6 @@ public final class CleanupCoordinator {
                 try Task.checkCancellation()
 
                 try self.stateMachine.transition(to: .executing)
-                self.totalFreedMB = 0
                 self.totalFreedBytes = 0
                 self.cleanedItems = []
                 self.lastError = nil
@@ -177,7 +175,6 @@ public final class CleanupCoordinator {
                 self.flushLogs()
 
                 for result in results {
-                    self.totalFreedMB += result.freedMB
                     self.totalFreedBytes += result.freedBytes
                     if result.freedBytes > 0 {
                         self.cleanedItems.append(CleanupResultItem(
@@ -244,7 +241,6 @@ public final class CleanupCoordinator {
                         }
                     }
                     let mb = Int(freed / (1024 * 1024))
-                    self.totalFreedMB += mb
                     self.totalFreedBytes += freed
                     if freed > 0 {
                         self.cleanedItems.append(CleanupResultItem(
@@ -281,7 +277,6 @@ public final class CleanupCoordinator {
                             _ = try await self.trashManager.permanentlyDelete(urls: uniqueTrashedThisRun)
                         }
                         let deletedMB = Int(deletedBytes / (1024 * 1024))
-                        self.totalFreedMB += deletedMB
                         self.totalFreedBytes += deletedBytes
                         if deletedBytes > 0 {
                             self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes, iconName: "trash"))
@@ -326,8 +321,6 @@ public final class CleanupCoordinator {
     private func parseSkippedFromLog(_ log: String) -> SkippedCleanupItem? {
         let patterns: [(category: CleanupCategory?, keywords: [String])] = [
             (.appContainers, ["App containers"]),
-            (.orphanedRemnants, ["Orphaned remnants"]),
-            (.orphanedFiles, ["Orphaned files"]),
             (.largeFiles, ["Large files"]),
             (.dynamicCacheDiscovery, ["Dynamic cache discovery"]),
             (.appCaches, ["App caches"]),
@@ -417,7 +410,6 @@ public final class CleanupCoordinator {
         itemManager.clear()
         cleanedItems = []
         skippedItems = []
-        totalFreedMB = 0
         totalFreedBytes = 0
         currentStep = 0
         stepTitle = ""

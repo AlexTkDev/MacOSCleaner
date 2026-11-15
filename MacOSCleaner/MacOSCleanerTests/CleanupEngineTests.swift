@@ -813,8 +813,9 @@ struct CleanupEngineTests {
         // Verify opt-in categories exist in CleanupCategory.allCases but NOT in default categories().
         #expect(CleanupCategory.allCases.contains(.timeMachineSnapshots))
         #expect(!categories.contains(.timeMachineSnapshots))
-        // Verify these are all in default categories:
-        #expect(categories.contains(.iosBackups))
+        // Verify these are in default categories (iosBackups is reviewOnly, included in scanCategories):
+        #expect(!categories.contains(.iosBackups))
+        #expect(options.scanCategories().contains(.iosBackups))
         #expect(categories.contains(.mailDownloads))
         #expect(categories.contains(.savedAppState))
         #expect(categories.contains(.crashReporter))

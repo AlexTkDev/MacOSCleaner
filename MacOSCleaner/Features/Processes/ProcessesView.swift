@@ -4,7 +4,6 @@ public struct ProcessesView: View {
     let settings: AppSettings
     @State private var viewModel = ProcessesViewModel()
     @State private var isEditMode = false
-    @State private var forceKillPopoverGroup: ProcessGroup?
     @State private var expandedGroupIDs: Set<String> = []
 
     public init(settings: AppSettings) {
@@ -56,7 +55,7 @@ public struct ProcessesView: View {
             viewModel.sortOption = settings.processSortOption
             viewModel.refreshInterval = settings.processRefreshInterval
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Process")
+                AIExplanationService.shared.prewarm()
             }
             Task { await viewModel.scan() }
         }

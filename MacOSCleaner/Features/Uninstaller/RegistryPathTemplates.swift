@@ -42,12 +42,6 @@ public enum RegistryPathTemplates {
         }
     }
 
-    /// All registry templates for a bundle ID (any purpose, including shared/admin).
-    public static func allTemplates(forBundleID bundleID: String) -> Set<String> {
-        guard let appPaths = GeneratedCleanupPaths.appPaths(forBundleID: bundleID) else { return [] }
-        return Set(appPaths.paths.map { tildeTemplate($0.template) })
-    }
-
     public static func tildeTemplate(_ template: String) -> String {
         var result = template
         for (token, value) in tokenToTilde {

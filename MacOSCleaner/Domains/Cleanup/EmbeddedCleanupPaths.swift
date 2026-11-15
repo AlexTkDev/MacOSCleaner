@@ -241,38 +241,18 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cabal/packages", category: .languageCaches),
         CleanupPath(path: "~/.cabal/logs", category: .languageCaches),
         CleanupPath(path: "~/.cache/org.swift.swiftpm", category: .languageCaches),
-        CleanupPath(path: "~/.swiftpm/cache", category: .languageCaches),
-        CleanupPath(path: "~/.swiftpm/repositories", category: .languageCaches),
-        CleanupPath(path: "~/.pnpm-store", category: .languageCaches),
-        CleanupPath(path: "~/.yarn", category: .languageCaches),
-        CleanupPath(path: "~/.cache/yarn", category: .languageCaches),
         CleanupPath(path: "~/.cache/poetry", category: .languageCaches),
         CleanupPath(path: "~/.cache/bazel", category: .languageCaches),
         CleanupPath(path: "~/.cache/bazelisk", category: .languageCaches),
         CleanupPath(path: "~/.gem", category: .languageCaches),
-        CleanupPath(path: "~/.cocoapods", category: .languageCaches),
-        CleanupPath(path: "~/.pub-cache/hosted", category: .languageCaches),
-        CleanupPath(path: "~/.pub-cache/git", category: .languageCaches),
-        CleanupPath(path: "~/.dartServer", category: .languageCaches),
     ]
 
     // MARK: - System Caches
 
     public static let systemCaches: [CleanupPath] = [
-        CleanupPath(path: "~/Library/Caches/com.apple.QuickLook.thumbnailcache", category: .systemCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.fontd", category: .systemCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.iconservices", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.metadata.SpotlightIndex", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Siri", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Assistant", category: .systemCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.parsecd", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.helpd", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/CloudKit", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.TimeMachine", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.diagnosticd", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.Spotlight", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.quicklook.ThumbnailsAgent", category: .systemCaches),
-        CleanupPath(path: "~/Library/Caches/com.apple.quicklook.ThumbnailsAgent/Thumbnails", category: .systemCaches),
     ]
 
     // MARK: - Dotfile Caches
@@ -284,7 +264,6 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.config/aider/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/continue/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/cody/cache", category: .dotfileCaches),
-        CleanupPath(path: "~/.npm/_logs", category: .dotfileCaches),
         CleanupPath(path: "~/.terraform.d/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.cache/helm/repository", category: .dotfileCaches),
         CleanupPath(path: "~/.cache/bazel", category: .dotfileCaches),

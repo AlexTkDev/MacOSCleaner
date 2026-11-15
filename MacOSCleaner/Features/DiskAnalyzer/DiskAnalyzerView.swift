@@ -33,7 +33,7 @@ public struct DiskAnalyzerView: View {
         .quickLookPreview($viewModel.quickLookURL)
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "File")
+                AIExplanationService.shared.prewarm()
             }
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)

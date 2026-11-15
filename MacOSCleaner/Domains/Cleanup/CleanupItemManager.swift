@@ -27,10 +27,6 @@ public final class CleanupItemManager {
         return nil
     }
 
-    public var selectedSizeMB: Int {
-        Int(selectedSizeBytes / (1024 * 1024))
-    }
-
     public var selectedSizeBytes: Int64 {
         var seenPaths = Set<String>()
         return items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
@@ -178,10 +174,6 @@ public final class CleanupItemManager {
         }
     }
 
-    public func selectItem(_ itemId: UUID?) {
-        self.selectedItemId = itemId
-    }
-
     public func updateAllSelection(isSelected: Bool) {
         for i in items.indices {
             updateItemSelection(&items[i], isSelected: isSelected)
@@ -275,11 +267,6 @@ public final class CleanupItemManager {
 
     private static func normalizePath(_ path: String) -> String {
         selectionKey(path)
-    }
-
-    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
-        var seenPaths = Set<String>()
-        return selectedSizeBytes(for: item, seenPaths: &seenPaths)
     }
 
     static func shortLabel(from path: String) -> String {

@@ -53,11 +53,4 @@ public extension DateFormatter {
         f.locale = LanguageManager.shared.currentLocale
         return f
     }
-    
-    static func makeLocalized(withFormat dateFormat: String) -> DateFormatter {
-        let f = DateFormatter()
-        f.dateFormat = dateFormat
-        f.locale = LanguageManager.shared.currentLocale
-        return f
-    }
 }

@@ -76,7 +76,7 @@ final class EvidenceGraphTests: XCTestCase {
         let graph = EvidenceGraph(identity: identity)
         await graph.record(.plistContent, for: URL(fileURLWithPath: "/Library/Caches/a.plist"))
         await graph.record(.launchAgent, for: URL(fileURLWithPath: "/Library/LaunchAgents/test.plist"))
-        let count = await graph.count()
+        let count = await graph.allNodes().count
         XCTAssertEqual(count, 3)
     }
 
@@ -128,7 +128,7 @@ final class EvidenceGraphTests: XCTestCase {
         let graph = EvidenceGraph(identity: identity)
         let other = URL(fileURLWithPath: "/Library/Caches/test.cache")
         await graph.record(.plistContent, for: other)
-        let urls = await graph.allURLs()
+        let urls = await graph.allNodes().map(\.url)
         XCTAssertTrue(urls.contains(identity.bundleURL))
         XCTAssertTrue(urls.contains(other))
     }

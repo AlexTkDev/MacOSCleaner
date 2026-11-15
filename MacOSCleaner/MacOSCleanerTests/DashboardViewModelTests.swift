@@ -49,8 +49,7 @@ final class DashboardViewModelTests: XCTestCase {
         await viewModel.refresh()
         XCTAssertGreaterThan(viewModel.totalDiskSpace, 0)
         XCTAssertGreaterThan(viewModel.freeDiskSpace, 0)
-        XCTAssertGreaterThanOrEqual(viewModel.usedDiskPercentage, 0)
-        XCTAssertLessThanOrEqual(viewModel.usedDiskPercentage, 1.0)
+        XCTAssertGreaterThanOrEqual(viewModel.usedDiskSpace, 0)
     }
     
     func testDiskCategoriesData() async {

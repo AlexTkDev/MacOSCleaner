@@ -172,6 +172,9 @@ enum PrivateCatalogCodec {
 
             for path in paths where path.purpose == .cache && !path.requiresAdmin {
                 let expanded = tildePath(path.template)
+                if Self.shouldSkipCategoryCachePath(expanded, for: category) {
+                    continue
+                }
                 cacheByCategory[category, default: []].insert(expanded)
             }
 
@@ -280,6 +283,33 @@ enum PrivateCatalogCodec {
         ("<SYS_LOGS>", "/Library/Logs"),
         ("<HOME>", "~"),
     ]
+
+    private static func shouldSkipCategoryCachePath(_ expanded: String, for category: CleanupCategory) -> Bool {
+        if expanded == "~/.local/share/Trash" || expanded.hasPrefix("~/.local/share/Trash/") {
+            return true
+        }
+        switch category {
+        case .languageCaches:
+            let dedicatedToolchainPrefixes = [
+                "~/.gradle", "~/.pub-cache", "~/.dartServer",
+                "~/.swiftpm", "~/.cocoapods", "~/.npm", "~/.m2",
+                "~/.pnpm-store", "~/.yarn", "~/.cache/yarn",
+            ]
+            return dedicatedToolchainPrefixes.contains { expanded == $0 || expanded.hasPrefix($0 + "/") }
+        case .dotfileCaches:
+            return expanded == "~/.npm" || expanded.hasPrefix("~/.npm/")
+        case .systemCaches:
+            let protectedSystemFragments = [
+                "com.apple.helpd", "com.apple.Spotlight", "com.apple.metadata.SpotlightIndex",
+                "com.apple.quicklook.ThumbnailsAgent", "com.apple.QuickLook.thumbnailcache",
+                "com.apple.Siri", "com.apple.Assistant", "com.apple.TimeMachine",
+                "com.apple.diagnosticd", "CloudKit",
+            ]
+            return protectedSystemFragments.contains { expanded.contains($0) }
+        default:
+            return false
+        }
+    }
 
     static func tildePath(_ template: String) -> String {
         var result = template

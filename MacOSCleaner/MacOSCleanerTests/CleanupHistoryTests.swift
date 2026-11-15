@@ -94,10 +94,8 @@ final class CleanupHistoryTests: XCTestCase {
         await viewModel.refresh()
         
         let recent = await viewModel.recentRecords
-        let all = await viewModel.allRecords
         
         XCTAssertEqual(recent.count, 3, "Dashboard should show at most 3 recent records")
-        XCTAssertEqual(all.count, 5, "All records should retain complete history")
         XCTAssertEqual(recent.first?.freedBytes, 5000, "Most recent record should be first")
     }
     

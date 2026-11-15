@@ -53,15 +53,16 @@ public struct StartupServicesView: View {
             }
             Button("startup_delete_action".localized, role: .destructive) {
                 let target = service
+                let bypassTrash = settings.bypassTrashOnUninstall
                 serviceToDelete = nil
-                Task { await viewModel.delete(service: target) }
+                Task { await viewModel.delete(service: target, bypassTrash: bypassTrash) }
             }
         } message: { service in
             Text(String(format: "startup_delete_confirm_message".localized, service.name, service.path))
         }
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Startup")
+                AIExplanationService.shared.prewarm()
             }
             Task { await viewModel.scan() }
         }

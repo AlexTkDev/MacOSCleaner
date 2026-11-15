@@ -8,7 +8,6 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertFalse(options.cleanDSStore)
         XCTAssertTrue(options.cleanMaven)
         XCTAssertTrue(options.cleanModCache)
-        XCTAssertTrue(options.cleanProjects)
         XCTAssertFalse(options.cleanProjectArtifacts)
         XCTAssertEqual(options.projectArtifactsOlderThanDays, 60)
     }
@@ -26,12 +25,11 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertTrue(categories.contains(.systemCaches))
         XCTAssertTrue(categories.contains(.appContainers))
         XCTAssertTrue(categories.contains(.dotfileCaches))
-        XCTAssertFalse(categories.contains(.orphanedRemnants))
-        XCTAssertFalse(categories.contains(.orphanedFiles))
         XCTAssertFalse(categories.contains(.oldBackups))
         XCTAssertFalse(categories.contains(.aiModels))
         XCTAssertFalse(categories.contains(.installerPackages))
-        XCTAssertTrue(categories.contains(.iosBackups))
+        XCTAssertFalse(categories.contains(.iosBackups))
+        XCTAssertFalse(categories.contains(.dnsFlush))
         XCTAssertTrue(categories.contains(.iosSimulators))
         XCTAssertTrue(CleanupCategory.reviewOnly.contains(.iosBackups))
     }
@@ -60,7 +58,7 @@ final class CleanupOptionsTests: XCTestCase {
         let options = CleanupOptions()
         let categories = options.categories()
 
-        XCTAssertEqual(categories.count, 36)
+        XCTAssertEqual(categories.count, 33)
         XCTAssertFalse(categories.contains(.fontCache))
     }
 

@@ -2,7 +2,7 @@ import Foundation
 
 enum LaunchdControl {
     /// Unload a user LaunchAgent plist via modern `launchctl bootout` before removal.
-    static func bootout(plistPath: String, runner: CommandRunner) async {
+    static func bootout(plistPath: String, label explicitLabel: String? = nil, runner: CommandRunner) async {
         guard plistPath.hasSuffix(".plist"),
               plistPath.contains("LaunchAgents") || plistPath.contains("LaunchDaemons") else {
             return
@@ -14,7 +14,8 @@ enum LaunchdControl {
         }
 
         let domain = "gui/\(getuid())"
-        let label = extractLabel(from: plistPath)
+        let label = explicitLabel
+            ?? extractLabel(from: plistPath)
             ?? URL(fileURLWithPath: plistPath).deletingPathExtension().lastPathComponent
         let target = "\(domain)/\(label)"
         let byLabel = try? await runner.run(command: "/bin/launchctl", arguments: ["bootout", target])

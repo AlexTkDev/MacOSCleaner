@@ -12,15 +12,6 @@ public struct DuplicateFileItem: Identifiable, Sendable, Hashable {
     public let modificationDate: Date?
     public var isSelected: Bool
 
-    public var isSelectedForDeletion: Bool {
-        get { isSelected }
-        set { isSelected = newValue }
-    }
-
-    public var isOriginal: Bool {
-        !isSelected
-    }
-
     public init(
         id: UUID = UUID(),
         url: URL,
@@ -38,8 +29,6 @@ public struct DuplicateFileItem: Identifiable, Sendable, Hashable {
     }
 }
 
-public typealias DuplicateFile = DuplicateFileItem
-
 public struct DuplicateGroup: Identifiable, Sendable, Hashable {
     public let id: UUID
     public let fileSize: Int64
@@ -48,19 +37,6 @@ public struct DuplicateGroup: Identifiable, Sendable, Hashable {
 
     public var name: String {
         items.first?.name ?? "Duplicates"
-    }
-
-    public var size: Int64 {
-        fileSize
-    }
-
-    public var formattedSize: String {
-        size.formattedByteCount()
-    }
-
-    public var files: [DuplicateFileItem] {
-        get { items }
-        set { items = newValue }
     }
 
     public var selectedWastedBytes: Int64 {

@@ -32,6 +32,7 @@ public actor DuplicateFinderEngine {
 
     private let fm = FileManager.default
     private let safetyManager: SafetyManager
+    private let trashManager: TrashManager
 
     /// System and user directory names to skip during duplicate scanning — system OS directories, Library, VCS, caches, package managers, asset catalogs.
     private static let excludedDirectoryNames: Set<String> = [
@@ -78,8 +79,9 @@ public actor DuplicateFinderEngine {
         "dat", "icu", "db", "sqlite", "sqlite3", "db-wal", "db-shm", "log"
     ]
 
-    public init(safetyManager: SafetyManager = SafetyManager()) {
+    public init(safetyManager: SafetyManager = SafetyManager(), trashManager: TrashManager? = nil) {
         self.safetyManager = safetyManager
+        self.trashManager = trashManager ?? TrashManager(safetyManager: safetyManager)
     }
 
     /// Checks if a file path is safe to scan and recommend for user duplicate removal.
@@ -391,12 +393,7 @@ public actor DuplicateFinderEngine {
             }
             if fm.fileExists(atPath: url.path) {
                 do {
-                    if bypassTrash {
-                        try fm.removeItem(at: url)
-                    } else {
-                        var trashedURL: NSURL?
-                        try fm.trashItem(at: url, resultingItemURL: &trashedURL)
-                    }
+                    try await trashManager.removeItem(at: url, bypassTrash: bypassTrash, policy: .userSelected)
                     removedCount += 1
                     freedBytes += item.sizeBytes
                     Logger.duplicateEngine.info("Removed duplicate file: \(url.path, privacy: .public)")

@@ -40,7 +40,6 @@ public struct ScoringWeights: Sendable, Equatable {
     public var launchServicesRegistered: Int = 50
 
     public static let `default` = ScoringWeights()
-    public static let test = ScoringWeights()
 
     public init() {}
 

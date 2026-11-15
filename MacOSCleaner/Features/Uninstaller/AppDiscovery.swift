@@ -166,50 +166,6 @@ public actor AppDiscovery {
         return applications.sorted { $0.path < $1.path }
     }
 
-    static func homebrewFormulaApplications(
-        containing bundleURL: URL,
-        cellarDirectories: [URL] = defaultHomebrewCellarDirectories,
-        fileManager: FileManager = .default
-    ) -> Set<URL> {
-        guard let location = homebrewFormulaLocation(
-            containing: bundleURL,
-            cellarDirectories: cellarDirectories
-        ), let formulae = directoryContents(at: location.cellar, fileManager: fileManager) else {
-            return []
-        }
-
-        let familyName = homebrewFormulaFamilyName(location.formulaName)
-        var applications = Set<URL>()
-        for formula in formulae where isDirectory(formula)
-            && homebrewFormulaFamilyName(formula.lastPathComponent) == familyName {
-            applications.formUnion(homebrewApplications(
-                inFormulaRoot: formula,
-                fileManager: fileManager
-            ))
-        }
-        return applications
-    }
-
-    private static func homebrewFormulaLocation(
-        containing bundleURL: URL,
-        cellarDirectories: [URL]
-    ) -> (cellar: URL, formulaName: String)? {
-        let bundlePath = bundleURL.standardizedFileURL.path
-        for cellar in cellarDirectories {
-            let cellarPath = cellar.standardizedFileURL.path
-            let prefix = cellarPath + "/"
-            guard bundlePath.hasPrefix(prefix) else { continue }
-            let relativePath = String(bundlePath.dropFirst(prefix.count))
-            guard let formulaName = relativePath.split(separator: "/").first else { continue }
-            return (cellar, String(formulaName))
-        }
-        return nil
-    }
-
-    private static func homebrewFormulaFamilyName(_ formulaName: String) -> String {
-        String(formulaName.split(separator: "@", maxSplits: 1).first ?? Substring(formulaName))
-    }
-
     private static func homebrewApplications(
         inFormulaRoot formulaRoot: URL,
         fileManager: FileManager

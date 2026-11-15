@@ -49,21 +49,6 @@ public enum AIAvailabilityState: Equatable, Sendable {
     public var isAvailable: Bool {
         self == .ready
     }
-
-    public var helpTooltip: String {
-        switch self {
-        case .ready:
-            return "uninstaller_explain_with_ai".localized
-        case .unsupportedDevice:
-            return "settings_ai_status_unsupported_device".localized
-        case .notEnabledInSettings:
-            return "settings_ai_hint_not_enabled".localized
-        case .modelPreparing:
-            return "settings_ai_status_preparing".localized
-        case .unsupportedLanguage:
-            return "settings_ai_hint_unsupported_language".localized
-        }
-    }
 }
 
 public actor AIExplanationService {
@@ -97,7 +82,7 @@ public actor AIExplanationService {
         availabilityState == .ready
     }
     
-    public nonisolated func prewarm(promptPrefix: String? = nil) {
+    public nonisolated func prewarm() {
         let session = LanguageModelSession(model: SystemLanguageModel.default)
         session.prewarm()
     }

@@ -11,6 +11,7 @@ public enum SafetyError: Error, Equatable {
 public enum DeletionPolicy: Sendable {
     case cleanup
     case uninstall
+    case userSelected
 }
 
 public struct SafetyManager: Sendable {
@@ -353,6 +354,21 @@ public struct SafetyManager: Sendable {
                 "\(home)/Pictures",
                 "\(home)/Backups",
             ].contains { p == $0 || p.hasPrefix($0 + "/") }
+
+            if policy == .userSelected {
+                let isStrictUserContentDescendant = [
+                    "\(home)/Documents",
+                    "\(home)/Desktop",
+                    "\(home)/Downloads",
+                    "\(home)/Movies",
+                    "\(home)/Music",
+                    "\(home)/Pictures",
+                    "\(home)/Backups",
+                ].contains { p.hasPrefix($0 + "/") }
+                if isStrictUserContentDescendant {
+                    continue
+                }
+            }
 
             let isException = !isUserContentRoot && allowedExceptions.contains { exception in
                 p == exception || p.hasPrefix(exception + "/")

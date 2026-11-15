@@ -1052,7 +1052,10 @@ public actor CandidateCollector {
         }
 
         var urls = Set<URL>()
+        var seenQueries = Set<String>()
         for (query, onlyIn) in queries {
+            let cacheKey = "\(onlyIn ?? "*")|\(query)"
+            guard seenQueries.insert(cacheKey).inserted else { continue }
             var arguments: [String] = []
             if let onlyIn { arguments += ["-onlyin", onlyIn] }
             arguments.append(query)

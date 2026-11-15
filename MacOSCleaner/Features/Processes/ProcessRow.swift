@@ -15,7 +15,6 @@ struct ProcessRow: View {
     @State private var verdict: AIExplanationResult.Verdict? = nil
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
-    @State private var showForceKill = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -320,11 +319,7 @@ struct ProcessSplitButton: View {
         }
         .background(
             ZStack {
-                if #available(macOS 26.0, *) {
-                    Color.clear.background(.ultraThinMaterial)
-                } else {
-                    Color(nsColor: .controlBackgroundColor).opacity(0.5)
-                }
+                Color.clear.background(.ultraThinMaterial)
                 Color.red.opacity(0.12)
             }
         )

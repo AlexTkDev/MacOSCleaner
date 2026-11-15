@@ -129,7 +129,7 @@ public final class DiskAnalyzerViewModel {
     public func moveToTrash(item: DiskItem, bypassTrash: Bool = false) {
         Task {
             do {
-                try await trashManager.removeItem(at: item.url, bypassTrash: bypassTrash)
+                try await trashManager.removeItem(at: item.url, bypassTrash: bypassTrash, policy: .userSelected)
                 
                 // Remove item from currentItem's children in memory
                 removeItemFromTree(item: item)

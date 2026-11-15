@@ -1,9 +1,7 @@
 import Foundation
 
 public enum LaunchServiceError: Error {
-    case scanFailed(String)
     case toggleFailed(String)
-    case invalidPlist(String)
 }
 
 public actor LaunchServiceManager {
@@ -207,17 +205,16 @@ public actor LaunchServiceManager {
         }
     }
 
-    public func delete(service: StartupService) async throws {
+    public func delete(service: StartupService, bypassTrash: Bool = false) async throws {
         guard service.category != .system, !service.requiresRoot, !service.path.hasPrefix("/System/") else {
             throw SafetyError.protectedPath(service.path)
         }
 
-        await LaunchdControl.bootout(plistPath: service.path, runner: commandRunner)
+        await LaunchdControl.bootout(plistPath: service.path, label: service.id, runner: commandRunner)
         _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["disable", "gui/\(getuid())/\(service.id)"])
 
-        // Trash the plist file with .uninstall policy
         let plistURL = URL(fileURLWithPath: service.path)
-        try await trashManager.trashItem(at: plistURL, policy: .uninstall)
+        try await trashManager.removeItem(at: plistURL, bypassTrash: bypassTrash, policy: .uninstall)
     }
 
     public func addVendorPrefix(_ prefix: String) {

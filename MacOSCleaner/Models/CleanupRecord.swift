@@ -114,7 +114,7 @@ public extension CleanupRecord {
             return .media
         case "app_caches", "browser_caches", "system_caches", "app_containers",
              "dotfile_caches", "user_logs", "saved_app_state", "crash_reporter",
-             "dynamic_cache_discovery", "ide_old_versions", "assets_v2",
+             "dynamic_cache_discovery", "assets_v2",
              "cloudkit_cache", "steam_cache", "teams_cache", "adobe_caches",
              "chrome_extra_caches", "shared_file_lists":
             return .caches

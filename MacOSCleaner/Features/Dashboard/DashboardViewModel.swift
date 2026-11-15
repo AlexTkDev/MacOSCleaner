@@ -14,7 +14,6 @@ class DashboardViewModel: ObservableObject {
     @Published var cleanupCount: Int = 0
     @Published var recentTransactions: [CleanupTransaction] = []
     @Published var recentRecords: [CleanupRecord] = []
-    @Published var allRecords: [CleanupRecord] = []
     @Published var systemInfo: SystemInfo = .current
     
     // Disk Categories (Donut Chart)
@@ -52,7 +51,6 @@ class DashboardViewModel: ObservableObject {
             let allTransactions = try await journal.loadAll()
             recentTransactions = Array(allTransactions.reversed().prefix(5))
             let records = allTransactions.reversed().map { CleanupRecord(transaction: $0) }
-            allRecords = records
             recentRecords = Array(records.prefix(3))
             totalFreedBytes = allTransactions.reduce(0) { sum, transaction in
                 sum + transaction.operations.reduce(0) { $0 + $1.bytesFreed }
@@ -202,10 +200,5 @@ class DashboardViewModel: ObservableObject {
     
     var usedDiskSpace: Int64 {
         totalDiskSpace - freeDiskSpace
-    }
-    
-    var usedDiskPercentage: Double {
-        guard totalDiskSpace > 0 else { return 0 }
-        return Double(usedDiskSpace) / Double(totalDiskSpace)
     }
 }

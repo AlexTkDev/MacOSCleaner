@@ -59,10 +59,10 @@ public final class StartupServicesViewModel {
     }
 
     @MainActor
-    public func delete(service: StartupService) async {
+    public func delete(service: StartupService, bypassTrash: Bool = false) async {
         lastError = nil
         do {
-            try await manager.delete(service: service)
+            try await manager.delete(service: service, bypassTrash: bypassTrash)
             services = try await manager.scan()
         } catch {
             lastError = error.localizedDescription

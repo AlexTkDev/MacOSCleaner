@@ -15,12 +15,11 @@ final class AIExplanationServiceTests: XCTestCase {
         let state = await AIExplanationService.shared.availabilityState
         let isAvailable = await AIExplanationService.shared.isAvailable
         XCTAssertEqual(state.isAvailable, isAvailable)
-        XCTAssertFalse(state.helpTooltip.isEmpty)
     }
 
     func testPrewarm() async {
         // Should not throw or crash
-        await AIExplanationService.shared.prewarm(promptPrefix: "Test")
+        await AIExplanationService.shared.prewarm()
     }
 
     func testVerdictExtraction() {

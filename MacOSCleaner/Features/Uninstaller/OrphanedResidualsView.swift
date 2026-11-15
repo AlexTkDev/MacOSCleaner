@@ -54,10 +54,6 @@ public struct OrphanedResidualsView: View {
         selectedItems.reduce(0) { $0 + $1.sizeBytes }
     }
 
-    private var totalFoundSizeBytes: Int64 {
-        items.reduce(0) { $0 + $1.sizeBytes }
-    }
-
     public var body: some View {
         VStack(spacing: 0) {
             // Content

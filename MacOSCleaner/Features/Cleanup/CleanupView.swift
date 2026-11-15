@@ -58,7 +58,7 @@ public struct CleanupView: View {
         }
         .onAppear {
             if viewModel.settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Cleanup")
+                AIExplanationService.shared.prewarm()
             }
         }
     }
@@ -659,39 +659,6 @@ public struct CleanupView: View {
                 }
             }
             .listStyle(.inset)
-
-            if let selected = viewModel.selectedItem, let desc = selected.description {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        HStack {
-                            Image(systemName: "info.circle.fill")
-                                .foregroundColor(.accentColor)
-                            Text("cleanup_manual_instructions".localized)
-                                .font(.headline)
-                        }
-                        Spacer()
-                        Button(action: { viewModel.selectedItemId = nil }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    Text(desc)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.ultraThinMaterial)
-                .overlay(
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(Color(NSColor.separatorColor)),
-                    alignment: .top
-                )
-            }
         }
     }
 
@@ -792,7 +759,6 @@ public struct CleanupView: View {
         switch risk {
         case .safe: return .green
         case .moderate: return .orange
-        case .dangerous: return .red
         case .protected: return .secondary
         }
     }
@@ -1175,25 +1141,5 @@ public struct CleanupOptionItem: Identifiable {
         self.icon = icon
         self.requiresAdmin = requiresAdmin
         self.binding = binding
-    }
-
-    public init(
-        id: UUID = UUID(),
-        title: String,
-        subtitle: String,
-        icon: String,
-        requiresAdmin: Bool = false,
-        isEnabled: Bool = false
-    ) {
-        self.id = id
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = icon
-        self.requiresAdmin = requiresAdmin
-        let state = Mutex(isEnabled)
-        self.binding = Binding(
-            get: { state.withLock { $0 } },
-            set: { newValue in state.withLock { $0 = newValue } }
-        )
     }
 }
