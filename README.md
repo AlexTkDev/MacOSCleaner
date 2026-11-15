@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.3.0"><img src="https://img.shields.io/badge/Release-v2.3.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0"><img src="https://img.shields.io/badge/Release-v3.0.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>
@@ -138,7 +138,6 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions"><img src="https://img.shields.io/badge/Discussions-Forum-181717?style=flat&logo=discourse&logoColor=white" alt="Discussions" align="absmiddle"></a> — [Ask questions, propose features, and share feedback.](https://github.com/AlexTkDev/MacOSCleaner/discussions)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/issues"><img src="https://img.shields.io/badge/Issues-Tracker-E5534B?style=flat&logo=instabug&logoColor=white" alt="Issue Tracker" align="absmiddle"></a> — [Report bugs or suggest rule improvements.](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
-- <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/19"><img src="https://img.shields.io/badge/Roadmap-v2.4.0_In_Development-007AFF?style=flat&logo=github&logoColor=white" alt="v2.4.0 in Development" align="absmiddle"></a> — [Explore the v2.4.0 development roadmap, share feedback, and suggest new features.](https://github.com/AlexTkDev/MacOSCleaner/discussions/19)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
 
 <p>
