@@ -89,7 +89,7 @@ public struct CleanDeveloperCachesIntent: AppIntent, Sendable {
             let mb = Double(previewBytes) / (1024 * 1024)
             let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
             try await requestConfirmation(
-                result: .result(dialog: "Found \(formatted) of developer caches (\(target.rawValue)). Do you want to clean?")
+                dialog: "Found \(formatted) of developer caches (\(target.rawValue)). Do you want to clean?"
             )
         }
 

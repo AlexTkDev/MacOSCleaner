@@ -36,7 +36,7 @@ public struct EmptyTrashIntent: AppIntent, Sendable {
 
         if confirm && !shouldDryRun {
             try await requestConfirmation(
-                result: .result(dialog: "Are you sure you want to empty the Trash?")
+                dialog: "Are you sure you want to empty the Trash?"
             )
         }
 

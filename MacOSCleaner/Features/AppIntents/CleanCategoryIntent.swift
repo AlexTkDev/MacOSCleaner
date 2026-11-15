@@ -78,7 +78,7 @@ public struct CleanCategoryIntent: AppIntent, Sendable {
 
         if confirm && !shouldDryRun {
             try await requestConfirmation(
-                result: .result(dialog: "Are you sure you want to clean \(category.rawValue)?")
+                dialog: "Are you sure you want to clean \(category.rawValue)?"
             )
         }
 

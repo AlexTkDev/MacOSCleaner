@@ -84,8 +84,7 @@ public final class CleanupCoordinator {
 
                 let categories = options.scanCategories()
                 
-                _ = try await self.engine.scan(categories: categories, options: options) { [weak self] event in
-                    guard let self else { return }
+                _ = try await self.engine.scan(categories: categories, options: options) { event in
                     Task { @MainActor in
                         self.handleEngineEvent(event)
                     }
@@ -166,8 +165,7 @@ public final class CleanupCoordinator {
                 runOptions.selectedPaths = self.itemManager.allSelectedPaths()
                 FileManager.clearSizeCache()
 
-                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: runOptions) { [weak self] event in
-                    guard let self else { return }
+                let results = try await self.engine.run(categories: safeCategories, dryRun: false, options: runOptions) { event in
                     Task { @MainActor in
                         self.handleEngineEvent(event)
                     }

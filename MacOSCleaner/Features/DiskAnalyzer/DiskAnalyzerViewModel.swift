@@ -79,8 +79,7 @@ public final class DiskAnalyzerViewModel {
         
         scanTask = Task {
             do {
-                let scannedRoot = try await scanner.scan(directoryURL: url) { [weak self] folderName in
-                    guard let self else { return }
+                let scannedRoot = try await scanner.scan(directoryURL: url) { folderName in
                     Task { @MainActor in
                         self.currentScanningName = folderName
                     }

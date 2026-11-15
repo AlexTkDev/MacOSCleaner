@@ -1,4 +1,5 @@
 import SwiftUI
+import Synchronization
 
 public struct CleanupView: View {
     let viewModel: CleanupViewModel
@@ -1209,7 +1210,10 @@ public struct CleanupOptionItem: Identifiable {
         self.subtitle = subtitle
         self.icon = icon
         self.requiresAdmin = requiresAdmin
-        var state = isEnabled
-        self.binding = Binding(get: { state }, set: { state = $0 })
+        let state = Mutex(isEnabled)
+        self.binding = Binding(
+            get: { state.withLock { $0 } },
+            set: { newValue in state.withLock { $0 = newValue } }
+        )
     }
 }

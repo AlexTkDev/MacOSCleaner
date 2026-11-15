@@ -68,9 +68,8 @@ public final class DuplicatesViewModel {
             do {
                 let foundGroups = try await engine.scan(
                     directory: selectedFolderURL,
-                    progress: { [weak self] progress in
-                        Task { @MainActor [weak self] in
-                            guard let self else { return }
+                    progress: { progress in
+                        Task { @MainActor in
                             self.progressStage = progress.stage
                             self.filesScanned = progress.filesScanned
                             self.updateStatusMessage(stage: progress.stage)

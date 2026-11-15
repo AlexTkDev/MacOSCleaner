@@ -244,7 +244,6 @@ public actor TrashManager {
     }
 
     nonisolated public func ensureAccess() async throws {
-        let fileManager = FileManager.default
         let trashURL = trashDirectoryURL
         
         if hasAccess() { return }
