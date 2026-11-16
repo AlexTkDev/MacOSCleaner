@@ -452,13 +452,21 @@ public struct CleanupView: View {
                         Text("cleanup_complete".localized)
                             .font(.system(.title2, design: .rounded, weight: .bold))
 
-                        let subtitleKey = viewModel.settings.emptyTrashDuringCleanup
+                        let subtitleKey = viewModel.usedPermanentDeletion
                             ? "cleanup_complete_perm_sub"
                             : "cleanup_complete_trash_sub"
                         Text(String(format: subtitleKey.localized, viewModel.totalFreedBytes.formattedByteCount()))
                             .font(.body)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
+
+                        if viewModel.usedPermanentDeletion, let apfsDelta = viewModel.apfsDeltaBytes {
+                            let formattedDelta = apfsDelta > 0 ? "+\(apfsDelta.formattedByteCount())" : apfsDelta.formattedByteCount()
+                            Text(String(format: "cleanup_complete_apfs_delta".localized, formattedDelta))
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
                 }
                 .padding(.top, 28)

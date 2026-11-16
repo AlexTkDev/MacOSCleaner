@@ -1046,3 +1046,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 GB (estimado)";
 "settings_ai_open_apple_intelligence" = "Ajustes de Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Almacenamiento de macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Cambio en espacio APFS: %@";
+"history_mode_trash" = "Papelera";
+"history_mode_permanent" = "Permanente";
+"history_mode_mixed" = "Mixto";
+"history_ops_skipped_format" = "Omitidos: %lld";
+"history_ops_failed_format" = "Errores: %lld";
+"uninstaller_post_checked_summary" = "Rutas comprobadas: %lld • Restos encontrados: %lld";
+"uninstaller_post_failed_deletions_title" = "No se pudo eliminar al desinstalar";
+"startup_filter_attention" = "Requieren atención";
+"startup_filter_login_items" = "Ítems de inicio";
+"startup_badge_unsigned" = "Sin firma";
+"startup_badge_invalid_sig" = "Firma no válida";
+"startup_badge_adhoc" = "Firma ad-hoc";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Archivo no encontrado";
+"startup_badge_tmp_location" = "Se ejecuta desde /tmp";
+"startup_badge_hidden_location" = "Carpeta oculta";
+"startup_badge_requires_root" = "Requiere root";
+"startup_open_system_settings" = "Abrir Ajustes del Sistema";
+"startup_disclaimer" = "No es un antivirus. No usa firmas de malware ni garantiza que el software sea seguro.";
+"startup_login_items_restricted" = "Base de ítems de inicio protegida por macOS";
+"startup_login_items_restricted_sub" = "macOS restringe la lectura de BTM sin privilegios elevados. Abre Ajustes del Sistema para verlos.";
+"startup_login_items_empty" = "No se encontraron ítems de inicio";
+"startup_attention_empty" = "Ningún servicio requiere atención";
+"startup_attention_empty_sub" = "Todos los servicios tienen binarios y firmas válidos.";

@@ -1011,3 +1011,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 GB (stima)";
 "settings_ai_open_apple_intelligence" = "Impostazioni Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Spazio macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Variazione spazio APFS: %@";
+"history_mode_trash" = "Cestino";
+"history_mode_permanent" = "Permanente";
+"history_mode_mixed" = "Misto";
+"history_ops_skipped_format" = "Saltati: %lld";
+"history_ops_failed_format" = "Errori: %lld";
+"uninstaller_post_checked_summary" = "Percorsi controllati: %lld • Residui trovati: %lld";
+"uninstaller_post_failed_deletions_title" = "Rimozione non riuscita";
+"startup_filter_attention" = "Richiedono attenzione";
+"startup_filter_login_items" = "Elementi login";
+"startup_badge_unsigned" = "Non firmato";
+"startup_badge_invalid_sig" = "Firma non valida";
+"startup_badge_adhoc" = "Firma ad-hoc";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "File non trovato";
+"startup_badge_tmp_location" = "Eseguito da /tmp";
+"startup_badge_hidden_location" = "Cartella nascosta";
+"startup_badge_requires_root" = "Richiede root";
+"startup_open_system_settings" = "Apri Impostazioni di Sistema";
+"startup_disclaimer" = "Non è un antivirus. I controlli non usano firme malware e non garantiscono la sicurezza.";
+"startup_login_items_restricted" = "Database elementi di login protetto da macOS";
+"startup_login_items_restricted_sub" = "macOS limita la lettura BTM senza privilegi elevati. Apri Impostazioni di Sistema per gestirli.";
+"startup_login_items_empty" = "Nessun elemento di login trovato";
+"startup_attention_empty" = "Nessun servizio richiede attenzione";
+"startup_attention_empty_sub" = "Tutti i servizi hanno file e firme validi.";

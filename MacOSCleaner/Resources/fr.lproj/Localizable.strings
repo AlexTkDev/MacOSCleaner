@@ -1010,3 +1010,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 Go (estimation)";
 "settings_ai_open_apple_intelligence" = "Réglages Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Stockage macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Variation d'espace APFS : %@";
+"history_mode_trash" = "Corbeille";
+"history_mode_permanent" = "Définitif";
+"history_mode_mixed" = "Mixte";
+"history_ops_skipped_format" = "Ignorés : %lld";
+"history_ops_failed_format" = "Échecs : %lld";
+"uninstaller_post_checked_summary" = "Chemins vérifiés : %lld • Résidus trouvés : %lld";
+"uninstaller_post_failed_deletions_title" = "Échec de suppression lors de la désinstallation";
+"startup_filter_attention" = "Attention requise";
+"startup_filter_login_items" = "Ouverture";
+"startup_badge_unsigned" = "Non signé";
+"startup_badge_invalid_sig" = "Signature invalide";
+"startup_badge_adhoc" = "Signature ad-hoc";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Fichier introuvable";
+"startup_badge_tmp_location" = "Exécuté depuis /tmp";
+"startup_badge_hidden_location" = "Dossier caché";
+"startup_badge_requires_root" = "Droits root requis";
+"startup_open_system_settings" = "Ouvrir Réglages Système";
+"startup_disclaimer" = "Ceci n'est pas un antivirus. Aucune base de signatures n'est utilisée.";
+"startup_login_items_restricted" = "Base des éléments d'ouverture protégée par macOS";
+"startup_login_items_restricted_sub" = "macOS restreint la lecture BTM sans droits administrateur. Ouvrez Réglages Système pour les gérer.";
+"startup_login_items_empty" = "Aucun élément d'ouverture trouvé";
+"startup_attention_empty" = "Aucun service ne requiert d'attention";
+"startup_attention_empty_sub" = "Tous les services analysés ont des binaires et signatures valides.";

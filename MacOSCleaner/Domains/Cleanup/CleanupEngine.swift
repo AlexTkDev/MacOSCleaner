@@ -71,6 +71,7 @@ public struct CleanupEngineResult: Sendable {
     public let removedCount: Int
     public let skippedCount: Int
     public let failedCount: Int
+    public let category: CleanupCategory?
 
     /// True when at least one path failed — must not be treated as full success.
     public var isPartialFailure: Bool { failedCount > 0 }
@@ -82,7 +83,8 @@ public struct CleanupEngineResult: Sendable {
         freedBytes: Int64? = nil,
         removedCount: Int = 0,
         skippedCount: Int = 0,
-        failedCount: Int = 0
+        failedCount: Int = 0,
+        category: CleanupCategory? = nil
     ) {
         self.label = label
         self.freedMB = freedMB
@@ -90,6 +92,19 @@ public struct CleanupEngineResult: Sendable {
         self.removedCount = removedCount
         self.skippedCount = skippedCount
         self.failedCount = failedCount
+        self.category = category
+    }
+
+    func withCategory(_ category: CleanupCategory) -> CleanupEngineResult {
+        CleanupEngineResult(
+            label: label,
+            freedMB: freedMB,
+            freedBytes: freedBytes,
+            removedCount: removedCount,
+            skippedCount: skippedCount,
+            failedCount: failedCount,
+            category: category
+        )
     }
 }
 
@@ -280,9 +295,10 @@ public actor CleanupEngine {
         let timeout = timeouts.timeout(for: category)
         let title = Self.titleForCategory(category)
         do {
-            return try await withTimeout(timeout) {
+            let results = try await withTimeout(timeout) {
                 try await self.runCategory(category, dryRun: dryRun, options: options, progress: progress)
             }
+            return results.map { $0.category == nil ? $0.withCategory(category) : $0 }
         } catch is CancellationError {
             progress?(.log("⚠️ \(title) — cancelled"))
             return []
@@ -297,7 +313,8 @@ public actor CleanupEngine {
                 freedBytes: 0,
                 removedCount: 0,
                 skippedCount: 1,
-                failedCount: 1
+                failedCount: 1,
+                category: category
             )]
         }
     }

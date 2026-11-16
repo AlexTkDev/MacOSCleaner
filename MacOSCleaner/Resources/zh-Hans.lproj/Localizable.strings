@@ -1011,3 +1011,31 @@
 "settings_ai_base_models_sip_estimate" = "约 10–13 GB（估算）";
 "settings_ai_open_apple_intelligence" = "Apple 智能设置…";
 "settings_ai_open_macos_storage" = "macOS 储存空间…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "APFS 可用空间变化：%@";
+"history_mode_trash" = "废纸篓";
+"history_mode_permanent" = "永久删除";
+"history_mode_mixed" = "混合";
+"history_ops_skipped_format" = "已跳过：%lld";
+"history_ops_failed_format" = "失败：%lld";
+"uninstaller_post_checked_summary" = "已检查路径：%lld • 发现残留：%lld";
+"uninstaller_post_failed_deletions_title" = "卸载时未能移除";
+"startup_filter_attention" = "需要注意";
+"startup_filter_login_items" = "登录项";
+"startup_badge_unsigned" = "未签名";
+"startup_badge_invalid_sig" = "签名无效";
+"startup_badge_adhoc" = "临时签名";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "文件不存在";
+"startup_badge_tmp_location" = "从 /tmp 运行";
+"startup_badge_hidden_location" = "隐藏文件夹";
+"startup_badge_requires_root" = "需要 Root 权限";
+"startup_open_system_settings" = "打开系统设置";
+"startup_disclaimer" = "这不是杀毒软件。检查不使用恶意软件特征库，无法保证软件安全。";
+"startup_login_items_restricted" = "登录项数据库受 macOS 保护";
+"startup_login_items_restricted_sub" = "macOS 限制在无管理员权限时读取 BTM 数据库。请在系统设置中查看或管理。";
+"startup_login_items_empty" = "未找到登录项";
+"startup_attention_empty" = "没有需要注意的服务";
+"startup_attention_empty_sub" = "所有已扫描服务均具有有效文件和签名。";

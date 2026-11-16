@@ -1048,3 +1048,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 GB (estimate)";
 "settings_ai_open_apple_intelligence" = "Apple Intelligence Settings…";
 "settings_ai_open_macos_storage" = "macOS Storage…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "APFS available space change: %@";
+"history_mode_trash" = "Trash";
+"history_mode_permanent" = "Permanent";
+"history_mode_mixed" = "Mixed";
+"history_ops_skipped_format" = "Skipped: %lld";
+"history_ops_failed_format" = "Failed: %lld";
+"uninstaller_post_checked_summary" = "Checked paths: %lld • Leftovers found: %lld";
+"uninstaller_post_failed_deletions_title" = "Failed to remove during uninstall";
+"startup_filter_attention" = "Needs Attention";
+"startup_filter_login_items" = "Login Items";
+"startup_badge_unsigned" = "Unsigned";
+"startup_badge_invalid_sig" = "Invalid Signature";
+"startup_badge_adhoc" = "Ad-hoc Signed";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "File Not Found";
+"startup_badge_tmp_location" = "Runs from /tmp";
+"startup_badge_hidden_location" = "Hidden Folder";
+"startup_badge_requires_root" = "Requires Root";
+"startup_open_system_settings" = "Open System Settings";
+"startup_disclaimer" = "This is not an antivirus. Checks do not use malware signatures and cannot guarantee software is safe.";
+"startup_login_items_restricted" = "Login Items database is protected by macOS";
+"startup_login_items_restricted_sub" = "macOS restricts reading the BTM database without elevated privileges. Open System Settings to view or manage Login Items.";
+"startup_login_items_empty" = "No Login Items Found";
+"startup_attention_empty" = "No Services Need Attention";
+"startup_attention_empty_sub" = "All scanned services have valid binaries and signatures.";

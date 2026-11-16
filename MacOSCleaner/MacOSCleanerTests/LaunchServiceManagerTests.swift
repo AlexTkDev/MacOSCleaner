@@ -281,4 +281,86 @@ final class LaunchServiceManagerTests: XCTestCase {
         let trashedFile = testTrash.appendingPathComponent("com.test.myagent.plist")
         XCTAssertTrue(FileManager.default.fileExists(atPath: trashedFile.path))
     }
+
+    // MARK: - Stage 4: RequiresRoot, Orphaned, Location, Signature
+
+    func testRequiresRootCoversLibraryLaunchAgentsAndDaemons() {
+        let agent = StartupService(
+            id: "com.vendor.agent",
+            name: "com.vendor.agent",
+            path: "/Library/LaunchAgents/com.vendor.agent.plist",
+            isEnabled: true,
+            category: .thirdParty
+        )
+        let daemon = StartupService(
+            id: "com.vendor.daemon",
+            name: "com.vendor.daemon",
+            path: "/Library/LaunchDaemons/com.vendor.daemon.plist",
+            isEnabled: true,
+            category: .thirdParty
+        )
+        let userAgent = StartupService(
+            id: "com.user.agent",
+            name: "com.user.agent",
+            path: "/Users/test/Library/LaunchAgents/com.user.agent.plist",
+            isEnabled: true,
+            category: .user
+        )
+        XCTAssertTrue(agent.requiresRoot)
+        XCTAssertTrue(daemon.requiresRoot)
+        XCTAssertFalse(userAgent.requiresRoot)
+    }
+
+    func testScanDetectsOrphanedAndSuspiciousLocationsAndUnsignedNeedsAttention() async throws {
+        let missingPlist = tempDir.appendingPathComponent("com.test.orphan.plist")
+        let missingContent: [String: Any] = [
+            "Label": "com.test.orphan",
+            "ProgramArguments": ["/nonexistent/path/to/binary"]
+        ]
+        try PropertyListSerialization.data(fromPropertyList: missingContent, format: .xml, options: 0).write(to: missingPlist)
+
+        let tmpExec = tempDir.appendingPathComponent("tmp_runner")
+        try Data("#!/bin/sh\necho hi\n".utf8).write(to: tmpExec)
+
+        let hiddenDir = tempDir.appendingPathComponent(".hidden", isDirectory: true)
+        try fileManager.createDirectory(at: hiddenDir, withIntermediateDirectories: true)
+        let hiddenExec = hiddenDir.appendingPathComponent("daemon")
+        try Data("#!/bin/sh\necho hi\n".utf8).write(to: hiddenExec)
+
+        let hiddenPlist = tempDir.appendingPathComponent("com.test.hidden.plist")
+        let hiddenContent: [String: Any] = [
+            "Label": "com.test.hidden",
+            "Program": hiddenExec.path
+        ]
+        try PropertyListSerialization.data(fromPropertyList: hiddenContent, format: .xml, options: 0).write(to: hiddenPlist)
+
+        let stubManager = LaunchServiceManager(
+            searchPaths: [tempDir.path],
+            signatureChecker: { _ in CodeSignatureInfo(isSigned: false, isValid: false) }
+        )
+        let services = try await stubManager.scan()
+        XCTAssertEqual(services.count, 2)
+
+        let orphan = services.first { $0.id == "com.test.orphan" }
+        XCTAssertEqual(orphan?.isOrphaned, true)
+        XCTAssertEqual(orphan?.needsAttention, true)
+        XCTAssertNil(orphan?.signature)
+
+        let hidden = services.first { $0.id == "com.test.hidden" }
+        XCTAssertEqual(hidden?.isOrphaned, false)
+        XCTAssertEqual(hidden?.executableLocation, .hiddenDirectory)
+        XCTAssertEqual(hidden?.needsAttention, true)
+        XCTAssertEqual(hidden?.signature?.isSigned, false)
+
+        XCTAssertEqual(ExecutableLocation.classify(path: "/tmp/evil"), .temporaryDirectory)
+        XCTAssertEqual(ExecutableLocation.classify(path: "/private/var/tmp/evil"), .temporaryDirectory)
+        XCTAssertEqual(ExecutableLocation.classify(path: "/Applications/Notes.app/Contents/MacOS/Notes"), .standard)
+    }
+
+    func testCodeSignatureInfoSecStaticCodeAppleBinary() async {
+        let info = await CodeSignatureInfo.check(path: "/bin/ls")
+        XCTAssertTrue(info.isSigned)
+        XCTAssertTrue(info.isValid)
+        XCTAssertTrue(info.isAppleSigned)
+    }
 }

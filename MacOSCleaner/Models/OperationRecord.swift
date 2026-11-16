@@ -1,6 +1,11 @@
 import Foundation
 
 public struct OperationRecord: Identifiable, Codable, Sendable {
+    public enum DeletionMode: String, Codable, Sendable {
+        case trash
+        case permanent
+    }
+
     public let id: UUID
     public let itemPath: String
     public let status: String
@@ -40,5 +45,19 @@ public struct OperationRecord: Identifiable, Codable, Sendable {
         self.deletionMode = try container.decodeIfPresent(String.self, forKey: .deletionMode)
         self.skipped = try container.decodeIfPresent(Int.self, forKey: .skipped)
         self.failed = try container.decodeIfPresent(Int.self, forKey: .failed)
+    }
+
+    public static func from(result: CleanupEngineResult, deletionMode: DeletionMode) -> OperationRecord {
+        let effectiveMode: DeletionMode = (result.category?.isDirectCommandCleanup == true) ? .permanent : deletionMode
+        return OperationRecord(
+            id: UUID(),
+            itemPath: result.label,
+            status: result.isPartialFailure ? "partial" : "success",
+            bytesFreed: result.freedBytes,
+            categoryCode: result.category?.rawValue,
+            deletionMode: effectiveMode.rawValue,
+            skipped: result.skippedCount,
+            failed: result.failedCount
+        )
     }
 }

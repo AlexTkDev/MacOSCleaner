@@ -1047,3 +1047,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 ГБ (оценка)";
 "settings_ai_open_apple_intelligence" = "Настройки Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Хранилище macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Изменение доступного места (APFS): %@";
+"history_mode_trash" = "Корзина";
+"history_mode_permanent" = "Безвозвратно";
+"history_mode_mixed" = "Смешанный";
+"history_ops_skipped_format" = "Пропущено: %lld";
+"history_ops_failed_format" = "Ошибок: %lld";
+"uninstaller_post_checked_summary" = "Проверено путей: %lld • Найдено остатков: %lld";
+"uninstaller_post_failed_deletions_title" = "Не удалось удалить при деинсталляции";
+"startup_filter_attention" = "Требуют внимания";
+"startup_filter_login_items" = "Объекты входа";
+"startup_badge_unsigned" = "Не подписано";
+"startup_badge_invalid_sig" = "Подпись повреждена";
+"startup_badge_adhoc" = "Ad-hoc подпись";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Файл не найден";
+"startup_badge_tmp_location" = "Запускается из /tmp";
+"startup_badge_hidden_location" = "Скрытая папка";
+"startup_badge_requires_root" = "Требуются права root";
+"startup_open_system_settings" = "Открыть Системные настройки";
+"startup_disclaimer" = "Это не антивирус. Проверка не использует базу сигнатур и не гарантирует отсутствие вредоносного ПО.";
+"startup_login_items_restricted" = "База объектов входа защищена macOS";
+"startup_login_items_restricted_sub" = "macOS ограничивает чтение базы BTM без прав администратора. Откройте Системные настройки для просмотра и управления.";
+"startup_login_items_empty" = "Объекты входа не найдены";
+"startup_attention_empty" = "Нет служб, требующих внимания";
+"startup_attention_empty_sub" = "Все проверенные службы имеют корректные файлы и подписи.";

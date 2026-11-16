@@ -19,10 +19,16 @@ public enum HistorySortOption: String, CaseIterable, Identifiable {
     }
 }
 
+private struct HistoryEntry: Identifiable {
+    let record: CleanupRecord
+    let operations: [OperationRecord]
+    var id: UUID { record.id }
+}
+
 public struct CleanupHistoryView: View {
     private let journal: TransactionJournal
     
-    @State private var records: [CleanupRecord] = []
+    @State private var entries: [HistoryEntry] = []
     @State private var searchText: String = ""
     @State private var sortOption: HistorySortOption = .date
     @State private var sortAscending: Bool = false
@@ -32,24 +38,26 @@ public struct CleanupHistoryView: View {
         self.journal = journal
     }
     
-    public var filteredAndSortedRecords: [CleanupRecord] {
+    private var filteredAndSortedEntries: [HistoryEntry] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let filtered = records.filter { record in
+        let filtered = entries.filter { entry in
+            let record = entry.record
             if query.isEmpty { return true }
             let dateStr = record.date.formatted(.dateTime.day().month(.abbreviated).year().locale(LanguageManager.shared.currentLocale)).lowercased()
             let timeStr = record.date.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale)).lowercased()
             let sizeStr = record.formattedSize.lowercased()
             let triggerStr = record.trigger.localizedTitle.lowercased()
             let categoryStr = record.category.localizedTitle.lowercased()
-            return dateStr.contains(query) || timeStr.contains(query) || sizeStr.contains(query) || triggerStr.contains(query) || categoryStr.contains(query)
+            let opsMatch = entry.operations.contains { $0.itemPath.lowercased().contains(query) }
+            return dateStr.contains(query) || timeStr.contains(query) || sizeStr.contains(query) || triggerStr.contains(query) || categoryStr.contains(query) || opsMatch
         }
         
         return filtered.sorted { a, b in
             switch sortOption {
             case .date:
-                return sortAscending ? a.date < b.date : a.date > b.date
+                return sortAscending ? a.record.date < b.record.date : a.record.date > b.record.date
             case .size:
-                return sortAscending ? a.freedBytes < b.freedBytes : a.freedBytes > b.freedBytes
+                return sortAscending ? a.record.freedBytes < b.record.freedBytes : a.record.freedBytes > b.record.freedBytes
             }
         }
     }
@@ -164,7 +172,7 @@ public struct CleanupHistoryView: View {
                 if isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if filteredAndSortedRecords.isEmpty {
+                } else if filteredAndSortedEntries.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "clock")
                             .font(.system(size: 36))
@@ -178,8 +186,8 @@ public struct CleanupHistoryView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 0) {
-                            ForEach(filteredAndSortedRecords) { record in
-                                HistoryRowView(record: record)
+                            ForEach(filteredAndSortedEntries) { entry in
+                                HistoryRowView(record: entry.record, operations: entry.operations)
                                 Divider()
                                     .overlay(Color.white.opacity(0.05))
                             }
@@ -200,9 +208,11 @@ public struct CleanupHistoryView: View {
         isLoading = true
         do {
             let transactions = try await journal.loadAll()
-            records = transactions.reversed().map { CleanupRecord(transaction: $0) }
+            entries = transactions.reversed().map { tx in
+                HistoryEntry(record: CleanupRecord(transaction: tx), operations: tx.operations)
+            }
         } catch {
-            records = []
+            entries = []
         }
         isLoading = false
     }
@@ -210,6 +220,8 @@ public struct CleanupHistoryView: View {
 
 public struct HistoryRowView: View {
     public let record: CleanupRecord
+    public let operations: [OperationRecord]
+    @State private var isExpanded = false
     
     private var dateString: String {
         record.date.formatted(.dateTime.day().month(.abbreviated).year().locale(LanguageManager.shared.currentLocale))
@@ -218,59 +230,154 @@ public struct HistoryRowView: View {
     private var timeString: String {
         record.date.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale))
     }
+
+    private var summaryModeTitle: String? {
+        let modes = Set(operations.compactMap(\.deletionMode))
+        guard !modes.isEmpty else { return nil }
+        if modes.count > 1 { return "history_mode_mixed".localized }
+        return modes.first == OperationRecord.DeletionMode.permanent.rawValue
+            ? "history_mode_permanent".localized
+            : "history_mode_trash".localized
+    }
+
+    private var totalSkipped: Int {
+        operations.reduce(0) { $0 + ($1.skipped ?? 0) }
+    }
+
+    private var totalFailed: Int {
+        operations.reduce(0) { $0 + ($1.failed ?? 0) }
+    }
     
-    public init(record: CleanupRecord) {
+    public init(record: CleanupRecord, operations: [OperationRecord] = []) {
         self.record = record
+        self.operations = operations
     }
     
     public var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(Color.accentColor.opacity(0.22), lineWidth: 0.5)
-                    )
-                Image(systemName: record.category.iconName)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.accentColor)
-            }
-            .frame(width: 30, height: 30)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(dateString)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(Color.accentColor.opacity(0.22), lineWidth: 0.5)
+                        )
+                    Image(systemName: record.category.iconName)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.accentColor)
+                }
+                .frame(width: 30, height: 30)
                 
-                Text(timeString)
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-            
-            Spacer(minLength: 12)
-            
-            HStack(spacing: 8) {
-                Text(record.formattedSize)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.green)
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(dateString)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+
+                        Text("• \(record.category.localizedTitle)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    
+                    HStack(spacing: 6) {
+                        Text(timeString)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+
+                        if let modeTitle = summaryModeTitle {
+                            Text(modeTitle)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+
+                        if totalFailed > 0 {
+                            Text("history_ops_failed_format".localizedWithArgs(Int64(totalFailed)))
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.orange)
+                        } else if totalSkipped > 0 {
+                            Text("history_ops_skipped_format".localizedWithArgs(Int64(totalSkipped)))
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
                 
-                Text(record.trigger.localizedTitle)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.white.opacity(0.06))
-                    .clipShape(Capsule())
-                    .lineLimit(1)
+                Spacer(minLength: 12)
+                
+                HStack(spacing: 8) {
+                    Text(record.formattedSize)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.green)
+                        .lineLimit(1)
+                    
+                    Text(record.trigger.localizedTitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.white.opacity(0.06))
+                        .clipShape(Capsule())
+                        .lineLimit(1)
+
+                    if !operations.isEmpty {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+
+            if isExpanded && !operations.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(operations) { op in
+                        HStack(spacing: 8) {
+                            Text(op.itemPath)
+                                .font(.caption)
+                                .foregroundColor(.primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+
+                            Spacer(minLength: 8)
+
+                            if let mode = op.deletionMode {
+                                Text(mode == OperationRecord.DeletionMode.permanent.rawValue ? "history_mode_permanent".localized : "history_mode_trash".localized)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            if let failed = op.failed, failed > 0 {
+                                Text("history_ops_failed_format".localizedWithArgs(Int64(failed)))
+                                    .font(.caption2)
+                                    .foregroundColor(.orange)
+                            } else if let skipped = op.skipped, skipped > 0 {
+                                Text("history_ops_skipped_format".localizedWithArgs(Int64(skipped)))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Text(op.bytesFreed.formattedByteCount())
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.leading, 44)
+                .padding(.top, 2)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .contentShape(Rectangle())
+        .onTapGesture {
+            guard !operations.isEmpty else { return }
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isExpanded.toggle()
+            }
+        }
     }
 }
 

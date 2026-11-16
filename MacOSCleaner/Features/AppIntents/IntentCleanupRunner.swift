@@ -23,14 +23,8 @@ enum IntentCleanupRunner {
         let results = try await engine.run(categories: categories, dryRun: dryRun, options: options)
         let totalBytes = results.reduce(Int64(0)) { $0 + $1.freedBytes }
         if !dryRun {
-            let ops = results.map {
-                OperationRecord(
-                    id: UUID(),
-                    itemPath: $0.label,
-                    status: $0.isPartialFailure ? "partial" : "success",
-                    bytesFreed: $0.freedBytes
-                )
-            }
+            let mode: OperationRecord.DeletionMode = bypassTrash ? .permanent : .trash
+            let ops = results.map { OperationRecord.from(result: $0, deletionMode: mode) }
             let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: ops, trigger: .automatic)
             try? await TransactionJournal().log(transaction: transaction)
         }
@@ -38,7 +32,16 @@ enum IntentCleanupRunner {
     }
 
     static func logTrashTransaction(bytes: Int64) async {
-        let op = OperationRecord(id: UUID(), itemPath: "trash_user_label".localized, status: "success", bytesFreed: bytes)
+        let op = OperationRecord(
+            id: UUID(),
+            itemPath: "trash_user_label".localized,
+            status: "success",
+            bytesFreed: bytes,
+            categoryCode: "trash",
+            deletionMode: OperationRecord.DeletionMode.permanent.rawValue,
+            skipped: 0,
+            failed: 0
+        )
         let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: [op], trigger: .automatic)
         try? await TransactionJournal().log(transaction: transaction)
     }

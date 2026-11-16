@@ -396,7 +396,7 @@ struct UninstallerView: View {
                 await MainActor.run {
                     loadApps()
                     selectedApp = nil
-                    if let report = report, report.hasLeftovers {
+                    if let report = report, report.hasLeftovers || !report.failedDeletions.isEmpty {
                         postUninstallReport = report
                         showingPostUninstallSheet = true
                     } else if settings.showNotifications {
@@ -427,7 +427,7 @@ struct UninstallerView: View {
                 )
                 
                 await MainActor.run {
-                    if let report = report, report.hasLeftovers {
+                    if let report = report, report.hasLeftovers || !report.failedDeletions.isEmpty {
                         postUninstallReport = report
                         showingPostUninstallSheet = true
                     } else if settings.showNotifications {

@@ -16,6 +16,8 @@ public final class CleanupViewModel {
     public var stepTitle: String { coordinator.stepTitle }
     public var items: [CleanupPreviewItem] { itemManager.items }
     public var totalFreedBytes: Int64 { coordinator.totalFreedBytes }
+    public var apfsDeltaBytes: Int64? { coordinator.apfsDeltaBytes }
+    public var usedPermanentDeletion: Bool { coordinator.usedPermanentDeletion }
     public var cleanedItems: [CleanupResultItem] { coordinator.cleanedItems }
     public var skippedItems: [SkippedCleanupItem] { coordinator.skippedItems }
     public var lastError: String? { coordinator.lastError }

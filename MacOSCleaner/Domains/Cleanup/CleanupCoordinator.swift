@@ -18,6 +18,7 @@ public final class CleanupCoordinator {
     private let itemManager: CleanupItemManager
     private let notifier: CleanupNotifier
     private let trashDirectoryURL: URL
+    private let availableCapacityProvider: @Sendable () -> Int64?
     private var currentTask: Task<Void, Never>?
     
     public var state: CleanupState { stateMachine.state }
@@ -25,6 +26,8 @@ public final class CleanupCoordinator {
     public var totalSteps: Int = 1
     public var stepTitle: String = ""
     public var totalFreedBytes: Int64 = 0
+    public var apfsDeltaBytes: Int64? = nil
+    public var usedPermanentDeletion: Bool = false
     public var cleanedItems: [CleanupResultItem] = []
     public var skippedItems: [SkippedCleanupItem] = []
     public var lastError: String? = nil
@@ -40,7 +43,8 @@ public final class CleanupCoordinator {
         trashManager: TrashManager = TrashManager(),
         itemManager: CleanupItemManager,
         notifier: CleanupNotifier = CleanupNotifier(),
-        trashDirectoryURL: URL? = nil
+        trashDirectoryURL: URL? = nil,
+        availableCapacityProvider: (@Sendable () -> Int64?)? = nil
     ) {
         self.engine = engine
         self.journal = journal
@@ -49,6 +53,7 @@ public final class CleanupCoordinator {
         self.itemManager = itemManager
         self.notifier = notifier
         self.trashDirectoryURL = trashDirectoryURL ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash")
+        self.availableCapacityProvider = availableCapacityProvider ?? { Self.currentAPFSAvailableBytes() }
     }
     
     @MainActor
@@ -129,6 +134,11 @@ public final class CleanupCoordinator {
 
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedBytes = 0
+                self.apfsDeltaBytes = nil
+                let isImmediatePermanent = self.settings.bypassTrashOnUninstall || self.settings.emptyTrashDuringCleanup
+                self.usedPermanentDeletion = isImmediatePermanent
+                let sessionDeletionMode: OperationRecord.DeletionMode = isImmediatePermanent ? .permanent : .trash
+                let availableBefore = isImmediatePermanent ? self.availableCapacityProvider() : nil
                 self.cleanedItems = []
                 self.lastError = nil
                 self.scriptLogs = []
@@ -186,14 +196,12 @@ public final class CleanupCoordinator {
                     }
                     if result.isPartialFailure {
                         hadPartialFailure = true
-                        records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "partial", bytesFreed: result.freedBytes))
                         self.skippedItems.append(SkippedCleanupItem(
                             label: result.label,
                             reason: "cleanup_partial_reason".localizedWithArgs(Int64(result.removedCount), Int64(result.failedCount))
                         ))
-                    } else {
-                        records.append(OperationRecord(id: UUID(), itemPath: result.label, status: "success", bytesFreed: result.freedBytes))
                     }
+                    records.append(OperationRecord.from(result: result, deletionMode: sessionDeletionMode))
                 }
 
                 // Check for skipped categories from logs
@@ -217,6 +225,7 @@ public final class CleanupCoordinator {
                     self.stepTitle = category.localizedTitle
                     var freed: Int64 = 0
                     var categoryPartialFailure = false
+                    var categoryFailedCount = 0
                     for url in selectedURLs {
                         do {
                             try Task.checkCancellation()
@@ -232,6 +241,7 @@ public final class CleanupCoordinator {
                             throw CancellationError()
                         } catch {
                             categoryPartialFailure = true
+                            categoryFailedCount += 1
                             hadPartialFailure = true
                             self.skippedItems.append(SkippedCleanupItem(
                                 label: url.lastPathComponent,
@@ -254,7 +264,11 @@ public final class CleanupCoordinator {
                         id: UUID(),
                         itemPath: category.localizedTitle,
                         status: categoryPartialFailure ? "partial" : "success",
-                        bytesFreed: freed
+                        bytesFreed: freed,
+                        categoryCode: category.rawValue,
+                        deletionMode: sessionDeletionMode.rawValue,
+                        skipped: 0,
+                        failed: categoryFailedCount
                     ))
                 }
 
@@ -282,9 +296,22 @@ public final class CleanupCoordinator {
                             self.cleanedItems.append(CleanupResultItem(label: trashLabel, freedMB: deletedMB, freedBytes: deletedBytes, iconName: "trash"))
                         }
                         if !selectedTrash.isEmpty {
-                            records.append(OperationRecord(id: UUID(), itemPath: trashLabel, status: "success", bytesFreed: deletedBytes))
+                            records.append(OperationRecord(
+                                id: UUID(),
+                                itemPath: trashLabel,
+                                status: "success",
+                                bytesFreed: deletedBytes,
+                                categoryCode: "trash",
+                                deletionMode: OperationRecord.DeletionMode.permanent.rawValue,
+                                skipped: 0,
+                                failed: 0
+                            ))
                         }
                     }
+                }
+
+                if isImmediatePermanent, let before = availableBefore, let after = self.availableCapacityProvider() {
+                    self.apfsDeltaBytes = max(0, after - before)
                 }
 
                 let transaction = CleanupTransaction(id: UUID(), timestamp: Date(), operations: records)
@@ -411,6 +438,8 @@ public final class CleanupCoordinator {
         cleanedItems = []
         skippedItems = []
         totalFreedBytes = 0
+        apfsDeltaBytes = nil
+        usedPermanentDeletion = false
         currentStep = 0
         stepTitle = ""
         lastError = nil
@@ -481,6 +510,12 @@ public final class CleanupCoordinator {
 
     nonisolated private static func physicalDirectorySize(_ url: URL) -> Int64 {
         FileManager.default.getPhysicalDirectorySize(url: url)
+    }
+
+    nonisolated private static func currentAPFSAvailableBytes() -> Int64? {
+        let homeURL = FileManager.default.homeDirectoryForCurrentUser
+        return try? homeURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+            .volumeAvailableCapacityForImportantUsage
     }
 
     @MainActor

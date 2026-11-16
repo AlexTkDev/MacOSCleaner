@@ -1048,3 +1048,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 GB (szacunek)";
 "settings_ai_open_apple_intelligence" = "Ustawienia Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Pamięć masowa macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Zmiana wolnego miejsca APFS: %@";
+"history_mode_trash" = "Kosz";
+"history_mode_permanent" = "Trwale";
+"history_mode_mixed" = "Mieszany";
+"history_ops_skipped_format" = "Pominięto: %lld";
+"history_ops_failed_format" = "Błędy: %lld";
+"uninstaller_post_checked_summary" = "Sprawdzone ścieżki: %lld • Pozostałości: %lld";
+"uninstaller_post_failed_deletions_title" = "Nie udało się usunąć podczas odinstalowania";
+"startup_filter_attention" = "Wymagają uwagi";
+"startup_filter_login_items" = "Logowanie";
+"startup_badge_unsigned" = "Niepodpisany";
+"startup_badge_invalid_sig" = "Nieprawidłowy podpis";
+"startup_badge_adhoc" = "Podpis ad-hoc";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Brak pliku";
+"startup_badge_tmp_location" = "Uruchamiany z /tmp";
+"startup_badge_hidden_location" = "Ukryty folder";
+"startup_badge_requires_root" = "Wymaga root";
+"startup_open_system_settings" = "Otwórz Ustawienia systemowe";
+"startup_disclaimer" = "To nie jest program antywirusowy. Sprawdzanie nie używa bazy sygnatur i nie gwarantuje bezpieczeństwa.";
+"startup_login_items_restricted" = "Baza elementów logowania chroniona przez macOS";
+"startup_login_items_restricted_sub" = "macOS ogranicza odczyt bazy BTM bez uprawnień administratora. Otwórz Ustawienia systemowe.";
+"startup_login_items_empty" = "Brak elementów logowania";
+"startup_attention_empty" = "Brak usług wymagających uwagi";
+"startup_attention_empty_sub" = "Wszystkie usługi mają poprawne pliki i podpisy.";

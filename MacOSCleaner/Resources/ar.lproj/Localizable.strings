@@ -1048,3 +1048,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 غيغابايت (تقديري)";
 "settings_ai_open_apple_intelligence" = "إعدادات Apple Intelligence…";
 "settings_ai_open_macos_storage" = "مساحة تخزين macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "تغيّر المساحة المتاحة في APFS: %@";
+"history_mode_trash" = "سلة المهملات";
+"history_mode_permanent" = "حذف نهائي";
+"history_mode_mixed" = "مختلط";
+"history_ops_skipped_format" = "تم التخطي: %lld";
+"history_ops_failed_format" = "فشل: %lld";
+"uninstaller_post_checked_summary" = "المسارات المفحوصة: %lld • البقايا المكتشفة: %lld";
+"uninstaller_post_failed_deletions_title" = "تعذرت الإزالة أثناء إلغاء التثبيت";
+"startup_filter_attention" = "تتطلب انتباهاً";
+"startup_filter_login_items" = "عناصر تسجيل الدخول";
+"startup_badge_unsigned" = "غير موقّع";
+"startup_badge_invalid_sig" = "توقيع غير صالح";
+"startup_badge_adhoc" = "توقيع محلي";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "الملف غير موجود";
+"startup_badge_tmp_location" = "يعمل من /tmp";
+"startup_badge_hidden_location" = "مجلد مخفي";
+"startup_badge_requires_root" = "يتطلب صلاحيات root";
+"startup_open_system_settings" = "فتح إعدادات النظام";
+"startup_disclaimer" = "هذا ليس برنامج مكافحة فيروسات. الفحص لا يستخدم قاعدة تواقيع ولا يضمن خلو البرامج من المخاطر.";
+"startup_login_items_restricted" = "قاعدة عناصر تسجيل الدخول محمية بواسطة macOS";
+"startup_login_items_restricted_sub" = "يقيّد macOS قراءة قاعدة BTM بدون صلاحيات إدارية. افتح إعدادات النظام للمراجعة.";
+"startup_login_items_empty" = "لم يتم العثور على عناصر تسجيل دخول";
+"startup_attention_empty" = "لا توجد خدمات تتطلب انتباهاً";
+"startup_attention_empty_sub" = "جميع الخدمات المفحوصة تملك ملفات وتواقيع صالحة.";

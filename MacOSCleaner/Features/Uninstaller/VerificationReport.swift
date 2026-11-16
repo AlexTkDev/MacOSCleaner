@@ -45,12 +45,26 @@ public struct LeftoverItem: Identifiable, Sendable, Hashable {
     }
 }
 
+public struct FailedDeletion: Identifiable, Sendable, Hashable {
+    public let id: UUID
+    public let url: URL
+    public let reason: String
+
+    public init(id: UUID = UUID(), url: URL, reason: String) {
+        self.id = id
+        self.url = NormalizedPath.canonicalize(url)
+        self.reason = reason
+    }
+}
+
 public struct VerificationReport: Sendable {
     public let appName: String
     public let bundleID: String?
     public let leftovers: [ScoredArtifact]
     public let items: [LeftoverItem]
     public let count: Int
+    public let checkedCandidateCount: Int
+    public let failedDeletions: [FailedDeletion]
 
     public var totalSizeBytes: Int64 {
         items.reduce(0) { $0 + $1.sizeBytes }
@@ -62,11 +76,15 @@ public struct VerificationReport: Sendable {
         appName: String = "",
         bundleID: String? = nil,
         leftovers: [ScoredArtifact] = [],
-        items: [LeftoverItem] = []
+        items: [LeftoverItem] = [],
+        checkedCandidateCount: Int = 0,
+        failedDeletions: [FailedDeletion] = []
     ) {
         self.appName = appName
         self.bundleID = bundleID
         self.leftovers = leftovers
+        self.checkedCandidateCount = checkedCandidateCount
+        self.failedDeletions = failedDeletions
         if !items.isEmpty {
             self.items = items
             self.count = items.count
@@ -84,6 +102,17 @@ public struct VerificationReport: Sendable {
             }
             self.count = leftovers.count
         }
+    }
+
+    func withFailedDeletions(_ failedDeletions: [FailedDeletion]) -> VerificationReport {
+        VerificationReport(
+            appName: appName,
+            bundleID: bundleID,
+            leftovers: leftovers,
+            items: items,
+            checkedCandidateCount: checkedCandidateCount,
+            failedDeletions: failedDeletions
+        )
     }
 }
 

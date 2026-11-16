@@ -111,10 +111,16 @@ final class VerificationEngineTests: XCTestCase {
         let report = await engine.verify(identity: identity)
         XCTAssertTrue(report.hasLeftovers, "Should detect leftover under isolated Application Support")
         XCTAssertGreaterThan(report.count, 0)
+        XCTAssertGreaterThanOrEqual(report.checkedCandidateCount, report.count)
         XCTAssertEqual(report.items.count, report.count)
         XCTAssertEqual(report.appName, appName)
         XCTAssertEqual(report.bundleID, "com.test.\(appName)")
         XCTAssertGreaterThan(report.totalSizeBytes, 0)
+
+        let failed = FailedDeletion(url: supportDir, reason: "Permission denied")
+        let withFailed = report.withFailedDeletions([failed])
+        XCTAssertEqual(withFailed.failedDeletions.count, 1)
+        XCTAssertEqual(withFailed.checkedCandidateCount, report.checkedCandidateCount)
 
         if let firstItem = report.items.first {
             XCTAssertEqual(firstItem.appName, appName)

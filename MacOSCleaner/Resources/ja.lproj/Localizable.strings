@@ -1011,3 +1011,31 @@
 "settings_ai_base_models_sip_estimate" = "約 10〜13 GB（推定）";
 "settings_ai_open_apple_intelligence" = "Apple Intelligence 設定…";
 "settings_ai_open_macos_storage" = "macOS ストレージ…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "APFS空き容量の変化: %@";
+"history_mode_trash" = "ゴミ箱";
+"history_mode_permanent" = "完全削除";
+"history_mode_mixed" = "混合";
+"history_ops_skipped_format" = "スキップ: %lld";
+"history_ops_failed_format" = "失敗: %lld";
+"uninstaller_post_checked_summary" = "確認パス: %lld • 残存ファイル: %lld";
+"uninstaller_post_failed_deletions_title" = "アンインストール時に削除できませんでした";
+"startup_filter_attention" = "要注意";
+"startup_filter_login_items" = "ログイン項目";
+"startup_badge_unsigned" = "未署名";
+"startup_badge_invalid_sig" = "署名無効";
+"startup_badge_adhoc" = "アドホック署名";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "ファイルなし";
+"startup_badge_tmp_location" = "/tmp から実行";
+"startup_badge_hidden_location" = "隠しフォルダ";
+"startup_badge_requires_root" = "管理者権限が必要";
+"startup_open_system_settings" = "システム設定を開く";
+"startup_disclaimer" = "これはウイルス対策ソフトではありません。マルウェア署名データベースは使用せず、安全性を保証しません。";
+"startup_login_items_restricted" = "ログイン項目データベースはmacOSにより保護されています";
+"startup_login_items_restricted_sub" = "管理者権限なしではBTMデータベースの読み取りが制限されます。システム設定で確認してください。";
+"startup_login_items_empty" = "ログイン項目が見つかりません";
+"startup_attention_empty" = "注意が必要なサービスはありません";
+"startup_attention_empty_sub" = "すべてのサービスのバイナリと署名は正常です。";

@@ -211,4 +211,101 @@ final class CleanupTrashTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file1.path),
                       "Trash items must NOT be deleted when emptyTrashDuringCleanup is false")
     }
+
+    func testExecuteCleanup_bypassTrash_setsPermanentDeletionAndAPFSDelta() async throws {
+        let savedBypass = settings.bypassTrashOnUninstall
+        defer { settings.bypassTrashOnUninstall = savedBypass }
+        settings.emptyTrashDuringCleanup = false
+        settings.bypassTrashOnUninstall = true
+
+        // Seed a reviewOnly installer leaf under Downloads to exercise coordinator deletion + journal fields cleanly
+        let downloads = fileSystemContext.homeDirectory.appendingPathComponent("Downloads", isDirectory: true)
+        try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+        let bigFile = downloads.appendingPathComponent("TestInstaller.dmg")
+        try Data(repeating: 0xCC, count: 1024).write(to: bigFile)
+
+        final class SequenceBox: @unchecked Sendable {
+            private let lock = NSLock()
+            private var values: [Int64] = [100_000_000, 100_500_000]
+            func next() -> Int64? {
+                lock.withLock { values.isEmpty ? nil : values.removeFirst() }
+            }
+        }
+        let capacityBox = SequenceBox()
+        let customCoordinator = CleanupCoordinator(
+            engine: engine,
+            journal: journal,
+            settings: settings,
+            trashManager: trashManager,
+            itemManager: itemManager,
+            trashDirectoryURL: trashDirectory,
+            availableCapacityProvider: { capacityBox.next() }
+        )
+        coordinator = customCoordinator
+
+        customCoordinator.startScan(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.preview)
+
+        let installerLabel = CleanupCategory.installerPackages.localizedTitle
+        itemManager.appendFileItem(
+            path: bigFile.path,
+            sizeBytes: 1024,
+            modificationDate: Date(),
+            isDirectory: false,
+            category: installerLabel,
+            parentName: installerLabel,
+            isSelected: true
+        )
+
+        customCoordinator.executeCleanup(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.completed)
+
+        XCTAssertTrue(customCoordinator.usedPermanentDeletion)
+        XCTAssertEqual(customCoordinator.apfsDeltaBytes, 500_000)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: bigFile.path))
+
+        let tx = try await journal.loadAll()
+        let op = tx.last?.operations.first
+        XCTAssertEqual(op?.categoryCode, CleanupCategory.installerPackages.rawValue)
+        XCTAssertEqual(op?.deletionMode, OperationRecord.DeletionMode.permanent.rawValue)
+        XCTAssertEqual(op?.skipped, 0)
+        XCTAssertEqual(op?.failed, 0)
+    }
+
+    func testExecuteCleanup_defaultTrashMode_leavesAPFSDeltaNilAndLogsTrashMode() async throws {
+        let savedBypass = settings.bypassTrashOnUninstall
+        defer { settings.bypassTrashOnUninstall = savedBypass }
+        settings.emptyTrashDuringCleanup = false
+        settings.bypassTrashOnUninstall = false
+
+        let downloads = fileSystemContext.homeDirectory.appendingPathComponent("Downloads", isDirectory: true)
+        try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
+        let bigFile = downloads.appendingPathComponent("TrashInstaller.dmg")
+        try Data(repeating: 0xDD, count: 1024).write(to: bigFile)
+
+        coordinator.startScan(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.preview)
+
+        let installerLabel = CleanupCategory.installerPackages.localizedTitle
+        itemManager.appendFileItem(
+            path: bigFile.path,
+            sizeBytes: 1024,
+            modificationDate: Date(),
+            isDirectory: false,
+            category: installerLabel,
+            parentName: installerLabel,
+            isSelected: true
+        )
+
+        coordinator.executeCleanup(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.completed)
+
+        XCTAssertFalse(coordinator.usedPermanentDeletion)
+        XCTAssertNil(coordinator.apfsDeltaBytes)
+        let tx = try await journal.loadAll()
+        let op = tx.last?.operations.first
+        XCTAssertEqual(op?.categoryCode, CleanupCategory.installerPackages.rawValue)
+        XCTAssertEqual(op?.deletionMode, OperationRecord.DeletionMode.trash.rawValue)
+        XCTAssertEqual(op?.failed, 0)
+    }
 }

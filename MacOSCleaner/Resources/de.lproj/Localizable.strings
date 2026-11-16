@@ -1012,3 +1012,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 GB (Schätzung)";
 "settings_ai_open_apple_intelligence" = "Apple Intelligence-Einstellungen…";
 "settings_ai_open_macos_storage" = "macOS-Speicher…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "APFS-Speicheränderung: %@";
+"history_mode_trash" = "Papierkorb";
+"history_mode_permanent" = "Dauerhaft";
+"history_mode_mixed" = "Gemischt";
+"history_ops_skipped_format" = "Übersprungen: %lld";
+"history_ops_failed_format" = "Fehler: %lld";
+"uninstaller_post_checked_summary" = "Geprüfte Pfade: %lld • Gefundene Reste: %lld";
+"uninstaller_post_failed_deletions_title" = "Bei Deinstallation nicht entfernt";
+"startup_filter_attention" = "Achtung";
+"startup_filter_login_items" = "Anmeldeobjekte";
+"startup_badge_unsigned" = "Unsigniert";
+"startup_badge_invalid_sig" = "Ungültige Signatur";
+"startup_badge_adhoc" = "Ad-hoc signiert";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Datei nicht gefunden";
+"startup_badge_tmp_location" = "Startet aus /tmp";
+"startup_badge_hidden_location" = "Versteckter Ordner";
+"startup_badge_requires_root" = "Root erforderlich";
+"startup_open_system_settings" = "Systemeinstellungen öffnen";
+"startup_disclaimer" = "Dies ist kein Antivirus. Prüfungen nutzen keine Malware-Signaturen und garantieren keine Sicherheit.";
+"startup_login_items_restricted" = "Anmeldeobjekte durch macOS geschützt";
+"startup_login_items_restricted_sub" = "macOS schränkt das Lesen der BTM-Datenbank ohne Admin-Rechte ein. In den Systemeinstellungen anzeigen.";
+"startup_login_items_empty" = "Keine Anmeldeobjekte gefunden";
+"startup_attention_empty" = "Keine auffälligen Dienste";
+"startup_attention_empty_sub" = "Alle geprüften Dienste haben gültige Dateien und Signaturen.";

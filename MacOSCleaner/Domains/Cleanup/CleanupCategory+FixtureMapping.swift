@@ -6,6 +6,16 @@ extension CleanupCategory {
         .oldBackups, .iosBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
     ]
 
+    /// Categories backed by native CLI tools that reclaim space directly without Trash.
+    public var isDirectCommandCleanup: Bool {
+        switch self {
+        case .packageManagers, .docker, .iosSimulators, .timeMachineSnapshots, .dnsFlush, .fontCache:
+            return true
+        default:
+            return false
+        }
+    }
+
     public var localizedTitle: String {
         "category.\(rawValue)".localized
     }

@@ -1011,3 +1011,31 @@
 "settings_ai_base_models_sip_estimate" = "約 10–13 GB（估算）";
 "settings_ai_open_apple_intelligence" = "Apple Intelligence 設定…";
 "settings_ai_open_macos_storage" = "macOS 儲存空間…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "APFS 可用空間變化：%@";
+"history_mode_trash" = "垃圾桶";
+"history_mode_permanent" = "永久刪除";
+"history_mode_mixed" = "混合";
+"history_ops_skipped_format" = "已略過：%lld";
+"history_ops_failed_format" = "失敗：%lld";
+"uninstaller_post_checked_summary" = "已檢查路徑：%lld • 發現殘留：%lld";
+"uninstaller_post_failed_deletions_title" = "解除安裝時無法移除";
+"startup_filter_attention" = "需要注意";
+"startup_filter_login_items" = "登入項目";
+"startup_badge_unsigned" = "未簽署";
+"startup_badge_invalid_sig" = "簽章無效";
+"startup_badge_adhoc" = "Ad-hoc 簽章";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "找不到檔案";
+"startup_badge_tmp_location" = "從 /tmp 執行";
+"startup_badge_hidden_location" = "隱藏資料夾";
+"startup_badge_requires_root" = "需要 Root 權限";
+"startup_open_system_settings" = "打開系統設定";
+"startup_disclaimer" = "這不是防毒軟體。檢查不使用惡意軟體特徵庫，無法保證軟體安全。";
+"startup_login_items_restricted" = "登入項目資料庫受 macOS 保護";
+"startup_login_items_restricted_sub" = "macOS 限制在無管理員權限時讀取 BTM 資料庫。請在系統設定中檢視。";
+"startup_login_items_empty" = "找不到登入項目";
+"startup_attention_empty" = "沒有需要注意的服務";
+"startup_attention_empty_sub" = "所有掃描的服務皆具備有效檔案與簽章。";

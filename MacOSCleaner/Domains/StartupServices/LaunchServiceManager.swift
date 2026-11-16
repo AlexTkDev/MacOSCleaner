@@ -8,10 +8,13 @@ public actor LaunchServiceManager {
     private let commandRunner: CommandRunner
     private let fileManager: FileManager
     private let trashManager: TrashManager
+    private let backgroundItemsReader: BackgroundItemsReader
+    private let signatureChecker: @Sendable (String) async -> CodeSignatureInfo
     private let searchPaths: [String]
 
     private static let vendorPrefixesKey = "startupSystemVendorPrefixes"
     private static let defaultVendorPrefixes = ["com.apple."]
+    private static let maxConcurrentSignatureChecks = 6
 
     public var systemVendorPrefixes: [String] {
         get {
@@ -26,11 +29,17 @@ public actor LaunchServiceManager {
         commandRunner: CommandRunner = CommandRunner(),
         fileManager: FileManager = .default,
         searchPaths: [String]? = nil,
-        trashManager: TrashManager? = nil
+        trashManager: TrashManager? = nil,
+        backgroundItemsReader: BackgroundItemsReader = BackgroundItemsReader(),
+        signatureChecker: (@Sendable (String) async -> CodeSignatureInfo)? = nil
     ) {
         self.commandRunner = commandRunner
         self.fileManager = fileManager
         self.trashManager = trashManager ?? TrashManager()
+        self.backgroundItemsReader = backgroundItemsReader
+        self.signatureChecker = signatureChecker ?? { path in
+            await CodeSignatureInfo.check(path: path)
+        }
 
         if let searchPaths = searchPaths {
             self.searchPaths = searchPaths
@@ -67,28 +76,117 @@ public actor LaunchServiceManager {
             let plists = fileURLs.filter { $0.pathExtension == "plist" }
 
             for plistURL in plists {
-                if let label = extractLabel(from: plistURL) {
-                    let isEnabled = loadedLabels.contains(label)
-                    let category = categorize(path: plistURL.path, label: label, prefixes: prefixes)
+                if let metadata = extractPlistMetadata(from: plistURL) {
+                    let isEnabled = loadedLabels.contains(metadata.label)
+                    let category = categorize(path: plistURL.path, label: metadata.label, prefixes: prefixes)
+                    let execPath = metadata.executablePath
+                    let exists = execPath.map { path in
+                        path.hasPrefix("/") ? fileManager.fileExists(atPath: path) : true
+                    } ?? true
+                    let location = ExecutableLocation.classify(path: execPath)
+
                     allServices.append(StartupService(
-                        id: label,
-                        name: label,
+                        id: metadata.label,
+                        name: metadata.label,
                         path: plistURL.path,
                         isEnabled: isEnabled,
-                        category: category
+                        category: category,
+                        executablePath: execPath,
+                        executableExists: exists,
+                        executableLocation: location
                     ))
                 }
             }
         }
 
         var uniqueServices: [String: StartupService] = [:]
-        for service in allServices {
-            if uniqueServices[service.id] == nil {
-                uniqueServices[service.id] = service
+        for service in allServices where uniqueServices[service.id] == nil {
+            uniqueServices[service.id] = service
+        }
+
+        let sorted = Array(uniqueServices.values).sorted { $0.name < $1.name }
+        return await enrichSignatures(for: sorted)
+    }
+
+    public func scanAll() async throws -> (
+        services: [StartupService],
+        loginItems: [StartupService],
+        loginItemsAccess: BackgroundItemsAccessStatus
+    ) {
+        async let servicesTask = scan()
+        async let btmTask = backgroundItemsReader.readLoginItemEntries()
+
+        let services = try await servicesTask
+        let snapshot = await btmTask
+
+        let rawLoginItems = snapshot.items.map { item -> StartupService in
+            let targetPath = item.executablePath ?? item.url?.path
+            let displayPath = item.url?.path ?? item.executablePath ?? item.identifier
+            let exists = targetPath.map { fileManager.fileExists(atPath: $0) } ?? true
+            return StartupService(
+                id: item.id,
+                name: item.name,
+                path: displayPath,
+                isEnabled: item.isEnabled,
+                category: .user,
+                executablePath: targetPath,
+                executableExists: exists,
+                executableLocation: ExecutableLocation.classify(path: targetPath),
+                isLoginItem: true,
+                developerName: item.developerName
+            )
+        }
+        let enrichedLoginItems = await enrichSignatures(for: rawLoginItems)
+        return (services, enrichedLoginItems, snapshot.accessStatus)
+    }
+
+    private func enrichSignatures(for services: [StartupService]) async -> [StartupService] {
+        let pathsToCheck = Array(Set(services.compactMap { service -> String? in
+            guard service.executableExists, let path = service.executablePath, path.hasPrefix("/") else {
+                return nil
+            }
+            return path
+        }))
+        guard !pathsToCheck.isEmpty else { return services }
+
+        let checker = signatureChecker
+        var signaturesByPath: [String: CodeSignatureInfo] = [:]
+
+        await withTaskGroup(of: (String, CodeSignatureInfo).self) { group in
+            var pending = pathsToCheck[...]
+            for path in pending.prefix(Self.maxConcurrentSignatureChecks) {
+                group.addTask { (path, await checker(path)) }
+            }
+            pending = pending.dropFirst(min(Self.maxConcurrentSignatureChecks, pending.count))
+
+            for await (path, sig) in group {
+                signaturesByPath[path] = sig
+                if let next = pending.first {
+                    pending = pending.dropFirst()
+                    group.addTask { (next, await checker(next)) }
+                }
             }
         }
 
-        return Array(uniqueServices.values).sorted { $0.name < $1.name }
+        return services.map { service in
+            guard let execPath = service.executablePath,
+                  let signature = signaturesByPath[execPath] else {
+                return service
+            }
+            return StartupService(
+                id: service.id,
+                name: service.name,
+                path: service.path,
+                isEnabled: service.isEnabled,
+                category: service.category,
+                executablePath: service.executablePath,
+                executableExists: service.executableExists,
+                executableLocation: service.executableLocation,
+                signature: signature,
+                isLoginItem: service.isLoginItem,
+                developerName: service.developerName
+            )
+        }
     }
 
     private func getLoadedLabels() async throws -> Set<String> {
@@ -156,12 +254,17 @@ public actor LaunchServiceManager {
         return .thirdParty
     }
 
-    private func extractLabel(from url: URL) -> String? {
+    private func extractPlistMetadata(from url: URL) -> (label: String, executablePath: String?)? {
         guard let data = try? Data(contentsOf: url),
-              let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else {
+              let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
+              let label = plist["Label"] as? String else {
             return nil
         }
-        return plist["Label"] as? String
+        let program = plist["Program"] as? String
+        let firstArg = (plist["ProgramArguments"] as? [String])?.first
+        let rawExec = (program?.isEmpty == false ? program : firstArg)
+        let executablePath = rawExec?.isEmpty == false ? rawExec : nil
+        return (label, executablePath)
     }
 
     public func disable(service: StartupService) async throws {

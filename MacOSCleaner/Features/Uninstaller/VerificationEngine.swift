@@ -101,7 +101,8 @@ public actor VerificationEngine {
             appName: identity.appName,
             bundleID: identity.bundleID,
             leftovers: leftovers,
-            items: leftoverItems
+            items: leftoverItems,
+            checkedCandidateCount: candidates.count
         )
         Logger.verification.info("\(report.count, privacy: .public) leftover(s) detected")
         report.leftovers.forEach { artifact in

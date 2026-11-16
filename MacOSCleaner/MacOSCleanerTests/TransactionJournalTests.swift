@@ -84,4 +84,33 @@ final class TransactionJournalTests: XCTestCase {
         let all = try await journal.loadAll()
         XCTAssertTrue(all.isEmpty)
     }
+
+    func testDecodeIfPresentBackwardCompatibility() async throws {
+        let legacyID = UUID()
+        let opID = UUID()
+        let legacyJSON = """
+        {"id":"\(legacyID.uuidString)","timestamp":0,"operations":[{"id":"\(opID.uuidString)","itemPath":"App caches","status":"success","bytesFreed":4096}]}
+        """
+        let modernID = UUID()
+        let modernOpID = UUID()
+        let modernJSON = """
+        {"id":"\(modernID.uuidString)","timestamp":10,"trigger":"automatic","operations":[{"id":"\(modernOpID.uuidString)","itemPath":"Xcode","status":"partial","bytesFreed":8192,"categoryCode":"xcode","deletionMode":"permanent","skipped":2,"failed":1}]}
+        """
+        try (legacyJSON + "\n" + modernJSON + "\n").write(to: tempJournalURL, atomically: true, encoding: .utf8)
+
+        let loaded = try await journal.loadAll()
+        XCTAssertEqual(loaded.count, 2)
+
+        XCTAssertNil(loaded[0].trigger)
+        XCTAssertNil(loaded[0].operations[0].categoryCode)
+        XCTAssertNil(loaded[0].operations[0].deletionMode)
+        XCTAssertNil(loaded[0].operations[0].skipped)
+        XCTAssertNil(loaded[0].operations[0].failed)
+
+        XCTAssertEqual(loaded[1].trigger, .automatic)
+        XCTAssertEqual(loaded[1].operations[0].categoryCode, "xcode")
+        XCTAssertEqual(loaded[1].operations[0].deletionMode, "permanent")
+        XCTAssertEqual(loaded[1].operations[0].skipped, 2)
+        XCTAssertEqual(loaded[1].operations[0].failed, 1)
+    }
 }

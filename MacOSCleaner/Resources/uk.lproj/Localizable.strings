@@ -1044,3 +1044,31 @@
 "settings_ai_base_models_sip_estimate" = "~10–13 ГБ (оцінка)";
 "settings_ai_open_apple_intelligence" = "Налаштування Apple Intelligence…";
 "settings_ai_open_macos_storage" = "Сховище macOS…";
+
+// Stage 4
+"cleanup_complete_apfs_delta" = "Зміна доступного місця (APFS): %@";
+"history_mode_trash" = "Кошик";
+"history_mode_permanent" = "Безповоротно";
+"history_mode_mixed" = "Змішаний";
+"history_ops_skipped_format" = "Пропущено: %lld";
+"history_ops_failed_format" = "Помилок: %lld";
+"uninstaller_post_checked_summary" = "Перевірено шляхів: %lld • Знайдено залишків: %lld";
+"uninstaller_post_failed_deletions_title" = "Не вдалося видалити під час деінсталяції";
+"startup_filter_attention" = "Потребують уваги";
+"startup_filter_login_items" = "Об'єкти входу";
+"startup_badge_unsigned" = "Не підписано";
+"startup_badge_invalid_sig" = "Підпис пошкоджено";
+"startup_badge_adhoc" = "Ad-hoc підпис";
+"startup_badge_apple" = "Apple";
+"startup_badge_notarized" = "Notarized";
+"startup_badge_missing_binary" = "Файл не знайдено";
+"startup_badge_tmp_location" = "Запускається з /tmp";
+"startup_badge_hidden_location" = "Прихована папка";
+"startup_badge_requires_root" = "Потрібні права root";
+"startup_open_system_settings" = "Відкрити Системні параметри";
+"startup_disclaimer" = "Це не антивірус. Перевірка не використовує базу сигнатур і не гарантує відсутність шкідливого ПЗ.";
+"startup_login_items_restricted" = "Базу об'єктів входу захищено macOS";
+"startup_login_items_restricted_sub" = "macOS обмежує читання бази BTM без прав адміністратора. Відкрийте Системні параметри для перегляду.";
+"startup_login_items_empty" = "Об'єктів входу не знайдено";
+"startup_attention_empty" = "Немає служб, що потребують уваги";
+"startup_attention_empty_sub" = "Усі перевірені служби мають дійсні файли та підписи.";

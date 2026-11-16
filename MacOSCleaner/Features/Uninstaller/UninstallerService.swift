@@ -756,6 +756,8 @@ public actor UninstallerService {
     ) async throws -> VerificationReport? {
         if !app.versions.isEmpty {
             var combinedLeftovers: [LeftoverItem] = []
+            var combinedChecked = 0
+            var combinedFailed: [FailedDeletion] = []
             for versionApp in app.versions {
                 if let report = try await uninstall(
                     app: versionApp,
@@ -764,9 +766,19 @@ public actor UninstallerService {
                     removeFromDock: removeFromDock
                 ) {
                     combinedLeftovers.append(contentsOf: report.items)
+                    combinedChecked += report.checkedCandidateCount
+                    combinedFailed.append(contentsOf: report.failedDeletions)
                 }
             }
-            return combinedLeftovers.isEmpty ? nil : VerificationReport(appName: app.name, bundleID: app.bundleID, items: combinedLeftovers)
+            return (combinedLeftovers.isEmpty && combinedFailed.isEmpty)
+                ? nil
+                : VerificationReport(
+                    appName: app.name,
+                    bundleID: app.bundleID,
+                    items: combinedLeftovers,
+                    checkedCandidateCount: combinedChecked,
+                    failedDeletions: combinedFailed
+                )
         }
 
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
@@ -786,6 +798,7 @@ public actor UninstallerService {
         }
 
         var trashedURLs: [URL] = []
+        var failedDeletions: [FailedDeletion] = []
         let allTargets = [app.url] + deletionTargets
 
         if bypassTrash {
@@ -799,12 +812,16 @@ public actor UninstallerService {
                         Logger.uninstaller.error("removeItem failed '\(target.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                         throw error
                     } else {
+                        failedDeletions.append(FailedDeletion(url: target, reason: error.localizedDescription))
                         Logger.uninstaller.warning("removeItem failed '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                     }
                 }
             }
         } else {
             trashedURLs = try await trashManager.trashItems(urls: allTargets, policy: .uninstall)
+            for target in deletionTargets where fileManager.fileExists(atPath: target.path) {
+                failedDeletions.append(FailedDeletion(url: target, reason: "cleanup_skip_reason_permission".localized))
+            }
             Logger.uninstaller.info("Trashed \(trashedURLs.count) item(s) for '\(app.name, privacy: .public)'")
         }
 
@@ -841,7 +858,7 @@ public actor UninstallerService {
                 codesignCache: codesignCache,
                 plistCache: plistCache
             )
-            let report = await engine.verify(identity: identity)
+            let report = await engine.verify(identity: identity).withFailedDeletions(failedDeletions)
             if report.hasLeftovers {
                 Logger.uninstaller.warning("\(report.count, privacy: .public) leftover(s) after uninstall of '\(app.name, privacy: .public)'")
             } else {
@@ -849,7 +866,7 @@ public actor UninstallerService {
             }
             return report
         }
-        return nil
+        return failedDeletions.isEmpty ? nil : VerificationReport(appName: app.name, bundleID: app.bundleID, failedDeletions: failedDeletions)
     }
 
     // MARK: - Private helpers
