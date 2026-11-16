@@ -1032,3 +1032,19 @@
 "settings_auto_check_updates_sub" = "실행 시 GitHub Releases를 자동으로 확인합니다";
 "settings_remove_from_dock" = "제거 시 Dock에서 삭제";
 "settings_remove_from_dock_sub" = "제거된 앱 아이콘을 macOS Dock에서 제거합니다";
+
+// Stage 3
+"cleanup_desc_deno_deps" = "Deno 다운로드된 종속성 캐시(다음 실행 시 다시 다운로드됨)";
+"cleanup_desc_cocoapods_repos" = "CocoaPods Specs 저장소(비-CDN Podfile의 경우 다시 다운로드됨)";
+"cleanup_installer_desc_source_format" = "출처: %@";
+"cleanup_installer_desc_installed_format" = "출처: %@ • /Applications에 이미 설치된 것으로 보임";
+"settings_ai_system_storage" = "시스템 모델 및 에셋";
+"settings_ai_system_storage_sub" = "Apple Intelligence 시스템 파일 읽기 전용 개요";
+"settings_ai_managed_by_macos" = "macOS에서 관리됨";
+"settings_ai_comp_photos_cleanup" = "사진 정리 에셋";
+"settings_ai_comp_spatial_photos" = "공간 사진 에셋";
+"settings_ai_comp_visual_intelligence" = "Visual Intelligence 캐시";
+"settings_ai_base_models_label" = "기본 생성 모델(SIP 보호)";
+"settings_ai_base_models_sip_estimate" = "약 10–13 GB(추정)";
+"settings_ai_open_apple_intelligence" = "Apple Intelligence 설정…";
+"settings_ai_open_macos_storage" = "macOS 저장 공간…";

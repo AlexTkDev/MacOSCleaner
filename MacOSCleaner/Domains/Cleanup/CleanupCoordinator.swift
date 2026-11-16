@@ -506,7 +506,7 @@ public final class CleanupCoordinator {
         case .log(let message):
             self.pendingLogs.append(message)
             self.scheduleLogFlushIfNeeded()
-        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName, let isSelected, let isCommandBacked):
+        case .fileItem(let path, let sizeBytes, let modificationDate, let isDirectory, let category, let parentName, let isSelected, let isCommandBacked, let description):
             let localizedCategory = CleanupCategory.localizedGroupTitle(for: category)
             let effectiveParent = parentName.map { CleanupCategory.localizedGroupTitle(for: $0) } ?? localizedCategory
             self.itemManager.appendFileItem(
@@ -517,7 +517,8 @@ public final class CleanupCoordinator {
                 category: localizedCategory,
                 parentName: effectiveParent,
                 isSelected: isSelected,
-                isCommandBacked: isCommandBacked
+                isCommandBacked: isCommandBacked,
+                description: description
             )
         }
     }

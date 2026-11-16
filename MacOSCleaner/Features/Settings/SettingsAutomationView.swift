@@ -5,6 +5,7 @@ struct SettingsAutomationView: View {
     @Bindable var settings: AppSettings
     @State private var modelAvailability: SystemLanguageModel.Availability = SystemLanguageModel.default.availability
     @State private var isCheckingAvailability: Bool = false
+    @State private var storageSnapshot: AppleIntelligenceStorageSnapshot? = nil
 
     var body: some View {
         ScrollView {
@@ -20,6 +21,9 @@ struct SettingsAutomationView: View {
         }
         .task {
             refreshModelAvailability(prewarmIfReady: false)
+            storageSnapshot = await Task.detached(priority: .utility) {
+                AppleIntelligenceStorageReader.inspect()
+            }.value
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             refreshModelAvailability(prewarmIfReady: false)
@@ -144,9 +148,108 @@ struct SettingsAutomationView: View {
                     if settings.enableAI, let hint = aiStatusHint {
                         aiHintView(hint: hint, showSystemSettingsButton: shouldShowSystemSettingsButton)
                     }
+
+                    SettingsDivider()
+
+                    aiSystemStorageSection
                 }
             }
         )
+    }
+
+    @ViewBuilder
+    private var aiSystemStorageSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SettingsLabeledControl(
+                "settings_ai_system_storage".localized,
+                subtitle: "settings_ai_system_storage_sub".localized
+            ) {
+                StatusPill(
+                    "settings_ai_managed_by_macos".localized,
+                    iconName: "lock.shield",
+                    style: .neutral,
+                    size: .small
+                )
+            }
+
+            if let snapshot = storageSnapshot {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(snapshot.components) { component in
+                        HStack {
+                            Text(component.titleKey.localized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(component.sizeBytes.formattedByteCount())
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    HStack {
+                        Text("settings_ai_base_models_label".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if let baseBytes = snapshot.baseModelReadableBytes {
+                            Text(baseBytes.formattedByteCount())
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("settings_ai_base_models_sip_estimate".localized)
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(0.04))
+                )
+            }
+
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    aiStorageButtons
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    aiStorageButtons
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var aiStorageButtons: some View {
+        Button {
+            openAppleIntelligenceSettings()
+        } label: {
+            Label("settings_ai_open_apple_intelligence".localized, systemImage: "sparkles")
+        }
+        .secondaryGlassButtonStyle()
+
+        Button {
+            openSystemPreferenceURL("x-apple.systempreferences:com.apple.settings.Storage")
+        } label: {
+            Label("settings_ai_open_macos_storage".localized, systemImage: "internaldrive")
+        }
+        .secondaryGlassButtonStyle()
+    }
+
+    private func openAppleIntelligenceSettings() {
+        let primary = "x-apple.systempreferences:com.apple.AppleIntelligence-Settings.extension"
+        let fallback = "x-apple.systempreferences:com.apple.Siri-Settings.extension"
+        if !openSystemPreferenceURL(primary) {
+            _ = openSystemPreferenceURL(fallback)
+        }
+    }
+
+    @discardableResult
+    private func openSystemPreferenceURL(_ raw: String) -> Bool {
+        guard let url = URL(string: raw) else { return false }
+        return NSWorkspace.shared.open(url)
     }
 
     @ViewBuilder
@@ -246,9 +349,7 @@ struct SettingsAutomationView: View {
 
             if showSystemSettingsButton {
                 Button {
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.Siri-Settings.extension") {
-                        NSWorkspace.shared.open(url)
-                    }
+                    openAppleIntelligenceSettings()
                 } label: {
                     HStack(spacing: 4) {
                         Text("settings_ai_open_system_settings".localized)

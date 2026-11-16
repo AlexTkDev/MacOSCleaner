@@ -1028,3 +1028,19 @@
 "settings_auto_check_updates_sub" = "Перевіряти нові релізи на GitHub під час запуску";
 "settings_remove_from_dock" = "Видаляти з Dock при видаленні";
 "settings_remove_from_dock_sub" = "Прибирати іконки видалених програм із macOS Dock";
+
+// Stage 3
+"cleanup_desc_deno_deps" = "Кеш завантажених залежностей Deno (завантажиться знову при запуску)";
+"cleanup_desc_cocoapods_repos" = "Репозиторій специфікацій CocoaPods (перекачається для non-CDN Podfile)";
+"cleanup_installer_desc_source_format" = "Джерело: %@";
+"cleanup_installer_desc_installed_format" = "Джерело: %@ • Схоже, вже є в /Applications";
+"settings_ai_system_storage" = "Системні моделі та ресурси";
+"settings_ai_system_storage_sub" = "Лише перегляд системних файлів Apple Intelligence";
+"settings_ai_managed_by_macos" = "Керується macOS";
+"settings_ai_comp_photos_cleanup" = "Ресурс Photos Clean Up";
+"settings_ai_comp_spatial_photos" = "Ресурс просторових фото";
+"settings_ai_comp_visual_intelligence" = "Кеш Visual Intelligence";
+"settings_ai_base_models_label" = "Базові моделі (захищено SIP)";
+"settings_ai_base_models_sip_estimate" = "~10–13 ГБ (оцінка)";
+"settings_ai_open_apple_intelligence" = "Налаштування Apple Intelligence…";
+"settings_ai_open_macos_storage" = "Сховище macOS…";

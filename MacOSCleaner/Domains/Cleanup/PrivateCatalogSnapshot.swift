@@ -288,7 +288,22 @@ enum PrivateCatalogCodec {
         if expanded == "~/.local/share/Trash" || expanded.hasPrefix("~/.local/share/Trash/") {
             return true
         }
+        // Broad or protected toolchain roots must never enter auto-cleanup from private catalog.
+        let unsafeExactRoots: Set<String> = [
+            "~/.sbt", "~/.gem", "~/.cargo/git", "~/go/pkg/mod", "~/.stack/programs",
+        ]
+        if unsafeExactRoots.contains(expanded) || expanded.hasPrefix("~/.stack/programs/") {
+            return true
+        }
         switch category {
+        case .appCaches:
+            let dedicatedAppCaches: Set<String> = [
+                "~/Library/Caches/Homebrew",
+                "~/Library/Caches/CocoaPods",
+                "~/Library/Caches/org.carthage.CarthageKit",
+                "~/Library/Caches/org.swift.swiftpm",
+            ]
+            return dedicatedAppCaches.contains(expanded)
         case .languageCaches:
             let dedicatedToolchainPrefixes = [
                 "~/.gradle", "~/.pub-cache", "~/.dartServer",

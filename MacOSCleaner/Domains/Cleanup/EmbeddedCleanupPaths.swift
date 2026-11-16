@@ -6,31 +6,19 @@ public enum EmbeddedCleanupPaths {
 
     public static let appCaches: [CleanupPath] = [
         // Never ~/Library/Caches/Google wholesale — updater/Keystone live under Google trees.
+        // Package manager & dedicated toolchain caches (Homebrew, CocoaPods, SwiftPM, Carthage,
+        // JetBrains, go-build, npm/yarn/pnpm) are owned by their dedicated categories.
         CleanupPath(path: "~/Library/Caches/Google/Chrome", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.carthage.CarthageKit", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/CocoaPods", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/pip", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/Homebrew", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/ms-playwright-go", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.spotify.client", category: .appCaches),
         CleanupPath(path: "~/Library/Application Support/Spotify/PersistentCache", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/us.zoom.xos", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.Xcode", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.instruments", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/org.swift.swiftpm", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.plausiblelabs.crashreporter.data", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/JetBrains", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.SourceKitService", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.apple.dt.XcodePreviews", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/pnpm", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/yarn", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/npm", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/go-build", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/Adobe", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.discordapp.Discord", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.microsoft.teams2", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/com.slack.Slack", category: .appCaches),
-        CleanupPath(path: "~/Library/Caches/com.tinyspeck.slackmacgap", category: .appCaches),
     ]
 
     // MARK: - Browser Caches
@@ -129,6 +117,13 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Crashpad", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Service Worker/CacheStorage", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/ai.opencode.desktop/Service Worker/ScriptCache", category: .ideCaches),
+        // Cline / Roo Code extension caches
+        CleanupPath(path: "~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Cursor/User/globalStorage/saoudrizwan.claude-dev/cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Cursor/User/globalStorage/rooveterinaryinc.roo-cline/cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Windsurf/User/globalStorage/saoudrizwan.claude-dev/cache", category: .ideCaches),
+        CleanupPath(path: "~/Library/Application Support/Windsurf/User/globalStorage/rooveterinaryinc.roo-cline/cache", category: .ideCaches),
         // Nova
         CleanupPath(path: "~/Library/Application Support/Nova/Caches", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/com.panic.Nova", category: .ideCaches),
@@ -137,9 +132,8 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/Library/Application Support/Sublime Text/Index", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/Sublime Text/Package Control.cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/com.sublimetext.4", category: .ideCaches),
-        // JetBrains
+        // JetBrains (logs owned by userLogs)
         CleanupPath(path: "~/Library/Caches/JetBrains", category: .ideCaches),
-        CleanupPath(path: "~/Library/Logs/JetBrains", category: .ideCaches),
         // GitHub Desktop
         CleanupPath(path: "~/Library/Application Support/GitHub Desktop/Cache", category: .ideCaches),
         CleanupPath(path: "~/Library/Application Support/GitHub Desktop/CachedData", category: .ideCaches),
@@ -197,20 +191,34 @@ public enum EmbeddedCleanupPaths {
         // TablePlus
         CleanupPath(path: "~/Library/Caches/com.tinyapp.TablePlus", category: .ideCaches),
         CleanupPath(path: "~/Library/Caches/com.tableplus.TablePlus", category: .ideCaches),
-        // Vivaldi
-        CleanupPath(path: "~/Library/Caches/com.vivaldi.Vivaldi", category: .ideCaches),
     ]
 
     // MARK: - Language Caches
 
     public static let languageCaches: [CleanupPath] = [
+        // Rust / C / C++
         CleanupPath(path: "~/.cargo/registry/cache", category: .languageCaches),
         CleanupPath(path: "~/.cargo/registry/src", category: .languageCaches),
         CleanupPath(path: "~/.cargo/.package-cache", category: .languageCaches),
-        CleanupPath(path: "~/.cargo/git", category: .languageCaches),
+        CleanupPath(path: "~/.cargo/git/db", category: .languageCaches),
+        CleanupPath(path: "~/.cargo/git/checkouts", category: .languageCaches),
+        CleanupPath(path: "~/.rustup/downloads", category: .languageCaches),
+        CleanupPath(path: "~/.rustup/tmp", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/Mozilla.sccache", category: .languageCaches),
+        CleanupPath(path: "~/.cache/sccache", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/ccache", category: .languageCaches),
+        CleanupPath(path: "~/.cache/ccache", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/zig", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/zls", category: .languageCaches),
+        // JS / TS / Web
         CleanupPath(path: "~/.bun/install/cache", category: .languageCaches),
+        CleanupPath(path: "~/.bun/tmp", category: .languageCaches),
+        CleanupPath(path: "~/.turbo/cache", category: .languageCaches),
         CleanupPath(path: "~/.deno/cache", category: .languageCaches),
         CleanupPath(path: "~/Library/Caches/deno", category: .languageCaches),
+        CleanupPath(path: "~/.cache/deno", category: .languageCaches),
+        CleanupPath(path: "~/.deno/npm", category: .languageCaches),
+        CleanupPath(path: "~/.deno/deps", category: .languageCaches, description: "cleanup_desc_deno_deps"),
         CleanupPath(path: "~/.volta/cache", category: .languageCaches),
         CleanupPath(path: "~/.nvm/.cache", category: .languageCaches),
         CleanupPath(path: "~/.cache/node-gyp", category: .languageCaches),
@@ -221,7 +229,7 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cache/ms-playwright-go", category: .languageCaches),
         CleanupPath(path: "~/Library/Caches/ms-playwright", category: .languageCaches),
         CleanupPath(path: "~/.cache/puppeteer", category: .languageCaches),
-        CleanupPath(path: "~/.composer/cache", category: .languageCaches),
+        // Python
         CleanupPath(path: "~/Library/Caches/pypoetry", category: .languageCaches),
         CleanupPath(path: "~/Library/Caches/uv", category: .languageCaches),
         CleanupPath(path: "~/.cache/pip", category: .languageCaches),
@@ -230,21 +238,42 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.cache/hatch", category: .languageCaches),
         CleanupPath(path: "~/.rye/cache", category: .languageCaches),
         CleanupPath(path: "~/.cache/pipx", category: .languageCaches),
-        CleanupPath(path: "~/.sbt", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/pipx", category: .languageCaches),
+        CleanupPath(path: "~/Library/Logs/pipx", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/pdm", category: .languageCaches),
+        CleanupPath(path: "~/.cache/pdm", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/ruff", category: .languageCaches),
+        CleanupPath(path: "~/.cache/ruff", category: .languageCaches),
+        CleanupPath(path: "~/.cache/poetry", category: .languageCaches),
+        // JVM / Scala / Java (Gradle & Maven owned by cleanGradleMaven)
+        CleanupPath(path: "~/.sbt/boot", category: .languageCaches),
+        CleanupPath(path: "~/.cache/sbt", category: .languageCaches),
         CleanupPath(path: "~/.ivy2/cache", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/Coursier/v1", category: .languageCaches),
+        CleanupPath(path: "~/.cache/coursier/v1", category: .languageCaches),
         CleanupPath(path: "~/.coursier/cache", category: .languageCaches),
         CleanupPath(path: "~/.ammonite/cache", category: .languageCaches),
         CleanupPath(path: "~/.cache/metals", category: .languageCaches),
+        // PHP / .NET / Ruby / Haskell / Elixir / Julia / Bazel
+        CleanupPath(path: "~/Library/Caches/composer", category: .languageCaches),
+        CleanupPath(path: "~/.cache/composer", category: .languageCaches),
+        CleanupPath(path: "~/.composer/cache", category: .languageCaches),
+        CleanupPath(path: "~/Library/Caches/NuGet", category: .languageCaches),
+        CleanupPath(path: "~/.cache/NuGet/v3-cache", category: .languageCaches),
+        CleanupPath(path: "~/.local/share/NuGet/v3-cache", category: .languageCaches),
+        CleanupPath(path: "~/.gem/specs", category: .languageCaches),
+        CleanupPath(path: "~/.bundle/cache", category: .languageCaches),
         CleanupPath(path: "~/.julia/compiled", category: .languageCaches),
         CleanupPath(path: "~/.julia/logs", category: .languageCaches),
         CleanupPath(path: "~/.hex/packages", category: .languageCaches),
+        CleanupPath(path: "~/.cache/hex", category: .languageCaches),
+        CleanupPath(path: "~/.cache/rebar3", category: .languageCaches),
         CleanupPath(path: "~/.cabal/packages", category: .languageCaches),
         CleanupPath(path: "~/.cabal/logs", category: .languageCaches),
+        CleanupPath(path: "~/.stack/snapshots", category: .languageCaches),
         CleanupPath(path: "~/.cache/org.swift.swiftpm", category: .languageCaches),
-        CleanupPath(path: "~/.cache/poetry", category: .languageCaches),
         CleanupPath(path: "~/.cache/bazel", category: .languageCaches),
         CleanupPath(path: "~/.cache/bazelisk", category: .languageCaches),
-        CleanupPath(path: "~/.gem", category: .languageCaches),
     ]
 
     // MARK: - System Caches
@@ -258,6 +287,20 @@ public enum EmbeddedCleanupPaths {
     // MARK: - Dotfile Caches
 
     public static let dotfileCaches: [CleanupPath] = [
+        // AI coding agents & ML tool caches (never configs/projects/model hubs)
+        CleanupPath(path: "~/.cache/huggingface/assets", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/huggingface/modules", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/torch/kernels", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/torch/inductor", category: .dotfileCaches),
+        CleanupPath(path: "~/.triton/cache", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/litellm", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/fabric", category: .dotfileCaches),
+        CleanupPath(path: "~/.claude/logs", category: .dotfileCaches),
+        CleanupPath(path: "~/.claude/telemetry", category: .dotfileCaches),
+        CleanupPath(path: "~/.continue/index", category: .dotfileCaches),
+        CleanupPath(path: "~/.continue/cache", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/openhands", category: .dotfileCaches),
+        CleanupPath(path: "~/.cache/open-webui", category: .dotfileCaches),
         CleanupPath(path: "~/.config/opencode/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/claude-cli/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.config/gemini/cache", category: .dotfileCaches),
@@ -266,18 +309,89 @@ public enum EmbeddedCleanupPaths {
         CleanupPath(path: "~/.config/cody/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.terraform.d/cache", category: .dotfileCaches),
         CleanupPath(path: "~/.cache/helm/repository", category: .dotfileCaches),
-        CleanupPath(path: "~/.cache/bazel", category: .dotfileCaches),
         CleanupPath(path: "~/.ccache", category: .dotfileCaches),
         CleanupPath(path: "~/.vcpkg/cache", category: .dotfileCaches),
     ]
+
+    // MARK: - Dedicated Toolchain Paths (shared with CleanupEngine & SafetyManager)
+
+    public static let gradleCacheSubpaths: [String] = [
+        "~/.gradle/caches",
+        "~/.gradle/wrapper/dists",
+        "~/.gradle/daemon",
+        "~/.gradle/buildOutputCleanup",
+        "~/.kotlin",
+    ]
+
+    public static let flutterDartCacheSubpaths: [String] = [
+        "~/.pub-cache/hosted",
+        "~/.pub-cache/git",
+        "~/.dartServer",
+        "~/.flutter-devtools",
+    ]
+
+    public static let swiftPMCacheSubpaths: [String] = [
+        "~/.swiftpm/cache",
+        "~/Library/Caches/org.swift.swiftpm",
+    ]
+
+    public static let carthageCacheSubpaths: [String] = [
+        "~/Library/Caches/org.carthage.CarthageKit",
+        "~/.cocoapods/repos",
+    ]
+
+    public static let androidCacheSubpaths: [String] = [
+        "~/.android/cache",
+        "~/.android/build-cache",
+        "~/Library/Android/sdk/.temp",
+    ]
+
+    /// Single source of truth for non-`~/Library` regenerable cache templates
+    /// allowed during `.cleanup` by `SafetyManager.isRegenerableCachePath`.
+    public static func regenerableDotCacheTemplates() -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+
+        func appendIfNonLibrary(_ template: String) {
+            guard template.hasPrefix("~/."), seen.insert(template).inserted else { return }
+            result.append(template)
+        }
+
+        let categories: [CleanupCategory] = [
+            .appCaches, .browserCaches, .messagingMedia, .ideCaches,
+            .languageCaches, .dotfileCaches, .systemCaches,
+        ]
+        for category in categories {
+            for item in paths(for: category) {
+                appendIfNonLibrary(item.path)
+            }
+        }
+
+        let dedicated = gradleCacheSubpaths
+            + flutterDartCacheSubpaths
+            + swiftPMCacheSubpaths
+            + carthageCacheSubpaths
+            + androidCacheSubpaths
+            + [
+                "~/.m2/repository",
+                "~/.npm",
+                "~/.yarn/berry/cache",
+                "~/.local/share/pnpm",
+                "~/go/pkg/mod/cache",
+            ]
+        for path in dedicated {
+            if (path.hasPrefix("~/.") || path == "~/go/pkg/mod/cache"), seen.insert(path).inserted {
+                result.append(path)
+            }
+        }
+
+        return result
+    }
 
     // MARK: - User Logs
 
     public static let userLogs: [CleanupPath] = [
         CleanupPath(path: "~/Library/Logs", category: .userLogs),
-        CleanupPath(path: "~/Library/Logs/DiagnosticReports", category: .userLogs),
-        CleanupPath(path: "~/Library/Logs/CrashReporter", category: .userLogs),
-        CleanupPath(path: "~/Library/Application Support/CrashReporter", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/PanicReporter", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/Retired", category: .userLogs),
         CleanupPath(path: "~/Library/Logs/MobileSlideshows", category: .userLogs),

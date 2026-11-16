@@ -1030,3 +1030,19 @@
 "settings_auto_check_updates_sub" = "Comprobar automáticamente GitHub Releases al iniciar";
 "settings_remove_from_dock" = "Eliminar del Dock al desinstalar";
 "settings_remove_from_dock_sub" = "Quitar del Dock de macOS los iconos de apps desinstaladas";
+
+// Stage 3
+"cleanup_desc_deno_deps" = "Caché de dependencias descargadas de Deno (se vuelve a descargar al ejecutar)";
+"cleanup_desc_cocoapods_repos" = "Repositorio de specs de CocoaPods (se vuelve a descargar para Podfiles sin CDN)";
+"cleanup_installer_desc_source_format" = "Origen: %@";
+"cleanup_installer_desc_installed_format" = "Origen: %@ • Probablemente ya instalado en /Applications";
+"settings_ai_system_storage" = "Modelos y recursos del sistema";
+"settings_ai_system_storage_sub" = "Vista de solo lectura de los archivos del sistema de Apple Intelligence";
+"settings_ai_managed_by_macos" = "Gestionado por macOS";
+"settings_ai_comp_photos_cleanup" = "Recurso de Limpiar Fotos";
+"settings_ai_comp_spatial_photos" = "Recurso de Fotos Espaciales";
+"settings_ai_comp_visual_intelligence" = "Caché de Visual Intelligence";
+"settings_ai_base_models_label" = "Modelos base (protegido por SIP)";
+"settings_ai_base_models_sip_estimate" = "~10–13 GB (estimado)";
+"settings_ai_open_apple_intelligence" = "Ajustes de Apple Intelligence…";
+"settings_ai_open_macos_storage" = "Almacenamiento de macOS…";

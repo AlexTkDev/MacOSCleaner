@@ -918,7 +918,7 @@ struct CleanupEngineTests {
         let deselectedCount = ThreadSafeCounter()
 
         _ = try await engine.run(categories: [.iosBackups, .mailDownloads, .savedAppState], dryRun: true) { event in
-            if case .fileItem(_, _, _, _, _, _, let isSelected, _) = event {
+            if case .fileItem(_, _, _, _, _, _, let isSelected, _, _) = event {
                 #expect(!isSelected, "Review-only items must have isSelected == false")
                 deselectedCount.increment()
             }

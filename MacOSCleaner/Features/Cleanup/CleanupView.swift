@@ -994,6 +994,14 @@ struct CleanupFileRow: View {
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
+
+                    if let description = item.description, !description.isEmpty {
+                        Text(description)
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
 
                 Spacer()

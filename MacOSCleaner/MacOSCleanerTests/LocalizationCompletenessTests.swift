@@ -87,7 +87,21 @@ final class LocalizationCompletenessTests: XCTestCase {
         "startup_delete_service",
         "startup_delete_confirm_title",
         "startup_delete_confirm_message",
-        "startup_delete_action"
+        "startup_delete_action",
+        "cleanup_desc_deno_deps",
+        "cleanup_desc_cocoapods_repos",
+        "cleanup_installer_desc_source_format",
+        "cleanup_installer_desc_installed_format",
+        "settings_ai_system_storage",
+        "settings_ai_system_storage_sub",
+        "settings_ai_managed_by_macos",
+        "settings_ai_comp_photos_cleanup",
+        "settings_ai_comp_spatial_photos",
+        "settings_ai_comp_visual_intelligence",
+        "settings_ai_base_models_label",
+        "settings_ai_base_models_sip_estimate",
+        "settings_ai_open_apple_intelligence",
+        "settings_ai_open_macos_storage"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

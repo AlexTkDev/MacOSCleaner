@@ -995,3 +995,19 @@
 "settings_auto_check_updates_sub" = "启动时自动检查 GitHub Releases";
 "settings_remove_from_dock" = "卸载时从程序坞移除";
 "settings_remove_from_dock_sub" = "从 macOS 程序坞中移除已卸载应用的图标";
+
+// Stage 3
+"cleanup_desc_deno_deps" = "Deno 已下载依赖缓存（下次运行时会重新下载）";
+"cleanup_desc_cocoapods_repos" = "CocoaPods Specs 仓库（非 CDN Podfile 将重新下载）";
+"cleanup_installer_desc_source_format" = "来源：%@";
+"cleanup_installer_desc_installed_format" = "来源：%@ • 似乎已安装在 /Applications";
+"settings_ai_system_storage" = "系统模型与资源";
+"settings_ai_system_storage_sub" = "Apple 智能系统文件的只读概览";
+"settings_ai_managed_by_macos" = "由 macOS 管理";
+"settings_ai_comp_photos_cleanup" = "照片清除资源";
+"settings_ai_comp_spatial_photos" = "空间照片资源";
+"settings_ai_comp_visual_intelligence" = "视觉智能缓存";
+"settings_ai_base_models_label" = "基础生成模型（受 SIP 保护）";
+"settings_ai_base_models_sip_estimate" = "约 10–13 GB（估算）";
+"settings_ai_open_apple_intelligence" = "Apple 智能设置…";
+"settings_ai_open_macos_storage" = "macOS 储存空间…";

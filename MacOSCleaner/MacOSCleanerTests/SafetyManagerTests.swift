@@ -299,13 +299,26 @@ final class SafetyManagerTests: XCTestCase {
         XCTAssertThrowsError(try safetyManager.validate(url: url))
     }
 
-    func testProjectLocalBuildArtifactUnderDocumentsAllowed() {
-        let build = URL(fileURLWithPath: "\(home)/Documents/my_project/build")
+    func testProjectLocalBuildArtifactUnderDocumentsAllowed() throws {
+        let projectDir = URL(fileURLWithPath: "\(home)/Documents/my_project", isDirectory: true)
+        try FileManager.default.createDirectory(at: projectDir, withIntermediateDirectories: true)
+        try "// swift-tools-version: 6.0".write(
+            to: projectDir.appendingPathComponent("Package.swift"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let build = projectDir.appendingPathComponent("build")
         let derived = URL(fileURLWithPath: "\(home)/Developer/Foo/DerivedData")
         XCTAssertNoThrow(try safetyManager.validate(url: build))
         XCTAssertNoThrow(try safetyManager.validate(url: derived))
         XCTAssertTrue(SafetyManager.isProjectLocalBuildArtifact(build.path, home: home))
         XCTAssertFalse(SafetyManager.isProjectLocalBuildArtifact("\(home)/Documents/my_project/src", home: home))
+
+        // Without sibling project marker, universal names like `build` must be rejected.
+        let nonProjectBuild = URL(fileURLWithPath: "\(home)/Documents/vacation_photos/build")
+        XCTAssertFalse(SafetyManager.isProjectLocalBuildArtifact(nonProjectBuild.path, home: home))
+        XCTAssertThrowsError(try safetyManager.validate(url: nonProjectBuild))
     }
 
     func testShallowAbsoluteRootsRejected() {
@@ -471,7 +484,7 @@ final class SafetyManagerTests: XCTestCase {
         }
     }
 
-    func testProjectLocalBuildArtifactRequiresDepth() {
+    func testProjectLocalBuildArtifactRequiresDepth() throws {
         // Direct child of Documents or Desktop is NOT a project artifact
         let directDocumentsBuild = URL(fileURLWithPath: "\(home)/Documents/build")
         let directDesktopBuild = URL(fileURLWithPath: "\(home)/Desktop/build")
@@ -484,9 +497,14 @@ final class SafetyManagerTests: XCTestCase {
         XCTAssertThrowsError(try safetyManager.validate(url: directDesktopBuild))
         XCTAssertThrowsError(try safetyManager.validate(url: directNodeModules))
 
-        // Nested inside project is allowed
-        let projectBuild = URL(fileURLWithPath: "\(home)/Documents/my_project/build")
-        let projectNodeModules = URL(fileURLWithPath: "\(home)/Documents/my_project/node_modules")
+        // Nested inside project with sibling marker is allowed
+        let projectDir = URL(fileURLWithPath: "\(home)/Documents/my_project", isDirectory: true)
+        try FileManager.default.createDirectory(at: projectDir, withIntermediateDirectories: true)
+        try "// swift".write(to: projectDir.appendingPathComponent("Package.swift"), atomically: true, encoding: .utf8)
+        try "{}".write(to: projectDir.appendingPathComponent("package.json"), atomically: true, encoding: .utf8)
+
+        let projectBuild = projectDir.appendingPathComponent("build")
+        let projectNodeModules = projectDir.appendingPathComponent("node_modules")
         XCTAssertTrue(SafetyManager.isProjectLocalBuildArtifact(projectBuild.path, home: home))
         XCTAssertTrue(SafetyManager.isProjectLocalBuildArtifact(projectNodeModules.path, home: home))
         XCTAssertNoThrow(try safetyManager.validate(url: projectBuild))

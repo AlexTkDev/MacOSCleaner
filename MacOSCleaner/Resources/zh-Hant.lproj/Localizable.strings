@@ -995,3 +995,19 @@
 "settings_auto_check_updates_sub" = "啟動時自動檢查 GitHub Releases";
 "settings_remove_from_dock" = "解除安裝時從 Dock 移除";
 "settings_remove_from_dock_sub" = "從 macOS Dock 移除已解除安裝 App 的圖示";
+
+// Stage 3
+"cleanup_desc_deno_deps" = "Deno 已下載相依套件快取（下次執行時會重新下載）";
+"cleanup_desc_cocoapods_repos" = "CocoaPods Specs 儲存庫（非 CDN Podfile 將重新下載）";
+"cleanup_installer_desc_source_format" = "來源：%@";
+"cleanup_installer_desc_installed_format" = "來源：%@ • 似乎已安裝於 /Applications";
+"settings_ai_system_storage" = "系統模型與資源";
+"settings_ai_system_storage_sub" = "Apple Intelligence 系統檔案的唯讀概覽";
+"settings_ai_managed_by_macos" = "由 macOS 管理";
+"settings_ai_comp_photos_cleanup" = "照片清除資源";
+"settings_ai_comp_spatial_photos" = "空間照片資源";
+"settings_ai_comp_visual_intelligence" = "Visual Intelligence 快取";
+"settings_ai_base_models_label" = "基礎生成模型（受 SIP 保護）";
+"settings_ai_base_models_sip_estimate" = "約 10–13 GB（估算）";
+"settings_ai_open_apple_intelligence" = "Apple Intelligence 設定…";
+"settings_ai_open_macos_storage" = "macOS 儲存空間…";

@@ -5,12 +5,20 @@ public struct CleanupFileItem: Sendable {
     public let sizeBytes: Int64
     public let modificationDate: Date?
     public let isDirectory: Bool
+    public let description: String?
 
-    public init(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool) {
+    public init(
+        path: String,
+        sizeBytes: Int64,
+        modificationDate: Date?,
+        isDirectory: Bool,
+        description: String? = nil
+    ) {
         self.path = path
         self.sizeBytes = sizeBytes
         self.modificationDate = modificationDate
         self.isDirectory = isDirectory
+        self.description = description
     }
 }
 

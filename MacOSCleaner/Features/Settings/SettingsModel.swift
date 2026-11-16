@@ -95,6 +95,7 @@ struct SettingsSearchRegistry {
         SettingsItem(id: "siri", category: .automation, titleKey: "settings_siri_toggle_title", subtitleKey: "settings_enable_siri_sub", keywords: ["siri", "voice", "сири", "голос", "команды"], iconName: "waveform"),
         SettingsItem(id: "shortcuts", category: .automation, titleKey: "settings_automator_toggle_title", subtitleKey: "settings_enable_shortcuts_sub", keywords: ["shortcuts", "automator", "быстрые команды", "автоматизация"], iconName: "square.stack.3d.up"),
         SettingsItem(id: "enableAI", category: .automation, titleKey: "settings_enable_ai", subtitleKey: "settings_enable_ai_sub", keywords: ["ai", "apple intelligence", "smart", "искусственный интеллект", "модель"], iconName: "sparkles"),
+        SettingsItem(id: "aiSystemStorage", category: .automation, titleKey: "settings_ai_system_storage", subtitleKey: "settings_ai_system_storage_sub", keywords: ["apple intelligence", "storage", "models", "mobileasset", "хранилище", "модели", "sip"], iconName: "internaldrive"),
 
         // Processes
         SettingsItem(id: "refreshInterval", category: .processes, titleKey: "settings_refresh_interval", subtitleKey: "settings_refresh_interval_sub", keywords: ["refresh", "interval", "processes", "процессы", "интервал"], iconName: "timer"),

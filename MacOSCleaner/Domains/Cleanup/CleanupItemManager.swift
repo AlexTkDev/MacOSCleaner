@@ -34,7 +34,17 @@ public final class CleanupItemManager {
 
     // MARK: - File Item Append (new hierarchical flow)
 
-    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true, isCommandBacked: Bool = false) {
+    public func appendFileItem(
+        path: String,
+        sizeBytes: Int64,
+        modificationDate: Date?,
+        isDirectory: Bool,
+        category: String,
+        parentName: String?,
+        isSelected: Bool = true,
+        isCommandBacked: Bool = false,
+        description: String? = nil
+    ) {
         let normalizedPath = Self.normalizePath(path)
         let sizeMB = Int(sizeBytes / (1024 * 1024))
         let risk = Self.determineRisk(for: normalizedPath)
@@ -46,6 +56,7 @@ public final class CleanupItemManager {
             risk: risk,
             isSelected: isSelected,
             isDeletable: true,
+            description: description,
             path: normalizedPath,
             modificationDate: modificationDate,
             category: category,
