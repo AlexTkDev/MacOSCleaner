@@ -363,4 +363,41 @@ final class LaunchServiceManagerTests: XCTestCase {
         XCTAssertTrue(info.isValid)
         XCTAssertTrue(info.isAppleSigned)
     }
+
+    func testDisableAndEnableLoginItemStripsBTMPrefixAndUpdatesStatus() async throws {
+        var recordedArgs: [[String]] = []
+        let mockRunner = MockCommandRunner()
+        mockRunner.runHandler = { command, args in
+            if command == "/bin/launchctl" {
+                recordedArgs.append(args)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        let btmManager = LaunchServiceManager(
+            commandRunner: mockRunner,
+            searchPaths: [tempDir.path]
+        )
+        let monitorItem = StartupService(
+            id: "4.com.nektony.App-Cleaner-SIII-Monitor|",
+            name: "App Cleaner Monitor N",
+            path: "4.com.nektony.App-Cleaner-SIII-Monitor",
+            isEnabled: true,
+            category: .user,
+            isLoginItem: true
+        )
+
+        let ids = LaunchServiceManager.loginItemIdentifiers(for: monitorItem)
+        XCTAssertEqual(ids.rawIdentifier, "4.com.nektony.App-Cleaner-SIII-Monitor")
+        XCTAssertEqual(ids.bundleID, "com.nektony.App-Cleaner-SIII-Monitor")
+
+        try await btmManager.disable(service: monitorItem)
+        let uid = getuid()
+        XCTAssertTrue(recordedArgs.contains(["disable", "gui/\(uid)/com.nektony.App-Cleaner-SIII-Monitor"]))
+        XCTAssertTrue(recordedArgs.contains(["bootout", "gui/\(uid)/com.nektony.App-Cleaner-SIII-Monitor"]))
+
+        recordedArgs.removeAll()
+        try await btmManager.enable(service: monitorItem)
+        XCTAssertTrue(recordedArgs.contains(["enable", "gui/\(uid)/com.nektony.App-Cleaner-SIII-Monitor"]))
+    }
 }

@@ -1581,11 +1581,11 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
     }
 
     private func tccPermissionChip(_ entry: TCCPermissionEntry) -> some View {
-        let tint: Color = switch entry.authStatus {
-        case .allowed: .green
-        case .denied: .red
-        case .limited: .orange
-        case .unknown: .secondary
+        let (statusIcon, tint): (String, Color) = switch entry.authStatus {
+        case .allowed: ("checkmark.circle.fill", .green)
+        case .denied: ("xmark.circle.fill", .red)
+        case .limited: ("exclamationmark.circle.fill", .orange)
+        case .unknown: ("questionmark.circle.fill", .secondary)
         }
 
         let helpParts: [String] = [
@@ -1594,10 +1594,10 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
             entry.lastModified.map { String(format: "privacy_tcc_last_modified".localized, $0.formatted(date: .abbreviated, time: .shortened)) }
         ].compactMap { $0 }
 
-        return HStack(spacing: 4) {
-            Circle()
-                .fill(tint)
-                .frame(width: 6, height: 6)
+        return HStack(spacing: 5) {
+            Image(systemName: statusIcon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(tint)
             Image(systemName: entry.service.iconName)
                 .font(.system(size: 10))
             Text(entry.service.localizedTitle)

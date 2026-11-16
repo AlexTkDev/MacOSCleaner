@@ -390,13 +390,12 @@ struct ServiceRow: View {
 
                 StatusBadge(isEnabled: service.isEnabled)
 
-                if !service.isLoginItem {
+                if service.category != .system && !service.requiresRoot {
                     Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
                         onToggle()
                     }
                     .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
                     .controlSize(.small)
-                    .disabled(service.category == .system || service.requiresRoot)
                 }
 
                 if FileManager.default.fileExists(atPath: service.path) {
@@ -437,6 +436,17 @@ struct ServiceRow: View {
                 }
             }
             .contextMenu {
+                if service.category != .system && !service.requiresRoot {
+                    Button {
+                        onToggle()
+                    } label: {
+                        Label(
+                            service.isEnabled ? "startup_disable".localized : "startup_enable".localized,
+                            systemImage: service.isEnabled ? "stop.circle" : "play.circle"
+                        )
+                    }
+                }
+
                 if FileManager.default.fileExists(atPath: service.path) {
                     Button {
                         let url = URL(fileURLWithPath: service.path)

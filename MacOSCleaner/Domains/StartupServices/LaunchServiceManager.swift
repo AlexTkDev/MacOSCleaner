@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 public enum LaunchServiceError: Error {
@@ -5,7 +6,7 @@ public enum LaunchServiceError: Error {
 }
 
 public actor LaunchServiceManager {
-    private let commandRunner: CommandRunner
+    private let commandRunner: any CommandRunning
     private let fileManager: FileManager
     private let trashManager: TrashManager
     private let backgroundItemsReader: BackgroundItemsReader
@@ -13,8 +14,18 @@ public actor LaunchServiceManager {
     private let searchPaths: [String]
 
     private static let vendorPrefixesKey = "startupSystemVendorPrefixes"
+    private static let disabledLoginItemsKey = "startupDisabledLoginItems"
     private static let defaultVendorPrefixes = ["com.apple."]
     private static let maxConcurrentSignatureChecks = 6
+
+    private var disabledLoginItemIDs: Set<String> {
+        get {
+            Set(UserDefaults.standard.stringArray(forKey: Self.disabledLoginItemsKey) ?? [])
+        }
+        set {
+            UserDefaults.standard.set(Array(newValue).sorted(), forKey: Self.disabledLoginItemsKey)
+        }
+    }
 
     public var systemVendorPrefixes: [String] {
         get {
@@ -26,7 +37,7 @@ public actor LaunchServiceManager {
     }
 
     public init(
-        commandRunner: CommandRunner = CommandRunner(),
+        commandRunner: any CommandRunning = CommandRunner(),
         fileManager: FileManager = .default,
         searchPaths: [String]? = nil,
         trashManager: TrashManager? = nil,
@@ -115,19 +126,27 @@ public actor LaunchServiceManager {
     ) {
         async let servicesTask = scan()
         async let btmTask = backgroundItemsReader.readLoginItemEntries()
+        async let disabledLabelsTask = getDisabledLabels()
 
         let services = try await servicesTask
         let snapshot = await btmTask
+        let launchdDisabled = await disabledLabelsTask
+        let locallyDisabled = disabledLoginItemIDs
 
         let rawLoginItems = snapshot.items.map { item -> StartupService in
             let targetPath = item.executablePath ?? item.url?.path
             let displayPath = item.url?.path ?? item.executablePath ?? item.identifier
             let exists = targetPath.map { fileManager.fileExists(atPath: $0) } ?? true
+            let strippedID = Self.stripBTMPrefix(from: item.identifier)
+            let isOverriddenDisabled = launchdDisabled.contains(item.identifier)
+                || launchdDisabled.contains(strippedID)
+                || locallyDisabled.contains(item.identifier)
+                || locallyDisabled.contains(strippedID)
             return StartupService(
                 id: item.id,
                 name: item.name,
                 path: displayPath,
-                isEnabled: item.isEnabled,
+                isEnabled: item.isEnabled && !isOverriddenDisabled,
                 category: .user,
                 executablePath: targetPath,
                 executableExists: exists,
@@ -272,7 +291,54 @@ public actor LaunchServiceManager {
             throw LaunchServiceError.toggleFailed("System services require administrator privileges")
         }
 
-        let domain = "gui/\(getuid())"
+        let uid = getuid()
+        let domain = "gui/\(uid)"
+        if service.isLoginItem {
+            let (rawID, bundleID) = Self.loginItemIdentifiers(for: service)
+            let loaded = (try? await getLoadedLabels()) ?? []
+            var candidates: [String] = []
+            for id in [bundleID, rawID] where !id.isEmpty && !candidates.contains(id) {
+                candidates.append(id)
+            }
+            for label in loaded where !bundleID.isEmpty {
+                if (label == bundleID || label.hasPrefix("application.\(bundleID).")) && !candidates.contains(label) {
+                    candidates.append(label)
+                }
+            }
+
+            // 1. Disable in both gui/<uid> and user/<uid> first so launchd neither respawns
+            //    the monitor now nor launches it after reboot (persisted in disabled.<uid>.plist).
+            for targetDomain in [domain, "user/\(uid)"] {
+                for label in candidates {
+                    let target = "\(targetDomain)/\(label)"
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["disable", target])
+                }
+            }
+
+            // 2. Kill with SIGKILL and bootout from launchd.
+            for targetDomain in [domain, "user/\(uid)"] {
+                for label in candidates {
+                    let target = "\(targetDomain)/\(label)"
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["kill", "SIGKILL", target])
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", target])
+                }
+            }
+
+            // 3. Force-kill any running process matching bundleID, helper path, executable, or name.
+            await terminateRunningLoginItem(
+                bundleID: bundleID,
+                name: service.name,
+                path: service.path,
+                executablePath: service.executablePath
+            )
+
+            var updated = disabledLoginItemIDs
+            if !bundleID.isEmpty { updated.insert(bundleID) }
+            if !rawID.isEmpty { updated.insert(rawID) }
+            disabledLoginItemIDs = updated
+            return
+        }
+
         let target = "\(domain)/\(service.id)"
         _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["disable", target])
         let result = try await commandRunner.run(command: "/bin/launchctl", arguments: ["bootout", target])
@@ -291,7 +357,28 @@ public actor LaunchServiceManager {
             throw LaunchServiceError.toggleFailed("System services require administrator privileges")
         }
 
-        let domain = "gui/\(getuid())"
+        let uid = getuid()
+        let domain = "gui/\(uid)"
+        if service.isLoginItem {
+            let (rawID, bundleID) = Self.loginItemIdentifiers(for: service)
+            var candidates = [bundleID]
+            if rawID != bundleID && !rawID.isEmpty {
+                candidates.append(rawID)
+            }
+            for targetDomain in [domain, "user/\(uid)"] {
+                for label in candidates where !label.isEmpty {
+                    let target = "\(targetDomain)/\(label)"
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["enable", target])
+                    _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["kickstart", target])
+                }
+            }
+            var updated = disabledLoginItemIDs
+            updated.remove(bundleID)
+            updated.remove(rawID)
+            disabledLoginItemIDs = updated
+            return
+        }
+
         let target = "\(domain)/\(service.id)"
         _ = try? await commandRunner.run(command: "/bin/launchctl", arguments: ["enable", target])
         let result = try await commandRunner.run(
@@ -305,6 +392,80 @@ public actor LaunchServiceManager {
                 return
             }
             throw LaunchServiceError.toggleFailed(result.stderr)
+        }
+    }
+
+    public nonisolated static func stripBTMPrefix(from identifier: String) -> String {
+        guard let dotIndex = identifier.firstIndex(of: ".") else { return identifier }
+        let prefix = identifier[..<dotIndex]
+        guard !prefix.isEmpty, prefix.allSatisfy(\.isNumber) else { return identifier }
+        return String(identifier[identifier.index(after: dotIndex)...])
+    }
+
+    public nonisolated static func loginItemIdentifiers(for service: StartupService) -> (rawIdentifier: String, bundleID: String) {
+        let raw = service.id.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? service.id
+        let effectiveRaw = raw.isEmpty ? service.path : raw
+        let stripped = stripBTMPrefix(from: effectiveRaw)
+        return (effectiveRaw, stripped)
+    }
+
+    private func getDisabledLabels() async -> Set<String> {
+        let uid = getuid()
+        guard let result = try? await commandRunner.run(
+            command: "/bin/launchctl",
+            arguments: ["print-disabled", "gui/\(uid)"]
+        ), result.exitCode == 0 else {
+            return []
+        }
+        return Self.parseDisabledLabels(from: result.stdout)
+    }
+
+    nonisolated static func parseDisabledLabels(from output: String) -> Set<String> {
+        var disabled = Set<String>()
+        for line in output.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix("\""),
+                  let arrowRange = trimmed.range(of: "\" => ") else { continue }
+            let label = String(trimmed[trimmed.index(after: trimmed.startIndex)..<arrowRange.lowerBound])
+            let state = trimmed[arrowRange.upperBound...].trimmingCharacters(in: .whitespaces).lowercased()
+            if state == "disabled" || state == "true" {
+                disabled.insert(label)
+            }
+        }
+        return disabled
+    }
+
+    private func terminateRunningLoginItem(
+        bundleID: String,
+        name: String,
+        path: String,
+        executablePath: String?
+    ) async {
+        guard NSClassFromString("XCTestCase") == nil,
+              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+            return
+        }
+        let matchingPIDs: [pid_t] = await MainActor.run {
+            var pids: [pid_t] = []
+            for app in NSWorkspace.shared.runningApplications where !app.isTerminated {
+                let matchesBundle = !bundleID.isEmpty && app.bundleIdentifier?.caseInsensitiveCompare(bundleID) == .orderedSame
+                let matchesPath = path.hasPrefix("/") && app.bundleURL?.path == path
+                let matchesExec = executablePath != nil && app.executableURL?.path == executablePath
+                let matchesName = !name.isEmpty && app.localizedName?.caseInsensitiveCompare(name) == .orderedSame
+                if matchesBundle || matchesPath || matchesExec || matchesName {
+                    _ = app.forceTerminate()
+                    pids.append(app.processIdentifier)
+                }
+            }
+            return pids
+        }
+        for pid in matchingPIDs where pid > 0 {
+            _ = Darwin.kill(pid, SIGKILL)
+        }
+        if let execPath = executablePath, execPath.hasPrefix("/") {
+            _ = try? await commandRunner.run(command: "/usr/bin/pkill", arguments: ["-9", "-f", execPath])
+        } else if !name.isEmpty, name.count >= 4 {
+            _ = try? await commandRunner.run(command: "/usr/bin/killall", arguments: ["-9", name])
         }
     }
 

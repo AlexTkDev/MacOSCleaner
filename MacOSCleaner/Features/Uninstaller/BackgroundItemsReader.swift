@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 public enum BackgroundItemsAccessStatus: Sendable, Equatable {
@@ -110,6 +111,18 @@ public actor BackgroundItemsReader {
             blocks.append(current)
         }
 
+        var parentURLByIdentifier: [String: URL] = [:]
+        for block in blocks {
+            guard let id = block["Identifier"],
+                  let rawURL = block["URL"],
+                  let url = URL(string: rawURL),
+                  url.isFileURL else { continue }
+            let canonical = NormalizedPath.canonicalize(url)
+            parentURLByIdentifier[id] = canonical
+            let stripped = LaunchServiceManager.stripBTMPrefix(from: id)
+            parentURLByIdentifier[stripped] = canonical
+        }
+
         var items: [BackgroundItem] = []
         var seenIDs = Set<String>()
 
@@ -123,11 +136,27 @@ public actor BackgroundItemsReader {
             guard !identifier.isEmpty else { continue }
 
             let rawURL = block["URL"]
-            let parsedURL: URL? = rawURL.flatMap { raw in
+            var parsedURL: URL? = rawURL.flatMap { raw in
                 guard let url = URL(string: raw), url.isFileURL else { return nil }
                 return NormalizedPath.canonicalize(url)
             }
-            let execPath = block["Executable Path"]
+            var execPath = block["Executable Path"]
+
+            if parsedURL == nil {
+                let strippedID = LaunchServiceManager.stripBTMPrefix(from: identifier)
+                let parentID = block["Parent Identifier"] ?? ""
+                let parentAppURL = parentURLByIdentifier[parentID]
+                    ?? parentURLByIdentifier[LaunchServiceManager.stripBTMPrefix(from: parentID)]
+                parsedURL = resolveHelperBundleURL(
+                    bundleID: strippedID,
+                    itemName: name,
+                    parentAppURL: parentAppURL
+                )
+            }
+            if execPath == nil, let bundleURL = parsedURL {
+                execPath = Bundle(url: bundleURL)?.executableURL?.path
+            }
+
             let uniqueKey = "\(identifier)|\(parsedURL?.path ?? execPath ?? "")"
             guard seenIDs.insert(uniqueKey).inserted else { continue }
 
@@ -148,5 +177,32 @@ public actor BackgroundItemsReader {
         }
 
         return items.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    private static func resolveHelperBundleURL(
+        bundleID: String,
+        itemName: String,
+        parentAppURL: URL?
+    ) -> URL? {
+        if let parentAppURL {
+            let loginItemsDir = parentAppURL.appendingPathComponent("Contents/Library/LoginItems", isDirectory: true)
+            if let children = try? FileManager.default.contentsOfDirectory(
+                at: loginItemsDir,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ) {
+                for child in children where child.pathExtension.lowercased() == "app" {
+                    let childBundleID = Bundle(url: child)?.bundleIdentifier
+                    if let childBundleID, childBundleID.caseInsensitiveCompare(bundleID) == .orderedSame {
+                        return NormalizedPath.canonicalize(child)
+                    }
+                    if !itemName.isEmpty,
+                       child.deletingPathExtension().lastPathComponent.caseInsensitiveCompare(itemName) == .orderedSame {
+                        return NormalizedPath.canonicalize(child)
+                    }
+                }
+            }
+        }
+        return nil
     }
 }
