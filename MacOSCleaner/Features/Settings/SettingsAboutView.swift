@@ -1,11 +1,40 @@
 import SwiftUI
 
+struct AppTransparencyFact: Identifiable {
+    let id: String
+    let icon: String
+    let color: Color
+    let titleKey: String
+    let descKey: String
+
+    static let guarantees: [AppTransparencyFact] = [
+        AppTransparencyFact(id: "g1", icon: "lock.shield.fill", color: .green, titleKey: "settings_privacy_item_1_title", descKey: "settings_privacy_item_1_desc"),
+        AppTransparencyFact(id: "g2", icon: "network", color: .blue, titleKey: "settings_privacy_item_2_title", descKey: "settings_privacy_item_2_desc"),
+        AppTransparencyFact(id: "g3", icon: "trash.fill", color: .teal, titleKey: "settings_privacy_item_3_title", descKey: "settings_privacy_item_3_desc"),
+        AppTransparencyFact(id: "g4", icon: "checkmark.seal.fill", color: .purple, titleKey: "settings_privacy_item_4_title", descKey: "settings_privacy_item_4_desc"),
+        AppTransparencyFact(id: "g5", icon: "exclamationmark.shield.fill", color: .orange, titleKey: "settings_privacy_item_5_title", descKey: "settings_privacy_item_5_desc"),
+        AppTransparencyFact(id: "g6", icon: "cpu.fill", color: .pink, titleKey: "settings_privacy_item_6_title", descKey: "settings_privacy_item_6_desc"),
+        AppTransparencyFact(id: "g7", icon: "hand.raised.fill", color: .yellow, titleKey: "settings_privacy_item_7_title", descKey: "settings_privacy_item_7_desc"),
+        AppTransparencyFact(id: "g8", icon: "xmark.app.fill", color: .indigo, titleKey: "settings_privacy_item_8_title", descKey: "settings_privacy_item_8_desc"),
+        AppTransparencyFact(id: "g9", icon: "key.fill", color: .cyan, titleKey: "settings_privacy_item_9_title", descKey: "settings_privacy_item_9_desc"),
+    ]
+
+    static let limitations: [AppTransparencyFact] = [
+        AppTransparencyFact(id: "l1", icon: "shield.slash", color: .secondary, titleKey: "about_limit_no_antivirus_title", descKey: "about_limit_no_antivirus_desc"),
+        AppTransparencyFact(id: "l2", icon: "lock.doc", color: .orange, titleKey: "about_limit_tcc_title", descKey: "about_limit_tcc_desc"),
+        AppTransparencyFact(id: "l3", icon: "network.badge.shield.half.filled", color: .blue, titleKey: "about_limit_network_title", descKey: "about_limit_network_desc"),
+        AppTransparencyFact(id: "l4", icon: "puzzlepiece.extension", color: .purple, titleKey: "about_limit_extensions_title", descKey: "about_limit_extensions_desc"),
+        AppTransparencyFact(id: "l5", icon: "bolt.slash", color: .secondary, titleKey: "about_limit_no_daemon_title", descKey: "about_limit_no_daemon_desc"),
+    ]
+}
+
 struct SettingsAboutView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 linksCard
                 privacySafetyCard
+                knownLimitationsCard
             }
             .padding(20)
         }
@@ -77,15 +106,24 @@ struct SettingsAboutView: View {
             },
             content: {
                 VStack(alignment: .leading, spacing: 10) {
-                    privacyItem("lock.shield.fill", color: .green, title: "settings_privacy_item_1_title".localized, desc: "settings_privacy_item_1_desc".localized)
-                    privacyItem("network", color: .blue, title: "settings_privacy_item_2_title".localized, desc: "settings_privacy_item_2_desc".localized)
-                    privacyItem("trash.fill", color: .teal, title: "settings_privacy_item_3_title".localized, desc: "settings_privacy_item_3_desc".localized)
-                    privacyItem("checkmark.seal.fill", color: .purple, title: "settings_privacy_item_4_title".localized, desc: "settings_privacy_item_4_desc".localized)
-                    privacyItem("exclamationmark.shield.fill", color: .orange, title: "settings_privacy_item_5_title".localized, desc: "settings_privacy_item_5_desc".localized)
-                    privacyItem("cpu.fill", color: .pink, title: "settings_privacy_item_6_title".localized, desc: "settings_privacy_item_6_desc".localized)
-                    privacyItem("hand.raised.fill", color: .yellow, title: "settings_privacy_item_7_title".localized, desc: "settings_privacy_item_7_desc".localized)
-                    privacyItem("xmark.app.fill", color: .indigo, title: "settings_privacy_item_8_title".localized, desc: "settings_privacy_item_8_desc".localized)
-                    privacyItem("key.fill", color: .cyan, title: "settings_privacy_item_9_title".localized, desc: "settings_privacy_item_9_desc".localized)
+                    ForEach(AppTransparencyFact.guarantees) { fact in
+                        privacyItem(fact.icon, color: fact.color, title: fact.titleKey.localized, desc: fact.descKey.localized)
+                    }
+                }
+            }
+        )
+    }
+
+    private var knownLimitationsCard: some View {
+        GlassCard(
+            header: {
+                SettingsSectionHeader("about_limitations_title".localized, subtitle: "about_limitations_sub".localized, iconName: "info.circle.fill", iconColor: .orange)
+            },
+            content: {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(AppTransparencyFact.limitations) { fact in
+                        privacyItem(fact.icon, color: fact.color, title: fact.titleKey.localized, desc: fact.descKey.localized)
+                    }
                 }
             }
         )

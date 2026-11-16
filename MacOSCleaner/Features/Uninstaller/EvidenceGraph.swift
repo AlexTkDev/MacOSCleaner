@@ -70,10 +70,6 @@ public actor EvidenceGraph {
         Array(nodes.values)
     }
 
-    public func allURLs() -> Set<URL> {
-        Set(nodes.keys)
-    }
-
     public func propagateFromSeeds(maxDepth: Int = 5) {
         let strongEvidence: Set<Evidence> = [
             .bundleIDExact, .bundleIDPrefix, .appNameExact, .appNamePrefix,
@@ -104,6 +100,4 @@ public actor EvidenceGraph {
             }
         }
     }
-
-    public func count() -> Int { nodes.count }
 }

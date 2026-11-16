@@ -32,6 +32,7 @@ public actor DuplicateFinderEngine {
 
     private let fm = FileManager.default
     private let safetyManager: SafetyManager
+    private let trashManager: TrashManager
 
     /// System and user directory names to skip during duplicate scanning — system OS directories, Library, VCS, caches, package managers, asset catalogs.
     private static let excludedDirectoryNames: Set<String> = [
@@ -78,8 +79,9 @@ public actor DuplicateFinderEngine {
         "dat", "icu", "db", "sqlite", "sqlite3", "db-wal", "db-shm", "log"
     ]
 
-    public init(safetyManager: SafetyManager = SafetyManager()) {
+    public init(safetyManager: SafetyManager = SafetyManager(), trashManager: TrashManager? = nil) {
         self.safetyManager = safetyManager
+        self.trashManager = trashManager ?? TrashManager(safetyManager: safetyManager)
     }
 
     /// Checks if a file path is safe to scan and recommend for user duplicate removal.
@@ -133,7 +135,8 @@ public actor DuplicateFinderEngine {
             .isDirectoryKey,
             .isPackageKey,
             .isSymbolicLinkKey,
-            .contentModificationDateKey
+            .contentModificationDateKey,
+            .ubiquitousItemDownloadingStatusKey
         ]
 
         guard let enumerator = fm.enumerator(
@@ -163,6 +166,10 @@ public actor DuplicateFinderEngine {
             }
 
             if resourceValues.isSymbolicLink == true || resourceValues.isPackage == true {
+                continue
+            }
+
+            if FileManager.isNotDownloadedUbiquitous(resourceValues) {
                 continue
             }
 
@@ -363,9 +370,10 @@ public actor DuplicateFinderEngine {
         }
     }
 
-    /// Trashes selected files using macOS trashItem.
+    /// Trashes selected files using macOS trashItem, or deletes permanently when `bypassTrash` is true.
     public func trashSelectedFiles(
         groups: [DuplicateGroup],
+        bypassTrash: Bool = false,
         progress: (@Sendable (Int, Int) -> Void)? = nil
     ) async throws -> (removedCount: Int, freedBytes: Int64) {
         var removedCount = 0
@@ -385,13 +393,12 @@ public actor DuplicateFinderEngine {
             }
             if fm.fileExists(atPath: url.path) {
                 do {
-                    var trashedURL: NSURL?
-                    try fm.trashItem(at: url, resultingItemURL: &trashedURL)
+                    try await trashManager.removeItem(at: url, bypassTrash: bypassTrash, policy: .userSelected)
                     removedCount += 1
                     freedBytes += item.sizeBytes
-                    Logger.duplicateEngine.info("Trashed duplicate file: \(url.path, privacy: .public)")
+                    Logger.duplicateEngine.info("Removed duplicate file: \(url.path, privacy: .public)")
                 } catch {
-                    Logger.duplicateEngine.error("Failed to trash duplicate file \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    Logger.duplicateEngine.error("Failed to remove duplicate file \(url.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         }

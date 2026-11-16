@@ -31,6 +31,7 @@ enum UninstallerTab: String, CaseIterable, Identifiable {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    var navigateToPrivacy: ((String?) -> Void)? = nil
     var scanLimited: Bool = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
@@ -76,6 +77,10 @@ struct UninstallerView: View {
     var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
+                uninstallerHeaderBar
+
+                Divider()
+
                 if scanLimited {
                     Label("scan_incomplete_without_fda".localized, systemImage: "exclamationmark.triangle")
                         .font(.callout)
@@ -89,45 +94,6 @@ struct UninstallerView: View {
                 } else {
                     OrphanedResidualsView(service: service, settings: settings)
                 }
-            }
-        }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "uninstaller_search".localized)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                GlassPillPicker(
-                    items: UninstallerTab.allCases,
-                    selection: $selectedTab,
-                    icon: { $0.iconName },
-                    label: { $0.localizedTitle }
-                )
-            }
-            ToolbarItem(placement: .automatic) {
-                // Scan mode badge
-                HStack(spacing: 4) {
-                    Image(systemName: settings.uninstallerScanMode == .safe ? "shield.checkmark" : "scale.3d")
-                    Text(settings.uninstallerScanMode.localizedName)
-                }
-                .font(.caption)
-                .fontWeight(.medium)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .foregroundStyle(
-                    settings.uninstallerScanMode == .safe ? Color.blue : Color.green
-                )
-                .background(
-                    Capsule().fill(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
-                )
-                .overlay(
-                    Capsule().strokeBorder(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
-                )
-                .padding(.horizontal, 6)
-            }
-            ToolbarItem(placement: .automatic) {
-                Button(action: loadApps) {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .glassButtonStyle()
-                .help("uninstaller_reload".localized)
             }
         }
         .sheet(isPresented: $showingPostUninstallSheet) {
@@ -144,7 +110,7 @@ struct UninstallerView: View {
         }
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Application")
+                AIExplanationService.shared.prewarm()
             }
             if allApps.isEmpty {
                 loadApps()
@@ -218,6 +184,51 @@ struct UninstallerView: View {
                 } else {
                     Text(String(format: "uninstaller_uninstall_version_warning_trash".localized, versionApp.version, parentApp.name, Int64(count)))
                 }
+            }
+        }
+    }
+
+    private var uninstallerHeaderBar: some View {
+        WorkspaceHeaderBar {
+            GlassPillPicker(
+                items: UninstallerTab.allCases,
+                selection: $selectedTab,
+                icon: { $0.iconName },
+                label: { $0.localizedTitle }
+            )
+
+            Spacer()
+
+            HStack(spacing: 4) {
+                Image(systemName: settings.uninstallerScanMode == .safe ? "shield.checkmark" : "scale.3d")
+                Text(settings.uninstallerScanMode.localizedName)
+            }
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .foregroundStyle(
+                settings.uninstallerScanMode == .safe ? Color.blue : Color.green
+            )
+            .background(
+                Capsule().fill(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+            )
+            .overlay(
+                Capsule().strokeBorder(settings.uninstallerScanMode == .safe ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
+            )
+
+            if selectedTab == .applications {
+                CompactSearchField(
+                    placeholder: "uninstaller_search".localized,
+                    text: $searchText,
+                    width: 200
+                )
+
+                Button(action: loadApps) {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .glassButtonStyle()
+                .help("uninstaller_reload".localized)
             }
         }
     }
@@ -379,13 +390,14 @@ struct UninstallerView: View {
                 let report = try await service.uninstall(
                     app: app,
                     bypassTrash: settings.bypassTrashOnUninstall,
-                    emptyTrashImmediately: settings.emptyTrashImmediately
+                    emptyTrashImmediately: settings.emptyTrashDuringCleanup,
+                    removeFromDock: settings.removeFromDockOnUninstall
                 )
                 
                 await MainActor.run {
                     loadApps()
                     selectedApp = nil
-                    if let report = report, report.hasLeftovers {
+                    if let report = report, report.hasLeftovers || !report.failedDeletions.isEmpty {
                         postUninstallReport = report
                         showingPostUninstallSheet = true
                     } else if settings.showNotifications {
@@ -411,11 +423,12 @@ struct UninstallerView: View {
                 let report = try await service.uninstall(
                     app: versionApp,
                     bypassTrash: settings.bypassTrashOnUninstall,
-                    emptyTrashImmediately: settings.emptyTrashImmediately
+                    emptyTrashImmediately: settings.emptyTrashDuringCleanup,
+                    removeFromDock: settings.removeFromDockOnUninstall
                 )
                 
                 await MainActor.run {
-                    if let report = report, report.hasLeftovers {
+                    if let report = report, report.hasLeftovers || !report.failedDeletions.isEmpty {
                         postUninstallReport = report
                         showingPostUninstallSheet = true
                     } else if settings.showNotifications {
@@ -523,7 +536,8 @@ struct UninstallerView: View {
                 guard let url = url, url.pathExtension == "app" else { return }
                 Task { @MainActor in
                     if let scanned = try? await service.scan(appURL: url) {
-                        self.selectedApp = scanned
+                        let deep = (try? await service.deepScan(scanned)) ?? scanned
+                        self.selectedApp = deep
                     }
                 }
             }
@@ -538,6 +552,7 @@ struct UninstallerView: View {
                 AppDetailHeaderView(
                     app: app,
                     settings: settings,
+                    onOpenPrivacy: navigateToPrivacy,
                     badges: {
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: 8) { badges(for: app) }
@@ -1014,15 +1029,28 @@ struct UninstallerView: View {
             if selectedApp?.id == app.id {
                 selectedApp = allApps[appIndex]
             }
+            return
+        }
+        if var current = selectedApp, current.id == app.id,
+           let fileIndex = current.relatedFiles.firstIndex(where: { $0.id == file.id }) {
+            current.relatedFiles[fileIndex].isSelected.toggle()
+            selectedApp = current
         }
     }
 
     private func toggleDeveloperComponent(in app: UninstallerService.AppInfo, at index: Int, value: Bool) {
-        if let appIndex = allApps.firstIndex(where: { $0.id == app.id }) {
+        if let appIndex = allApps.firstIndex(where: { $0.id == app.id }),
+           allApps[appIndex].developerComponents.indices.contains(index) {
             allApps[appIndex].developerComponents[index].isSelected = value
             if selectedApp?.id == app.id {
                 selectedApp = allApps[appIndex]
             }
+            return
+        }
+        if var current = selectedApp, current.id == app.id,
+           current.developerComponents.indices.contains(index) {
+            current.developerComponents[index].isSelected = value
+            selectedApp = current
         }
     }
 }
@@ -1361,12 +1389,15 @@ struct SharedBadgeView: View {
 struct AppDetailHeaderView<BadgeContent: View>: View {
     let app: UninstallerService.AppInfo
     let settings: AppSettings
+    var onOpenPrivacy: ((String?) -> Void)? = nil
     @ViewBuilder let badges: BadgeContent
     
     @State private var isExpanded = false
     @State private var aiExplanation = ""
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
+    @State private var tccSummary: TCCAppPermissionSummary? = nil
+    @State private var showAllTCCPermissions = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1423,6 +1454,10 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 badges
                     .layoutPriority(1)
             }
+
+            if let bundleID = app.bundleID, !bundleID.isEmpty, let onOpenPrivacy, let tccSummary {
+                tccPermissionSection(bundleID: bundleID, summary: tccSummary, onOpenPrivacy: onOpenPrivacy)
+            }
             
             if isExpanded {
                 VStack(alignment: .leading, spacing: 4) {
@@ -1457,6 +1492,129 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 .padding(.top, 8)
             }
         }
+        .task(id: app.bundleID) {
+            tccSummary = nil
+            showAllTCCPermissions = false
+            guard let bundleID = app.bundleID, !bundleID.isEmpty, onOpenPrivacy != nil else { return }
+            tccSummary = await TCCService().permissionSummary(forBundleID: bundleID)
+        }
+    }
+
+    @ViewBuilder
+    private func tccPermissionSection(
+        bundleID: String,
+        summary: TCCAppPermissionSummary,
+        onOpenPrivacy: @escaping (String?) -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "hand.raised.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if summary.requiresFDA && summary.entries.isEmpty {
+                    Text("privacy_uninstaller_tcc_no_fda".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if summary.entries.isEmpty {
+                    Text("privacy_uninstaller_tcc_none".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(tccSummaryTitle(summary))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Button("privacy_uninstaller_manage".localized) {
+                    onOpenPrivacy(bundleID)
+                }
+                .buttonStyle(.link)
+                .font(.caption)
+
+                Spacer()
+            }
+
+            if !summary.entries.isEmpty {
+                let maxInitial = 5
+                let visibleEntries = showAllTCCPermissions ? summary.entries : Array(summary.entries.prefix(maxInitial))
+                let hiddenCount = max(0, summary.entries.count - maxInitial)
+
+                TCCChipFlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
+                    ForEach(visibleEntries) { entry in
+                        tccPermissionChip(entry)
+                    }
+
+                    if hiddenCount > 0 {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                showAllTCCPermissions.toggle()
+                            }
+                        } label: {
+                            Text(showAllTCCPermissions
+                                ? "privacy_uninstaller_show_less".localized
+                                : String(format: "privacy_uninstaller_show_more".localized, Int64(hiddenCount)))
+                                .font(.caption2.weight(.medium))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Color.secondary.opacity(0.12)))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private func tccSummaryTitle(_ summary: TCCAppPermissionSummary) -> String {
+        let base = String(format: "privacy_uninstaller_tcc_count".localized, Int64(summary.count))
+        var parts: [String] = []
+        if summary.allowedCount > 0 {
+            parts.append(String(format: "privacy_uninstaller_tcc_allowed_count".localized, Int64(summary.allowedCount)))
+        }
+        if summary.deniedCount > 0 {
+            parts.append(String(format: "privacy_uninstaller_tcc_denied_count".localized, Int64(summary.deniedCount)))
+        }
+        guard !parts.isEmpty else { return base }
+        return "\(base) (\(parts.joined(separator: ", ")))"
+    }
+
+    private func tccPermissionChip(_ entry: TCCPermissionEntry) -> some View {
+        let (statusIcon, tint): (String, Color) = switch entry.authStatus {
+        case .allowed: ("checkmark.circle.fill", .green)
+        case .denied: ("xmark.circle.fill", .red)
+        case .limited: ("exclamationmark.circle.fill", .orange)
+        case .unknown: ("questionmark.circle.fill", .secondary)
+        }
+
+        let helpParts: [String] = [
+            "\(entry.service.localizedTitle): \(entry.authStatus.localizedTitle)",
+            entry.scope.localizedTitle,
+            entry.lastModified.map { String(format: "privacy_tcc_last_modified".localized, $0.formatted(date: .abbreviated, time: .shortened)) }
+        ].compactMap { $0 }
+
+        return HStack(spacing: 5) {
+            Image(systemName: statusIcon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(tint)
+            Image(systemName: entry.service.iconName)
+                .font(.system(size: 10))
+            Text(entry.service.localizedTitle)
+                .font(.caption2.weight(.medium))
+                .lineLimit(1)
+            if entry.scope == .system {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .foregroundStyle(entry.authStatus == .denied ? Color.secondary : Color.primary)
+        .background(Capsule().fill(tint.opacity(0.12)))
+        .overlay(Capsule().strokeBorder(tint.opacity(0.25), lineWidth: 0.75))
+        .help(helpParts.joined(separator: " • "))
     }
     
     private func generateAIExplanation() {
@@ -1541,8 +1699,7 @@ private struct AppMetadataSection: View {
         .task(id: bundleID) {
             metadata = nil
             guard let bundleID, !bundleID.isEmpty else { return }
-            // Fresh provider avoids stale empty cache if Bundle.main resources were not ready yet.
-            metadata = await UIMetadataProvider().metadata(forBundleID: bundleID)
+            metadata = await UIMetadataProvider.shared.metadata(forBundleID: bundleID)
         }
     }
 }
@@ -1584,6 +1741,48 @@ private struct DifficultyBadge: View {
         case .high: return .orange
         case .medium: return .yellow
         case .low: return .secondary
+        }
+    }
+}
+
+private struct TCCChipFlowLayout: Layout {
+    var horizontalSpacing: CGFloat = 6
+    var verticalSpacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > maxWidth && currentX > 0 {
+                currentX = 0
+                currentY += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+            currentX += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        return CGSize(width: proposal.width ?? currentX, height: currentY + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var currentX = bounds.minX
+        var currentY = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > bounds.maxX && currentX > bounds.minX {
+                currentX = bounds.minX
+                currentY += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: ProposedViewSize(size))
+            currentX += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
         }
     }
 }

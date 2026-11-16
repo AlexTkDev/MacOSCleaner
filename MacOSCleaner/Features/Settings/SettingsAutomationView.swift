@@ -3,10 +3,9 @@ import FoundationModels
 
 struct SettingsAutomationView: View {
     @Bindable var settings: AppSettings
-    @State private var editingCommand: CustomSiriCommand? = nil
-    @State private var isAddCommandSheetPresented: Bool = false
     @State private var modelAvailability: SystemLanguageModel.Availability = SystemLanguageModel.default.availability
     @State private var isCheckingAvailability: Bool = false
+    @State private var storageSnapshot: AppleIntelligenceStorageSnapshot? = nil
 
     var body: some View {
         ScrollView {
@@ -22,21 +21,12 @@ struct SettingsAutomationView: View {
         }
         .task {
             refreshModelAvailability(prewarmIfReady: false)
+            storageSnapshot = await Task.detached(priority: .utility) {
+                AppleIntelligenceStorageReader.inspect()
+            }.value
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             refreshModelAvailability(prewarmIfReady: false)
-        }
-        .sheet(isPresented: $isAddCommandSheetPresented) {
-            CustomSiriCommandEditSheet { newCmd in
-                settings.customSiriCommands.append(newCmd)
-            }
-        }
-        .sheet(item: $editingCommand) { cmd in
-            CustomSiriCommandEditSheet(commandToEdit: cmd) { updatedCmd in
-                if let idx = settings.customSiriCommands.firstIndex(where: { $0.id == updatedCmd.id }) {
-                    settings.customSiriCommands[idx] = updatedCmd
-                }
-            }
         }
     }
 
@@ -88,35 +78,7 @@ struct SettingsAutomationView: View {
     private var siriCommandsCard: some View {
         GlassCard(
             header: {
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top) {
-                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                        Spacer(minLength: 8)
-                        Button {
-                            isAddCommandSheetPresented = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                Text("siri_add_command_button".localized)
-                            }
-                        }
-                        .prominentGlassButtonStyle(tint: .accentColor)
-                        .fixedSize()
-                        .layoutPriority(1)
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
-                        SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
-                        Button {
-                            isAddCommandSheetPresented = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                Text("siri_add_command_button".localized)
-                            }
-                        }
-                        .prominentGlassButtonStyle(tint: .accentColor)
-                    }
-                }
+                SettingsSectionHeader("settings_custom_siri_commands".localized, subtitle: "settings_custom_siri_commands_sub".localized, iconName: "mic.fill", iconColor: .pink)
             },
             content: {
                 VStack(spacing: 8) {
@@ -147,25 +109,6 @@ struct SettingsAutomationView: View {
                                 }
 
                                 Spacer()
-
-                                Button {
-                                    editingCommand = cmd
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    if let key = cmd.settingKey {
-                                        UserDefaults.standard.set(false, forKey: key)
-                                    }
-                                    settings.customSiriCommands.removeAll(where: { $0.id == cmd.id })
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .foregroundStyle(.red)
-                                }
-                                .buttonStyle(.plain)
                             }
                             SettingsDivider()
                         }
@@ -205,9 +148,108 @@ struct SettingsAutomationView: View {
                     if settings.enableAI, let hint = aiStatusHint {
                         aiHintView(hint: hint, showSystemSettingsButton: shouldShowSystemSettingsButton)
                     }
+
+                    SettingsDivider()
+
+                    aiSystemStorageSection
                 }
             }
         )
+    }
+
+    @ViewBuilder
+    private var aiSystemStorageSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SettingsLabeledControl(
+                "settings_ai_system_storage".localized,
+                subtitle: "settings_ai_system_storage_sub".localized
+            ) {
+                StatusPill(
+                    "settings_ai_managed_by_macos".localized,
+                    iconName: "lock.shield",
+                    style: .neutral,
+                    size: .small
+                )
+            }
+
+            if let snapshot = storageSnapshot {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(snapshot.components) { component in
+                        HStack {
+                            Text(component.titleKey.localized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(component.sizeBytes.formattedByteCount())
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    HStack {
+                        Text("settings_ai_base_models_label".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if let baseBytes = snapshot.baseModelReadableBytes {
+                            Text(baseBytes.formattedByteCount())
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("settings_ai_base_models_sip_estimate".localized)
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(0.04))
+                )
+            }
+
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    aiStorageButtons
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    aiStorageButtons
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var aiStorageButtons: some View {
+        Button {
+            openAppleIntelligenceSettings()
+        } label: {
+            Label("settings_ai_open_apple_intelligence".localized, systemImage: "sparkles")
+        }
+        .secondaryGlassButtonStyle()
+
+        Button {
+            openSystemPreferenceURL("x-apple.systempreferences:com.apple.settings.Storage")
+        } label: {
+            Label("settings_ai_open_macos_storage".localized, systemImage: "internaldrive")
+        }
+        .secondaryGlassButtonStyle()
+    }
+
+    private func openAppleIntelligenceSettings() {
+        let primary = "x-apple.systempreferences:com.apple.AppleIntelligence-Settings.extension"
+        let fallback = "x-apple.systempreferences:com.apple.Siri-Settings.extension"
+        if !openSystemPreferenceURL(primary) {
+            _ = openSystemPreferenceURL(fallback)
+        }
+    }
+
+    @discardableResult
+    private func openSystemPreferenceURL(_ raw: String) -> Bool {
+        guard let url = URL(string: raw) else { return false }
+        return NSWorkspace.shared.open(url)
     }
 
     @ViewBuilder
@@ -247,9 +289,6 @@ struct SettingsAutomationView: View {
                 }
                 .buttonStyle(.plain)
                 .help("settings_ai_refresh_status".localized)
-                .onHover { inside in
-                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
-                }
             }
         }
     }
@@ -310,9 +349,7 @@ struct SettingsAutomationView: View {
 
             if showSystemSettingsButton {
                 Button {
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.Siri-Settings.extension") {
-                        NSWorkspace.shared.open(url)
-                    }
+                    openAppleIntelligenceSettings()
                 } label: {
                     HStack(spacing: 4) {
                         Text("settings_ai_open_system_settings".localized)
@@ -324,9 +361,6 @@ struct SettingsAutomationView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 21)
-                .onHover { inside in
-                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
-                }
             }
         }
         .padding(10)

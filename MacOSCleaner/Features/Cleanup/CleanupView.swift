@@ -1,12 +1,18 @@
 import SwiftUI
+import Synchronization
 
 public struct CleanupView: View {
     let viewModel: CleanupViewModel
     let scanLimited: Bool
+    @Environment(\.openWindow) private var openWindow
     @State private var showLogs = false
     @State private var showCopiedHint = false
     @State private var scrollTaskBox = ScrollTaskBox()
     @State private var showingFontCacheAlert = false
+
+    private var shouldShowFooter: Bool {
+        viewModel.state == .preview || (viewModel.settings.isDebugMode && !viewModel.scriptLogs.isEmpty)
+    }
     
     public init(viewModel: CleanupViewModel, scanLimited: Bool = false) {
         self.viewModel = viewModel
@@ -23,20 +29,24 @@ public struct CleanupView: View {
                     VSplitView {
                         content
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .frame(minHeight: 200)
+                            .frame(minHeight: 260)
+                            .clipped()
                         
                         logPanel
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 400)
+                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 320)
+                            .clipped()
                     }
                 } else {
                     content
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 
-                Divider()
-                
-                footer
+                if shouldShowFooter {
+                    Divider()
+
+                    footer
+                }
             }
             .background {
                 if viewModel.state == .scanning || viewModel.state == .executing {
@@ -50,7 +60,7 @@ public struct CleanupView: View {
         }
         .onAppear {
             if viewModel.settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Cleanup")
+                AIExplanationService.shared.prewarm()
             }
         }
     }
@@ -215,26 +225,6 @@ public struct CleanupView: View {
                 binding: Binding(
                     get: { vm.options.cleanTimeMachineSnapshots },
                     set: { vm.options.cleanTimeMachineSnapshots = $0 }
-                )
-            ),
-            CleanupOptionItem(
-                title: "cleanup_option_garageband_logic".localized,
-                subtitle: "cleanup_option_garageband_logic_sub".localized,
-                icon: "music.note",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanGarageBandLogic },
-                    set: { vm.options.cleanGarageBandLogic = $0 }
-                )
-            ),
-            CleanupOptionItem(
-                title: "cleanup_option_imovie_final_cut".localized,
-                subtitle: "cleanup_option_imovie_final_cut_sub".localized,
-                icon: "film",
-                requiresAdmin: false,
-                binding: Binding(
-                    get: { vm.options.cleanIMovieFinalCut },
-                    set: { vm.options.cleanIMovieFinalCut = $0 }
                 )
             ),
             CleanupOptionItem(
@@ -447,94 +437,139 @@ public struct CleanupView: View {
     
     @ViewBuilder
     private var completionReportView: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(Color.green.opacity(0.1))
-                        .frame(width: 80, height: 80)
-                    
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 40, weight: .light))
-                        .foregroundStyle(.green)
-                }
-                
-                VStack(spacing: 8) {
-                    Text("cleanup_complete".localized)
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                    
-                    Text(String(format: "cleanup_complete_sub".localized, viewModel.totalFreedBytes.formattedByteCount()))
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding(.top, 40)
-            .padding(.bottom, 24)
-            
-            Divider()
-            
-            VStack(alignment: .leading, spacing: 12) {
-                Text("cleanup_summary".localized)
-                    .font(.headline)
-                    .padding(.horizontal)
-                    .padding(.top, 16)
-                
-                List {
-                    ForEach(viewModel.cleanedItems) { item in
-                        HStack {
-                            Text(item.label)
-                                .font(.system(.subheadline, design: .monospaced))
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                            
-                            Spacer()
-                            
-                            Text(item.freedBytes.formattedByteCount())
-                                .font(.system(.subheadline, design: .monospaced))
-                                .foregroundColor(.green)
+        ScrollView {
+            VStack(spacing: 20) {
+                VStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.green.opacity(0.12))
+                            .frame(width: 72, height: 72)
+
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 36, weight: .light))
+                            .foregroundStyle(.green)
+                    }
+
+                    VStack(spacing: 6) {
+                        Text("cleanup_complete".localized)
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+
+                        let subtitleKey = viewModel.usedPermanentDeletion
+                            ? "cleanup_complete_perm_sub"
+                            : "cleanup_complete_trash_sub"
+                        Text(String(format: subtitleKey.localized, viewModel.totalFreedBytes.formattedByteCount()))
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+
+                        if viewModel.usedPermanentDeletion, let apfsDelta = viewModel.apfsDeltaBytes {
+                            let formattedDelta = apfsDelta > 0 ? "+\(apfsDelta.formattedByteCount())" : apfsDelta.formattedByteCount()
+                            Text(String(format: "cleanup_complete_apfs_delta".localized, formattedDelta))
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
                         }
                     }
                 }
-                .listStyle(.inset)
-                
+                .padding(.top, 28)
+
+                if !viewModel.cleanedItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("cleanup_summary".localized)
+                            .font(.headline)
+
+                        VStack(spacing: 0) {
+                            ForEach(Array(viewModel.cleanedItems.enumerated()), id: \.element.id) { index, item in
+                                HStack(spacing: 10) {
+                                    Image(systemName: item.iconName)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 20)
+
+                                    Text(item.label)
+                                        .font(.subheadline)
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+
+                                    Spacer()
+
+                                    Text(item.freedBytes.formattedByteCount())
+                                        .font(.subheadline.monospacedDigit())
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 9)
+
+                                if index < viewModel.cleanedItems.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 44)
+                                }
+                            }
+                        }
+                        .glassCard(cornerRadius: 14)
+                    }
+                }
+
                 if !viewModel.skippedItems.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("cleanup_skipped".localized)
                             .font(.headline)
-                            .foregroundColor(.orange)
-                            .padding(.top, 8)
-                        
-                        ForEach(viewModel.skippedItems) { item in
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                                    .padding(.top, 2)
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(item.label)
-                                        .font(.system(.subheadline, design: .monospaced))
-                                    Text(item.reason)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                            .foregroundStyle(.orange)
+
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(viewModel.skippedItems) { item in
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(.orange)
+                                            .padding(.top, 2)
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(item.label)
+                                                .font(.subheadline)
+                                            Text(item.reason)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        Spacer(minLength: 0)
+                                    }
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(12)
                         }
+                        .frame(maxHeight: 140)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color.orange.opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(Color.orange.opacity(0.25), lineWidth: 1)
+                        )
                     }
-                    .padding(.bottom, 8)
                 }
+
+                HStack(spacing: 12) {
+                    Button("dashboard_view_all_history".localized) {
+                        openWindow(id: "cleanup-history")
+                    }
+                    .buttonStyle(.glass)
+
+                    Button(action: { viewModel.reset() }) {
+                        Text("done".localized)
+                            .fontWeight(.semibold)
+                            .frame(minWidth: 120)
+                    }
+                    .prominentGlassButtonStyle(tint: .accentColor)
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 28)
             }
-            
-            Spacer()
-            
-            Button(action: { viewModel.reset() }) {
-                Text("done".localized)
-                    .fontWeight(.semibold)
-                    .frame(width: 150)
-            }
-            .prominentGlassButtonStyle(tint: .accentColor)
-            .padding(.bottom, 40)
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
         }
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
@@ -580,7 +615,7 @@ public struct CleanupView: View {
     }
     
     private func progressView(title: String, subtitle: String) -> some View {
-        VStack(spacing: 20) {
+        ViewThatFits(in: .vertical) {
             AnimatedScanView(
                 title: title,
                 subtitle: subtitle,
@@ -588,13 +623,37 @@ public struct CleanupView: View {
                 totalSteps: viewModel.totalSteps,
                 onCancel: { viewModel.cancel() }
             )
+            .padding(.vertical, 16)
+
+            AnimatedScanView(
+                title: title,
+                subtitle: subtitle,
+                currentStep: viewModel.currentStep,
+                totalSteps: viewModel.totalSteps,
+                isCompact: true,
+                onCancel: { viewModel.cancel() }
+            )
+            .padding(.vertical, 10)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                AnimatedScanView(
+                    title: title,
+                    subtitle: subtitle,
+                    currentStep: viewModel.currentStep,
+                    totalSteps: viewModel.totalSteps,
+                    isCompact: true,
+                    onCancel: { viewModel.cancel() }
+                )
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+            }
         }
-        .padding(.top, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var previewListView: some View {
         return VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: 16) {
+            WorkspaceHeaderBar {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("cleanup_scan_results".localized)
                         .font(.title2)
@@ -612,9 +671,6 @@ public struct CleanupView: View {
                 .glassButtonStyle()
                 .controlSize(.regular)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(.ultraThinMaterial)
 
             Divider()
 
@@ -637,39 +693,6 @@ public struct CleanupView: View {
                 }
             }
             .listStyle(.inset)
-
-            if let selected = viewModel.selectedItem, let desc = selected.description {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        HStack {
-                            Image(systemName: "info.circle.fill")
-                                .foregroundColor(.accentColor)
-                            Text("cleanup_manual_instructions".localized)
-                                .font(.headline)
-                        }
-                        Spacer()
-                        Button(action: { viewModel.selectedItemId = nil }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    Text(desc)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.ultraThinMaterial)
-                .overlay(
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(Color(NSColor.separatorColor)),
-                    alignment: .top
-                )
-            }
         }
     }
 
@@ -769,8 +792,8 @@ public struct CleanupView: View {
     private func riskColor(for risk: OperationRisk) -> Color {
         switch risk {
         case .safe: return .green
-        case .moderate: return .orange
-        case .dangerous: return .red
+        case .rebuildable: return .blue
+        case .userData: return .orange
         case .protected: return .secondary
         }
     }
@@ -960,7 +983,7 @@ public struct CleanupView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .glassEffect()
+        .background(.bar)
     }
 }
 
@@ -1005,6 +1028,14 @@ struct CleanupFileRow: View {
                         Text(date.formatted(.dateTime.day().month().year().locale(LanguageManager.shared.currentLocale)))
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
+                    }
+
+                    if let description = item.description, !description.isEmpty {
+                        Text(description)
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 
@@ -1153,22 +1184,5 @@ public struct CleanupOptionItem: Identifiable {
         self.icon = icon
         self.requiresAdmin = requiresAdmin
         self.binding = binding
-    }
-
-    public init(
-        id: UUID = UUID(),
-        title: String,
-        subtitle: String,
-        icon: String,
-        requiresAdmin: Bool = false,
-        isEnabled: Bool = false
-    ) {
-        self.id = id
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = icon
-        self.requiresAdmin = requiresAdmin
-        var state = isEnabled
-        self.binding = Binding(get: { state }, set: { state = $0 })
     }
 }

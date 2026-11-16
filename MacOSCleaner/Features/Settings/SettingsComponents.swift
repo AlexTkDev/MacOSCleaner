@@ -194,66 +194,11 @@ struct GlassCard<Header: View, Content: View, Footer: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(isDestructive ? Color.red.opacity(0.08) : Color.white.opacity(0.04))
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(.regularMaterial)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(
-                            isDestructive
-                                ? LinearGradient(colors: [Color.red.opacity(0.4), Color.red.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                : LinearGradient(colors: [Color.white.opacity(0.22), Color.white.opacity(0.06)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 1
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 4)
-        }
+        .glassCard(cornerRadius: 14, isDestructive: isDestructive)
     }
 }
 
-// MARK: - Metric & Status Cards
-
-struct SettingsMetricCard: View {
-    let title: String
-    let value: String
-    let subtitle: String?
-    let iconName: String
-    let iconColor: Color
-
-    var body: some View {
-        GlassCard {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: iconName)
-                    .font(.title2)
-                    .foregroundStyle(iconColor)
-                    .frame(width: 36, height: 36)
-                    .background(iconColor.opacity(0.12))
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(value)
-                        .font(.title3.bold())
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        }
-    }
-}
+// MARK: - Card Grids
 
 struct SettingsCardGrid<Content: View>: View {
     let columns: [GridItem]
@@ -386,26 +331,6 @@ struct SettingsActionRow: View {
                 }
             }
             .prominentGlassButtonStyle(tint: isDestructive ? .red : .accentColor)
-        }
-    }
-}
-
-struct SettingsInfoRow: View {
-    let title: String
-    let value: String
-    let iconName: String?
-
-    init(_ title: String, value: String, iconName: String? = nil) {
-        self.title = title
-        self.value = value
-        self.iconName = iconName
-    }
-
-    var body: some View {
-        SettingsLabeledControl(title, iconName: iconName) {
-            Text(value)
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
     }
 }

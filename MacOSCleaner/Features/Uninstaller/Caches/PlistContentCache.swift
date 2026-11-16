@@ -19,7 +19,7 @@ public actor PlistContentCache {
                 return str
             }
         } catch {
-            cache[key] = ""
+            return nil
         }
         return nil
     }

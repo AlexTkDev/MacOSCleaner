@@ -32,12 +32,6 @@ final class MockCommandRunner: CommandRunning, @unchecked Sendable {
         return CommandResult(stdout: "", stderr: "", exitCode: 0)
     }
 
-    func runWithRetry(command: String, arguments: [String], timeout: Duration = .seconds(30), retryPolicy: RetryPolicy = .default) async throws -> CommandResult {
-        try await withRetry(policy: retryPolicy) {
-            try await self.run(command: command, arguments: arguments, timeout: timeout)
-        }
-    }
-
     func commandExists(_ command: String) async -> Bool {
         availableCommands.contains(command) || commandExistsResult(command)
     }

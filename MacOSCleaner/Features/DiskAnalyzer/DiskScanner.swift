@@ -29,6 +29,8 @@ public actor DiskScanner {
         let keys: [URLResourceKey] = [
             .isDirectoryKey,
             .isPackageKey,
+            .isSymbolicLinkKey,
+            .linkCountKey,
             .fileSizeKey,
             .totalFileAllocatedSizeKey,
             .isUbiquitousItemKey,
@@ -37,6 +39,8 @@ public actor DiskScanner {
         
         let rootNode = DirectoryNode(url: rootURL, name: rootURL.lastPathComponent, parentURL: nil)
         var directoryNodes: [URL: DirectoryNode] = [rootURL: rootNode]
+        var seenHardlinkIDs = Set<HardlinkKey>()
+        var seenFileURLs = Set<URL>()
         
         guard let enumerator = fm.enumerator(
             at: rootURL,
@@ -62,6 +66,14 @@ public actor DiskScanner {
             
             guard let values = try? standardURL.resourceValues(forKeys: Set(keys)) else { continue }
             
+            // Never follow or duplicate symlink entries.
+            if values.isSymbolicLink == true {
+                if values.isDirectory == true {
+                    enumerator.skipDescendants()
+                }
+                continue
+            }
+            
             // Skip dataless iCloud files to avoid triggering network downloads
             if let isUbiquitous = values.isUbiquitousItem, isUbiquitous {
                 if values.ubiquitousItemDownloadingStatus == .notDownloaded {
@@ -77,22 +89,15 @@ public actor DiskScanner {
             let isPackage = (values.isPackage ?? false) || Self.packageExtensions.contains(ext)
             
             if isDir && !isPackage {
-                let parentURL = standardURL.deletingLastPathComponent().standardizedFileURL
-                let parentNode = getOrCreateDirectoryNode(
-                    url: parentURL,
+                _ = getOrCreateDirectoryNode(
+                    url: standardURL,
                     rootURL: rootURL,
                     directoryNodes: &directoryNodes
                 )
-                let node = DirectoryNode(
-                    url: standardURL,
-                    name: standardURL.lastPathComponent,
-                    parentURL: parentURL
-                )
-                directoryNodes[standardURL] = node
-                parentNode.subdirectories[standardURL] = node
             } else if isDir && isPackage {
                 enumerator.skipDescendants()
-                let pkgSize = await calculatePackageSize(url: standardURL)
+                guard seenFileURLs.insert(standardURL).inserted else { continue }
+                let pkgSize = await calculatePackageSize(url: standardURL, seenHardlinkIDs: &seenHardlinkIDs)
                 let parentURL = standardURL.deletingLastPathComponent().standardizedFileURL
                 let parentNode = getOrCreateDirectoryNode(
                     url: parentURL,
@@ -107,13 +112,15 @@ public actor DiskScanner {
                     isPackage: true,
                     size: pkgSize.size,
                     fileCount: pkgSize.fileCount,
-                    fileType: .apps,
+                    fileType: FileCategory.from(url: standardURL),
                     parentURL: parentURL
                 )
                 parentNode.fileChildren.append(item)
                 propagateSize(pkgSize.size, fileCount: pkgSize.fileCount, from: parentNode, directoryNodes: directoryNodes, rootURL: rootURL)
             } else {
-                let allocatedSize = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+                guard seenFileURLs.insert(standardURL).inserted else { continue }
+                let rawSize = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+                let allocatedSize = Self.deduplicatedSize(rawSize, for: standardURL, linkCount: values.linkCount ?? 1, seenHardlinkIDs: &seenHardlinkIDs)
                 let parentURL = standardURL.deletingLastPathComponent().standardizedFileURL
                 let parentNode = getOrCreateDirectoryNode(
                     url: parentURL,
@@ -196,10 +203,20 @@ public actor DiskScanner {
         }
     }
     
-    private func calculatePackageSize(url: URL) async -> (size: Int64, fileCount: Int) {
+    private func calculatePackageSize(
+        url: URL,
+        seenHardlinkIDs: inout Set<HardlinkKey>
+    ) async -> (size: Int64, fileCount: Int) {
         if Task.isCancelled { return (0, 0) }
         let fm = FileManager.default
-        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .fileSizeKey, .isDirectoryKey]
+        let keys: [URLResourceKey] = [
+            .totalFileAllocatedSizeKey,
+            .fileSizeKey,
+            .isDirectoryKey,
+            .isSymbolicLinkKey,
+            .linkCountKey,
+            .ubiquitousItemDownloadingStatusKey,
+        ]
         
         guard let enumerator = fm.enumerator(
             at: url,
@@ -207,6 +224,9 @@ public actor DiskScanner {
             options: [.skipsHiddenFiles]
         ) else {
             let values = try? url.resourceValues(forKeys: Set(keys))
+            if let values, FileManager.isNotDownloadedUbiquitous(values) {
+                return (0, 0)
+            }
             let s = Int64(values?.totalFileAllocatedSize ?? values?.fileSize ?? 0)
             return (s, 1)
         }
@@ -217,14 +237,38 @@ public actor DiskScanner {
         while let fileURL = enumerator.nextObject() as? URL {
             if Task.isCancelled { break }
             guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
+            if values.isSymbolicLink == true {
+                if values.isDirectory == true { enumerator.skipDescendants() }
+                continue
+            }
+            if FileManager.isNotDownloadedUbiquitous(values) { continue }
             let isDir = values.isDirectory ?? false
             if !isDir {
-                totalSize += Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+                let rawSize = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+                totalSize += Self.deduplicatedSize(rawSize, for: fileURL, linkCount: values.linkCount ?? 1, seenHardlinkIDs: &seenHardlinkIDs)
                 totalFiles += 1
             }
         }
         
         return (totalSize, max(1, totalFiles))
+    }
+
+    private struct HardlinkKey: Hashable {
+        let dev: Int32
+        let ino: UInt64
+    }
+
+    private static func deduplicatedSize(
+        _ size: Int64,
+        for url: URL,
+        linkCount: Int,
+        seenHardlinkIDs: inout Set<HardlinkKey>
+    ) -> Int64 {
+        guard linkCount > 1 else { return size }
+        var st = stat()
+        guard lstat(url.path, &st) == 0 else { return size }
+        let key = HardlinkKey(dev: st.st_dev, ino: st.st_ino)
+        return seenHardlinkIDs.insert(key).inserted ? size : 0
     }
 }
 

@@ -41,7 +41,7 @@ public actor UpdateChecker {
             let release = try JSONDecoder().decode(Release.self, from: data)
             let remoteTag = release.tag_name
             let remoteVersion = remoteTag.hasPrefix("v") ? String(remoteTag.dropFirst()) : remoteTag
-            guard isNewer(remoteVersion, than: localVersion) else { return nil }
+            guard Self.isNewer(remoteVersion, than: localVersion) else { return nil }
 
             let downloadPrefix = "https://github.com/AlexTkDev/MacOSCleaner/releases/download/"
             let dmgURL = release.assets
@@ -59,7 +59,7 @@ public actor UpdateChecker {
         }
     }
 
-    private func isNewer(_ remote: String, than local: String) -> Bool {
+    static func isNewer(_ remote: String, than local: String) -> Bool {
         let r = versionComponents(remote)
         let l = versionComponents(local)
         let count = max(r.count, l.count)
@@ -71,7 +71,7 @@ public actor UpdateChecker {
         return false
     }
 
-    private func versionComponents(_ version: String) -> [Int] {
+    static func versionComponents(_ version: String) -> [Int] {
         version.split(separator: ".").compactMap { Int($0) }
     }
 }

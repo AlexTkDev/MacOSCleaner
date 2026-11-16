@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.3.0"><img src="https://img.shields.io/badge/Release-v2.3.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
+    <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0"><img src="https://img.shields.io/badge/Release-v3.0.0-007AFF?style=flat&logo=apple&logoColor=white" alt="Release"></a>
     <a href="https://apple.com"><img src="https://img.shields.io/badge/macOS-26%2B-black?style=flat&logo=apple&logoColor=white" alt="macOS 26+"></a>
     <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.0-FA7343?style=flat&logo=swift&logoColor=white" alt="Swift 6"></a>
     <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/SwiftUI-Native-0071E3?style=flat&logo=swift&logoColor=white" alt="SwiftUI"></a>
@@ -31,7 +31,7 @@
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
-    <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp;
+    <!-- <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp; -->
     <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki">📖 Documentation</a>
   </p>
 </div>
@@ -44,8 +44,8 @@
 | Principle | Technical Implementation |
 | :--- | :--- |
 | **No Telemetry** | No background daemons, analytics SDKs, or remote loggers. All scanning runs locally without network access. |
-| **Safe Deletion** | Standard cleanup categories (caches, logs, temporary files) are pruned directly via `removeItem(at:)` after strict path validation. App Uninstaller, Disk Space Analyzer, Duplicate Finder, and review-only cleanup categories move files to macOS Trash via `trashItem(at:)` for recoverable deletion. |
-| **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, user documents, IDE settings (`.vscode`, `.idea`, `.zed`), and Finder sidebar favorites (`FavoriteItems.sfl3`). |
+| **Safe Deletion** | Cleanup, App Uninstaller, Disk Space Analyzer, Duplicate Finder, and Startup Services move files to macOS Trash via `trashItem(at:)` by default for recoverable deletion. Permanent removal (`removeItem(at:)`) is strictly opt-in. |
+| **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, user documents, credential files (`.env`, `.npmrc`, `.yarnrc`, `.pypirc`), IDE settings (`.vscode`, `.idea`, `.zed`), and Finder sidebar favorites (`FavoriteItems.sfl3` / `.sfl4`). |
 | **Non-Destructive Scanning** | Scanning never terminates running applications or modifies files. Cleanup and uninstallation enforce a 3-second soft quit timeout before forced termination. |
 | **Open Core** | Swift 6 codebase with strict concurrency, actors, and structured task groups. Core engine and heuristics are inspectable. |
 | **On-Device AI** | Checksums, hashes, and `FoundationModels` file explanations execute strictly on-device without cloud relays (no Private Cloud Compute or third-party APIs). |
@@ -57,21 +57,21 @@
 ## 🎬 Demo & Screenshots
 
 <p align="center">
-  <a href="assets/demo_video.mp4">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
+  <a href="assets/demo_video_v3.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video__v3.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
   </a>
-  <a href="assets/demo_video.mp4">
-    <img src="assets/screenshots/Dashboard_v2_3.png" alt="Watch Demo Video" width="90%">
+  <a href="assets/demo_video_v3.mp4">
+    <img src="assets/screenshots/Dashboard_v3.png" alt="Watch Demo Video" width="90%">
   </a>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/Disk_analyzer_v2_3.png" width="48%" alt="Disk Space Analyzer">
-  <img src="assets/screenshots/Cleanup_page_v2_3.png" width="48%" alt="Smart Cleanup">
+  <img src="assets/screenshots/Privacy_v3.png" width="48%" alt="Privacy Inspector">
+  <img src="assets/screenshots/Cleanup_page_v3.png" width="48%" alt="Smart Cleanup">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2_3.png" width="48%" alt="Cleanup Scan">
-  <img src="assets/screenshots/Uninstaller_scan_v2_3.png" width="48%" alt="App Uninstaller">
+  <img src="assets/screenshots/Cleanup_Scan_v3.png" width="48%" alt="Cleanup Scan">
+  <img src="assets/screenshots/Uninstaller_2_versions_v3.png" width="48%" alt="App Uninstaller">
 </p>
 
 <p align="center">
@@ -100,12 +100,13 @@
 <a id="features"></a>
 ## ✨ Features
 
-- **Smart Cleanup:** scans 55+ categories across system caches, user logs, browser data, 304 applications, and 92 developer toolchains (Xcode, Docker, `uv`, `mise`, Rust, Go `modcache`, Python, Node, CocoaPods), local AI models (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`). Includes review-only categories (iOS backups, Docker, Simulators) deselected by default, guarded Font Cache reset with confirmation, recent operations summary, and a dedicated History window (`⌘Y`).
-- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) across 2,343 cataloged remnant paths. Features a 3-stage uninstallation pipeline (soft quit → `launchd` helper bootout → file trashing), word-boundary matching to prevent false positives, Intel-only app badges (`executableArchitectures`), and standalone orphaned residuals cleanup with privilege escalation fallback.
+- **Smart Cleanup:** scans 55+ categories across system caches, user logs, browser data, 305 applications, and 105 developer toolchains (Xcode, Docker, `uv`, `mise`, Rust, Go `modcache`, Python, Node, CocoaPods), aged project-local build artifacts (verified by sibling project markers), forgotten installer images (`.dmg`, `.pkg`, `.iso`, and `.zip` central-directory inspection without mounting), local AI models (Claude Code, Ollama, MLX, Hugging Face, WhisperKit), and safe Time Machine snapshot thinning (`thinlocalsnapshots`). Includes review-only categories deselected by default, guarded Font Cache reset with confirmation, APFS reclaimable space delta, adaptive debug log panel, and a dedicated History window (`⌘Y`).
+- **Forensic Uninstaller:** inspects 30 evidence types (Bundle ID, Team ID, Spotlight metadata, Launch Services) across 2,427 cataloged remnant paths. Features a 3-stage uninstallation pipeline (soft quit → `launchd` helper bootout → file trashing), automatic Dock icon cleanup (`com.apple.dock`) with multi-version protection, inline TCC privacy permission chips on app cards, word-boundary matching to prevent false positives, Intel-only app badges (`executableArchitectures`), and standalone orphaned residuals cleanup with privilege escalation fallback.
 - **Duplicate Finder:** Master-Detail split interface (`HSplitView`) with side-by-side group and file inspection. 3-stage detection pipeline (file size matching, 4 KB header checksum, full SHA-256 verification), native Quick Look previews (`Space`), high-resolution photo previews, middle-truncation path formatting, and Smart Selection actions (`Select All Duplicates`, `Deselect All`).
-- **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSizeKey`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
-- **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical system processes (`kernel_task`, `launchd`). Employs chunked lazy loading (`LazyVStack`) and memoized filtering to eliminate UI hitching. Startup Services manager categorizes LaunchAgents, LaunchDaemons, and Login Items, with direct "Show in Finder" navigation and safe service removal (`launchd` bootout + trash).
-- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘8`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (English, Russian, Ukrainian, German, French, Spanish, Italian, Japanese, Simplified & Traditional Chinese, Korean, Polish, Brazilian Portuguese, and Arabic with native RTL layout).
+- **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSizeKey`), symlink skipping and hardlink inode deduplication, Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Apps, Documents, Archives — excluding `.framework`/`.dSYM`/document bundles from Apps), and dataless iCloud item skip protection.
+- **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical system processes (`kernel_task`, `launchd`), chunked lazy loading (`LazyVStack`), and configurable refresh/sort settings. Startup Services manager categorizes LaunchAgents, LaunchDaemons, and BTM Login Items (`sfltool dumpbtm`), verifies `SecStaticCode` signatures and notarization (`Needs Attention` filter), supports disabling/enabling user agents and background monitors (`launchctl disable`/`bootout` + process termination), and offers direct "Show in Finder" and safe service removal.
+- **Privacy Inspector:** inspects user and system TCC permissions (read-only SQLite URI `?mode=ro&immutable=1`) with verified user-permission reset via `tccutil reset`, captures on-demand active socket snapshots via `libproc` (`proc_pidfdinfo`) for current-UID processes alongside static `Info.plist` network indicators, and lists Safari, Chrome, Edge, Brave, Arc, and Firefox extensions with localized name resolution, permission risk classification, and direct extension-page navigation (via Automation script for Chromium browsers, with clipboard fallback).
+- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Apple Intelligence storage overview in Settings, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, compact `48pt` Liquid Glass navigation rail (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘9`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (English, Russian, Ukrainian, German, French, Spanish, Italian, Japanese, Simplified & Traditional Chinese, Korean, Polish, Brazilian Portuguese, and Arabic with native RTL layout).
 
 Complete feature breakdowns and path specifications are documented in the [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
 
@@ -125,7 +126,22 @@ open MacOSCleaner.xcodeproj
 
 Build and run with **⌘R**, or run tests with **⌘U**.
 
-> *Note: Public source builds use the public fallback cleanup catalog.*
+### Verify Release Checksums & Signature
+
+Compare the downloaded `.dmg` checksum against the SHA-256 value published on [GitHub Releases](https://github.com/AlexTkDev/MacOSCleaner/releases):
+
+```bash
+shasum -a 256 MacOSCleaner-*.dmg
+codesign -dv --verbose=4 /Applications/MacOSCleaner.app
+```
+
+## ⚠️ Known Limitations
+
+- **Not an Antivirus:** Startup Services checks inspect code signatures, binary presence, and launch paths — they do not use malware signatures and cannot guarantee software is safe.
+- **TCC Permissions:** Without Full Disk Access, user `TCC.db` shows "no data"; system `TCC.db` is protected by SIP and read-only. Resetting a permission via `tccutil reset` clears the decision so the app prompts again on next use (it does not permanently block future prompts).
+- **Network Snapshot (`EPERM`):** Non-root inspection via `proc_pidfdinfo` only sees sockets of processes owned by the current user (`UID`). System/root daemons are explicitly marked as restricted (`EPERM`).
+- **Browser Extensions:** Read-only inspection only. Clicking an extension opens the corresponding browser's management page (Chromium browsers use an Automation script to open the specific extension tab and fall back to copying the URL if Automation permission is denied) so you can disable or remove it using the browser's built-in controls.
+- **On-Demand Only:** No background daemon, continuous network monitor, or packet capture runs in the background.
 
 ---
 
@@ -138,7 +154,6 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions"><img src="https://img.shields.io/badge/Discussions-Forum-181717?style=flat&logo=discourse&logoColor=white" alt="Discussions" align="absmiddle"></a> — [Ask questions, propose features, and share feedback.](https://github.com/AlexTkDev/MacOSCleaner/discussions)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/issues"><img src="https://img.shields.io/badge/Issues-Tracker-E5534B?style=flat&logo=instabug&logoColor=white" alt="Issue Tracker" align="absmiddle"></a> — [Report bugs or suggest rule improvements.](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
-- <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/19"><img src="https://img.shields.io/badge/Roadmap-v3.0.0_In_Development-007AFF?style=flat&logo=github&logoColor=white" alt="v3.0.0 in Development" align="absmiddle"></a> — [Explore the v3.0.0 development roadmap, share feedback, and suggest new features.](https://github.com/AlexTkDev/MacOSCleaner/discussions/19)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
 
 <p>
@@ -179,3 +194,6 @@ Dual-licensed:
 - **Commercial License** for enterprise, commercial, or proprietary distribution. [Contact the author](https://github.com/AlexTkDev) for licensing inquiries.
 
 > **Trademark Notice**: The license does not grant permission to use the project name ("MacOSCleaner"), logos, or branding in derivative works.
+
+
+[def]: communit

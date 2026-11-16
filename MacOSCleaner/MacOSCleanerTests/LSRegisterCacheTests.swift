@@ -26,15 +26,4 @@ final class LSRegisterCacheTests: XCTestCase {
         let result = await cache.get(bundleID: "com.nonexistent.app")
         XCTAssertNil(result)
     }
-
-    func test_warmup_doesNotCrash() async {
-        let cache = LSRegisterCache()
-        await cache.warmup()
-    }
-
-    func test_warmup_twiceNoCrash() async {
-        let cache = LSRegisterCache()
-        await cache.warmup()
-        await cache.warmup()
-    }
 }

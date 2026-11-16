@@ -13,6 +13,7 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
     public let startTime: Date?
     public let parentPID: pid_t
     public let bundleID: String?
+    public let uid: uid_t?
 
     public init(
         pid: pid_t,
@@ -24,7 +25,8 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         threadCount: Int = 0,
         startTime: Date? = nil,
         parentPID: pid_t = 0,
-        bundleID: String? = nil
+        bundleID: String? = nil,
+        uid: uid_t? = nil
     ) {
         self.id = pid
         self.pid = pid
@@ -37,6 +39,7 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         self.startTime = startTime
         self.parentPID = parentPID
         self.bundleID = bundleID
+        self.uid = uid
     }
 
     public var isUserProcess: Bool {
@@ -69,55 +72,11 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         return String(format: "process_uptime_minutes_format".localized, minutes)
     }
 
-    public var category: ProcessCategory {
-        guard let bundleID else {
-            if name.hasSuffix("d") && path?.hasPrefix("/usr/") == true {
-                return .launchDaemons
-            }
-            return .system
-        }
-
-        if bundleID.contains("com.apple.") {
-            return .system
-        }
-
-        if path?.contains("/Library/LaunchAgents/") == true ||
-           path?.contains("~/Library/LaunchAgents/") == true {
-            return .launchAgents
-        }
-
-        if path?.contains("/Library/LaunchDaemons/") == true {
-            return .launchDaemons
-        }
-
-        if path?.contains("/System/Library/") == true {
-            return .system
-        }
-
-        return .applications
-    }
-
     public static func == (lhs: RunningProcess, rhs: RunningProcess) -> Bool {
         lhs.pid == rhs.pid
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(pid)
-    }
-}
-
-public enum ProcessCategory: String, CaseIterable, Sendable {
-    case applications = "Applications"
-    case launchAgents = "Launch Agents"
-    case launchDaemons = "Launch Daemons"
-    case system = "System"
-
-    public var localizedTitle: String {
-        switch self {
-        case .applications: return "process.category.applications".localized
-        case .launchAgents: return "process.category.launch_agents".localized
-        case .launchDaemons: return "process.category.launch_daemons".localized
-        case .system: return "process.category.system".localized
-        }
     }
 }

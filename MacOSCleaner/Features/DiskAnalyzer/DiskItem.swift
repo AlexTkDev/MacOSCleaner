@@ -32,7 +32,7 @@ public enum FileCategory: String, CaseIterable, Sendable {
             return .photo
         case "app", "dmg", "pkg", "ipa":
             return .apps
-        case "pdf", "docx", "doc", "txt", "xlsx", "xls", "pptx", "ppt", "pages", "numbers", "key", "rtf", "odt":
+        case "pdf", "docx", "doc", "txt", "xlsx", "xls", "pptx", "ppt", "pages", "numbers", "key", "rtf", "rtfd", "odt":
             return .docs
         case "zip", "tar", "gz", "rar", "7z", "bz2", "xz":
             return .archives

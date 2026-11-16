@@ -3,11 +3,66 @@ import Foundation
 extension CleanupCategory {
     /// Shown in preview, never wiped as a whole. Selected leaves go to Trash.
     public static let reviewOnly: [CleanupCategory] = [
-        .oldBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
+        .oldBackups, .iosBackups, .aiModels, .installerPackages, .largeFiles, .projectBuildArtifacts
     ]
+
+    /// Categories backed by native CLI tools that reclaim space directly without Trash.
+    public var isDirectCommandCleanup: Bool {
+        switch self {
+        case .packageManagers, .docker, .iosSimulators, .timeMachineSnapshots, .dnsFlush, .fontCache:
+            return true
+        default:
+            return false
+        }
+    }
 
     public var localizedTitle: String {
         "category.\(rawValue)".localized
+    }
+
+    public var iconName: String {
+        switch self {
+        case .appCaches, .systemCaches, .appContainers, .dotfileCaches, .dynamicCacheDiscovery:
+            return "internaldrive"
+        case .packageManagers, .gradleMaven, .flutterDart, .xcode, .iosSimulators,
+             .androidCaches, .androidSDK, .ideCaches, .languageCaches,
+             .swiftPMCache, .carthageCache, .projectBuildArtifacts:
+            return "hammer"
+        case .browserCaches, .chromeExtraCaches:
+            return "globe"
+        case .messagingMedia, .teamsCache:
+            return "bubble.left.and.bubble.right"
+        case .docker:
+            return "shippingbox"
+        case .userLogs, .crashReporter, .savedAppState, .sharedFileLists:
+            return "doc.plaintext"
+        case .largeFiles, .scatteredJunk:
+            return "doc.badge.ellipsis"
+        case .timeMachineSnapshots, .iosBackups, .oldBackups:
+            return "clock.arrow.circlepath"
+        case .mailDownloads:
+            return "envelope"
+        case .photosCache:
+            return "photo.on.rectangle"
+        case .aiModels:
+            return "sparkles"
+        case .installerPackages:
+            return "shippingbox.fill"
+        case .dnsFlush, .fontCache:
+            return "gearshape.2"
+        default:
+            return "folder.fill"
+        }
+    }
+
+    public static func iconName(forResultLabel label: String) -> String {
+        if label == "trash_user_label".localized {
+            return "trash"
+        }
+        for category in CleanupCategory.allCases where category.previewLabels.contains(label) {
+            return category.iconName
+        }
+        return "sparkles"
     }
 
     /// Maps scanner/engine group labels to the localized category title used in the preview UI.
@@ -68,10 +123,6 @@ extension CleanupCategory {
             labels.insert("Dotfile caches")
         case .scatteredJunk:
             labels.insert("Scattered junk")
-        case .orphanedRemnants:
-            labels.insert("Orphaned remnants")
-        case .orphanedFiles:
-            labels.insert("Orphaned files")
         case .largeFiles:
             labels.insert("Large files")
             labels.insert("Large Files")
@@ -103,31 +154,10 @@ extension CleanupCategory {
             labels.insert("Adobe Caches")
         case .chromeExtraCaches:
             labels.insert("Chrome Extra Caches")
-        case .ideOldVersions:
-            labels.insert("Old IDE Versions")
-            labels.insert("Old IDE versions")
-        case .launchAgents:
-            labels.insert("Launch Agents")
-        case .launchDaemons:
-            labels.insert("Launch Daemons")
-        case .privilegedHelpers:
-            labels.insert("Privileged Helper Tools")
-        case .pkgReceipts:
-            labels.insert("Package Receipts")
-        case .internetPlugins:
-            labels.insert("Internet Plugins")
         case .sharedFileLists:
             labels.insert("Shared File Lists")
-        case .cloudDocs:
-            labels.insert("Cloud Docs")
         case .photosCache:
             labels.insert("Photos Cache")
-        case .voiceMemos:
-            labels.insert("Voice Memos")
-        case .garageBandLogic:
-            labels.insert("GarageBand / Logic Pro")
-        case .iMovieFinalCut:
-            labels.insert("iMovie / Final Cut")
         case .garminFitbit:
             labels.insert("Garmin / Fitbit")
         case .oldBackups:
@@ -140,91 +170,11 @@ extension CleanupCategory {
             labels.insert("DNS Cache")
         case .fontCache:
             labels.insert("Font Cache")
-        case .unusedApps:
-            labels.insert("Unused Apps")
         case .projectBuildArtifacts:
             labels.insert("Project build artifacts")
             labels.insert("Project-local build artifacts")
         }
 
         return labels
-    }
-
-    public static func fromFixturePathType(_ pathType: CleanupPathType) -> [CleanupCategory] {
-        switch pathType {
-        case .caches:
-            return [.appCaches, .browserCaches, .ideCaches, .messagingMedia, .languageCaches, .systemCaches]
-        case .applicationSupport:
-            return [.ideCaches, .orphanedRemnants, .orphanedFiles]
-        case .containers:
-            return [.appContainers, .orphanedRemnants]
-        case .groupContainers:
-            return [.appContainers, .orphanedRemnants]
-        case .preferences:
-            return [.orphanedRemnants, .savedAppState]
-        case .logs:
-            return [.userLogs, .crashReporter]
-        case .savedState:
-            return [.savedAppState]
-        case .httpStorages:
-            return [.orphanedFiles]
-        case .webkit:
-            return [.orphanedFiles]
-        case .applicationScripts:
-            return [.orphanedRemnants]
-        case .launchAgents:
-            return [.launchAgents]
-        case .launchDaemons:
-            return [.launchDaemons]
-        case .privilegedHelperTools:
-            return [.privilegedHelpers]
-        case .pkgReceipts:
-            return [.pkgReceipts]
-        case .internetPlugins:
-            return [.internetPlugins]
-        case .cookies:
-            return [.orphanedFiles]
-        case .diagnosticReports:
-            return [.crashReporter]
-        case .cloudDocs:
-            return [.cloudDocs]
-        case .sharedFileLists:
-            return [.sharedFileLists]
-        case .developerArtifacts:
-            return []
-        }
-    }
-
-    public static func fromCleanupJsonScannerId(_ scannerId: String) -> CleanupCategory? {
-        switch scannerId {
-        case "browser_data_scanner": return .browserCaches
-        case "logs_scanner": return .userLogs
-        case "language_toolchain_scanner": return .languageCaches
-        case "cache_scanner": return .appCaches
-        case "xcode_derived_data_scanner": return .xcode
-        case "simulator_scanner": return .iosSimulators
-        case "quicklook_cache_scanner": return .systemCaches
-        case "photo_library_cache_scanner": return .photosCache
-        case "voice_memos_scanner": return .voiceMemos
-        case "garageband_logic_scanner": return .garageBandLogic
-        case "imovie_final_cut_scanner": return .iMovieFinalCut
-        case "garmin_fitbit_scanner": return .garminFitbit
-        case "old_backups_scanner": return .oldBackups
-        case "mail_attachments_scanner": return .mailDownloads
-        case "dns_cache_scanner": return .dnsFlush
-        case "font_cache_scanner": return .fontCache
-        case "sleep_image_scanner": return nil
-        case "duplicate_files_scanner": return nil
-        case "unused_apps_scanner": return .unusedApps
-        case "docker_scanner": return .docker
-        case "downloads_scanner": return .largeFiles
-        case "trash_scanner": return .scatteredJunk
-        case "time_machine_local_snapshots_scanner": return .timeMachineSnapshots
-        case "itunes_backup_scanner": return .iosBackups
-        case "spotlight_index_scanner": return .systemCaches
-        case "swap_files_scanner": return .systemCaches
-        case "project_build_artifacts_scanner": return .projectBuildArtifacts
-        default: return nil
-        }
     }
 }

@@ -9,11 +9,14 @@ import UniformTypeIdentifiers
 import ImageIO
 
 public struct DuplicatesView: View {
+    let settings: AppSettings
     @State private var viewModel = DuplicatesViewModel()
     @State private var selectedGroupId: UUID?
     @State private var quickLookURL: URL?
 
-    public init() {}
+    public init(settings: AppSettings) {
+        self.settings = settings
+    }
 
     private var selectedGroup: DuplicateGroup? {
         if let selectedGroupId, let group = viewModel.filteredGroups.first(where: { $0.id == selectedGroupId }) {
@@ -24,33 +27,37 @@ public struct DuplicatesView: View {
 
     public var body: some View {
         GlassEffectContainer {
-            VStack(spacing: 16) {
+            VStack(spacing: 0) {
                 headerControlsView
 
-                if viewModel.isScanning {
-                    scanningProgressView
-                } else if viewModel.groups.isEmpty {
-                    emptyStateView
-                } else {
-                    HSplitView {
-                        duplicateGroupsMasterView
-                            .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
-                        duplicateGroupDetailContainer
-                            .frame(minWidth: 460, maxWidth: .infinity)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+                Divider()
 
-                if !viewModel.groups.isEmpty && !viewModel.isScanning {
-                    bottomActionBar
+                VStack(spacing: 16) {
+                    if viewModel.isScanning {
+                        scanningProgressView
+                    } else if viewModel.groups.isEmpty {
+                        emptyStateView
+                    } else {
+                        HSplitView {
+                            duplicateGroupsMasterView
+                                .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
+                            duplicateGroupDetailContainer
+                                .frame(minWidth: 460, maxWidth: .infinity)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+
+                    if !viewModel.groups.isEmpty && !viewModel.isScanning {
+                        bottomActionBar
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
         .quickLookPreview($quickLookURL)
         .alert("duplicate_trash_confirm_title".localized, isPresented: $viewModel.showConfirmationAlert) {
             Button("duplicate_trash_confirm_action".localized, role: .destructive) {
-                viewModel.trashSelected()
+                viewModel.trashSelected(bypassTrash: settings.bypassTrashOnUninstall)
             }
             Button("cancel".localized, role: .cancel) {}
         } message: {
@@ -59,7 +66,7 @@ public struct DuplicatesView: View {
     }
 
     private var headerControlsView: some View {
-        HStack(spacing: 12) {
+        WorkspaceHeaderBar {
             // Preset / Select Folder Menu
             Menu {
                 Button(action: { selectPresetFolder(FileManager.default.homeDirectoryForCurrentUser) }) {
@@ -84,23 +91,11 @@ public struct DuplicatesView: View {
             }
             .secondaryGlassButtonStyle()
 
-            // Search filter
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                TextField("duplicate_search_placeholder".localized, text: $viewModel.searchFilter)
-                    .textFieldStyle(.plain)
-                if !viewModel.searchFilter.isEmpty {
-                    Button(action: { viewModel.searchFilter = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
+            CompactSearchField(
+                placeholder: "duplicate_search_placeholder".localized,
+                text: $viewModel.searchFilter,
+                width: 200
+            )
 
             Spacer()
 
@@ -563,5 +558,5 @@ private struct DuplicateThumbnailView: View {
 }
 
 #Preview {
-    DuplicatesView()
+    DuplicatesView(settings: AppSettings())
 }

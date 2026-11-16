@@ -79,8 +79,7 @@ public final class DiskAnalyzerViewModel {
         
         scanTask = Task {
             do {
-                let scannedRoot = try await scanner.scan(directoryURL: url) { [weak self] folderName in
-                    guard let self else { return }
+                let scannedRoot = try await scanner.scan(directoryURL: url) { folderName in
                     Task { @MainActor in
                         self.currentScanningName = folderName
                     }
@@ -127,15 +126,15 @@ public final class DiskAnalyzerViewModel {
         }
     }
     
-    public func moveToTrash(item: DiskItem) {
+    public func moveToTrash(item: DiskItem, bypassTrash: Bool = false) {
         Task {
             do {
-                _ = try await trashManager.trashItem(at: item.url)
+                try await trashManager.removeItem(at: item.url, bypassTrash: bypassTrash, policy: .userSelected)
                 
                 // Remove item from currentItem's children in memory
                 removeItemFromTree(item: item)
             } catch {
-                self.logger.error("Failed to move item to trash: \(error.localizedDescription)")
+                self.logger.error("Failed to remove item: \(error.localizedDescription)")
             }
         }
     }

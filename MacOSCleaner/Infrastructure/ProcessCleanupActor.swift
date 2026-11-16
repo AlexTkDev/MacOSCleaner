@@ -1,9 +1,4 @@
 import Foundation
-import OSLog
-
-private extension Logger {
-    static let processActor = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.macos-cleaner", category: "ProcessCleanupActor")
-}
 
 public actor ProcessCleanupActor {
     private let commandRunner: any CommandRunning
@@ -30,34 +25,24 @@ public actor ProcessCleanupActor {
         let home = fm.homeDirectoryForCurrentUser.path
         let shellPath = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         let shellName = (shellPath as NSString).lastPathComponent
+        let defaultPathPrefix = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:\(home)/.local/bin:$PATH\""
 
         switch shellName {
         case "fish":
-            return "fish -c 'source \"\(home)/.config/fish/config.fish\" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))'"
+            return "fish -c 'source \"\(home)/.config/fish/config.fish\" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))' </dev/null"
         case "nushell", "nu":
-            return "nu -c 'source \"\(home)/.config/nushell/env.nu\" 2>/dev/null; source \"\(home)/.config/nushell/config.nu\" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))'"
+            return "nu -c 'source \"\(home)/.config/nushell/env.nu\" 2>/dev/null; source \"\(home)/.config/nushell/config.nu\" 2>/dev/null; \(command.replacingOccurrences(of: "'", with: "\\'"))' </dev/null"
         case "bash":
             return """
-            if [ -f "\(home)/.bash_profile" ]; then source "\(home)/.bash_profile" 2>/dev/null; \\
-            elif [ -f "\(home)/.bashrc" ]; then source "\(home)/.bashrc" 2>/dev/null; fi; \\
-            \(command)
+            \(defaultPathPrefix); \
+            if [ -f "\(home)/.bash_profile" ]; then source "\(home)/.bash_profile" 2>/dev/null; \
+            elif [ -f "\(home)/.bashrc" ]; then source "\(home)/.bashrc" 2>/dev/null; fi; \
+            \(command) </dev/null
             """
         default:
-            return """
-            if [ -f "\(home)/.zshrc" ]; then source "\(home)/.zshrc" 2>/dev/null; \\
-            elif [ -f "\(home)/.zprofile" ]; then source "\(home)/.zprofile" 2>/dev/null; \\
-            elif [ -f "\(home)/.bash_profile" ]; then source "\(home)/.bash_profile" 2>/dev/null; \\
-            elif [ -f "\(home)/.bashrc" ]; then source "\(home)/.bashrc" 2>/dev/null; fi; \\
-            \(command)
-            """
+            // Avoid sourcing ~/.zshrc inside /bin/bash; invoke zsh directly with stdin detached.
+            let escaped = command.replacingOccurrences(of: "'", with: "'\\''")
+            return "\(defaultPathPrefix); zsh -c 'if [ -f \"\(home)/.zprofile\" ]; then source \"\(home)/.zprofile\" 2>/dev/null; fi; if [ -f \"\(home)/.zshrc\" ]; then source \"\(home)/.zshrc\" 2>/dev/null; fi; \(escaped)' </dev/null"
         }
-    }
-
-    func runBash(_ command: String, timeout: Duration = .seconds(30)) async throws -> CommandResult {
-        try await commandRunner.run(command: "/bin/bash", arguments: ["-c", command], timeout: timeout)
-    }
-
-    func runWithUserPath(_ command: String, timeout: Duration = .seconds(30)) async throws -> CommandResult {
-        try await runBash(withUserPath(command), timeout: timeout)
     }
 }

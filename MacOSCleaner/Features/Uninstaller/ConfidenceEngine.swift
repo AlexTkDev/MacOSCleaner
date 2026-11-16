@@ -69,8 +69,4 @@ public enum ConfidenceEngine {
 
         return ConfidenceAssessment(evidence: evidence, score: score, tier: tier, missingCritical: Array(missing))
     }
-
-    public static func assessAll(_ nodes: [EvidenceGraphNode], identity: AppIdentity, weights: ScoringWeights = .default) -> [ConfidenceAssessment] {
-        nodes.map { assess($0.evidence, identity: identity, weights: weights) }
-    }
 }

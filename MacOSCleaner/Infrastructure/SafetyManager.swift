@@ -1,9 +1,20 @@
 import Foundation
 
-public enum SafetyError: Error, Equatable {
+public enum SafetyError: Error, Equatable, LocalizedError {
     case pathNormalizationFailed
     case symlinkEscapeAttempted
     case protectedPath(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .pathNormalizationFailed:
+            return "Path normalization failed"
+        case .symlinkEscapeAttempted:
+            return "Symlink escape attempted"
+        case .protectedPath(let path):
+            return "Protected path: \(path)"
+        }
+    }
 }
 
 /// Context of a deletion request. Regular cleanup must never touch login/session
@@ -11,12 +22,14 @@ public enum SafetyError: Error, Equatable {
 public enum DeletionPolicy: Sendable {
     case cleanup
     case uninstall
+    case userSelected
 }
 
 public struct SafetyManager: Sendable {
     private let home: String
     private let refuseList: [String]
     private let allowedExceptions: [String]
+    private let customAllowedExceptions: [String]
 
     // OS-owned dirs living inside allowed exception roots (e.g. /Library/Application Support).
     // Checked before exceptions, so they can never be deleted.
@@ -123,21 +136,6 @@ public struct SafetyManager: Sendable {
             "\(home)/Library/Logs",
             "\(home)/Library/Application Support",
             "\(home)/Library/Containers",
-            "\(home)/.cache",
-            "\(home)/.config",
-            "\(home)/.local",
-            "\(home)/.gradle",
-            "\(home)/.pub-cache",
-            "\(home)/.dartServer",
-            "\(home)/.swiftpm/cache",
-            "\(home)/.cocoapods/repos",
-            "\(home)/.kotlin",
-            "\(home)/.flutter-devtools",
-            "\(home)/.m2",
-            "\(home)/.android",
-            "\(home)/.ollama",
-            "\(home)/.diffusionbee",
-            "\(home)/jan",
             "\(home)/Library/Android",
             "\(home)/Library/Safari",
             "\(home)/Library/WebKit",
@@ -151,6 +149,7 @@ public struct SafetyManager: Sendable {
             URL(fileURLWithPath: NSTemporaryDirectory()).resolvingSymlinksInPath().standardizedFileURL.path,
         ]
 
+        self.customAllowedExceptions = allowedExceptions
         self.allowedExceptions = defaultExceptions + allowedExceptions
 
         self.hardRefuseList = [
@@ -306,6 +305,25 @@ public struct SafetyManager: Sendable {
                 throw SafetyError.protectedPath(refused)
             }
 
+            // Under cleanup, home dot-directories are blocked unless they match an explicit
+            // regenerable cache in EmbeddedCleanupPaths, an opt-in AI model root, or custom exception.
+            if policy == .cleanup {
+                let normalizedHome = home.hasSuffix("/") ? String(home.dropLast()) : home
+                if p == "\(normalizedHome)/go/pkg/mod" {
+                    throw SafetyError.protectedPath(p)
+                }
+                if p.hasPrefix("\(normalizedHome)/.") && p != "\(normalizedHome)/.DS_Store" {
+                    let hasCustomException = customAllowedExceptions.contains { exception in
+                        p == exception || p.hasPrefix(exception + "/")
+                    }
+                    if !hasCustomException
+                        && !Self.isRegenerableCachePath(p, home: normalizedHome)
+                        && !Self.isReviewableAIModelPath(p, home: normalizedHome) {
+                        throw SafetyError.protectedPath(p)
+                    }
+                }
+            }
+
             // Custom exceptions never override immutable system / shared roots themselves.
             // Only pre-declared narrow subpaths (Homebrew Cellar, /Library/LaunchAgents, …) may pass.
             if isUnderImmutableRefuseRoot(p) {
@@ -338,6 +356,21 @@ public struct SafetyManager: Sendable {
                 "\(home)/Pictures",
                 "\(home)/Backups",
             ].contains { p == $0 || p.hasPrefix($0 + "/") }
+
+            if policy == .userSelected {
+                let isStrictUserContentDescendant = [
+                    "\(home)/Documents",
+                    "\(home)/Desktop",
+                    "\(home)/Downloads",
+                    "\(home)/Movies",
+                    "\(home)/Music",
+                    "\(home)/Pictures",
+                    "\(home)/Backups",
+                ].contains { p.hasPrefix($0 + "/") }
+                if isStrictUserContentDescendant {
+                    continue
+                }
+            }
 
             let isException = !isUserContentRoot && allowedExceptions.contains { exception in
                 p == exception || p.hasPrefix(exception + "/")
@@ -392,14 +425,6 @@ public struct SafetyManager: Sendable {
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue else {
             return false
         }
-        return isSymlink(at: url)
-    }
-
-    /// Leaf symlink: operate on the link itself, never follow to the target.
-    public func isLeafSymlink(_ url: URL) -> Bool {
-        var isDir: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
-        guard exists, !isDir.boolValue else { return false }
         return isSymlink(at: url)
     }
 
@@ -500,6 +525,10 @@ public struct SafetyManager: Sendable {
                 "com.apple.lssharedfilelist.recentapplications.sfl3",
                 "com.apple.lssharedfilelist.recentservers.sfl3",
                 "com.apple.lssharedfilelist.recenthosts.sfl3",
+                "com.apple.lssharedfilelist.recentdocuments.sfl4",
+                "com.apple.lssharedfilelist.recentapplications.sfl4",
+                "com.apple.lssharedfilelist.recentservers.sfl4",
+                "com.apple.lssharedfilelist.recenthosts.sfl4",
             ]
             if !safeSFLNames.contains(sflName) {
                 return path
@@ -517,8 +546,12 @@ public struct SafetyManager: Sendable {
             "/application support/dev.zed.zed/",
         ]
         if protectedIDEParents.contains(where: { lowerPath.contains($0) }) {
-            // Under User/, only workspaceStorage is a cleanable cache; settings, keybindings, snippets are protected
-            if !lowerPath.contains("/user/workspacestorage/") && !lowerPath.hasSuffix("/user/workspacestorage") {
+            // Under User/, only workspaceStorage and explicit AI extension caches are cleanable;
+            // settings, keybindings, snippets remain protected.
+            let isWorkspaceStorage = lowerPath.contains("/user/workspacestorage/") || lowerPath.hasSuffix("/user/workspacestorage")
+            let isExtensionCache = lowerPath.contains("/user/globalstorage/saoudrizwan.claude-dev/cache")
+                || lowerPath.contains("/user/globalstorage/rooveterinaryinc.roo-cline/cache")
+            if !isWorkspaceStorage && !isExtensionCache {
                 return path
             }
         }
@@ -528,8 +561,11 @@ public struct SafetyManager: Sendable {
         let protectedConfigFiles: Set<String> = [
             "settings.json", "launch.json", "tasks.json",
             "extensions.json", "keybindings.json",
+            ".env", "credentials", "credentials.toml",
+            ".npmrc", ".yarnrc", ".pypirc",
+            "gradle.properties", "settings.xml", ".claude.json",
         ]
-        if protectedConfigFiles.contains(fileName) {
+        if protectedConfigFiles.contains(fileName) || fileName.hasPrefix(".env.") {
             return path
         }
 
@@ -548,34 +584,39 @@ public struct SafetyManager: Sendable {
         return components.count <= 1
     }
 
+    /// True when `path` matches a known regenerable dot-cache template from `EmbeddedCleanupPaths`.
+    public static func isRegenerableCachePath(_ path: String, home: String) -> Bool {
+        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
+        let baseHome = home.hasSuffix("/") ? String(home.dropLast()) : home
+        for template in EmbeddedCleanupPaths.regenerableDotCacheTemplates() {
+            let resolved = template.hasPrefix("~") ? baseHome + template.dropFirst() : template
+            let normalized = URL(fileURLWithPath: resolved).standardizedFileURL.path
+            if standardized == normalized || standardized.hasPrefix(normalized + "/") {
+                return true
+            }
+        }
+        return false
+    }
+
+    private static func isReviewableAIModelPath(_ path: String, home: String) -> Bool {
+        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
+        let baseHome = home.hasSuffix("/") ? String(home.dropLast()) : home
+        for template in GeneratedCleanupPaths.aiUserContentTemplates() {
+            let resolved = PathToken.home.resolveTemplate(template, home: baseHome)
+            let normalized = URL(fileURLWithPath: resolved).standardizedFileURL.path
+            if standardized == normalized || standardized.hasPrefix(normalized + "/") {
+                return true
+            }
+        }
+        return false
+    }
+
     /// Regenerable build/cache dirs under common project roots.
     static func isProjectLocalBuildArtifact(_ path: String, home: String) -> Bool {
-        let homeLower = home.lowercased()
-        let lower = path.lowercased()
-        let roots = [
-            "\(homeLower)/documents/", "\(homeLower)/desktop/", "\(homeLower)/developer/",
-            "\(homeLower)/projects/", "\(homeLower)/repos/", "\(homeLower)/src/",
-            "\(homeLower)/workspace/", "\(homeLower)/code/",
-        ]
-        guard let matchingRoot = roots.first(where: { lower.hasPrefix($0) }) else { return false }
-        if lower.contains("/.vscode") || lower.contains("/.idea") || lower.contains("/.zed") { return false }
-
-        // Must be inside a project directory (depth >= 2 under Documents or Desktop)
-        // e.g. Documents/my_project/build is allowed, Documents/build directly is not
-        if matchingRoot == "\(homeLower)/documents/" || matchingRoot == "\(homeLower)/desktop/" {
-            let relative = lower.dropFirst(matchingRoot.count)
-            let segments = relative.split(separator: "/", omittingEmptySubsequences: true)
-            guard segments.count >= 2 else { return false }
-        }
-
-        let name = URL(fileURLWithPath: lower).lastPathComponent
-        let artifactNames: Set<String> = [
-            "build", ".build", "deriveddata", ".dart_tool", "__pycache__",
-            ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox",
-            ".next", ".nuxt", ".turbo", ".parcel-cache", ".angular", ".svelte-kit",
-            ".gradle", "node_modules",
-        ]
-        return artifactNames.contains(name)
+        ProjectArtifactRules.isArtifact(
+            at: URL(fileURLWithPath: path).standardizedFileURL,
+            home: home
+        )
     }
 
     /// Direct children of Desktop/Documents/Downloads that look like aged backups.
@@ -597,10 +638,21 @@ public struct SafetyManager: Sendable {
             || name.hasSuffix("~")
     }
 
-    /// Top-level DMG/PKG/ISO under Desktop/Documents/Downloads (opt-in cleanup).
+    /// Installer images (DMG/PKG/ISO) from user folders, Homebrew downloads, or messenger downloads,
+    /// plus installer `.zip` archives under Desktop/Documents/Downloads.
     static func isReviewableInstallerLeaf(_ path: String, home: String) -> Bool {
-        guard let name = Self.reviewableDownloadLeafName(path, home: home) else { return false }
-        return name.hasSuffix(".dmg") || name.hasSuffix(".pkg") || name.hasSuffix(".iso")
+        let standardized = URL(fileURLWithPath: path).standardizedFileURL
+        let name = standardized.lastPathComponent.lowercased()
+        let isImage = name.hasSuffix(".dmg") || name.hasSuffix(".pkg") || name.hasSuffix(".iso")
+        if Self.reviewableDownloadLeafName(path, home: home) != nil {
+            if isImage { return true }
+            if name.hasSuffix(".zip") {
+                return ZipCentralDirectoryInspector.containsInstallerPayload(at: standardized.path)
+            }
+            return false
+        }
+        guard isImage else { return false }
+        return Self.isMessengerOrHomebrewInstallerPath(standardized.path, home: home)
     }
 
     /// Top-level large archives under Desktop/Documents/Downloads (opt-in cleanup).
@@ -624,5 +676,28 @@ public struct SafetyManager: Sendable {
         ].map { URL(fileURLWithPath: $0).standardizedFileURL.path }
         guard allowedParents.contains(parent) else { return nil }
         return standardized.lastPathComponent.lowercased()
+    }
+
+    private static func isMessengerOrHomebrewInstallerPath(_ standardizedPath: String, home: String) -> Bool {
+        let baseHome = URL(fileURLWithPath: home).standardizedFileURL.path
+        let parent = URL(fileURLWithPath: standardizedPath).deletingLastPathComponent().path
+        let exactDownloadDirs: Set<String> = [
+            "\(baseHome)/Library/Caches/Homebrew/downloads",
+            "\(baseHome)/Library/Application Support/Slack/Downloads",
+            "\(baseHome)/Library/Containers/com.tinyspeck.slackmacgap/Data/Downloads",
+            "\(baseHome)/Library/Containers/com.tinyspeck.slackmacgap/Data/Library/Application Support/Slack/Downloads",
+            "\(baseHome)/Library/Application Support/discord/Downloads",
+            "\(baseHome)/Library/Containers/net.whatsapp.WhatsApp/Data/Downloads",
+            "\(baseHome)/Library/Containers/net.whatsapp.WhatsApp/Data/Library/Application Support/WhatsApp/Downloads",
+            "\(baseHome)/Library/Group Containers/group.net.whatsapp.WhatsApp.shared/Message/Media",
+        ]
+        if exactDownloadDirs.contains(parent) {
+            return true
+        }
+        let telegramRoot = "\(baseHome)/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"
+        if parent.hasPrefix(telegramRoot) && parent.hasSuffix("/postbox/media") {
+            return true
+        }
+        return false
     }
 }

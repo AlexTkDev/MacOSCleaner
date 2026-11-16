@@ -68,9 +68,8 @@ public final class DuplicatesViewModel {
             do {
                 let foundGroups = try await engine.scan(
                     directory: selectedFolderURL,
-                    progress: { [weak self] progress in
-                        Task { @MainActor [weak self] in
-                            guard let self else { return }
+                    progress: { progress in
+                        Task { @MainActor in
                             self.progressStage = progress.stage
                             self.filesScanned = progress.filesScanned
                             self.updateStatusMessage(stage: progress.stage)
@@ -117,13 +116,13 @@ public final class DuplicatesViewModel {
         groups[gIdx].items[iIdx].isSelected.toggle()
     }
 
-    public func trashSelected() {
+    public func trashSelected(bypassTrash: Bool = false) {
         guard totalSelectedCount > 0 else { return }
         isTrashing = true
 
         Task {
             do {
-                let result = try await engine.trashSelectedFiles(groups: groups)
+                let result = try await engine.trashSelectedFiles(groups: groups, bypassTrash: bypassTrash)
                 guard !Task.isCancelled else { return }
                 
                 // Re-scan or filter out deleted files

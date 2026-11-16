@@ -3,30 +3,38 @@ import SwiftUI
 public struct LiquidGlassLoaderView: View {
     let size: CGFloat
     let text: String?
-    
+
     @State private var isAnimating = false
     @State private var dotPulse = false
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     public init(size: CGFloat = 40, text: String? = nil) {
         self.size = size
         self.text = text
     }
-    
+
     public var body: some View {
         VStack(spacing: 14) {
             ZStack {
-                // Background circular glass lens (no square box or opaque content)
+                if reduceTransparency {
+                    Circle()
+                        .fill(Color(NSColor.controlBackgroundColor))
+                        .frame(width: size, height: size)
+                } else {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: size, height: size)
+                }
+
                 Circle()
-                    .fill(Color.clear)
+                    .strokeBorder(Color.accentColor.opacity(0.28), lineWidth: 1)
                     .frame(width: size, height: size)
-                    .glassEffect(Glass.regular.tint(.accentColor), in: Circle())
-                
-                // Subtle inner guide track
+
                 Circle()
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1.5)
+                    .stroke(Color.primary.opacity(0.12), lineWidth: 1.5)
                     .frame(width: size * 0.72, height: size * 0.72)
-                
-                // Spinning gradient arc
+
                 Circle()
                     .trim(from: 0.0, to: 0.65)
                     .stroke(
@@ -38,14 +46,12 @@ public struct LiquidGlassLoaderView: View {
                         style: StrokeStyle(lineWidth: max(2.5, size * 0.07), lineCap: .round)
                     )
                     .frame(width: size * 0.72, height: size * 0.72)
-                    .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
+                    .rotationEffect(Angle(degrees: !reduceMotion && isAnimating ? 360 : 0))
                     .animation(
-                        Animation.linear(duration: 1.1)
-                            .repeatForever(autoreverses: false),
+                        reduceMotion ? nil : Animation.linear(duration: 1.1).repeatForever(autoreverses: false),
                         value: isAnimating
                     )
-                
-                // Glowing glass core dot
+
                 Circle()
                     .fill(
                         RadialGradient(
@@ -56,24 +62,24 @@ public struct LiquidGlassLoaderView: View {
                         )
                     )
                     .frame(width: size * 0.28, height: size * 0.28)
-                    .scaleEffect(dotPulse ? 1.15 : 0.88)
-                    .opacity(dotPulse ? 0.95 : 0.7)
+                    .scaleEffect(!reduceMotion && dotPulse ? 1.15 : 0.95)
+                    .opacity(!reduceMotion && dotPulse ? 0.95 : 0.78)
                     .animation(
-                        Animation.easeInOut(duration: 0.8)
-                            .repeatForever(autoreverses: true),
+                        reduceMotion ? nil : Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true),
                         value: dotPulse
                     )
             }
             .frame(width: size, height: size)
-            .shadow(color: Color.accentColor.opacity(0.30), radius: size * 0.25, y: 2)
-            
+            .shadow(color: Color.accentColor.opacity(0.25), radius: size * 0.22, y: 2)
+
             if let text {
                 Text(text)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
         .onAppear {
+            guard !reduceMotion else { return }
             isAnimating = true
             dotPulse = true
         }

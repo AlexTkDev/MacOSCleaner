@@ -10,26 +10,30 @@ public struct DiskAnalyzerView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             headerControlsView
-            
-            if !viewModel.isScanning && viewModel.currentItem != nil {
-                breadcrumbsView
+
+            Divider()
+
+            VStack(spacing: 12) {
+                if !viewModel.isScanning && viewModel.currentItem != nil {
+                    breadcrumbsView
+                }
+
+                if viewModel.isScanning {
+                    scanningView
+                } else if viewModel.displayedItems.isEmpty {
+                    emptyView
+                } else {
+                    itemsListView
+                }
             }
-            
-            if viewModel.isScanning {
-                scanningView
-            } else if viewModel.displayedItems.isEmpty {
-                emptyView
-            } else {
-                itemsListView
-            }
+            .padding(16)
         }
-        .padding(16)
         .quickLookPreview($viewModel.quickLookURL)
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "File")
+                AIExplanationService.shared.prewarm()
             }
             if viewModel.rootURL == nil {
                 viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
@@ -38,7 +42,7 @@ public struct DiskAnalyzerView: View {
     }
     
     private var headerControlsView: some View {
-        HStack(spacing: 12) {
+        WorkspaceHeaderBar {
             // Folder Selector Menu
             Menu {
                 Button(action: { viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser) }) {
@@ -69,29 +73,10 @@ public struct DiskAnalyzerView: View {
 
             Spacer()
 
-            // Search bar
-            HStack(spacing: 6) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                    .font(.caption)
-                TextField("settings_search_prompt".localized, text: $viewModel.searchQuery)
-                    .textFieldStyle(.plain)
-                    .frame(width: 140)
-                if !viewModel.searchQuery.isEmpty {
-                    Button(action: { viewModel.searchQuery = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .glassEffect(Glass.regular, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+            CompactSearchField(
+                placeholder: "disk_analyzer_search_placeholder".localized,
+                text: $viewModel.searchQuery,
+                width: 170
             )
 
             // Scan Action Button
@@ -179,7 +164,14 @@ public struct DiskAnalyzerView: View {
                         .font(.caption.monospaced().weight(.semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .glassEffect(Glass.regular.tint(.accentColor), in: Capsule())
+                        .background(
+                            Capsule()
+                                .fill(Color.accentColor.opacity(0.14))
+                        )
+                        .overlay(
+                            Capsule()
+                                .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1)
+                        )
                         .foregroundColor(.accentColor)
                 }
             }
@@ -251,16 +243,38 @@ public struct DiskAnalyzerView: View {
                             viewModel.showInFinder(item: item)
                         },
                         onDelete: {
-                            viewModel.moveToTrash(item: item)
+                            viewModel.moveToTrash(item: item, bypassTrash: settings.bypassTrashOnUninstall)
                         }
                     )
-                    .onTapGesture {
+                    .onTapGesture(count: 2) {
                         if item.isDirectory && !item.isPackage {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 viewModel.drillDown(into: item)
                             }
                         } else {
-                            viewModel.selectedItem = item
+                            viewModel.toggleQuickLook(for: item)
+                        }
+                    }
+                    .onTapGesture {
+                        viewModel.selectedItem = item
+                    }
+                    .contextMenu {
+                        if !item.isDirectory || item.isPackage {
+                            Button(action: { viewModel.toggleQuickLook(for: item) }) {
+                                Label("disk_analyzer_quick_look".localized, systemImage: "eye")
+                            }
+                        }
+                        if item.isDirectory && !item.isPackage {
+                            Button(action: { viewModel.drillDown(into: item) }) {
+                                Label("disk_analyzer_open_folder".localized, systemImage: "folder")
+                            }
+                        }
+                        Button(action: { viewModel.showInFinder(item: item) }) {
+                            Label("disk_analyzer_show_in_finder".localized, systemImage: "magnifyingglass")
+                        }
+                        Divider()
+                        Button(role: .destructive, action: { viewModel.moveToTrash(item: item, bypassTrash: settings.bypassTrashOnUninstall) }) {
+                            Label("disk_analyzer_move_to_trash".localized, systemImage: "trash")
                         }
                     }
                 }
@@ -268,16 +282,8 @@ public struct DiskAnalyzerView: View {
             .padding(4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                )
-        )
+        .glassCard(cornerRadius: 10)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
     }
 }
 
@@ -349,41 +355,39 @@ struct DiskItemRow: View {
                     .foregroundColor(.secondary)
                     .padding(.trailing, 4)
                 
-                if isHovered || isSelected {
-                    HStack(spacing: 4) {
-                        if !item.isDirectory || item.isPackage {
-                            Button(action: onQuickLook) {
-                                Image(systemName: "eye")
-                            }
-                            .buttonStyle(.plain)
-                            .help("disk_analyzer_quick_look".localized)
-                        }
-                        
-                        if item.isDirectory && !item.isPackage {
-                            Button(action: onDrillDown) {
-                                Image(systemName: "folder")
-                            }
-                            .buttonStyle(.plain)
-                            .help("disk_analyzer_open_folder".localized)
-                        }
-                        
-                        Button(action: onShowInFinder) {
-                            Image(systemName: "magnifyingglass")
+                HStack(spacing: 6) {
+                    if !item.isDirectory || item.isPackage {
+                        Button(action: onQuickLook) {
+                            Image(systemName: "eye")
                         }
                         .buttonStyle(.plain)
-                        .help("disk_analyzer_show_in_finder".localized)
-                        
-                        Button(action: {
-                            showingDeleteConfirmation = true
-                        }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                        .buttonStyle(.plain)
-                        .help("disk_analyzer_move_to_trash".localized)
+                        .help("disk_analyzer_quick_look".localized)
                     }
-                    .transition(.opacity)
+
+                    if item.isDirectory && !item.isPackage {
+                        Button(action: onDrillDown) {
+                            Image(systemName: "folder")
+                        }
+                        .buttonStyle(.plain)
+                        .help("disk_analyzer_open_folder".localized)
+                    }
+
+                    Button(action: onShowInFinder) {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .buttonStyle(.plain)
+                    .help("disk_analyzer_show_in_finder".localized)
+
+                    Button(action: {
+                        showingDeleteConfirmation = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .buttonStyle(.plain)
+                    .help("disk_analyzer_move_to_trash".localized)
                 }
+                .opacity(isHovered || isSelected ? 1.0 : 0.45)
             }
             .padding(.vertical, 7)
             .padding(.horizontal, 10)

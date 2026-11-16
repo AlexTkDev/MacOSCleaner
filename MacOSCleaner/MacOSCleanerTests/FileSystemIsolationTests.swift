@@ -104,23 +104,6 @@ final class FileSystemIsolationTests: XCTestCase {
         XCTAssertFalse(partial.isSuccess)
     }
 
-    func test_emptyTrashWholesaleRefused() async {
-        let trash = TrashManager(
-            safetyManager: SafetyManager(
-                homeDirectory: fileSystemContext.homePath,
-                fileSystemContext: fileSystemContext
-            )
-        )
-        do {
-            _ = try await trash.emptyTrash()
-            XCTFail("Wholesale emptyTrash must be refused")
-        } catch is TrashError {
-            // expected
-        } catch {
-            XCTFail("Expected TrashError, got \(error)")
-        }
-    }
-
     func test_oldBackupsReviewScanDoesNotTouchBackupsRoot() async throws {
         let home = fileSystemContext.homeDirectory
         let backupsRoot = home.appendingPathComponent("Backups", isDirectory: true)
@@ -151,7 +134,7 @@ final class FileSystemIsolationTests: XCTestCase {
         let previewPaths = PathBox()
         let engine = CleanupEngine(fileSystemContext: fileSystemContext)
         _ = try await engine.run(categories: [.oldBackups], dryRun: true) { event in
-            if case .fileItem(let path, _, _, _, _, _, _, _) = event {
+            if case .fileItem(let path, _, _, _, _, _, _, _, _) = event {
                 previewPaths.append(path)
             }
         }

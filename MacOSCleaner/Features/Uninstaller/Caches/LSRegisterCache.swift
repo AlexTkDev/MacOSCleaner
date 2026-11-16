@@ -8,22 +8,16 @@ private extension Logger {
 public actor LSRegisterCache {
     public static let shared = LSRegisterCache()
 
-    private struct Entry: Codable {
-        let bundleID: String
-        let url: Data
+    private struct Entry {
+        let url: URL
         let timestamp: Date
     }
 
     private var cache: [String: Entry] = [:]
     private let ttl: TimeInterval = 86400
-    private let storageURL: URL
     private var dumpedPaths: [String]? = nil
 
-    public init() {
-        let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches", isDirectory: true)
-        self.storageURL = cachesDir.appendingPathComponent("com.macos-cleaner/lsregister.json")
-        Task { await load() }
-    }
+    public init() {}
 
     public func paths(matching bundleID: String, commandRunner: CommandRunner = CommandRunner()) async -> Set<URL> {
         let bundleIDLower = bundleID.lowercased()
@@ -65,63 +59,10 @@ public actor LSRegisterCache {
             cache[bundleID] = nil
             return nil
         }
-        do {
-            let bookmarkData = entry.url
-            var isStale = false
-            let url = try URL(resolvingBookmarkData: bookmarkData, bookmarkDataIsStale: &isStale)
-            if isStale {
-                cache[bundleID] = nil
-                return nil
-            }
-            return url
-        } catch {
-            cache[bundleID] = nil
-            return nil
-        }
+        return entry.url
     }
 
     public func set(bundleID: String, url: URL) {
-        guard let bookmarkData = try? url.bookmarkData() else { return }
-        cache[bundleID] = Entry(bundleID: bundleID, url: bookmarkData, timestamp: Date())
-        Task { await save() }
-    }
-
-    public func warmup() async {
-        guard cache.isEmpty else { return }
-        Logger.lsCache.info("Warming up LSRegisterCache")
-        let appDirs = [
-            NormalizedPath.url("/Applications", isDirectory: true),
-            NormalizedPath.url(NormalizedPath.joinHome(NSHomeDirectory(), "Applications"), isDirectory: true),
-        ]
-        var entries: [String: Entry] = [:]
-        for dir in appDirs {
-            guard let contents = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { continue }
-            for url in contents where url.pathExtension == "app" {
-                if let bundle = Bundle(url: url), let bundleID = bundle.bundleIdentifier {
-                    if let bookmarkData = try? url.bookmarkData() {
-                        entries[bundleID] = Entry(bundleID: bundleID, url: bookmarkData, timestamp: Date())
-                    }
-                }
-            }
-        }
-        cache = entries
-        Logger.lsCache.info("LSRegisterCache warmed with \(entries.count) entries")
-        await save()
-    }
-
-    private func save() async {
-        let entries = Array(cache.values)
-        guard let data = try? JSONEncoder().encode(entries) else { return }
-        try? FileManager.default.createDirectory(at: storageURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? data.write(to: storageURL, options: .atomic)
-    }
-
-    private func load() {
-        guard let data = try? Data(contentsOf: storageURL) else { return }
-        guard let entries = try? JSONDecoder().decode([Entry].self, from: data) else { return }
-        for entry in entries {
-            cache[entry.bundleID] = entry
-        }
-        Logger.lsCache.info("Loaded \(entries.count) entries from LSRegisterCache on disk")
+        cache[bundleID] = Entry(url: url, timestamp: Date())
     }
 }

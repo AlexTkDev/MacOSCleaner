@@ -44,6 +44,11 @@ public struct PostUninstallLeftoversSheet: View {
                         Text(String(format: "uninstaller_post_leftovers_subtitle".localized, rep.appName))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                        if rep.checkedCandidateCount > 0 {
+                            Text("uninstaller_post_checked_summary".localizedWithArgs(Int64(rep.checkedCandidateCount), Int64(rep.count)))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
 
@@ -63,6 +68,29 @@ public struct PostUninstallLeftoversSheet: View {
             // Leftover list
             ScrollView {
                 VStack(spacing: 8) {
+                    if let failed = report?.failedDeletions, !failed.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("uninstaller_post_failed_deletions_title".localized, systemImage: "exclamationmark.triangle.fill")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.orange)
+                            ForEach(failed) { entry in
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(entry.url.lastPathComponent)
+                                        .font(.caption.weight(.medium))
+                                    Text(entry.reason)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.orange.opacity(0.08))
+                        )
+                    }
+
                     ForEach($items) { $item in
                         leftoverRow(for: $item)
                     }

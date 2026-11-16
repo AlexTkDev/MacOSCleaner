@@ -78,7 +78,7 @@ public actor OrphanScanner {
         self.ruleRegistry = ruleRegistry
     }
 
-    public func scanOrphans(progress: ((String) -> Void)? = nil) async throws -> [OrphanItem] {
+    public func scanOrphans(progress: (@Sendable (String) -> Void)? = nil) async throws -> [OrphanItem] {
         try Task.checkCancellation()
         progress?("Discovering installed applications...")
         

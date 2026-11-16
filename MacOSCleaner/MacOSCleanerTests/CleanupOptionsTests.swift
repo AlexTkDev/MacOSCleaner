@@ -8,7 +8,6 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertFalse(options.cleanDSStore)
         XCTAssertTrue(options.cleanMaven)
         XCTAssertTrue(options.cleanModCache)
-        XCTAssertTrue(options.cleanProjects)
         XCTAssertFalse(options.cleanProjectArtifacts)
         XCTAssertEqual(options.projectArtifactsOlderThanDays, 60)
     }
@@ -26,18 +25,13 @@ final class CleanupOptionsTests: XCTestCase {
         XCTAssertTrue(categories.contains(.systemCaches))
         XCTAssertTrue(categories.contains(.appContainers))
         XCTAssertTrue(categories.contains(.dotfileCaches))
-        XCTAssertFalse(categories.contains(.orphanedRemnants))
-        XCTAssertFalse(categories.contains(.orphanedFiles))
         XCTAssertFalse(categories.contains(.oldBackups))
         XCTAssertFalse(categories.contains(.aiModels))
         XCTAssertFalse(categories.contains(.installerPackages))
-        XCTAssertFalse(categories.contains(.launchAgents))
-        XCTAssertFalse(categories.contains(.launchDaemons))
-        XCTAssertFalse(categories.contains(.privilegedHelpers))
-        XCTAssertFalse(categories.contains(.pkgReceipts))
-        XCTAssertFalse(categories.contains(.internetPlugins))
-        XCTAssertTrue(categories.contains(.iosBackups))
+        XCTAssertFalse(categories.contains(.iosBackups))
+        XCTAssertFalse(categories.contains(.dnsFlush))
         XCTAssertTrue(categories.contains(.iosSimulators))
+        XCTAssertTrue(CleanupCategory.reviewOnly.contains(.iosBackups))
     }
 
     func testDevCategoriesAlwaysIncluded() {
@@ -64,7 +58,7 @@ final class CleanupOptionsTests: XCTestCase {
         let options = CleanupOptions()
         let categories = options.categories()
 
-        XCTAssertEqual(categories.count, 37)
+        XCTAssertEqual(categories.count, 33)
         XCTAssertFalse(categories.contains(.fontCache))
     }
 
@@ -107,14 +101,11 @@ final class CleanupOptionsTests: XCTestCase {
         let scanned = options.scanCategories()
         let expected = options.categories() + CleanupCategory.reviewOnly.filter { !options.categories().contains($0) }
         XCTAssertEqual(scanned, expected)
-        XCTAssertFalse(scanned.contains(.launchAgents))
-        XCTAssertFalse(scanned.contains(.voiceMemos))
         XCTAssertTrue(scanned.contains(.largeFiles))
         XCTAssertTrue(scanned.contains(.oldBackups))
 
-        var withFont = CleanupOptions(cleanVoiceMemos: true, cleanFontCache: true)
+        let withFont = CleanupOptions(cleanFontCache: true)
         XCTAssertTrue(withFont.scanCategories().contains(.fontCache))
-        XCTAssertTrue(withFont.scanCategories().contains(.voiceMemos))
     }
 
     func testOptionsEquality() {

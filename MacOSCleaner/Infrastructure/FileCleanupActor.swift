@@ -9,6 +9,7 @@ public actor FileCleanupActor {
     private let safetyManager: SafetyManager
     private let sizeCache: DirectorySizeCache
     private let fileSystemContext: FileSystemContext
+    private let trashManager: TrashManager
     private let fm = FileManager.default
 
     /// Skip scan preview for items that reclaim nothing meaningful on disk.
@@ -17,18 +18,25 @@ public actor FileCleanupActor {
     public init(
         safetyManager: SafetyManager = SafetyManager(),
         sizeCache: DirectorySizeCache = DirectorySizeCache(),
-        fileSystemContext: FileSystemContext = .production
+        fileSystemContext: FileSystemContext = .production,
+        trashManager: TrashManager? = nil
     ) {
         self.safetyManager = safetyManager
         self.sizeCache = sizeCache
         self.fileSystemContext = fileSystemContext
+        self.trashManager = trashManager ?? TrashManager(safetyManager: safetyManager)
+    }
+
+    private func deleteItem(at url: URL, bypassTrash: Bool) async throws {
+        try fileSystemContext.assertAllowedForMutation(url)
+        try await trashManager.removeItem(at: url, bypassTrash: bypassTrash)
     }
 
     func getDirectorySize(_ path: String) async -> Int64 {
         await sizeCache.getSize(for: path)
     }
 
-    func cleanContents(of path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?, failedCount: Int) {
+    func cleanContents(of path: String, dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?, failedCount: Int) {
         try Task.checkCancellation()
         let url = URL(fileURLWithPath: path)
         try safetyManager.validate(url: url)
@@ -56,7 +64,7 @@ public actor FileCleanupActor {
                 return (size, Self.fileItemForPath(path, size: size, isDirectory: false), 0)
             }
             do {
-                try fm.removeItem(at: url)
+                try await deleteItem(at: url, bypassTrash: bypassTrash)
             } catch {
                 progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
                 Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -111,8 +119,7 @@ public actor FileCleanupActor {
                 continue
             }
             do {
-                try fileSystemContext.assertAllowedForMutation(itemURL)
-                try fm.removeItem(at: itemURL)
+                try await deleteItem(at: itemURL, bypassTrash: bypassTrash)
                 removedCount += 1
             } catch is CancellationError {
                 throw CancellationError()
@@ -134,9 +141,10 @@ public actor FileCleanupActor {
         return (freed, nil, failedCount)
     }
 
-    func removeDirectory(_ path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func removeDirectory(_ path: String, dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
         let url = URL(fileURLWithPath: path)
         try safetyManager.validate(url: url)
+        try fileSystemContext.assertAllowedForMutation(url)
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
@@ -157,7 +165,7 @@ public actor FileCleanupActor {
         }
 
         do {
-            try fm.removeItem(atPath: path)
+            try await deleteItem(at: url, bypassTrash: bypassTrash)
         } catch {
             progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
             Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -172,9 +180,10 @@ public actor FileCleanupActor {
         return (before, nil)
     }
 
-    func removeFile(_ path: String, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func removeFile(_ path: String, dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
         let url = URL(fileURLWithPath: path)
         try safetyManager.validate(url: url)
+        try fileSystemContext.assertAllowedForMutation(url)
 
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
@@ -192,7 +201,7 @@ public actor FileCleanupActor {
         }
 
         do {
-            try fm.removeItem(atPath: path)
+            try await deleteItem(at: url, bypassTrash: bypassTrash)
         } catch {
             progress?(.log("  \(Self.shortPath(path)) — delete failed: \(error.localizedDescription)"))
             Logger.fileActor.error("Delete failed \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
@@ -206,7 +215,7 @@ public actor FileCleanupActor {
         return (size, nil)
     }
 
-    func cleanOldFiles(in path: String, olderThanDays days: Int, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func cleanOldFiles(in path: String, olderThanDays days: Int, dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
@@ -261,7 +270,7 @@ public actor FileCleanupActor {
                     removedCount += 1
                 } else {
                     do {
-                        try fm.removeItem(at: itemURL)
+                        try await deleteItem(at: itemURL, bypassTrash: bypassTrash)
                         guard !fm.fileExists(atPath: itemURL.path) else { continue }
                         freed += size
                         removedCount += 1
@@ -281,57 +290,69 @@ public actor FileCleanupActor {
         return (freed, nil)
     }
 
-    func cleanOldFilesRecursive(in path: String, olderThanDays days: Int, dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
+    func cleanOldFilesRecursive(in path: String, olderThanDays days: Int, dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> (freed: Int64, item: CleanupFileItem?) {
         guard fm.fileExists(atPath: path) else {
             progress?(.log("  \(Self.shortPath(path)) — not found, skipped"))
             return (0, nil)
         }
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
+        let runningBundle = Bundle.main.bundlePath
+        let safety = safetyManager
+        let fsContext = fileSystemContext
+
+        // Enumerate off the actor executor so other categories are not blocked on FileCleanupActor.
+        let candidates: [(path: String, size: Int64)] = await Task.detached(priority: .utility) {
+            let localFM = FileManager.default
+            guard let enumerator = localFM.enumerator(atPath: path) else { return [] }
+            var matched: [(String, Int64)] = []
+            while let item = enumerator.nextObject() as? String {
+                if Task.isCancelled { break }
+                let itemPath = "\(path)/\(item)"
+                let itemURL = URL(fileURLWithPath: itemPath)
+                if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                    continue
+                }
+                if FileManager.shouldExclude(url: itemURL) {
+                    var isDir: ObjCBool = false
+                    localFM.fileExists(atPath: itemPath, isDirectory: &isDir)
+                    if isDir.boolValue { enumerator.skipDescendants() }
+                    continue
+                }
+                if safety.isSymlinkDirectory(itemURL) {
+                    enumerator.skipDescendants()
+                    continue
+                }
+                guard (try? safety.validate(url: itemURL, policy: .cleanup)) != nil,
+                      (try? fsContext.assertAllowedForMutation(itemURL)) != nil else {
+                    continue
+                }
+                let attrs = try? localFM.attributesOfItem(atPath: itemPath)
+                if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
+                    let size = Self.physicalSize(of: itemPath, fm: localFM)
+                    matched.append((itemPath, size))
+                }
+            }
+            return matched
+        }.value
+
+        try Task.checkCancellation()
+
         var freed: Int64 = 0
         var removedCount = 0
-
-        guard let enumerator = fm.enumerator(atPath: path) else { return (0, nil) }
-        let runningBundle = Bundle.main.bundlePath
-        while let item = enumerator.nextObject() as? String {
+        for (itemPath, size) in candidates {
             try Task.checkCancellation()
-            let itemPath = "\(path)/\(item)"
-            let itemURL = URL(fileURLWithPath: itemPath)
-            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
-                continue
-            }
-            let shouldExclude = FileManager.shouldExclude(url: itemURL)
-            if shouldExclude {
-                var isDir: ObjCBool = false
-                fm.fileExists(atPath: itemPath, isDirectory: &isDir)
-                if isDir.boolValue { enumerator.skipDescendants() }
-                continue
-            }
-            if safetyManager.isSymlinkDirectory(itemURL) {
-                enumerator.skipDescendants()
-                continue
-            }
-            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
-                continue
-            }
-            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
-                continue
-            }
-
-            let attrs = try? fm.attributesOfItem(atPath: itemPath)
-            if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
-                let size = Self.physicalSize(of: itemPath, fm: fm)
-                if dryRun {
+            if dryRun {
+                freed += size
+                removedCount += 1
+            } else {
+                let itemURL = URL(fileURLWithPath: itemPath)
+                do {
+                    try await deleteItem(at: itemURL, bypassTrash: bypassTrash)
+                    guard !fm.fileExists(atPath: itemPath) else { continue }
                     freed += size
                     removedCount += 1
-                } else {
-                    do {
-                        try fm.removeItem(atPath: itemPath)
-                        guard !fm.fileExists(atPath: itemPath) else { continue }
-                        freed += size
-                        removedCount += 1
-                    } catch {
-                        progress?(.log("  \(Self.shortPath(itemPath)) — delete failed: \(error.localizedDescription)"))
-                    }
+                } catch {
+                    progress?(.log("  \(Self.shortPath(itemPath)) — delete failed: \(error.localizedDescription)"))
                 }
             }
         }
@@ -346,11 +367,11 @@ public actor FileCleanupActor {
         return (freed, nil)
     }
 
-    func cleanContentsBatch(_ paths: [String], dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
+    func cleanContentsBatch(_ paths: [String], dryRun: Bool, bypassTrash: Bool = false, progress: (@Sendable (CleanupEngineEvent) -> Void)? = nil) async throws -> Int64 {
         var totalFreed: Int64 = 0
         for path in paths {
             try Task.checkCancellation()
-            let (freed, item, _) = try await cleanContents(of: path, dryRun: dryRun, progress: progress)
+            let (freed, item, _) = try await cleanContents(of: path, dryRun: dryRun, bypassTrash: bypassTrash, progress: progress)
             totalFreed += freed
             if dryRun, let item { emitFileItem(item, category: nil, parentName: nil, progress: progress) }
         }

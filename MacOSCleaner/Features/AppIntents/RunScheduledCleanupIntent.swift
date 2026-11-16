@@ -19,31 +19,22 @@ public struct RunScheduledCleanupIntent: AppIntent, Sendable {
     }
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
-        let isShortcutsEnabled = UserDefaults.standard.object(forKey: "settings_enableShortcutsAndAutomator") as? Bool ?? true
-        let isSiriEnabled = UserDefaults.standard.object(forKey: "settings_enableSiri") as? Bool ?? true
-        let isCommandEnabled = UserDefaults.standard.object(forKey: "settings_cmd_scheduled_cleanup") as? Bool ?? true
-        guard (isShortcutsEnabled || isSiriEnabled) && isCommandEnabled else {
+        guard IntentCleanupRunner.isCommandEnabled("settings_cmd_scheduled_cleanup") else {
             return .result(dialog: "Scheduled Cleanup command is disabled in macOS Cleaner settings.")
         }
 
-        let isRunningInTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
-        let shouldDryRun = dryRun || isRunningInTests
-
-        let engine = CleanupEngine()
+        let shouldDryRun = dryRun || IntentCleanupRunner.isRunningInTests
         // Orphan heuristics are never run unattended — only safe regenerable caches/logs.
         let categoriesToClean: [CleanupCategory] = [.appCaches, .userLogs, .systemCaches, .browserCaches]
-        
-        let results: [CleanupEngineResult]
+
+        let totalFreedBytes: Int64
         do {
-            results = try await engine.run(categories: categoriesToClean, dryRun: shouldDryRun)
+            totalFreedBytes = try await IntentCleanupRunner.run(categories: categoriesToClean, dryRun: shouldDryRun)
         } catch {
             return .result(dialog: "Scheduled cleanup failed: \(error.localizedDescription)")
         }
-        let totalFreedBytes = results.reduce(0) { $0 + $1.freedBytes }
 
-        let mb = Double(totalFreedBytes) / (1024 * 1024)
-        let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
-
+        let formatted = IntentCleanupRunner.formatBytes(totalFreedBytes)
         let prefix = shouldDryRun ? "[Preview] Estimated space to free:" : "Scheduled cleanup complete. Freed:"
         return .result(dialog: "\(prefix) \(formatted).")
     }

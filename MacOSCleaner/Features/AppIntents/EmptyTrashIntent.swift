@@ -36,7 +36,7 @@ public struct EmptyTrashIntent: AppIntent, Sendable {
 
         if confirm && !shouldDryRun {
             try await requestConfirmation(
-                result: .result(dialog: "Are you sure you want to empty the Trash?")
+                dialog: "Are you sure you want to empty the Trash?"
             )
         }
 
@@ -53,13 +53,13 @@ public struct EmptyTrashIntent: AppIntent, Sendable {
         if !shouldDryRun && !items.isEmpty {
             do {
                 freedBytes = try await trashManager.permanentlyDelete(urls: items)
+                await IntentCleanupRunner.logTrashTransaction(bytes: freedBytes)
             } catch {
                 return .result(dialog: "Could not empty the Trash: \(error.localizedDescription)")
             }
         }
 
-        let mb = Double(freedBytes) / (1024 * 1024)
-        let formatted = mb >= 1024 ? String(format: "%.2f GB", mb / 1024) : String(format: "%.0f MB", mb)
+        let formatted = IntentCleanupRunner.formatBytes(freedBytes)
 
         let prefix = shouldDryRun ? "[Preview] Estimated space to free from Trash:" : "Trash emptied. Freed:"
         return .result(dialog: "\(prefix) \(formatted).")

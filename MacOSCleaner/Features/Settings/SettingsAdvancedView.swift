@@ -21,14 +21,6 @@ struct SettingsAdvancedView: View {
             content: {
                 VStack(alignment: .leading, spacing: 12) {
                     SettingsToggleRow(
-                        "settings_show_related_app_files".localized,
-                        subtitle: "settings_show_related_app_files_sub".localized,
-                        isOn: $settings.showRelatedFiles
-                    )
-
-                    SettingsDivider()
-
-                    SettingsToggleRow(
                         "settings_debug_mode".localized,
                         subtitle: "settings_debug_mode_sub".localized,
                         isOn: $settings.isDebugMode

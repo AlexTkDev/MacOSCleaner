@@ -18,73 +18,54 @@ public struct CachedDirectoryInfo: Sendable {
 
 public actor DirectorySizeCache {
     private var cache: [String: CachedDirectoryInfo] = [:]
-    private let fm = FileManager.default
-    private let defaultTTL: TimeInterval = 300 // 5 minutes
+    private var inFlight: [String: Task<CachedDirectoryInfo, Never>] = [:]
 
     public init() {}
 
-    public func getSize(for path: String) -> Int64 {
+    public func getSize(for path: String) async -> Int64 {
         if let cached = cache[path], !cached.isExpired { return cached.size }
-        let info = computeSize(path)
+        if let existing = inFlight[path] {
+            return await existing.value.size
+        }
+
+        // Run enumeration off the actor executor so concurrent categories do not serialize on one lock.
+        let task = Task.detached(priority: .utility) {
+            Self.computeSize(path)
+        }
+        inFlight[path] = task
+        let info = await task.value
+        inFlight.removeValue(forKey: path)
+
         if Task.isCancelled { return info.size }
         cache[path] = info
         return info.size
     }
 
-    public func getSize(for path: String, calculator: () throws -> Int64) rethrows -> Int64 {
-        if let cached = cache[path], !cached.isExpired { return cached.size }
-        let size = try calculator()
-        cache[path] = CachedDirectoryInfo(size: size, fileCount: 0, timestamp: Date())
-        return size
-    }
-
-    public func getInfo(for path: String) -> CachedDirectoryInfo? {
-        if let cached = cache[path], !cached.isExpired { return cached }
-        let info = computeSize(path)
-        if Task.isCancelled { return info }
-        cache[path] = info
-        return info
-    }
-
     public func invalidate(_ path: String) {
         cache.removeValue(forKey: path)
+        inFlight[path]?.cancel()
+        inFlight.removeValue(forKey: path)
         FileManager.clearSizeCache()
-    }
-
-    public func invalidateParent(of path: String) {
-        let parent = (path as NSString).deletingLastPathComponent
-        cache.removeValue(forKey: parent)
-        FileManager.clearSizeCache()
-    }
-
-    public func invalidateAll() {
-        cache.removeAll()
-        FileManager.clearSizeCache()
-    }
-
-    public func getCachedSize(_ path: String) -> Int64? {
-        cache[path]?.size
-    }
-
-    public func preload(paths: [String]) {
-        for path in paths {
-            guard !path.isEmpty else { continue }
-            if let cached = cache[path], !cached.isExpired { continue }
-            let info = computeSize(path)
-            cache[path] = info
-        }
     }
 
     /// Reclaimable disk footprint (allocated blocks), not logical/apparent size.
     /// APFS clones in DerivedData can report tens of GB logical while only
     /// hundreds of MB are actually freed on delete.
-    private func computeSize(_ path: String) -> CachedDirectoryInfo {
+    private nonisolated static func computeSize(_ path: String) -> CachedDirectoryInfo {
+        let fm = FileManager.default
         let url = URL(fileURLWithPath: path)
         var size: Int64 = 0
         var fileCount: Int = 0
+        let keys: [URLResourceKey] = [
+            .fileSizeKey,
+            .totalFileAllocatedSizeKey,
+            .isDirectoryKey,
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ]
         guard let enumerator = fm.enumerator(
             at: url,
-            includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey, .isDirectoryKey],
+            includingPropertiesForKeys: keys,
             options: []
         ) else { return CachedDirectoryInfo(size: 0, fileCount: 0, timestamp: Date()) }
 
@@ -99,10 +80,14 @@ public actor DirectorySizeCache {
                 }
                 continue
             }
-            fileCount += 1
-            guard let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
+            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
                 continue
             }
+            if FileManager.isNotDownloadedUbiquitous(values) {
+                if values.isDirectory == true { enumerator.skipDescendants() }
+                continue
+            }
+            fileCount += 1
             // Prefer allocated (physical) size — what deleting actually reclaims.
             // Use allocated even when 0 (true sparse files); only fall back if key missing.
             if let allocated = values.totalFileAllocatedSize {

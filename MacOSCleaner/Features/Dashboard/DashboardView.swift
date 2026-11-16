@@ -4,7 +4,6 @@ import Charts
 struct DashboardView: View {
     @Environment(\.openWindow) private var openWindow
     @StateObject private var viewModel: DashboardViewModel
-    @State private var showHistorySheet = false
     private let journal: TransactionJournal
     
     init(journal: TransactionJournal) {
@@ -24,10 +23,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
-            .padding(.top, 8)
-        }
-        .sheet(isPresented: $showHistorySheet) {
-            CleanupHistoryView(journal: journal)
+            .padding(.top, 16)
         }
         .task {
             await viewModel.refresh()
@@ -111,26 +107,7 @@ struct DashboardView: View {
                     .font(.system(size: 13))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 36)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(Color.white.opacity(0.04))
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.20), Color.white.opacity(0.06)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-                    .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 3)
+                    .glassCard(cornerRadius: 12)
             } else {
                 HStack(spacing: 12) {
                     ForEach(viewModel.recentRecords) { record in
@@ -150,13 +127,6 @@ struct DashboardView: View {
                     .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
-                .onHover { inside in
-                    if inside {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
-                    }
-                }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.top, 4)
             }
@@ -174,9 +144,16 @@ struct StatRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(color)
+                .foregroundStyle(color)
                 .frame(width: 32, height: 32)
-                .glassEffect(Glass.regular.tint(color), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(color.opacity(0.14))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(color.opacity(0.25), lineWidth: 1)
+                )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -191,57 +168,6 @@ struct StatRow: View {
     }
 }
 
-struct TransactionRow: View {
-    let transaction: CleanupTransaction
-    
-    var totalFreed: Int64 {
-        transaction.operations.reduce(0) { $0 + $1.bytesFreed }
-    }
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(transaction.timestamp.formatted(.dateTime.year().month().day().locale(LanguageManager.shared.currentLocale)))
-                    .fontWeight(.medium)
-                Text(transaction.timestamp.formatted(.dateTime.hour().minute().locale(LanguageManager.shared.currentLocale)))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text(String(format: "dashboard_freed_prefix".localized, totalFreed.formattedByteCount()))
-                .foregroundColor(.green)
-                .fontWeight(.bold)
-        }
-        .padding()
-    }
-}
-
-struct DiskStatItem: View {
-    let title: String
-    let value: Int64
-    let color: Color?
-    var alignment: HorizontalAlignment = .leading
-    
-    var body: some View {
-        VStack(alignment: alignment) {
-            HStack(spacing: 4) {
-                if let color = color {
-                    Circle()
-                        .fill(color)
-                        .frame(width: 8, height: 8)
-                }
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Text(value.formattedByteCount())
-                .fontWeight(.medium)
-        }
-    }
-}
-
 struct SystemInfoItem: View {
     let title: String
     let value: String
@@ -251,9 +177,16 @@ struct SystemInfoItem: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 30, height: 30)
-                .glassEffect(Glass.regular.tint(.accentColor), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.14))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1)
+                )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

@@ -120,7 +120,8 @@ public actor ProcessInfoProvider {
             threadCount: threadCount,
             startTime: startTime,
             parentPID: parentPID,
-            bundleID: bundleID
+            bundleID: bundleID,
+            uid: bsdInfo.map { uid_t($0.pbi_uid) }
         )
     }
 

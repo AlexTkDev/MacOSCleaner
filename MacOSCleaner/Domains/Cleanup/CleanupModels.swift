@@ -5,12 +5,20 @@ public struct CleanupFileItem: Sendable {
     public let sizeBytes: Int64
     public let modificationDate: Date?
     public let isDirectory: Bool
+    public let description: String?
 
-    public init(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool) {
+    public init(
+        path: String,
+        sizeBytes: Int64,
+        modificationDate: Date?,
+        isDirectory: Bool,
+        description: String? = nil
+    ) {
         self.path = path
         self.sizeBytes = sizeBytes
         self.modificationDate = modificationDate
         self.isDirectory = isDirectory
+        self.description = description
     }
 }
 
@@ -75,11 +83,13 @@ public struct CleanupResultItem: Identifiable, Sendable {
     public let label: String
     public let freedMB: Int
     public let freedBytes: Int64
-    
-    public init(label: String, freedMB: Int, freedBytes: Int64? = nil) {
+    public let iconName: String
+
+    public init(label: String, freedMB: Int, freedBytes: Int64? = nil, iconName: String = "sparkles") {
         self.label = label
         self.freedMB = freedMB
         self.freedBytes = freedBytes ?? Int64(freedMB) * 1024 * 1024
+        self.iconName = iconName
     }
 }
 

@@ -5,10 +5,9 @@ private extension Logger {
     static let tmScanner = Logger(subsystem: "com.macoscleaner", category: "TimeMachineScanner")
 }
 
-public actor TimeMachineScanner {
+public enum TimeMachineScanner {
     public struct Snapshot: Sendable {
         public let name: String
-        public let estimatedSizeMB: Int
     }
     
     /// Queries tmutil to list local snapshots and estimates their size.
@@ -42,10 +41,7 @@ public actor TimeMachineScanner {
                 for line in lines {
                     let trimmed = line.trimmingCharacters(in: .whitespaces)
                     if trimmed.hasPrefix("com.apple.TimeMachine") {
-                        // We cannot easily determine exact size of individual snapshots via CLI,
-                        // so we estimate a fixed minimal size for representation or fetch total purgeable.
-                        // Let's use a dummy size of 0 for individual items and rely on system purgeable size.
-                        snapshots.append(Snapshot(name: trimmed, estimatedSizeMB: 0))
+                        snapshots.append(Snapshot(name: trimmed))
                     }
                 }
                 

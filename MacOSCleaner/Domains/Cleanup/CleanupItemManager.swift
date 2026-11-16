@@ -27,10 +27,6 @@ public final class CleanupItemManager {
         return nil
     }
 
-    public var selectedSizeMB: Int {
-        Int(selectedSizeBytes / (1024 * 1024))
-    }
-
     public var selectedSizeBytes: Int64 {
         var seenPaths = Set<String>()
         return items.reduce(0) { $0 + Self.selectedSizeBytes(for: $1, seenPaths: &seenPaths) }
@@ -38,7 +34,17 @@ public final class CleanupItemManager {
 
     // MARK: - File Item Append (new hierarchical flow)
 
-    public func appendFileItem(path: String, sizeBytes: Int64, modificationDate: Date?, isDirectory: Bool, category: String, parentName: String?, isSelected: Bool = true, isCommandBacked: Bool = false) {
+    public func appendFileItem(
+        path: String,
+        sizeBytes: Int64,
+        modificationDate: Date?,
+        isDirectory: Bool,
+        category: String,
+        parentName: String?,
+        isSelected: Bool = true,
+        isCommandBacked: Bool = false,
+        description: String? = nil
+    ) {
         let normalizedPath = Self.normalizePath(path)
         let sizeMB = Int(sizeBytes / (1024 * 1024))
         let risk = Self.determineRisk(for: normalizedPath)
@@ -50,6 +56,7 @@ public final class CleanupItemManager {
             risk: risk,
             isSelected: isSelected,
             isDeletable: true,
+            description: description,
             path: normalizedPath,
             modificationDate: modificationDate,
             category: category,
@@ -178,10 +185,6 @@ public final class CleanupItemManager {
         }
     }
 
-    public func selectItem(_ itemId: UUID?) {
-        self.selectedItemId = itemId
-    }
-
     public func updateAllSelection(isSelected: Bool) {
         for i in items.indices {
             updateItemSelection(&items[i], isSelected: isSelected)
@@ -277,11 +280,6 @@ public final class CleanupItemManager {
         selectionKey(path)
     }
 
-    private static func selectedSizeBytes(for item: CleanupPreviewItem) -> Int64 {
-        var seenPaths = Set<String>()
-        return selectedSizeBytes(for: item, seenPaths: &seenPaths)
-    }
-
     static func shortLabel(from path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         let expanded = path.replacingOccurrences(of: "~", with: home)
@@ -295,24 +293,24 @@ public final class CleanupItemManager {
     static func determineRisk(for label: String) -> OperationRisk {
         let l = label.lowercased()
 
-        // Time Machine — moderate (user data, but safe to delete)
-        if l.contains("time machine") || l.contains("tmutil") { return .moderate }
-        // iOS backups — moderate (user data, re-downloadable from iCloud)
-        if l.contains("ios backup") || l.contains("mobilesync") { return .moderate }
-        // AI / LLM model stores — moderate (large user downloads, opt-in)
+        // Time Machine / iOS backups / AI models / installers / large files — user data (opt-in)
+        if l.contains("time machine") || l.contains("tmutil") { return .userData }
+        if l.contains("ios backup") || l.contains("mobilesync") { return .userData }
         if l.contains("ollama") || l.contains("huggingface") || l.contains("lm studio")
             || l.contains("lm-studio") || l.contains("/jan") || l.hasSuffix("/jan")
             || l.contains("ai models") || l.contains("mlx") || l.contains("whisper")
             || l.contains("vllm") || l.contains("torch") || l.contains("diffusionbee") {
-            return .moderate
+            return .userData
         }
-        // Installers / large archives — moderate (user downloads, opt-in)
         if l.contains("installer") || l.hasSuffix(".dmg") || l.hasSuffix(".pkg")
             || l.hasSuffix(".iso") || l.contains("large file") {
-            return .moderate
+            return .userData
         }
-        // Xcode / Android / Gradle — moderate
-        if l.contains("xcode") || l.contains("android") || l.contains("gradle") { return .moderate }
+        // Xcode / Android / Gradle / CocoaPods specs / Deno deps — rebuildable caches
+        if l.contains("xcode") || l.contains("android") || l.contains("gradle")
+            || l.contains("cocoapods/repos") || l.contains(".deno/deps") {
+            return .rebuildable
+        }
 
         // All others — safe (auto-regenerated caches)
         return .safe

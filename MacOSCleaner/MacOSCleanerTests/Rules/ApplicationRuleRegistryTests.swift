@@ -22,8 +22,7 @@ final class ApplicationRuleRegistryTests: XCTestCase {
     }
 
     func test_registry_returns_electronRule_for_postman() async {
-        let registry = ApplicationRuleRegistry()
-        await registry.registerAll([
+        let registry = ApplicationRuleRegistry(rules: [
             ElectronRule(), BrowserRule(), JetBrainsRule(),
             DockerRule(), XcodeRule(), AndroidStudioRule(),
         ])
@@ -45,8 +44,7 @@ final class ApplicationRuleRegistryTests: XCTestCase {
     }
 
     func test_registry_returns_jetbrainsRule_for_intellij() async {
-        let registry = ApplicationRuleRegistry()
-        await registry.registerAll([
+        let registry = ApplicationRuleRegistry(rules: [
             ElectronRule(), BrowserRule(), JetBrainsRule(),
             DockerRule(), XcodeRule(), AndroidStudioRule(),
         ])

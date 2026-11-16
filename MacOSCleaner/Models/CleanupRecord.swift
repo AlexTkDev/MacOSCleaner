@@ -3,12 +3,7 @@
 
 import Foundation
 
-public typealias CleanupTrigger = CleanupRecord.Trigger
-public typealias CleanupHistoryCategory = CleanupRecord.Category
-
 public struct CleanupRecord: Identifiable, Codable, Sendable, Equatable {
-    public typealias CleanupCategory = Category
-
     public enum Trigger: String, Codable, CaseIterable, Sendable {
         case manual = "manual"
         case automatic = "automatic"
@@ -86,9 +81,14 @@ public extension CleanupRecord {
         self.id = transaction.id
         self.date = transaction.timestamp
         self.freedBytes = transaction.operations.reduce(0) { $0 + $1.bytesFreed }
-        
+
         var inferredCategory: Category = .general
         for op in transaction.operations {
+            if let code = op.categoryCode, let mapped = Self.historyCategory(forCode: code) {
+                inferredCategory = mapped
+                if mapped == .dev || mapped == .media { break }
+                continue
+            }
             let path = op.itemPath.lowercased()
             if path.contains("developer") || path.contains("xcode") || path.contains("android") || path.contains("gradle") || path.contains("deriveddata") {
                 inferredCategory = .dev
@@ -101,6 +101,25 @@ public extension CleanupRecord {
             }
         }
         self.category = inferredCategory
-        self.trigger = .manual
+        self.trigger = transaction.trigger ?? .manual
+    }
+
+    private static func historyCategory(forCode code: String) -> Category? {
+        switch code {
+        case "xcode", "package_managers", "gradle_maven", "flutter_dart", "ios_simulators",
+             "android_caches", "android_sdk", "ide_caches", "language_caches",
+             "swiftpm_cache", "carthage_cache", "project_build_artifacts", "docker":
+            return .dev
+        case "photos_cache", "messaging_media":
+            return .media
+        case "app_caches", "browser_caches", "system_caches", "app_containers",
+             "dotfile_caches", "user_logs", "saved_app_state", "crash_reporter",
+             "dynamic_cache_discovery", "assets_v2",
+             "cloudkit_cache", "steam_cache", "teams_cache", "adobe_caches",
+             "chrome_extra_caches", "shared_file_lists":
+            return .caches
+        default:
+            return .general
+        }
     }
 }

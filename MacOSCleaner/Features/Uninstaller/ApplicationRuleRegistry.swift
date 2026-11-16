@@ -1,7 +1,7 @@
 import Foundation
 
 public actor ApplicationRuleRegistry {
-    public static let shared = ApplicationRuleRegistry()
+    public static let shared = createDefault()
     private var rules: [ApplicationRule] = []
 
     public init() {}
@@ -12,14 +12,7 @@ public actor ApplicationRuleRegistry {
 
     public static func createDefault() -> ApplicationRuleRegistry {
         ApplicationRuleRegistry(rules: [
-            // Category Rules
-            CloudStorageRule(),
-            VirtualizationRule(),
-            DatabaseToolsRule(),
-            TerminalRule(),
-            CommunicationRule(),
-            GitClientsRule(),
-            // Individual High-Impact Rules
+            // Narrow / Specific Rules
             ParallelsRule(),
             VMwareFusionRule(),
             DaVinciResolveRule(),
@@ -31,21 +24,27 @@ public actor ApplicationRuleRegistry {
             NordVPNRule(),
             AlfredRule(),
             RaycastRule(),
-            // Existing Rules
-            ElectronRule(), BrowserRule(), JetBrainsRule(),
-            DockerRule(), XcodeRule(), AndroidStudioRule(),
-            AdobeRule(), MicrosoftOfficeRule(), SteamRule(),
-            EpicGamesRule(), UnityRule(), HomebrewRule(),
+            BrowserRule(),
+            JetBrainsRule(),
+            DockerRule(),
+            XcodeRule(),
+            AndroidStudioRule(),
+            AdobeRule(),
+            MicrosoftOfficeRule(),
+            SteamRule(),
+            EpicGamesRule(),
+            UnityRule(),
+            HomebrewRule(),
+            // Broad Category Rules
+            CloudStorageRule(),
+            VirtualizationRule(),
+            DatabaseToolsRule(),
+            TerminalRule(),
+            CommunicationRule(),
+            GitClientsRule(),
             NetworkExtensionRule(),
+            ElectronRule(),
         ])
-    }
-
-    public func register(_ rule: ApplicationRule) {
-        rules.append(rule)
-    }
-
-    public func registerAll(_ newRules: [ApplicationRule]) {
-        rules.append(contentsOf: newRules)
     }
 
     public func bestRule(for identity: AppIdentity) -> ApplicationRule {
@@ -55,13 +54,5 @@ public actor ApplicationRuleRegistry {
             }
         }
         return DefaultRule()
-    }
-
-    public func allMatchingRules(for identity: AppIdentity) -> [ApplicationRule] {
-        rules.filter { $0.matches(identity: identity) }
-    }
-
-    public func hasRule(for identity: AppIdentity) -> Bool {
-        rules.contains { $0.matches(identity: identity) }
     }
 }

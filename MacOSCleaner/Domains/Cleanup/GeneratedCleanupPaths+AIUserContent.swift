@@ -22,6 +22,12 @@ extension GeneratedCleanupPaths {
         // Extra well-known model roots not always present as user_content in SoT.
         templates.insert("<HOME>/.local/share/ollama/models")
         templates.insert("<HOME>/.ollama/models") // macOS default via Ollama.app installer
+        templates.insert("<USER_CACHE>/huggingface/hub")
+        templates.insert("<USER_CACHE>/huggingface/datasets")
+        templates.insert("<USER_CACHE>/torch/hub/checkpoints")
+        templates.insert("<USER_CACHE>/vllm")
+        templates.insert("<APP_SUPPORT>/superwhisper/models")
+        templates.insert("<APP_SUPPORT>/com.goodsnooze.MacWhisper/models")
         return templates.sorted()
     }
 

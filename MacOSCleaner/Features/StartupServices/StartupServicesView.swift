@@ -8,8 +8,18 @@ public struct StartupServicesView: View {
     public var body: some View {
         GlassEffectContainer {
             VStack(spacing: 0) {
-                filterPicker
-                    .padding()
+                WorkspaceHeaderBar {
+                    Spacer()
+                    filterPicker
+                    Spacer()
+                    Button(action: { Task { await viewModel.scan() } }) {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .glassButtonStyle()
+                    .help("startup_refresh".localized)
+                }
+
+                Divider()
 
                 if viewModel.isLoading {
                     AnimatedScanView(
@@ -21,21 +31,13 @@ public struct StartupServicesView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = viewModel.lastError {
                     errorView(error)
-                } else if viewModel.services.isEmpty {
+                } else if viewModel.filter != .loginItems && viewModel.services.isEmpty {
                     emptyView
                 } else if viewModel.filteredServices.isEmpty {
                     categoryEmptyView
                 } else {
                     serviceList
                 }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                Button(action: { Task { await viewModel.scan() } }) {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("startup_refresh".localized)
             }
         }
         .alert(
@@ -51,23 +53,32 @@ public struct StartupServicesView: View {
             }
             Button("startup_delete_action".localized, role: .destructive) {
                 let target = service
+                let bypassTrash = settings.bypassTrashOnUninstall
                 serviceToDelete = nil
-                Task { await viewModel.delete(service: target) }
+                Task { await viewModel.delete(service: target, bypassTrash: bypassTrash) }
             }
         } message: { service in
             Text(String(format: "startup_delete_confirm_message".localized, service.name, service.path))
         }
         .onAppear {
             if settings.enableAI {
-                AIExplanationService.shared.prewarm(promptPrefix: "Startup")
+                AIExplanationService.shared.prewarm()
             }
             Task { await viewModel.scan() }
         }
     }
 
     private var filterPicker: some View {
-        HStack(spacing: 8) {
-            filterButton(title: "startup_filter_all".localized, tag: nil, count: viewModel.services.count)
+        HStack(spacing: 6) {
+            filterButton(title: "startup_filter_all".localized, tag: .all, count: viewModel.services.count)
+
+            filterButton(
+                title: "startup_filter_attention".localized,
+                tag: .needsAttention,
+                count: viewModel.attentionCount,
+                icon: "exclamationmark.triangle.fill",
+                color: .orange
+            )
 
             Divider().frame(height: 16)
 
@@ -94,6 +105,16 @@ public struct StartupServicesView: View {
                 icon: ServiceCategory.system.icon,
                 color: ServiceCategory.system.color
             )
+
+            Divider().frame(height: 16)
+
+            filterButton(
+                title: "startup_filter_login_items".localized,
+                tag: .loginItems,
+                count: viewModel.loginItemsCount,
+                icon: "person.crop.circle.badge.checkmark",
+                color: .purple
+            )
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 3)
@@ -102,7 +123,7 @@ public struct StartupServicesView: View {
 
     private func filterButton(
         title: String,
-        tag: ServiceCategory?,
+        tag: StartupFilter,
         count: Int,
         icon: String? = nil,
         color: Color? = nil
@@ -166,27 +187,54 @@ public struct StartupServicesView: View {
 
     private var serviceList: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(viewModel.filteredServices) { service in
-                    ServiceRow(
-                        service: service,
-                        settings: settings,
-                        onToggle: {
-                            Task { await viewModel.toggle(service: service) }
-                        },
-                        onDelete: {
-                            serviceToDelete = service
+            VStack(spacing: 12) {
+                LazyVStack(spacing: 0) {
+                    ForEach(viewModel.filteredServices) { service in
+                        ServiceRow(
+                            service: service,
+                            settings: settings,
+                            onToggle: {
+                                Task { await viewModel.toggle(service: service) }
+                            },
+                            onDelete: {
+                                serviceToDelete = service
+                            },
+                            onOpenSystemSettings: {
+                                Self.openLoginItemsSettings()
+                            }
+                        )
+                        if service.id != viewModel.filteredServices.last?.id {
+                            Divider().padding(.leading, 120)
                         }
-                    )
-                    if service.id != viewModel.filteredServices.last?.id {
-                        Divider().padding(.leading, 120)
                     }
                 }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .glassCard()
+
+                HStack(spacing: 6) {
+                    Image(systemName: "info.circle")
+                        .font(.caption)
+                    Text("startup_disclaimer".localized)
+                        .font(.caption)
+                }
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-            .glassCard()
             .padding()
+        }
+    }
+
+    static func openLoginItemsSettings() {
+        let candidates = [
+            "x-apple.systempreferences:com.apple.LoginItems-Settings.extension",
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension"
+        ]
+        for raw in candidates {
+            if let url = URL(string: raw), NSWorkspace.shared.open(url) {
+                return
+            }
         }
     }
 
@@ -208,19 +256,64 @@ public struct StartupServicesView: View {
 
     private var categoryEmptyView: some View {
         VStack(spacing: 16) {
-            Image(systemName: viewModel.filter?.icon ?? "tray")
-                .font(.system(size: 64, weight: .thin))
-                .foregroundColor(viewModel.filter?.color ?? .secondary)
-                .opacity(0.6)
-            VStack(spacing: 8) {
-                Text("startup_category_empty".localized)
-                    .font(.headline)
-                if let filter = viewModel.filter {
-                    Text(filter.helpText)
+            switch viewModel.filter {
+            case .needsAttention:
+                Image(systemName: "checkmark.shield")
+                    .font(.system(size: 64, weight: .thin))
+                    .foregroundColor(.green)
+                    .opacity(0.75)
+                VStack(spacing: 8) {
+                    Text("startup_attention_empty".localized)
+                        .font(.headline)
+                    Text("startup_attention_empty_sub".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
+                }
+            case .loginItems:
+                Image(systemName: "person.crop.circle.badge.checkmark")
+                    .font(.system(size: 64, weight: .thin))
+                    .foregroundColor(.purple)
+                    .opacity(0.7)
+                VStack(spacing: 8) {
+                    Text(viewModel.loginItemsAccess == .authorizationRequired
+                         ? "startup_login_items_restricted".localized
+                         : "startup_login_items_empty".localized)
+                        .font(.headline)
+                    if viewModel.loginItemsAccess == .authorizationRequired {
+                        Text("startup_login_items_restricted_sub".localized)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
+                }
+                Button("startup_open_system_settings".localized) {
+                    Self.openLoginItemsSettings()
+                }
+                .secondaryGlassButtonStyle()
+            default:
+                let category: ServiceCategory? = switch viewModel.filter {
+                case .user: .user
+                case .thirdParty: .thirdParty
+                case .system: .system
+                default: nil
+                }
+                Image(systemName: category?.icon ?? "tray")
+                    .font(.system(size: 64, weight: .thin))
+                    .foregroundColor(category?.color ?? .secondary)
+                    .opacity(0.6)
+                VStack(spacing: 8) {
+                    Text("startup_category_empty".localized)
+                        .font(.headline)
+                    if let category {
+                        Text(category.helpText)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
                 }
             }
         }
@@ -255,6 +348,7 @@ struct ServiceRow: View {
     let settings: AppSettings
     let onToggle: () -> Void
     let onDelete: () -> Void
+    let onOpenSystemSettings: () -> Void
 
     @State private var isExpanded = false
     @State private var aiExplanation = ""
@@ -265,7 +359,11 @@ struct ServiceRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center, spacing: 12) {
-                CategoryBadge(category: service.category)
+                if service.isLoginItem {
+                    LoginItemBadge()
+                } else {
+                    CategoryBadge(category: service.category)
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(service.name)
@@ -276,6 +374,7 @@ struct ServiceRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
+                    FactBadgesRow(service: service)
                 }
 
                 Spacer()
@@ -291,25 +390,40 @@ struct ServiceRow: View {
 
                 StatusBadge(isEnabled: service.isEnabled)
 
-                Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
-                    onToggle()
+                if service.category != .system && !service.requiresRoot {
+                    Button(service.isEnabled ? "startup_disable".localized : "startup_enable".localized) {
+                        onToggle()
+                    }
+                    .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
+                    .controlSize(.small)
                 }
-                .prominentGlassButtonStyle(tint: service.isEnabled ? .red : .accentColor)
-                .controlSize(.small)
-                .disabled(service.category == .system)
 
-                Button {
-                    let url = URL(fileURLWithPath: service.path)
-                    NSWorkspace.shared.activateFileViewerSelecting([url])
-                } label: {
-                    Image(systemName: "folder")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                if FileManager.default.fileExists(atPath: service.path) {
+                    Button {
+                        let url = URL(fileURLWithPath: service.path)
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    } label: {
+                        Image(systemName: "folder")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("startup_show_in_finder".localized)
                 }
-                .buttonStyle(.plain)
-                .help("startup_show_in_finder".localized)
 
-                if service.category != .system {
+                if service.isLoginItem || service.requiresRoot {
+                    Button {
+                        onOpenSystemSettings()
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("startup_open_system_settings".localized)
+                }
+
+                if !service.isLoginItem && service.category != .system && !service.requiresRoot {
                     Button(role: .destructive) {
                         onDelete()
                     } label: {
@@ -322,14 +436,35 @@ struct ServiceRow: View {
                 }
             }
             .contextMenu {
-                Button {
-                    let url = URL(fileURLWithPath: service.path)
-                    NSWorkspace.shared.activateFileViewerSelecting([url])
-                } label: {
-                    Label("startup_show_in_finder".localized, systemImage: "folder")
+                if service.category != .system && !service.requiresRoot {
+                    Button {
+                        onToggle()
+                    } label: {
+                        Label(
+                            service.isEnabled ? "startup_disable".localized : "startup_enable".localized,
+                            systemImage: service.isEnabled ? "stop.circle" : "play.circle"
+                        )
+                    }
                 }
 
-                if service.category != .system {
+                if FileManager.default.fileExists(atPath: service.path) {
+                    Button {
+                        let url = URL(fileURLWithPath: service.path)
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    } label: {
+                        Label("startup_show_in_finder".localized, systemImage: "folder")
+                    }
+                }
+
+                if service.isLoginItem || service.requiresRoot {
+                    Button {
+                        onOpenSystemSettings()
+                    } label: {
+                        Label("startup_open_system_settings".localized, systemImage: "gearshape")
+                    }
+                }
+
+                if !service.isLoginItem && service.category != .system && !service.requiresRoot {
                     Divider()
                     Button(role: .destructive) {
                         onDelete()
@@ -446,6 +581,90 @@ struct CategoryBadge: View {
         case .thirdParty: return "startup_help_third_party".localized
         case .system: return "startup_help_system".localized
         }
+    }
+}
+
+struct LoginItemBadge: View {
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "person.crop.circle.badge.checkmark")
+                .font(.system(size: 10, weight: .bold))
+            Text("startup_filter_login_items".localized)
+                .font(.system(size: 10, weight: .medium))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(Color.purple.opacity(0.12)))
+        .foregroundColor(.purple)
+        .frame(minWidth: 90)
+    }
+}
+
+struct FactBadgesRow: View {
+    let service: StartupService
+
+    var body: some View {
+        if hasAnyBadge {
+            HStack(spacing: 6) {
+                if service.isOrphaned {
+                    factBadge("startup_badge_missing_binary".localized, icon: "questionmark.folder.fill", color: .orange)
+                } else if let sig = service.signature {
+                    signatureBadge(for: sig)
+                }
+
+                if service.executableLocation == .temporaryDirectory {
+                    factBadge("startup_badge_tmp_location".localized, icon: "exclamationmark.triangle.fill", color: .orange)
+                } else if service.executableLocation == .hiddenDirectory {
+                    factBadge("startup_badge_hidden_location".localized, icon: "eye.slash.fill", color: .orange)
+                }
+
+                if service.requiresRoot {
+                    factBadge("startup_badge_requires_root".localized, icon: "lock.fill", color: .secondary)
+                }
+            }
+        }
+    }
+
+    private var hasAnyBadge: Bool {
+        service.isOrphaned
+            || service.signature != nil
+            || service.executableLocation != .standard
+            || service.requiresRoot
+    }
+
+    @ViewBuilder
+    private func signatureBadge(for sig: CodeSignatureInfo) -> some View {
+        if !sig.isSigned {
+            factBadge("startup_badge_unsigned".localized, icon: "xmark.shield.fill", color: .orange)
+        } else if !sig.isValid {
+            factBadge("startup_badge_invalid_sig".localized, icon: "exclamationmark.shield.fill", color: .red)
+        } else if sig.isAppleSigned {
+            factBadge("startup_badge_apple".localized, icon: "checkmark.seal.fill", color: .green)
+        } else if sig.isAdHoc {
+            factBadge("startup_badge_adhoc".localized, icon: "signature", color: .secondary)
+        } else {
+            let parts = [
+                sig.teamID,
+                sig.isNotarized ? "startup_badge_notarized".localized : nil
+            ].compactMap { $0 }
+            let text = parts.isEmpty ? (sig.authority ?? "Signed") : parts.joined(separator: " • ")
+            factBadge(text, icon: "checkmark.shield.fill", color: .blue)
+                .help([sig.authority, sig.teamID].compactMap { $0 }.joined(separator: " — "))
+        }
+    }
+
+    private func factBadge(_ title: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 9, weight: .semibold))
+            Text(title)
+                .font(.system(size: 10, weight: .medium))
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(Capsule().fill(color.opacity(0.12)))
+        .foregroundColor(color)
     }
 }
 

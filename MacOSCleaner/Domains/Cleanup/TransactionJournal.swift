@@ -103,14 +103,14 @@ public actor TransactionJournal {
         let sortedFiles = files.sorted { url1, url2 in
             let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
             let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
-            return date1 < date2
+            return date1 > date2
         }
-        
+
         let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        
-        for file in sortedFiles {
-            if let creationDate = try? file.resourceValues(forKeys: [.creationDateKey]).creationDate,
-               creationDate < thirtyDaysAgo || sortedFiles.count > 10 {
+
+        for (index, file) in sortedFiles.enumerated() {
+            let creationDate = (try? file.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
+            if index >= 10 || creationDate < thirtyDaysAgo {
                 try? FileManager.default.removeItem(at: file)
             }
         }
@@ -128,25 +128,6 @@ public actor TransactionJournal {
         }
     }
     
-    /// Loads all transactions from the journal and archives.
-    public func loadAllWithArchives() throws -> [CleanupTransaction] {
-        var allTransactions = try loadAll()
-        
-        if let archiveFiles = try? FileManager.default.contentsOfDirectory(at: archiveDirectoryURL, includingPropertiesForKeys: nil) {
-            for archiveURL in archiveFiles where archiveURL.pathExtension == "jsonl" {
-                let content = try String(contentsOf: archiveURL, encoding: .utf8)
-                let lines = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
-                let transactions = try lines.compactMap { line -> CleanupTransaction? in
-                    guard let data = line.data(using: .utf8) else { return nil }
-                    return try decoder.decode(CleanupTransaction.self, from: data)
-                }
-                allTransactions.append(contentsOf: transactions)
-            }
-        }
-        
-        return allTransactions
-    }
-    
     /// Clears the transaction journal.
     public func clear() throws {
         if FileManager.default.fileExists(atPath: journalURL.path) {
@@ -161,13 +142,6 @@ public actor TransactionJournal {
             try FileManager.default.removeItem(at: archiveDirectoryURL)
             try FileManager.default.createDirectory(at: archiveDirectoryURL, withIntermediateDirectories: true)
         }
-    }
-    
-    /// Returns the journal size in bytes.
-    public func journalSize() throws -> Int64 {
-        guard FileManager.default.fileExists(atPath: journalURL.path) else { return 0 }
-        let attributes = try FileManager.default.attributesOfItem(atPath: journalURL.path)
-        return attributes[.size] as? Int64 ?? 0
     }
     
     public enum JournalError: Error, LocalizedError {

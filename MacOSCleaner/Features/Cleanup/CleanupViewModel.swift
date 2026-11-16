@@ -15,8 +15,9 @@ public final class CleanupViewModel {
     public var totalSteps: Int { coordinator.totalSteps }
     public var stepTitle: String { coordinator.stepTitle }
     public var items: [CleanupPreviewItem] { itemManager.items }
-    public var totalFreedMB: Int { coordinator.totalFreedMB }
     public var totalFreedBytes: Int64 { coordinator.totalFreedBytes }
+    public var apfsDeltaBytes: Int64? { coordinator.apfsDeltaBytes }
+    public var usedPermanentDeletion: Bool { coordinator.usedPermanentDeletion }
     public var cleanedItems: [CleanupResultItem] { coordinator.cleanedItems }
     public var skippedItems: [SkippedCleanupItem] { coordinator.skippedItems }
     public var lastError: String? { coordinator.lastError }
@@ -25,10 +26,8 @@ public final class CleanupViewModel {
         get { itemManager.selectedItemId }
         set { itemManager.selectedItemId = newValue }
     }
-    public var selectedSizeMB: Int { itemManager.selectedSizeMB }
     public var selectedSizeBytes: Int64 { itemManager.selectedSizeBytes }
     public var selectedItem: CleanupPreviewItem? { itemManager.selectedItem }
-    public var expandedCategoryIds: Set<UUID> { itemManager.expandedCategoryIds }
 
     public let settings: AppSettings
 
@@ -77,10 +76,6 @@ public final class CleanupViewModel {
 
     public func toggleSelection(for itemId: UUID) {
         itemManager.toggleSelection(for: itemId)
-    }
-
-    public func selectItem(_ itemId: UUID?) {
-        itemManager.selectItem(itemId)
     }
 
     public func updateAllSelection(isSelected: Bool) {

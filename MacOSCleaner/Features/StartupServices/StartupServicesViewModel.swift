@@ -6,13 +6,31 @@ public final class StartupServicesViewModel {
     private let manager: LaunchServiceManager
 
     public var services: [StartupService] = []
+    public var loginItems: [StartupService] = []
+    public var loginItemsAccess: BackgroundItemsAccessStatus = .available
     public var isLoading: Bool = false
     public var lastError: String? = nil
-    public var filter: ServiceCategory? = nil
+    public var filter: StartupFilter = .all
 
     public var filteredServices: [StartupService] {
-        guard let filter else { return services }
-        return services.filter { $0.category == filter }
+        switch filter {
+        case .all:
+            return services
+        case .needsAttention:
+            return services.filter(\.needsAttention)
+        case .user:
+            return services.filter { $0.category == .user }
+        case .thirdParty:
+            return services.filter { $0.category == .thirdParty }
+        case .system:
+            return services.filter { $0.category == .system }
+        case .loginItems:
+            return loginItems
+        }
+    }
+
+    public var attentionCount: Int {
+        services.filter(\.needsAttention).count
     }
 
     public var userCount: Int {
@@ -27,6 +45,10 @@ public final class StartupServicesViewModel {
         services.filter { $0.category == .system }.count
     }
 
+    public var loginItemsCount: Int {
+        loginItems.count
+    }
+
     public init(manager: LaunchServiceManager = LaunchServiceManager()) {
         self.manager = manager
     }
@@ -36,7 +58,10 @@ public final class StartupServicesViewModel {
         isLoading = true
         lastError = nil
         do {
-            services = try await manager.scan()
+            let result = try await manager.scanAll()
+            services = result.services
+            loginItems = result.loginItems
+            loginItemsAccess = result.loginItemsAccess
         } catch {
             lastError = error.localizedDescription
         }
@@ -52,18 +77,18 @@ public final class StartupServicesViewModel {
             } else {
                 try await manager.enable(service: service)
             }
-            services = try await manager.scan()
+            await scan()
         } catch {
             lastError = error.localizedDescription
         }
     }
 
     @MainActor
-    public func delete(service: StartupService) async {
+    public func delete(service: StartupService, bypassTrash: Bool = false) async {
         lastError = nil
         do {
-            try await manager.delete(service: service)
-            services = try await manager.scan()
+            try await manager.delete(service: service, bypassTrash: bypassTrash)
+            await scan()
         } catch {
             lastError = error.localizedDescription
         }

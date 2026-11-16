@@ -23,7 +23,6 @@ public actor UninstallerService {
     private let safetyManager: SafetyManager
     private let trashManager: TrashManager
     private let commandRunner: CommandRunner
-    private let identityCache = IdentityCache()
     private let codesignCache = CodesignCache()
     private let plistCache = PlistContentCache()
     private let ruleRegistry: ApplicationRuleRegistry
@@ -51,7 +50,6 @@ public actor UninstallerService {
     }
 
     public enum ScanState: Equatable, Sendable {
-        case queued
         case discovered
         case scanning(progress: Double?)
         case deepScanned
@@ -274,7 +272,6 @@ public actor UninstallerService {
         try safetyManager.validate(url: url, policy: .uninstall)
 
         let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
-        await identityCache.set(bundleID: identity.bundleID, identity: identity)
 
         let size = await getDirectorySize(url: url)
         let iconData = await MainActor.run {
@@ -578,26 +575,6 @@ public actor UninstallerService {
 
     // MARK: - Batch Deep Scan
 
-    public func deepScanAll(apps: [AppInfo]) async -> [AppInfo] {
-        await withTaskGroup(of: AppInfo?.self, returning: [AppInfo].self) { group in
-            let maxConcurrency = 8
-            var iterator = apps.makeIterator()
-            var submitted = 0
-            while submitted < maxConcurrency, let app = iterator.next() {
-                group.addTask { try? await self.deepScan(app) }
-                submitted += 1
-            }
-            var results: [AppInfo] = []
-            for await result in group {
-                if let result { results.append(result) }
-                if let nextApp = iterator.next() {
-                    group.addTask { try? await self.deepScan(nextApp) }
-                }
-            }
-            return results
-        }
-    }
-
     // MARK: - Backward compatibility
 
     public func scan(appURL: URL) async throws -> AppInfo {
@@ -609,7 +586,7 @@ public actor UninstallerService {
 
     // MARK: - Orphaned App Residuals
 
-    public func scanOrphanedResiduals() async throws -> [OrphanItem] {
+    public func scanOrphanedResiduals(progress: (@Sendable (String) -> Void)? = nil) async throws -> [OrphanItem] {
         let scanner = OrphanScanner(
             safetyManager: safetyManager,
             commandRunner: commandRunner,
@@ -617,7 +594,7 @@ public actor UninstallerService {
             plistCache: plistCache,
             ruleRegistry: ruleRegistry
         )
-        return try await scanner.scanOrphans()
+        return try await scanner.scanOrphans(progress: progress)
     }
 
     public static func isApplicationConfigurationPath(_ path: String) -> Bool {
@@ -697,7 +674,6 @@ public actor UninstallerService {
         var freed: Int64 = 0
 
         if bypassTrash {
-            var privilegedItems: [OrphanItem] = []
             for item in items {
                 do {
                     try safetyManager.validate(url: item.url, policy: .uninstall)
@@ -706,30 +682,8 @@ public actor UninstallerService {
                     freed += item.sizeBytes
                     Logger.uninstaller.debug("Removed orphan: \(item.url.path, privacy: .public)")
                 } catch {
-                    if Self.isPermissionError(error) {
-                        privilegedItems.append(item)
-                    } else {
-                        failed.append(item)
-                        Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
-                    }
-                }
-            }
-
-            if !privilegedItems.isEmpty {
-                do {
-                    let remaining = Set((try await PrivilegedTaskRunner.removeAsAdmin(privilegedItems.map(\.url))).map(\.path))
-                    for item in privilegedItems {
-                        if !remaining.contains(item.url.path) {
-                            succeeded.append(item)
-                            freed += item.sizeBytes
-                        } else {
-                            failed.append(item)
-                        }
-                    }
-                    Logger.uninstaller.info("Privileged removal completed for \(privilegedItems.count) orphan item(s)")
-                } catch {
-                    Logger.uninstaller.error("Privileged removal failed for orphans: \(error.localizedDescription)")
-                    failed.append(contentsOf: privilegedItems)
+                    failed.append(item)
+                    Logger.uninstaller.error("Failed to remove orphan \(item.url.path): \(error.localizedDescription)")
                 }
             }
         } else {
@@ -762,7 +716,6 @@ public actor UninstallerService {
     public func removeLeftovers(urls: [URL], bypassTrash: Bool = false) async throws -> Int64 {
         var freed: Int64 = 0
         if bypassTrash {
-            var privileged: [(url: URL, size: Int64)] = []
             for url in urls {
                 do {
                     let size = FileManager.default.getDirectorySize(url: url)
@@ -770,25 +723,14 @@ public actor UninstallerService {
                     try fileManager.removeItem(at: url)
                     freed += size
                 } catch {
-                    if Self.isPermissionError(error) {
-                        let size = FileManager.default.getDirectorySize(url: url)
-                        privileged.append((url, size))
-                    } else {
-                        Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
-                    }
-                }
-            }
-            if !privileged.isEmpty {
-                do {
-                    let remaining = Set((try await PrivilegedTaskRunner.removeAsAdmin(privileged.map(\.url))).map(\.path))
-                    for item in privileged where !remaining.contains(item.url.path) {
-                        freed += item.size
-                    }
-                } catch {
-                    Logger.uninstaller.error("Privileged removal failed for leftovers: \(error.localizedDescription)")
+                    Logger.uninstaller.error("Failed to remove leftover \(url.path): \(error.localizedDescription)")
                 }
             }
         } else {
+            let sizesBeforeTrash = Dictionary(
+                urls.map { ($0.standardizedFileURL.path, FileManager.default.getDirectorySize(url: $0)) },
+                uniquingKeysWith: { first, _ in first }
+            )
             do {
                 _ = try await trashManager.trashItems(urls: urls, policy: .uninstall)
             } catch {
@@ -796,7 +738,7 @@ public actor UninstallerService {
             }
             for url in urls {
                 if !fileManager.fileExists(atPath: url.path) {
-                    freed += FileManager.default.getDirectorySize(url: url)
+                    freed += sizesBeforeTrash[url.standardizedFileURL.path] ?? 0
                 }
             }
         }
@@ -806,15 +748,37 @@ public actor UninstallerService {
     // MARK: - Uninstall
 
     @discardableResult
-    public func uninstall(app: AppInfo, bypassTrash: Bool = false, emptyTrashImmediately: Bool = false) async throws -> VerificationReport? {
+    public func uninstall(
+        app: AppInfo,
+        bypassTrash: Bool = false,
+        emptyTrashImmediately: Bool = false,
+        removeFromDock: Bool = true
+    ) async throws -> VerificationReport? {
         if !app.versions.isEmpty {
             var combinedLeftovers: [LeftoverItem] = []
+            var combinedChecked = 0
+            var combinedFailed: [FailedDeletion] = []
             for versionApp in app.versions {
-                if let report = try await uninstall(app: versionApp, bypassTrash: bypassTrash, emptyTrashImmediately: emptyTrashImmediately) {
+                if let report = try await uninstall(
+                    app: versionApp,
+                    bypassTrash: bypassTrash,
+                    emptyTrashImmediately: emptyTrashImmediately,
+                    removeFromDock: removeFromDock
+                ) {
                     combinedLeftovers.append(contentsOf: report.items)
+                    combinedChecked += report.checkedCandidateCount
+                    combinedFailed.append(contentsOf: report.failedDeletions)
                 }
             }
-            return combinedLeftovers.isEmpty ? nil : VerificationReport(appName: app.name, bundleID: app.bundleID, items: combinedLeftovers)
+            return (combinedLeftovers.isEmpty && combinedFailed.isEmpty)
+                ? nil
+                : VerificationReport(
+                    appName: app.name,
+                    bundleID: app.bundleID,
+                    items: combinedLeftovers,
+                    checkedCandidateCount: combinedChecked,
+                    failedDeletions: combinedFailed
+                )
         }
 
         Logger.uninstaller.info("Uninstalling '\(app.name, privacy: .public)' bypassTrash=\(bypassTrash)")
@@ -827,21 +791,6 @@ public actor UninstallerService {
             .map(\.url)
         let devTargets = app.developerComponents.filter(\.isSelected).map(\.url)
         let deletionTargets = relatedTargets + devTargets
-        let snapshot = UninstallSnapshot(
-            appName: app.name,
-            bundleID: app.bundleID ?? "unknown",
-            appVersion: app.version.isEmpty ? nil : app.version,
-            appBundlePath: app.url.path,
-            deletedPaths: [app.url.path] + deletionTargets.map(\.path),
-            bypassTrash: bypassTrash
-        )
-        do {
-            let store = SnapshotStore(fileManager: .default)
-            try await store.save(snapshot: snapshot)
-            Logger.uninstaller.info("Saved uninstall snapshot '\(snapshot.id.uuidString, privacy: .public)'")
-        } catch {
-            Logger.uninstaller.warning("Failed to save snapshot: \(error.localizedDescription, privacy: .public)")
-        }
 
         // 2. Bootout helpers and daemons before deletion
         for file in app.relatedFiles where file.isSelected {
@@ -849,35 +798,35 @@ public actor UninstallerService {
         }
 
         var trashedURLs: [URL] = []
+        var failedDeletions: [FailedDeletion] = []
         let allTargets = [app.url] + deletionTargets
 
         if bypassTrash {
-            var privilegedPaths: [String] = []
             for target in allTargets {
                 do {
                     try safetyManager.validate(url: target, policy: .uninstall)
                     try fileManager.removeItem(at: target)
                     Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
-                    if Self.isPermissionError(error) {
-                        privilegedPaths.append(target.path)
-                    } else if target == app.url {
+                    if target == app.url {
                         Logger.uninstaller.error("removeItem failed '\(target.path, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                         throw error
                     } else {
+                        failedDeletions.append(FailedDeletion(url: target, reason: error.localizedDescription))
                         Logger.uninstaller.warning("removeItem failed '\(target.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                     }
                 }
             }
-
-            if !privilegedPaths.isEmpty {
-                Logger.uninstaller.info("Executing single privileged removal for \(privilegedPaths.count) item(s)")
-                _ = try await PrivilegedTaskRunner.removeAsAdmin(privilegedPaths.map { URL(fileURLWithPath: $0) })
-                Logger.uninstaller.info("Permanently removed via admin privileges: \(privilegedPaths.count) item(s)")
-            }
         } else {
             trashedURLs = try await trashManager.trashItems(urls: allTargets, policy: .uninstall)
+            for target in deletionTargets where fileManager.fileExists(atPath: target.path) {
+                failedDeletions.append(FailedDeletion(url: target, reason: "cleanup_skip_reason_permission".localized))
+            }
             Logger.uninstaller.info("Trashed \(trashedURLs.count) item(s) for '\(app.name, privacy: .public)'")
+        }
+
+        if removeFromDock {
+            await DockTileManager.removeFromDock(appURL: app.url, bundleID: app.bundleID, commandRunner: commandRunner)
         }
 
         if let bundleID = app.bundleID {
@@ -909,7 +858,7 @@ public actor UninstallerService {
                 codesignCache: codesignCache,
                 plistCache: plistCache
             )
-            let report = await engine.verify(identity: identity)
+            let report = await engine.verify(identity: identity).withFailedDeletions(failedDeletions)
             if report.hasLeftovers {
                 Logger.uninstaller.warning("\(report.count, privacy: .public) leftover(s) after uninstall of '\(app.name, privacy: .public)'")
             } else {
@@ -917,7 +866,7 @@ public actor UninstallerService {
             }
             return report
         }
-        return nil
+        return failedDeletions.isEmpty ? nil : VerificationReport(appName: app.name, bundleID: app.bundleID, failedDeletions: failedDeletions)
     }
 
     // MARK: - Private helpers
