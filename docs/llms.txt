@@ -1,9 +1,9 @@
 # MacOSCleaner
 
-> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (checks GitHub Releases for updates on every launch). Personal use only.
+> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (optional GitHub Releases update check, configurable in Settings). Personal use only.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
-Requires macOS 26.0+, Apple Silicon (M1+). Current release: v2.3.0.
+Requires macOS 26.0+, Apple Silicon (M1+). Current release: v3.0.0.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 Bundle ID: input.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
@@ -26,6 +26,7 @@ First launch: if macOS says it can't verify MacOSCleaner (“Apple could not ver
 - [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
 - [Direct DMG Download](https://github.com/AlexTkDev/MacOSCleaner/releases/latest/download/MacOSCleaner.dmg): Canonical latest DMG build
 - [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Release notes and assets
+- [v3.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0): Privacy Inspector (TCC, Sockets, Browser Extensions), 48pt Navigation Rail, Honest APFS & Trash Accounting, 2,427 paths, 305 apps, 105 toolchains
 - [v2.3.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.3.0): Native Liquid Glass, On-Device AI Explanations, Master-Detail Duplicates, 2,343 paths, 14 Languages
 - [v2.2.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0): Forensic Leftovers Uninstaller, Project Build Artifacts with Age Filters, APFS Disk Analyzer, 1,887 paths
 - [v2.1.1 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1): Root-owned app uninstaller batching, Touch ID for sudo helper, Spotlight reindex, Version SoT
