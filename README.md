@@ -31,7 +31,7 @@
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
-    <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp;
+    <!-- <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp; -->
     <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki">📖 Documentation</a>
   </p>
 </div>
@@ -57,21 +57,21 @@
 ## 🎬 Demo & Screenshots
 
 <p align="center">
-  <a href="assets/demo_video.mp4">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
+  <a href="assets/demo_video_v3.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video__v3.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
   </a>
-  <a href="assets/demo_video.mp4">
-    <img src="assets/screenshots/Dashboard_v2_3.png" alt="Watch Demo Video" width="90%">
+  <a href="assets/demo_video_v3.mp4">
+    <img src="assets/screenshots/Dashboard_v3.png" alt="Watch Demo Video" width="90%">
   </a>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/Disk_analyzer_v2_3.png" width="48%" alt="Disk Space Analyzer">
-  <img src="assets/screenshots/Cleanup_page_v2_3.png" width="48%" alt="Smart Cleanup">
+  <img src="assets/screenshots/Privacy_v3.png" width="48%" alt="Privacy Inspector">
+  <img src="assets/screenshots/Cleanup_page_v3.png" width="48%" alt="Smart Cleanup">
 </p>
 <p align="center">
-  <img src="assets/screenshots/Cleanup_Scan_v2_3.png" width="48%" alt="Cleanup Scan">
-  <img src="assets/screenshots/Uninstaller_scan_v2_3.png" width="48%" alt="App Uninstaller">
+  <img src="assets/screenshots/Cleanup_Scan_v3.png" width="48%" alt="Cleanup Scan">
+  <img src="assets/screenshots/Uninstaller_2_versions_v3.png" width="48%" alt="App Uninstaller">
 </p>
 
 <p align="center">
@@ -194,3 +194,6 @@ Dual-licensed:
 - **Commercial License** for enterprise, commercial, or proprietary distribution. [Contact the author](https://github.com/AlexTkDev) for licensing inquiries.
 
 > **Trademark Notice**: The license does not grant permission to use the project name ("MacOSCleaner"), logos, or branding in derivative works.
+
+
+[def]: communit
