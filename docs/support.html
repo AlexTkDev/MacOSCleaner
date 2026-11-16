@@ -101,12 +101,10 @@
     <div class="nav-links" id="nav-links">
       <a href="index.html#features">features</a>
       <a href="index.html#screenshots">screenshots</a>
-      <a href="index.html#cleaned">cleaned</a>
       <a href="index.html#release">changelog</a>
       <a href="about.html">about</a>
-      <a href="index.html#how-it-works">how&nbsp;it&nbsp;works</a>
       <a href="index.html#download">download</a>
-      <a href="support.html" class="active" style="color: var(--accent);">support&nbsp;♥</a>
+      <a href="support.html" style="color: var(--accent);">support&nbsp;♥</a>
       <a class="nav-github" href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub ↗</a>
     </div>
     <div class="nav-end">
@@ -149,9 +147,9 @@
           <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener" class="btn btn-primary">
             ☕ Buy a Coffee (One-time or Monthly)
           </a>
-          <a href="#" id="open-crypto-modal-support" class="btn btn-secondary">
+          <button type="button" id="open-crypto-modal-support" class="btn btn-secondary">
             ₿ Donate Crypto
-          </a>
+          </button>
         </div>
         <p class="support-note">No account required · Secure payment via Ko-fi or direct crypto</p>
       </div>
@@ -163,12 +161,12 @@
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>
             Community Goal
           </span>
-          <span class="support-goal-percentage">0% of $10000 goal</span>
+          <span class="support-goal-percentage">0% of $10,000 goal</span>
         </div>
 
         <h3>Make MacOSCleaner the best free Mac cleaner (source-available)</h3>
 
-        <div class="support-goal-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10000" aria-label="0% of $10000 goal">
+        <div class="support-goal-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10000" aria-label="0% of $10,000 goal">
           <div class="support-goal-track">
             <div class="support-goal-fill" style="width: 0%;"></div>
           </div>
@@ -266,21 +264,31 @@
 <footer>
   <div class="container">
     <p>© 2026 AlexTkDev · <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID 0009-0002-8907-5406</a> · source-available (GPLv3 + Commons Clause) · no telemetry</p>
-    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
-
     <div class="footer-links">
       <a href="about.html">About</a>
-      <a href="about.html#guides">Guides</a>
+      <a href="guides/">Guides</a>
       <a href="support.html">Support</a>
       <a href="llms.txt">llms.txt</a>
       <a href="llms-full.txt">llms-full.txt</a>
       <a href="https://ko-fi.com/alextkdev" target="_blank" rel="noopener">Ko-fi</a>
-      <a href="#" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</a>
+      <button type="button" class="footer-link-btn" id="open-crypto-modal" aria-label="Donate Crypto">Crypto</button>
       <a href="https://github.com/AlexTkDev/MacOSCleaner" aria-label="MacOSCleaner on GitHub">GitHub</a>
       <a href="https://orcid.org/0009-0002-8907-5406" rel="author me">ORCID</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/issues">Report issue</a>
       <a href="https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE">License</a>
     </div>
+  </div>
+  <div class="container footer-badges" aria-label="Directory listings">
+    <a href="https://www.mactools.pro" target="_blank" rel="noopener">
+      <img class="badge-for-light" src="https://www.mactools.pro/mactools-badge-light.svg" alt="Listed on MacTools Pro" width="240" height="60" loading="lazy" />
+      <img class="badge-for-dark" src="https://www.mactools.pro/mactools-badge-dark.svg" alt="Listed on MacTools Pro" width="240" height="60" loading="lazy" />
+    </a>
+    <a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index">
+      <img class="badge-for-light" src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" loading="lazy" />
+      <img class="badge-for-dark" src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" loading="lazy" />
+    </a>
+    <a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral" target="_blank" rel="noopener"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="Listed on MacNative" width="168" height="44" /></a>
+    <a href="https://macpip.com/apps/macos-cleaner?ref=badge" target="_blank" rel="noopener"><img src="https://macpip.com/badge/macos-cleaner.svg?theme=dark" width="174" height="58" alt="Listed on MacPip"></a>
   </div>
 </footer>
 
