@@ -1153,3 +1153,11 @@
 "about_limit_extensions_desc" = "不会直接删除浏览器配置目录；点击将在浏览器中打开对应管理页面。";
 "about_limit_no_daemon_title" = "无后台守护进程";
 "about_limit_no_daemon_desc" = "所有扫描仅按需运行，关闭应用后无任何后台驻留进程。";
+"disk_analyzer_search_placeholder" = "按名称或路径搜索...";
+"privacy_uninstaller_tcc_none" = "隐私权限：未授予任何权限";
+"privacy_uninstaller_tcc_allowed_count" = "%lld 项已允许";
+"privacy_uninstaller_tcc_denied_count" = "%lld 项已拒绝";
+"privacy_uninstaller_show_more" = "展开其余 %lld 项";
+"privacy_uninstaller_show_less" = "收起";
+"privacy_ext_open_in_browser_help" = "通过脚本在浏览器中打开此扩展页面（macOS 可能会请求一次自动化权限）。";
+"privacy_ext_automation_denied_hint" = "未能获取 %1$@ 的自动化控制权限。已复制“%2$@”的链接，请粘贴到地址栏。";

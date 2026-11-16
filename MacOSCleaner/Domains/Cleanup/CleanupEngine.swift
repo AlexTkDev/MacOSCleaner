@@ -33,7 +33,7 @@ public struct CleanupTimeouts: Sendable {
 
     public func timeout(for category: CleanupCategory) -> Duration {
         switch category {
-        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .userLogs:
+        case .packageManagers, .docker, .languageCaches, .androidSDK, .timeMachineSnapshots, .userLogs, .messagingMedia:
             return system
         case .xcode, .iosSimulators, .appCaches, .ideCaches, .flutterDart, .systemCaches, .androidCaches, .gradleMaven, .dotfileCaches, .browserCaches, .chromeExtraCaches, .steamCache, .teamsCache, .adobeCaches, .cloudKitCache, .swiftPMCache, .carthageCache, .photosCache:
             return full
@@ -220,7 +220,7 @@ public actor CleanupEngine {
         var results: [CleanupEngineResult] = []
         let total = categories.count
 
-        let maxConcurrency = dryRun ? ProcessInfo.processInfo.activeProcessorCount : 1
+        let maxConcurrency = dryRun ? min(4, max(1, ProcessInfo.processInfo.activeProcessorCount)) : 1
 
         var pending = Array(categories.enumerated())
         var completedCount = 0
@@ -401,7 +401,7 @@ public actor CleanupEngine {
 
     // MARK: - Timeout Wrapper
 
-    private func withTimeout<T: Sendable>(_ duration: Duration, operation: @Sendable @escaping () async throws -> T) async throws -> T {
+    private nonisolated func withTimeout<T: Sendable>(_ duration: Duration, operation: @Sendable @escaping () async throws -> T) async throws -> T {
         try await withTaskCancellationHandler {
             try await withThrowingTaskGroup(of: T.self) { group in
                 group.addTask {
@@ -776,7 +776,8 @@ extension CleanupEngine {
             }
         }
         let mb = Int(totalFreed / (1024 * 1024))
-        progress?(.log("\(label): removed=\(removed) skipped=\(skipped) failed=\(failed) total=\(Self.formatBytes(totalFreed))"))
+        let countLabel = dryRun ? "found" : "removed"
+        progress?(.log("\(label): \(countLabel)=\(removed) skipped=\(skipped) failed=\(failed) total=\(Self.formatBytes(totalFreed))"))
         if failed > 0 {
             progress?(.log("\(label): partial failure — not marking full success"))
         }
@@ -1339,9 +1340,13 @@ extension CleanupEngine {
         let devicesPath = "\(home)/Library/Developer/CoreSimulator/Devices"
         if fm.fileExists(atPath: devicesPath) {
             let allEntries = (try? fm.contentsOfDirectory(atPath: devicesPath)) ?? []
-            // Filter out non-device entries (.DS_Store, device_set.plist)
+            // Filter out non-device entries (.DS_Store, device_set.plist, device_set.plist.sb-*)
             let devices = allEntries.filter { entry in
-                !entry.hasPrefix(".") && entry != "device_set.plist" && entry.contains("-")
+                guard !entry.hasPrefix("."), !entry.hasPrefix("device_set.plist"), entry.contains("-") else {
+                    return false
+                }
+                var isDir: ObjCBool = false
+                return fm.fileExists(atPath: "\(devicesPath)/\(entry)", isDirectory: &isDir) && isDir.boolValue
             }
             let deviceCount = devices.count
             progress?(.log("  Found \(deviceCount) simulator devices"))
@@ -1479,9 +1484,13 @@ extension CleanupEngine {
         var totalFreed: Int64 = 0
         for dir in ideDirs {
             try Task.checkCancellation()
-            let (freed, item) = try await cleanContents(of: dir, dryRun: dryRun, progress: progress)
-            totalFreed += freed
-            if dryRun { emitFileItem(item, category: "IDE / Electron caches", parentName: nil, progress: progress) }
+            do {
+                let (freed, item) = try await cleanContents(of: dir, dryRun: dryRun, progress: progress)
+                totalFreed += freed
+                if dryRun { emitFileItem(item, category: "IDE / Electron caches", parentName: nil, progress: progress) }
+            } catch is SafetyError {
+                progress?(.log("  \(shortPath(dir)) — protected, skipped"))
+            }
         }
 
         // Dynamic discovery: unknown Electron apps — Cache / Code Cache / GPUCache / CachedData
@@ -1491,16 +1500,22 @@ extension CleanupEngine {
             let apps = (try? fm.contentsOfDirectory(atPath: appSupportPath)) ?? []
             for appDir in apps {
                 try Task.checkCancellation()
-                guard !knownApps.contains(appDir) else { continue }
+                guard !knownApps.contains(appDir), appDir != "Apple" else { continue }
+                let appSupportSubdir = "\(appSupportPath)/\(appDir)"
+                if safetyManager.isBrowserUserDataPath(appSupportSubdir) { continue }
                 for leaf in electronLeaves {
-                    let cachePath = "\(appSupportPath)/\(appDir)/\(leaf)"
+                    let cachePath = "\(appSupportSubdir)/\(leaf)"
                     guard fm.fileExists(atPath: cachePath) else { continue }
                     let size = await getDirectorySize(cachePath)
                     guard size >= 5 * 1024 * 1024 else { continue } // skip < 5 MB
-                    let (freed, item) = try await cleanContents(of: cachePath, dryRun: dryRun, progress: progress)
-                    totalFreed += freed
-                    if dryRun {
-                        emitFileItem(item, category: "IDE / Electron caches", parentName: "\(appDir)/\(leaf)", progress: progress)
+                    do {
+                        let (freed, item) = try await cleanContents(of: cachePath, dryRun: dryRun, progress: progress)
+                        totalFreed += freed
+                        if dryRun {
+                            emitFileItem(item, category: "IDE / Electron caches", parentName: "\(appDir)/\(leaf)", progress: progress)
+                        }
+                    } catch is SafetyError {
+                        progress?(.log("  \(shortPath(cachePath)) — protected, skipped"))
                     }
                 }
             }
@@ -2070,39 +2085,50 @@ extension CleanupEngine {
             progress?(.log("  Checked \(scannedCount) files in \(downloadDir.replacingOccurrences(of: home, with: "~"))"))
         }
 
-        // IPSW firmware files
+        // IPSW firmware files (run off the actor executor and skip Library/dev trees)
         progress?(.log("  Scanning for IPSW firmware files..."))
-        let ipswSearchDirs = [home, "/tmp"]
-        for dir in ipswSearchDirs {
-            guard fm.fileExists(atPath: dir) else { continue }
-            guard let enumerator = fm.enumerator(atPath: dir) else { continue }
-            do {
+        let ipswMatches: [(path: String, size: Int64, label: String)] = await Task.detached(priority: .utility) {
+            let localFM = FileManager.default
+            let skipTopLevel: Set<String> = ["Library", ".Trash", ".gradle", ".pub-cache", ".cargo", ".rustup", ".npm", ".cache"]
+            let skipAnyLevel: Set<String> = [".git", "node_modules", ".build", "DerivedData"]
+            let searchDirs = [home, "/tmp"]
+            var found: [(String, Int64, String)] = []
+
+            for dir in searchDirs {
+                if Task.isCancelled { break }
+                guard localFM.fileExists(atPath: dir),
+                      let enumerator = localFM.enumerator(atPath: dir) else { continue }
+
                 while let item = enumerator.nextObject() as? String {
-                    try Task.checkCancellation()
-                    // Skip heavy directories in IPSW search too
+                    if Task.isCancelled { break }
                     let fullPath = "\(dir)/\(item)"
-                    if Self.isHeavyDirectory(fullPath) {
+                    let lastName = (item as NSString).lastPathComponent
+                    if (dir == home && skipTopLevel.contains(item))
+                        || skipAnyLevel.contains(lastName)
+                        || lastName.hasSuffix(".photoslibrary")
+                        || Self.isHeavyDirectory(fullPath) {
                         var isDir: ObjCBool = false
-                        fm.fileExists(atPath: fullPath, isDirectory: &isDir)
+                        localFM.fileExists(atPath: fullPath, isDirectory: &isDir)
                         if isDir.boolValue { enumerator.skipDescendants() }
                         continue
                     }
-                    let ext = (item as NSString).pathExtension.lowercased()
-                    if ext == "ipsw" {
-                        if let attrs = try? fm.attributesOfItem(atPath: fullPath),
+                    if (item as NSString).pathExtension.lowercased() == "ipsw" {
+                        if let attrs = try? localFM.attributesOfItem(atPath: fullPath),
                            let size = attrs[.size] as? Int64, size > 100 * 1024 * 1024 {
-                            items.append(("IPSW: \(item)", size))
-                            totalFound += size
-                            if dryRun {
-                                emitFileItem(CleanupFileItem(path: fullPath, sizeBytes: size, modificationDate: nil, isDirectory: false), category: "Large files", parentName: "Large files", progress: progress)
-                            }
+                            found.append((fullPath, size, "IPSW: \(item)"))
                         }
                     }
                 }
-            } catch is CancellationError {
-                throw CancellationError()
-            } catch {
-                progress?(.log("  Warning: failed scanning \(dir) for IPSW files: \(error.localizedDescription)"))
+            }
+            return found
+        }.value
+
+        try Task.checkCancellation()
+        for match in ipswMatches {
+            items.append((match.label, match.size))
+            totalFound += match.size
+            if dryRun {
+                emitFileItem(CleanupFileItem(path: match.path, sizeBytes: match.size, modificationDate: nil, isDirectory: false), category: "Large files", parentName: "Large files", progress: progress)
             }
         }
 
@@ -2602,9 +2628,13 @@ extension CleanupEngine {
             let isSafe = safePrefixes.contains { entry.hasPrefix($0) }
             guard isSafe else { continue }
             let fullPath = "\(dir)/\(entry)"
-            let (f, item) = try await removeFile(fullPath, dryRun: dryRun, progress: progress)
-            freed += f
-            if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, isSelected: false, progress: progress) }
+            do {
+                let (f, item) = try await removeFile(fullPath, dryRun: dryRun, progress: progress)
+                freed += f
+                if dryRun { emitFileItem(item, category: "Shared File Lists", parentName: nil, isSelected: false, progress: progress) }
+            } catch is SafetyError {
+                progress?(.log("  \(shortPath(fullPath)) — protected, skipped"))
+            }
         }
         let mb = Int(freed / (1024 * 1024))
         progress?(.result(label: "Shared File Lists", freedMB: mb))

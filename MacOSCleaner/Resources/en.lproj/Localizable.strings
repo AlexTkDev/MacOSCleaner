@@ -1190,3 +1190,11 @@
 "about_limit_extensions_desc" = "Extensions are never deleted from browser profiles directly; clicking opens the browser's management page.";
 "about_limit_no_daemon_title" = "No Background Daemon";
 "about_limit_no_daemon_desc" = "Scans run strictly on demand. Nothing runs when the app is closed.";
+"disk_analyzer_search_placeholder" = "Search by name or path...";
+"privacy_uninstaller_tcc_none" = "Privacy permissions: none granted";
+"privacy_uninstaller_tcc_allowed_count" = "%lld allowed";
+"privacy_uninstaller_tcc_denied_count" = "%lld denied";
+"privacy_uninstaller_show_more" = "+%lld more";
+"privacy_uninstaller_show_less" = "Show less";
+"privacy_ext_open_in_browser_help" = "Opens this extension's page in the browser via Automation script (macOS may ask permission once).";
+"privacy_ext_automation_denied_hint" = "Automation access to %1$@ was denied, so the script couldn't open the tab. Extension link for “%2$@” was copied — paste it into the address bar.";

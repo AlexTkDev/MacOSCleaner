@@ -281,7 +281,12 @@ public actor BrowserExtensionScanner {
         }
 
         let rawName = json["name"] as? String ?? extensionID
-        let name = resolveLocalizedManifestName(rawName, extensionRootDir: extensionRootDir)
+        let defaultLocale = json["default_locale"] as? String
+        let name = resolveLocalizedManifestName(
+            rawName,
+            extensionRootDir: extensionRootDir,
+            defaultLocale: defaultLocale
+        )
         let version = json["version"] as? String ?? "0.0"
 
         var permissions: [String] = []
@@ -326,21 +331,31 @@ public actor BrowserExtensionScanner {
         )
     }
 
-    private static func resolveLocalizedManifestName(_ rawName: String, extensionRootDir: URL) -> String {
+    static func resolveLocalizedManifestName(
+        _ rawName: String,
+        extensionRootDir: URL,
+        defaultLocale: String? = nil
+    ) -> String {
         guard rawName.hasPrefix("__MSG_"), rawName.hasSuffix("__") else {
             return rawName
         }
         let key = String(rawName.dropFirst(6).dropLast(2))
-        let candidates = ["en", "en_US", "ru"]
+        var candidates: [String] = []
+        for locale in [defaultLocale, "en", "en_US", "en_GB", "ru"].compactMap({ $0 }) where !locale.isEmpty {
+            if !candidates.contains(locale) {
+                candidates.append(locale)
+            }
+        }
         for locale in candidates {
             let msgURL = extensionRootDir
                 .appendingPathComponent("_locales/\(locale)/messages.json")
             if let data = try? Data(contentsOf: msgURL),
-               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let entry = dict[key] as? [String: Any],
-               let message = entry["message"] as? String,
-               !message.isEmpty {
-                return message
+               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                let entry = (dict[key] as? [String: Any])
+                    ?? (dict.first { $0.key.caseInsensitiveCompare(key) == .orderedSame }?.value as? [String: Any])
+                if let message = entry?["message"] as? String, !message.isEmpty {
+                    return message
+                }
             }
         }
         return rawName
@@ -567,20 +582,81 @@ public actor BrowserExtensionScanner {
             return String(format: plan.instructionKey.localized, item.name)
         }
 
-        // Chromium browsers: new instance hand-off passes --profile-directory and internal URL via IPC.
+        // Chromium browsers: switch/open profile window if needed, then navigate via AppleScript
+        // because Chromium strips internal `chrome://` URLs from external CLI/IPC launches.
+        let targetURL = plan.fallbackURLString ?? "chrome://extensions/?id=\(item.extensionID)"
         let config = NSWorkspace.OpenConfiguration()
         config.activates = true
-        config.createsNewApplicationInstance = plan.requiresNewInstance
-        config.arguments = plan.arguments
-        do {
-            _ = try await NSWorkspace.shared.openApplication(at: appURL, configuration: config)
+        if let profile = item.profileName, !profile.isEmpty {
+            config.createsNewApplicationInstance = true
+            config.arguments = ["--profile-directory=\(profile)"]
+        }
+        _ = try? await NSWorkspace.shared.openApplication(at: appURL, configuration: config)
+        try? await Task.sleep(for: .milliseconds(250))
+
+        let scriptResult = openChromiumExtensionTabViaAppleScript(
+            bundleID: plan.browserBundleID,
+            targetURL: targetURL
+        )
+        switch scriptResult {
+        case .opened:
             return nil
-        } catch {
-            if let fallback = plan.fallbackURLString {
-                copyToPasteboard(fallback)
-            }
+        case .automationDenied:
+            copyToPasteboard(targetURL)
+            return String(format: "privacy_ext_automation_denied_hint".localized, item.browser.displayName, item.name)
+        case .failed:
+            copyToPasteboard(targetURL)
             return String(format: plan.instructionKey.localized, item.name)
         }
+    }
+
+    private enum ChromiumAppleScriptResult {
+        case opened
+        case automationDenied
+        case failed
+    }
+
+    @MainActor
+    private static func openChromiumExtensionTabViaAppleScript(bundleID: String, targetURL: String) -> ChromiumAppleScriptResult {
+        let escapedBundleID = appleScriptEscaped(bundleID)
+        let escapedURL = appleScriptEscaped(targetURL)
+        let source = """
+        tell application id "\(escapedBundleID)"
+            activate
+            if (count of windows) = 0 then
+                make new window
+            end if
+            tell front window
+                set currentTab to active tab
+                set currentURL to URL of currentTab
+                if currentURL starts with "chrome://newtab" or currentURL starts with "edge://newtab" or currentURL starts with "brave://newtab" or currentURL is "about:blank" then
+                    set URL of currentTab to "\(escapedURL)"
+                else
+                    make new tab at end of tabs with properties {URL:"\(escapedURL)"}
+                end if
+            end tell
+        end tell
+        """
+        guard let script = NSAppleScript(source: source) else {
+            return .failed
+        }
+        var errorDict: NSDictionary?
+        script.executeAndReturnError(&errorDict)
+        if let errorDict {
+            let errNumber = errorDict[NSAppleScript.errorNumber] as? Int ?? 0
+            Logger.extensions.debug("AppleScript open extension failed (\(errNumber)): \(String(describing: errorDict), privacy: .public)")
+            if errNumber == -1743 {
+                return .automationDenied
+            }
+            return .failed
+        }
+        return .opened
+    }
+
+    private static func appleScriptEscaped(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     @MainActor

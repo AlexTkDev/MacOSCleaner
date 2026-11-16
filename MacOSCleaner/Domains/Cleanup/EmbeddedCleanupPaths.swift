@@ -6,9 +6,8 @@ public enum EmbeddedCleanupPaths {
 
     public static let appCaches: [CleanupPath] = [
         // Never ~/Library/Caches/Google wholesale — updater/Keystone live under Google trees.
-        // Package manager & dedicated toolchain caches (Homebrew, CocoaPods, SwiftPM, Carthage,
-        // JetBrains, go-build, npm/yarn/pnpm) are owned by their dedicated categories.
-        CleanupPath(path: "~/Library/Caches/Google/Chrome", category: .appCaches),
+        // Browser caches (including Chrome) are owned by .browserCaches;
+        // package manager & dedicated toolchain caches are owned by their dedicated categories.
         CleanupPath(path: "~/Library/Caches/pip", category: .appCaches),
         CleanupPath(path: "~/Library/Caches/ms-playwright-go", category: .appCaches),
         CleanupPath(path: "~/Library/Application Support/Spotify/PersistentCache", category: .appCaches),

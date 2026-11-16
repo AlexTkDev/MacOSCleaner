@@ -1188,3 +1188,11 @@
 "about_limit_extensions_desc" = "Nunca se borran carpetas del perfil directamente; al hacer clic se abre el navegador.";
 "about_limit_no_daemon_title" = "Sin demonio en segundo plano";
 "about_limit_no_daemon_desc" = "Los análisis se ejecutan solo bajo demanda. Nada corre en segundo plano.";
+"disk_analyzer_search_placeholder" = "Buscar por nombre o ruta...";
+"privacy_uninstaller_tcc_none" = "Permisos de privacidad: ninguno concedido";
+"privacy_uninstaller_tcc_allowed_count" = "%lld permitidos";
+"privacy_uninstaller_tcc_denied_count" = "%lld denegados";
+"privacy_uninstaller_show_more" = "+%lld más";
+"privacy_uninstaller_show_less" = "Mostrar menos";
+"privacy_ext_open_in_browser_help" = "Abre la página de esta extensión en el navegador mediante un script (macOS puede pedir permiso de Automatización).";
+"privacy_ext_automation_denied_hint" = "Se denegó el acceso de Automatización a %1$@. Se copió el enlace de «%2$@» — pégalo en la barra de direcciones.";

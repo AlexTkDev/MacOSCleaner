@@ -1516,7 +1516,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches and to open specific extension pages in your browser.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 AlexTkDev (ORCID 0009-0002-8907-5406). All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1616,7 +1616,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches and to open specific extension pages in your browser.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 AlexTkDev (ORCID 0009-0002-8907-5406). All rights reserved.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

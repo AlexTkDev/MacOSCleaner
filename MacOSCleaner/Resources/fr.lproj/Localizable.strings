@@ -1152,3 +1152,11 @@
 "about_limit_extensions_desc" = "Les profils ne sont jamais modifiés ; le clic ouvre la page de gestion du navigateur.";
 "about_limit_no_daemon_title" = "Aucun démon en arrière-plan";
 "about_limit_no_daemon_desc" = "Les analyses sont exécutées uniquement à la demande.";
+"disk_analyzer_search_placeholder" = "Rechercher par nom ou chemin...";
+"privacy_uninstaller_tcc_none" = "Autorisations : aucune accordée";
+"privacy_uninstaller_tcc_allowed_count" = "%lld autorisées";
+"privacy_uninstaller_tcc_denied_count" = "%lld refusées";
+"privacy_uninstaller_show_more" = "+%lld autres";
+"privacy_uninstaller_show_less" = "Réduire";
+"privacy_ext_open_in_browser_help" = "Ouvre la page de cette extension dans le navigateur via un script (macOS peut demander l'autorisation Automatisation).";
+"privacy_ext_automation_denied_hint" = "L'accès Automatisation à %1$@ a été refusé. Le lien pour « %2$@ » a été copié — collez-le dans la barre d'adresse.";

@@ -1,9 +1,20 @@
 import Foundation
 
-public enum SafetyError: Error, Equatable {
+public enum SafetyError: Error, Equatable, LocalizedError {
     case pathNormalizationFailed
     case symlinkEscapeAttempted
     case protectedPath(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .pathNormalizationFailed:
+            return "Path normalization failed"
+        case .symlinkEscapeAttempted:
+            return "Symlink escape attempted"
+        case .protectedPath(let path):
+            return "Protected path: \(path)"
+        }
+    }
 }
 
 /// Context of a deletion request. Regular cleanup must never touch login/session
@@ -514,6 +525,10 @@ public struct SafetyManager: Sendable {
                 "com.apple.lssharedfilelist.recentapplications.sfl3",
                 "com.apple.lssharedfilelist.recentservers.sfl3",
                 "com.apple.lssharedfilelist.recenthosts.sfl3",
+                "com.apple.lssharedfilelist.recentdocuments.sfl4",
+                "com.apple.lssharedfilelist.recentapplications.sfl4",
+                "com.apple.lssharedfilelist.recentservers.sfl4",
+                "com.apple.lssharedfilelist.recenthosts.sfl4",
             ]
             if !safeSFLNames.contains(sflName) {
                 return path

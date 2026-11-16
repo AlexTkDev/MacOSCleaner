@@ -1189,3 +1189,11 @@
 "about_limit_extensions_desc" = "Папки профилей не удаляются напрямую; клик открывает расширение в браузере для штатного удаления.";
 "about_limit_no_daemon_title" = "Без фонового демона";
 "about_limit_no_daemon_desc" = "Все сканы запускаются только по запросу. При закрытии приложения ничего не работает в фоне.";
+"disk_analyzer_search_placeholder" = "Поиск по имени или пути...";
+"privacy_uninstaller_tcc_none" = "Права приватности (TCC): не запрашивались";
+"privacy_uninstaller_tcc_allowed_count" = "%lld разрешено";
+"privacy_uninstaller_tcc_denied_count" = "%lld запрещено";
+"privacy_uninstaller_show_more" = "+%lld ещё";
+"privacy_uninstaller_show_less" = "Свернуть";
+"privacy_ext_open_in_browser_help" = "Открывает страницу этого расширения в браузере с помощью скрипта (macOS может запросить разрешение Automation).";
+"privacy_ext_automation_denied_hint" = "Доступ к управлению %1$@ (Automation) запрещён, поэтому скрипт не смог открыть вкладку. Ссылка на «%2$@» скопирована — вставьте её в адресную строку.";

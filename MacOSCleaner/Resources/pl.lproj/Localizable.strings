@@ -1190,3 +1190,11 @@
 "about_limit_extensions_desc" = "Katalogi profili nie są usuwane bezpośrednio; kliknięcie otwiera stronę w przeglądarce.";
 "about_limit_no_daemon_title" = "Brak demona w tle";
 "about_limit_no_daemon_desc" = "Skanowanie działa wyłącznie na żądanie. Po zamknięciu nic nie działa w tle.";
+"disk_analyzer_search_placeholder" = "Szukaj po nazwie lub ścieżce...";
+"privacy_uninstaller_tcc_none" = "Uprawnienia prywatności: brak";
+"privacy_uninstaller_tcc_allowed_count" = "%lld dozwolone";
+"privacy_uninstaller_tcc_denied_count" = "%lld odrzucone";
+"privacy_uninstaller_show_more" = "+%lld więcej";
+"privacy_uninstaller_show_less" = "Pokaż mniej";
+"privacy_ext_open_in_browser_help" = "Otwiera stronę tego rozszerzenia w przeglądarce za pomocą skryptu (macOS może jednorazowo poprosić o zgodę Automatyzacji).";
+"privacy_ext_automation_denied_hint" = "Odmówiono dostępu Automatyzacji do %1$@. Link do „%2$@” został skopiowany — wklej go na pasku adresu.";

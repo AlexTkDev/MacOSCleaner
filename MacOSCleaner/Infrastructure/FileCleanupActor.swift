@@ -296,51 +296,63 @@ public actor FileCleanupActor {
             return (0, nil)
         }
         let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date().addingTimeInterval(-Double(days) * 86400)
+        let runningBundle = Bundle.main.bundlePath
+        let safety = safetyManager
+        let fsContext = fileSystemContext
+
+        // Enumerate off the actor executor so other categories are not blocked on FileCleanupActor.
+        let candidates: [(path: String, size: Int64)] = await Task.detached(priority: .utility) {
+            let localFM = FileManager.default
+            guard let enumerator = localFM.enumerator(atPath: path) else { return [] }
+            var matched: [(String, Int64)] = []
+            while let item = enumerator.nextObject() as? String {
+                if Task.isCancelled { break }
+                let itemPath = "\(path)/\(item)"
+                let itemURL = URL(fileURLWithPath: itemPath)
+                if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
+                    continue
+                }
+                if FileManager.shouldExclude(url: itemURL) {
+                    var isDir: ObjCBool = false
+                    localFM.fileExists(atPath: itemPath, isDirectory: &isDir)
+                    if isDir.boolValue { enumerator.skipDescendants() }
+                    continue
+                }
+                if safety.isSymlinkDirectory(itemURL) {
+                    enumerator.skipDescendants()
+                    continue
+                }
+                guard (try? safety.validate(url: itemURL, policy: .cleanup)) != nil,
+                      (try? fsContext.assertAllowedForMutation(itemURL)) != nil else {
+                    continue
+                }
+                let attrs = try? localFM.attributesOfItem(atPath: itemPath)
+                if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
+                    let size = Self.physicalSize(of: itemPath, fm: localFM)
+                    matched.append((itemPath, size))
+                }
+            }
+            return matched
+        }.value
+
+        try Task.checkCancellation()
+
         var freed: Int64 = 0
         var removedCount = 0
-
-        guard let enumerator = fm.enumerator(atPath: path) else { return (0, nil) }
-        let runningBundle = Bundle.main.bundlePath
-        while let item = enumerator.nextObject() as? String {
+        for (itemPath, size) in candidates {
             try Task.checkCancellation()
-            let itemPath = "\(path)/\(item)"
-            let itemURL = URL(fileURLWithPath: itemPath)
-            if Self.pathContainsRunningBundle(itemURL.path, bundlePath: runningBundle) {
-                continue
-            }
-            let shouldExclude = FileManager.shouldExclude(url: itemURL)
-            if shouldExclude {
-                var isDir: ObjCBool = false
-                fm.fileExists(atPath: itemPath, isDirectory: &isDir)
-                if isDir.boolValue { enumerator.skipDescendants() }
-                continue
-            }
-            if safetyManager.isSymlinkDirectory(itemURL) {
-                enumerator.skipDescendants()
-                continue
-            }
-            guard (try? safetyManager.validate(url: itemURL, policy: .cleanup)) != nil else {
-                continue
-            }
-            guard (try? fileSystemContext.assertAllowedForMutation(itemURL)) != nil else {
-                continue
-            }
-
-            let attrs = try? fm.attributesOfItem(atPath: itemPath)
-            if let modDate = attrs?[.modificationDate] as? Date, modDate < cutoffDate {
-                let size = Self.physicalSize(of: itemPath, fm: fm)
-                if dryRun {
+            if dryRun {
+                freed += size
+                removedCount += 1
+            } else {
+                let itemURL = URL(fileURLWithPath: itemPath)
+                do {
+                    try await deleteItem(at: itemURL, bypassTrash: bypassTrash)
+                    guard !fm.fileExists(atPath: itemPath) else { continue }
                     freed += size
                     removedCount += 1
-                } else {
-                    do {
-                        try await deleteItem(at: itemURL, bypassTrash: bypassTrash)
-                        guard !fm.fileExists(atPath: itemPath) else { continue }
-                        freed += size
-                        removedCount += 1
-                    } catch {
-                        progress?(.log("  \(Self.shortPath(itemPath)) — delete failed: \(error.localizedDescription)"))
-                    }
+                } catch {
+                    progress?(.log("  \(Self.shortPath(itemPath)) — delete failed: \(error.localizedDescription)"))
                 }
             }
         }

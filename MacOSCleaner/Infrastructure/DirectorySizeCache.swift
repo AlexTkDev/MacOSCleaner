@@ -18,13 +18,24 @@ public struct CachedDirectoryInfo: Sendable {
 
 public actor DirectorySizeCache {
     private var cache: [String: CachedDirectoryInfo] = [:]
-    private let fm = FileManager.default
+    private var inFlight: [String: Task<CachedDirectoryInfo, Never>] = [:]
 
     public init() {}
 
-    public func getSize(for path: String) -> Int64 {
+    public func getSize(for path: String) async -> Int64 {
         if let cached = cache[path], !cached.isExpired { return cached.size }
-        let info = computeSize(path)
+        if let existing = inFlight[path] {
+            return await existing.value.size
+        }
+
+        // Run enumeration off the actor executor so concurrent categories do not serialize on one lock.
+        let task = Task.detached(priority: .utility) {
+            Self.computeSize(path)
+        }
+        inFlight[path] = task
+        let info = await task.value
+        inFlight.removeValue(forKey: path)
+
         if Task.isCancelled { return info.size }
         cache[path] = info
         return info.size
@@ -32,13 +43,16 @@ public actor DirectorySizeCache {
 
     public func invalidate(_ path: String) {
         cache.removeValue(forKey: path)
+        inFlight[path]?.cancel()
+        inFlight.removeValue(forKey: path)
         FileManager.clearSizeCache()
     }
 
     /// Reclaimable disk footprint (allocated blocks), not logical/apparent size.
     /// APFS clones in DerivedData can report tens of GB logical while only
     /// hundreds of MB are actually freed on delete.
-    private func computeSize(_ path: String) -> CachedDirectoryInfo {
+    private nonisolated static func computeSize(_ path: String) -> CachedDirectoryInfo {
+        let fm = FileManager.default
         let url = URL(fileURLWithPath: path)
         var size: Int64 = 0
         var fileCount: Int = 0

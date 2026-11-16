@@ -118,6 +118,33 @@ final class PrivacyTests: XCTestCase {
         XCTAssertEqual(updated.totalEntryCount, 0)
     }
 
+    func test_tccService_permissionSummaryReturnsSortedEntries() async throws {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("TCCSummary-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let userDB = tempDir.appendingPathComponent("user.db").path
+        try createSQLiteDB(at: userDB, sql: """
+            CREATE TABLE access (service TEXT, client TEXT, client_type INTEGER, auth_value INTEGER);
+            INSERT INTO access VALUES ('kTCCServiceMicrophone', 'com.example.App', 0, 0);
+            INSERT INTO access VALUES ('kTCCServiceCamera', 'com.example.App', 0, 2);
+            INSERT INTO access VALUES ('kTCCServicePhotos', 'com.other.App', 0, 2);
+        """)
+
+        let service = TCCService(
+            userDBPath: userDB,
+            systemDBPath: tempDir.appendingPathComponent("missing_sys.db").path,
+            hasFullDiskAccessProvider: { true }
+        )
+        let summary = await service.permissionSummary(forBundleID: "com.example.App")
+        XCTAssertEqual(summary.count, 2)
+        XCTAssertEqual(summary.allowedCount, 1)
+        XCTAssertEqual(summary.deniedCount, 1)
+        XCTAssertEqual(summary.entries.first?.service, .camera)
+        XCTAssertEqual(summary.entries.last?.service, .microphone)
+        XCTAssertFalse(summary.requiresFDA)
+    }
+
     // MARK: - 1.2 NetworkSnapshotService Static Profile
 
     func test_networkSnapshot_inspectsStaticProfileFromAppBundle() throws {
@@ -167,7 +194,7 @@ final class PrivacyTests: XCTestCase {
         )
         let manifest = """
         {
-          "name": "__MSG_appName__",
+          "name": "__MSG_APPNAME__",
           "version": "1.2.3",
           "update_url": "https://clients2.google.com/service/update2/crx",
           "permissions": ["cookies", "tabs"],

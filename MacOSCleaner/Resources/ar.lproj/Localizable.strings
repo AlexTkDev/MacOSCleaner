@@ -1190,3 +1190,11 @@
 "about_limit_extensions_desc" = "لا يتم حذف مجلدات المتصفح مباشرة؛ النقر يفتح صفحة الإدارة في المتصفح.";
 "about_limit_no_daemon_title" = "لا توجد خدمة خلفية";
 "about_limit_no_daemon_desc" = "تعمل الفحوصات عند الطلب فقط ولا يعمل شيء في الخلفية.";
+"disk_analyzer_search_placeholder" = "ابحث بالاسم أو المسار...";
+"privacy_uninstaller_tcc_none" = "أذونات الخصوصية: لم يُمنح أي إذن";
+"privacy_uninstaller_tcc_allowed_count" = "%lld مسموح";
+"privacy_uninstaller_tcc_denied_count" = "%lld مرفوض";
+"privacy_uninstaller_show_more" = "+%lld المزيد";
+"privacy_uninstaller_show_less" = "عرض أقل";
+"privacy_ext_open_in_browser_help" = "يفتح صفحة هذه الإضافة في المتصفح عبر نص برمجي (قد يطلب macOS إذن الأتمتة مرة واحدة).";
+"privacy_ext_automation_denied_hint" = "تم رفض إذن الأتمتة لـ %1$@. تم نسخ رابط «%2$@» — الصقه في شريط العنوان.";

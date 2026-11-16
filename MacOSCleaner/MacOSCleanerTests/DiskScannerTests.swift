@@ -174,4 +174,41 @@ final class DiskScannerTests: XCTestCase {
         viewModel.selectedCategory = .photo
         XCTAssertEqual(viewModel.displayedItems.count, 0)
     }
+
+    func testDiskScanner_excludesFrameworksFromAppsAndSkipsSymlinksAndDeduplicatesHardlinks() async throws {
+        let buildDir = tempDir.appendingPathComponent("build/ios", isDirectory: true)
+        let frameworkDir = buildDir.appendingPathComponent("WebRTC.framework", isDirectory: true)
+        let dsymDir = buildDir.appendingPathComponent("WebRTC.framework.dSYM", isDirectory: true)
+        let appDir = buildDir.appendingPathComponent("Runner.app/Contents/MacOS", isDirectory: true)
+        try FileManager.default.createDirectory(at: frameworkDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: dsymDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+
+        try Data(repeating: 0x01, count: 8192).write(to: frameworkDir.appendingPathComponent("WebRTC"))
+        try Data(repeating: 0x02, count: 8192).write(to: dsymDir.appendingPathComponent("DWARF"))
+        try Data(repeating: 0x03, count: 8192).write(to: appDir.appendingPathComponent("Runner"))
+
+        // Symlink to archive must not appear as a duplicate archive entry
+        let archiveOriginal = tempDir.appendingPathComponent("original.zip")
+        try Data(repeating: 0x04, count: 8192).write(to: archiveOriginal)
+        let archiveSymlink = tempDir.appendingPathComponent("alias.zip")
+        try FileManager.default.createSymbolicLink(at: archiveSymlink, withDestinationURL: archiveOriginal)
+
+        // Hardlink to archive must not double-count disk usage
+        let archiveHardlink = tempDir.appendingPathComponent("hardlink.zip")
+        try FileManager.default.linkItem(at: archiveOriginal, to: archiveHardlink)
+
+        let scanner = DiskScanner()
+        let root = try await scanner.scan(directoryURL: tempDir) { _ in }
+
+        let apps = root.allDescendantFiles(matching: .apps)
+        XCTAssertEqual(apps.map(\.name), ["Runner.app"])
+
+        let archives = root.allDescendantFiles(matching: .archives)
+        XCTAssertFalse(archives.contains(where: { $0.name == "alias.zip" }))
+        let totalArchiveSize = archives.reduce(Int64(0)) { $0 + $1.size }
+        let nonZeroArchives = archives.filter { $0.size > 0 }
+        XCTAssertEqual(nonZeroArchives.count, 1)
+        XCTAssertEqual(totalArchiveSize, nonZeroArchives[0].size)
+    }
 }

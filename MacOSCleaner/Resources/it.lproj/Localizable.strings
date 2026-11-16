@@ -1153,3 +1153,11 @@
 "about_limit_extensions_desc" = "Le cartelle del profilo non vengono eliminate; il clic apre la pagina del browser.";
 "about_limit_no_daemon_title" = "Nessun demone in background";
 "about_limit_no_daemon_desc" = "Le scansioni vengono eseguite solo su richiesta.";
+"disk_analyzer_search_placeholder" = "Cerca per nome o percorso...";
+"privacy_uninstaller_tcc_none" = "Permessi privacy: nessuno concesso";
+"privacy_uninstaller_tcc_allowed_count" = "%lld consentiti";
+"privacy_uninstaller_tcc_denied_count" = "%lld negati";
+"privacy_uninstaller_show_more" = "+%lld altri";
+"privacy_uninstaller_show_less" = "Mostra meno";
+"privacy_ext_open_in_browser_help" = "Apre la pagina di questa estensione nel browser tramite script (macOS può richiedere il permesso Automazione).";
+"privacy_ext_automation_denied_hint" = "Accesso Automazione a %1$@ negato. Il link per «%2$@» è stato copiato — incollalo nella barra degli indirizzi.";

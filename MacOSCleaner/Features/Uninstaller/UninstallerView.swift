@@ -1396,7 +1396,8 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
     @State private var aiExplanation = ""
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
-    @State private var tccSummary: (count: Int, requiresFDA: Bool)? = nil
+    @State private var tccSummary: TCCAppPermissionSummary? = nil
+    @State private var showAllTCCPermissions = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1455,26 +1456,7 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
             }
 
             if let bundleID = app.bundleID, !bundleID.isEmpty, let onOpenPrivacy, let tccSummary {
-                HStack(spacing: 8) {
-                    Image(systemName: "hand.raised.fill")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if tccSummary.requiresFDA && tccSummary.count == 0 {
-                        Text("privacy_uninstaller_tcc_no_fda".localized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(String(format: "privacy_uninstaller_tcc_count".localized, Int64(tccSummary.count)))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Button("privacy_uninstaller_manage".localized) {
-                        onOpenPrivacy(bundleID)
-                    }
-                    .buttonStyle(.link)
-                    .font(.caption)
-                    Spacer()
-                }
+                tccPermissionSection(bundleID: bundleID, summary: tccSummary, onOpenPrivacy: onOpenPrivacy)
             }
             
             if isExpanded {
@@ -1512,9 +1494,127 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
         }
         .task(id: app.bundleID) {
             tccSummary = nil
+            showAllTCCPermissions = false
             guard let bundleID = app.bundleID, !bundleID.isEmpty, onOpenPrivacy != nil else { return }
-            tccSummary = await TCCService().permissionCount(forBundleID: bundleID)
+            tccSummary = await TCCService().permissionSummary(forBundleID: bundleID)
         }
+    }
+
+    @ViewBuilder
+    private func tccPermissionSection(
+        bundleID: String,
+        summary: TCCAppPermissionSummary,
+        onOpenPrivacy: @escaping (String?) -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "hand.raised.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if summary.requiresFDA && summary.entries.isEmpty {
+                    Text("privacy_uninstaller_tcc_no_fda".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if summary.entries.isEmpty {
+                    Text("privacy_uninstaller_tcc_none".localized)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(tccSummaryTitle(summary))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Button("privacy_uninstaller_manage".localized) {
+                    onOpenPrivacy(bundleID)
+                }
+                .buttonStyle(.link)
+                .font(.caption)
+
+                Spacer()
+            }
+
+            if !summary.entries.isEmpty {
+                let maxInitial = 5
+                let visibleEntries = showAllTCCPermissions ? summary.entries : Array(summary.entries.prefix(maxInitial))
+                let hiddenCount = max(0, summary.entries.count - maxInitial)
+
+                TCCChipFlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
+                    ForEach(visibleEntries) { entry in
+                        tccPermissionChip(entry)
+                    }
+
+                    if hiddenCount > 0 {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                showAllTCCPermissions.toggle()
+                            }
+                        } label: {
+                            Text(showAllTCCPermissions
+                                ? "privacy_uninstaller_show_less".localized
+                                : String(format: "privacy_uninstaller_show_more".localized, Int64(hiddenCount)))
+                                .font(.caption2.weight(.medium))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Color.secondary.opacity(0.12)))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private func tccSummaryTitle(_ summary: TCCAppPermissionSummary) -> String {
+        let base = String(format: "privacy_uninstaller_tcc_count".localized, Int64(summary.count))
+        var parts: [String] = []
+        if summary.allowedCount > 0 {
+            parts.append(String(format: "privacy_uninstaller_tcc_allowed_count".localized, Int64(summary.allowedCount)))
+        }
+        if summary.deniedCount > 0 {
+            parts.append(String(format: "privacy_uninstaller_tcc_denied_count".localized, Int64(summary.deniedCount)))
+        }
+        guard !parts.isEmpty else { return base }
+        return "\(base) (\(parts.joined(separator: ", ")))"
+    }
+
+    private func tccPermissionChip(_ entry: TCCPermissionEntry) -> some View {
+        let tint: Color = switch entry.authStatus {
+        case .allowed: .green
+        case .denied: .red
+        case .limited: .orange
+        case .unknown: .secondary
+        }
+
+        let helpParts: [String] = [
+            "\(entry.service.localizedTitle): \(entry.authStatus.localizedTitle)",
+            entry.scope.localizedTitle,
+            entry.lastModified.map { String(format: "privacy_tcc_last_modified".localized, $0.formatted(date: .abbreviated, time: .shortened)) }
+        ].compactMap { $0 }
+
+        return HStack(spacing: 4) {
+            Circle()
+                .fill(tint)
+                .frame(width: 6, height: 6)
+            Image(systemName: entry.service.iconName)
+                .font(.system(size: 10))
+            Text(entry.service.localizedTitle)
+                .font(.caption2.weight(.medium))
+                .lineLimit(1)
+            if entry.scope == .system {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 8))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .foregroundStyle(entry.authStatus == .denied ? Color.secondary : Color.primary)
+        .background(Capsule().fill(tint.opacity(0.12)))
+        .overlay(Capsule().strokeBorder(tint.opacity(0.25), lineWidth: 0.75))
+        .help(helpParts.joined(separator: " • "))
     }
     
     private func generateAIExplanation() {
@@ -1641,6 +1741,48 @@ private struct DifficultyBadge: View {
         case .high: return .orange
         case .medium: return .yellow
         case .low: return .secondary
+        }
+    }
+}
+
+private struct TCCChipFlowLayout: Layout {
+    var horizontalSpacing: CGFloat = 6
+    var verticalSpacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > maxWidth && currentX > 0 {
+                currentX = 0
+                currentY += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+            currentX += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        return CGSize(width: proposal.width ?? currentX, height: currentY + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var currentX = bounds.minX
+        var currentY = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > bounds.maxX && currentX > bounds.minX {
+                currentX = bounds.minX
+                currentY += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: ProposedViewSize(size))
+            currentX += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
         }
     }
 }

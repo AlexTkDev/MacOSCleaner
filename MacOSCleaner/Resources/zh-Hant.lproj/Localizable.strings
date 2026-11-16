@@ -1153,3 +1153,11 @@
 "about_limit_extensions_desc" = "不會直接刪除瀏覽器設定檔目錄；點擊將在瀏覽器中開啟管理頁面。";
 "about_limit_no_daemon_title" = "無背景常駐程式";
 "about_limit_no_daemon_desc" = "所有掃描僅依需求執行，關閉 App 後無任何背景駐留程序。";
+"disk_analyzer_search_placeholder" = "依名稱或路徑搜尋...";
+"privacy_uninstaller_tcc_none" = "隱私權限：尚未授予";
+"privacy_uninstaller_tcc_allowed_count" = "%lld 項已允許";
+"privacy_uninstaller_tcc_denied_count" = "%lld 項已拒絕";
+"privacy_uninstaller_show_more" = "展開其餘 %lld 項";
+"privacy_uninstaller_show_less" = "收起";
+"privacy_ext_open_in_browser_help" = "透過腳本在瀏覽器中開啟此擴充功能頁面（macOS 可能會請求一次自動化權限）。";
+"privacy_ext_automation_denied_hint" = "未取得 %1$@ 的自動化控制權限。已複製「%2$@」的連結，請貼上至網址列。";

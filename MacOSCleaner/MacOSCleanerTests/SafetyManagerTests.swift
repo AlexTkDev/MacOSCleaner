@@ -530,4 +530,19 @@ final class SafetyManagerTests: XCTestCase {
             XCTAssertEqual(error as? SafetyError, SafetyError.protectedPath("/"))
         }
     }
+
+    func testSharedFileListSFL4RecentAllowedAndFavoritesProtected() {
+        let allowedRecent = URL(fileURLWithPath: "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.RecentDocuments.sfl4")
+        XCTAssertNoThrow(try safetyManager.validate(url: allowedRecent))
+
+        let protectedFav = URL(fileURLWithPath: "\(home)/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.FavoriteItems.sfl4")
+        XCTAssertThrowsError(try safetyManager.validate(url: protectedFav)) { error in
+            guard case SafetyError.protectedPath = error else {
+                XCTFail("Expected protectedPath, got \(error)")
+                return
+            }
+            XCTAssertFalse(error.localizedDescription.contains("ошибка 0"))
+            XCTAssertTrue(error.localizedDescription.contains("FavoriteItems.sfl4"))
+        }
+    }
 }

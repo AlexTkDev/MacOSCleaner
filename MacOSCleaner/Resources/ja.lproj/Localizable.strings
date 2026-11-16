@@ -1153,3 +1153,11 @@
 "about_limit_extensions_desc" = "プロファイルフォルダを直接削除せず、ブラウザの管理ページを開きます。";
 "about_limit_no_daemon_title" = "バックグラウンドデーモンなし";
 "about_limit_no_daemon_desc" = "スキャンはオンデマンドでのみ実行され、終了後に常駐するプロセスはありません。";
+"disk_analyzer_search_placeholder" = "名前またはパスで検索...";
+"privacy_uninstaller_tcc_none" = "プライバシー権限: 付与なし";
+"privacy_uninstaller_tcc_allowed_count" = "%lld 許可";
+"privacy_uninstaller_tcc_denied_count" = "%lld 拒否";
+"privacy_uninstaller_show_more" = "他 %lld 件";
+"privacy_uninstaller_show_less" = "折りたたむ";
+"privacy_ext_open_in_browser_help" = "スクリプトを使ってブラウザで拡張機能ページを開きます（macOS がオートメーション許可を求める場合があります）。";
+"privacy_ext_automation_denied_hint" = "%1$@ へのオートメーション許可が拒否されました。「%2$@」のURLをコピーしましたのでアドレスバーに貼り付けてください。";

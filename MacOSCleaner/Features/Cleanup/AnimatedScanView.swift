@@ -5,6 +5,7 @@ struct AnimatedScanView: View {
     let subtitle: String
     let currentStep: Int
     let totalSteps: Int
+    var isCompact: Bool = false
     var onCancel: (() -> Void)? = nil
 
     @State private var pulsePhase: Double = 0
@@ -22,12 +23,14 @@ struct AnimatedScanView: View {
     }
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: isCompact ? 12 : 28) {
             Text(title)
                 .font(.headline)
                 .foregroundColor(.primary)
 
             radarView
+                .scaleEffect(isCompact ? 0.65 : 1.0)
+                .frame(width: isCompact ? 130 : 200, height: isCompact ? 130 : 200)
             infoView
             if let onCancel {
                 Button(action: onCancel) {
@@ -138,7 +141,7 @@ struct AnimatedScanView: View {
 
     @ViewBuilder
     private var infoView: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: isCompact ? 8 : 14) {
             if totalSteps > 1 {
                 HStack(spacing: 5) {
                     Text("\(currentStep)")

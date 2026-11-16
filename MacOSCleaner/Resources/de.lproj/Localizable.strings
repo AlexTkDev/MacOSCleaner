@@ -1154,3 +1154,11 @@
 "about_limit_extensions_desc" = "Profilordner werden nie direkt gelöscht; ein Klick öffnet die Verwaltungsseite im Browser.";
 "about_limit_no_daemon_title" = "Kein Hintergrund-Daemon";
 "about_limit_no_daemon_desc" = "Scans laufen nur auf Abruf. Im Hintergrund läuft nichts.";
+"disk_analyzer_search_placeholder" = "Nach Name oder Pfad suchen...";
+"privacy_uninstaller_tcc_none" = "Datenschutzberechtigungen: keine erteilt";
+"privacy_uninstaller_tcc_allowed_count" = "%lld erlaubt";
+"privacy_uninstaller_tcc_denied_count" = "%lld verweigert";
+"privacy_uninstaller_show_more" = "+%lld weitere";
+"privacy_uninstaller_show_less" = "Weniger anzeigen";
+"privacy_ext_open_in_browser_help" = "Öffnet die Erweiterungsseite im Browser per Automations-Skript (macOS fragt ggf. einmalig nach Berechtigung).";
+"privacy_ext_automation_denied_hint" = "Automationszugriff auf %1$@ wurde verweigert. Link für „%2$@“ wurde kopiert — bitte in die Adressleiste einfügen.";

@@ -135,6 +135,7 @@ struct PrivacyExtensionsView: View {
                 }
                 .secondaryGlassButtonStyle()
                 .controlSize(.small)
+                .help("privacy_ext_open_in_browser_help".localized)
             }
 
             let allPerms = ext.permissions + ext.hostPermissions

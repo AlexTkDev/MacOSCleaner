@@ -74,7 +74,7 @@ public struct DiskAnalyzerView: View {
             Spacer()
 
             CompactSearchField(
-                placeholder: "settings_search_prompt".localized,
+                placeholder: "disk_analyzer_search_placeholder".localized,
                 text: $viewModel.searchQuery,
                 width: 170
             )

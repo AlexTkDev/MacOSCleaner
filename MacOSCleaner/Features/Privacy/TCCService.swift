@@ -10,6 +10,19 @@ private extension Logger {
     )
 }
 
+public struct TCCAppPermissionSummary: Sendable, Equatable {
+    public let entries: [TCCPermissionEntry]
+    public let userDBStatus: TCCDatabaseStatus
+
+    public var count: Int { entries.count }
+    public var allowedCount: Int { entries.filter { $0.authStatus == .allowed || $0.authStatus == .limited }.count }
+    public var deniedCount: Int { entries.filter { $0.authStatus == .denied }.count }
+    public var requiresFDA: Bool {
+        if case .requiresFullDiskAccess = userDBStatus { return true }
+        return false
+    }
+}
+
 public enum TCCResetError: Error, LocalizedError, Equatable {
     case invalidBundleID(String)
     case unsupportedService(String)
@@ -119,8 +132,8 @@ public actor TCCService {
         )
     }
 
-    /// Lightweight count for Uninstaller app header without resolving full AppIdentity graph.
-    public func permissionCount(forBundleID bundleID: String) -> (count: Int, requiresFDA: Bool) {
+    /// Lightweight summary for Uninstaller app header without resolving full AppIdentity graph.
+    public func permissionSummary(forBundleID bundleID: String) -> TCCAppPermissionSummary {
         let userResult = Self.readDatabase(
             at: userDBPath,
             scope: .user,
@@ -133,16 +146,30 @@ public actor TCCService {
             hasFDA: true,
             fileManager: fileManager
         )
-        let count = (userResult.entries + systemResult.entries)
+        let matching = (userResult.entries + systemResult.entries)
             .filter { $0.client.caseInsensitiveCompare(bundleID) == .orderedSame }
-            .count
-        let requiresFDA: Bool
-        if case .requiresFullDiskAccess = userResult.status {
-            requiresFDA = true
-        } else {
-            requiresFDA = false
+            .sorted { lhs, rhs in
+                let lhsRank = Self.statusSortRank(lhs.authStatus)
+                let rhsRank = Self.statusSortRank(rhs.authStatus)
+                if lhsRank != rhsRank { return lhsRank < rhsRank }
+                return lhs.service.localizedTitle.localizedCaseInsensitiveCompare(rhs.service.localizedTitle) == .orderedAscending
+            }
+        return TCCAppPermissionSummary(entries: matching, userDBStatus: userResult.status)
+    }
+
+    private static func statusSortRank(_ status: TCCAuthStatus) -> Int {
+        switch status {
+        case .allowed: return 0
+        case .limited: return 1
+        case .denied: return 2
+        case .unknown: return 3
         }
-        return (count, requiresFDA)
+    }
+
+    /// Lightweight count for Uninstaller app header without resolving full AppIdentity graph.
+    public func permissionCount(forBundleID bundleID: String) -> (count: Int, requiresFDA: Bool) {
+        let summary = permissionSummary(forBundleID: bundleID)
+        return (summary.count, summary.requiresFDA)
     }
 
     // MARK: - Reset & Verification

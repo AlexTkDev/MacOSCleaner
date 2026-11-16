@@ -29,11 +29,13 @@ public struct CleanupView: View {
                     VSplitView {
                         content
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .frame(minHeight: 200)
+                            .frame(minHeight: 260)
+                            .clipped()
                         
                         logPanel
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 400)
+                            .frame(minHeight: 120, idealHeight: 180, maxHeight: 320)
+                            .clipped()
                     }
                 } else {
                     content
@@ -613,7 +615,7 @@ public struct CleanupView: View {
     }
     
     private func progressView(title: String, subtitle: String) -> some View {
-        VStack(spacing: 20) {
+        ViewThatFits(in: .vertical) {
             AnimatedScanView(
                 title: title,
                 subtitle: subtitle,
@@ -621,8 +623,32 @@ public struct CleanupView: View {
                 totalSteps: viewModel.totalSteps,
                 onCancel: { viewModel.cancel() }
             )
+            .padding(.vertical, 16)
+
+            AnimatedScanView(
+                title: title,
+                subtitle: subtitle,
+                currentStep: viewModel.currentStep,
+                totalSteps: viewModel.totalSteps,
+                isCompact: true,
+                onCancel: { viewModel.cancel() }
+            )
+            .padding(.vertical, 10)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                AnimatedScanView(
+                    title: title,
+                    subtitle: subtitle,
+                    currentStep: viewModel.currentStep,
+                    totalSteps: viewModel.totalSteps,
+                    isCompact: true,
+                    onCancel: { viewModel.cancel() }
+                )
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+            }
         }
-        .padding(.top, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var previewListView: some View {
