@@ -127,7 +127,21 @@ final class LocalizationCompletenessTests: XCTestCase {
         "startup_login_items_restricted_sub",
         "startup_login_items_empty",
         "startup_attention_empty",
-        "startup_attention_empty_sub"
+        "startup_attention_empty_sub",
+        "menu_privacy",
+        "privacy_subtitle",
+        "privacy_tab_tcc",
+        "privacy_tab_network",
+        "privacy_tab_extensions",
+        "privacy_tcc_reset_confirm_title",
+        "privacy_net_limitation_note",
+        "privacy_ext_readonly_note",
+        "risk.safe",
+        "risk.rebuildable",
+        "risk.user_data",
+        "risk.protected",
+        "about_transparency_button",
+        "about_limitations_title"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

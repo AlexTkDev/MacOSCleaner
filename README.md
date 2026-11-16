@@ -44,7 +44,7 @@
 | Principle | Technical Implementation |
 | :--- | :--- |
 | **No Telemetry** | No background daemons, analytics SDKs, or remote loggers. All scanning runs locally without network access. |
-| **Safe Deletion** | Standard cleanup categories (caches, logs, temporary files) are pruned directly via `removeItem(at:)` after strict path validation. App Uninstaller, Disk Space Analyzer, Duplicate Finder, and review-only cleanup categories move files to macOS Trash via `trashItem(at:)` for recoverable deletion. |
+| **Safe Deletion** | Cleanup, App Uninstaller, Disk Space Analyzer, Duplicate Finder, and Startup Services move files to macOS Trash via `trashItem(at:)` by default for recoverable deletion. Permanent removal (`removeItem(at:)`) is strictly opt-in. |
 | **Protected Paths** | Hardcoded blocklists protect SIP paths, `/System`, `/Library`, `/usr`, `~/.ssh`, user documents, IDE settings (`.vscode`, `.idea`, `.zed`), and Finder sidebar favorites (`FavoriteItems.sfl3`). |
 | **Non-Destructive Scanning** | Scanning never terminates running applications or modifies files. Cleanup and uninstallation enforce a 3-second soft quit timeout before forced termination. |
 | **Open Core** | Swift 6 codebase with strict concurrency, actors, and structured task groups. Core engine and heuristics are inspectable. |
@@ -105,7 +105,8 @@
 - **Duplicate Finder:** Master-Detail split interface (`HSplitView`) with side-by-side group and file inspection. 3-stage detection pipeline (file size matching, 4 KB header checksum, full SHA-256 verification), native Quick Look previews (`Space`), high-resolution photo previews, middle-truncation path formatting, and Smart Selection actions (`Select All Duplicates`, `Deselect All`).
 - **Disk Space Analyzer:** hierarchical folder drill-down with breadcrumb navigation, honest APFS allocated block sizing (`totalFileAllocatedSizeKey`), Quick Look previews (`Space`), recursive category filters (Videos, Audio, Photos, Documents, Archives), and dataless iCloud item skip protection.
 - **Process and Service Manager:** monitors live CPU and RAM usage with termination safeguards for critical system processes (`kernel_task`, `launchd`). Employs chunked lazy loading (`LazyVStack`) and memoized filtering to eliminate UI hitching. Startup Services manager categorizes LaunchAgents, LaunchDaemons, and Login Items, with direct "Show in Finder" navigation and safe service removal (`launchd` bootout + trash).
-- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘8`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (English, Russian, Ukrainian, German, French, Spanish, Italian, Japanese, Simplified & Traditional Chinese, Korean, Polish, Brazilian Portuguese, and Arabic with native RTL layout).
+- **Privacy Inspector:** inspects user and system TCC permissions (read-only SQLite URI `?mode=ro&immutable=1`) with verified user-permission reset via `tccutil reset`, captures on-demand active socket snapshots via `libproc` (`proc_pidfdinfo`) for current-UID processes alongside static `Info.plist` network indicators, and lists Safari, Chrome, Edge, Brave, Arc, and Firefox extensions with permission risk classification and direct browser management links.
+- **Native System Integrations & Apple Intelligence:** on-device `FoundationModels` structured classification (`@Generable` verdicts: safe, caution, danger) with streaming explanations, Siri and App Intents automation (`CleanCategoryIntent`, `CleanDeveloperCachesIntent`, `EmptyTrashIntent`, `RunScheduledCleanupIntent`) with `.requiresAuthentication`, Liquid Glass navigation with floating glass pill bar (`GlassEffectContainer`, `glassEffectUnion`), full keyboard shortcuts (`⌘1`–`⌘9`, `⌘Y`, `⌘,`, `⌘C`, `⌘F`, `⌘R`, `⌘⌫`), and 14 language localizations (English, Russian, Ukrainian, German, French, Spanish, Italian, Japanese, Simplified & Traditional Chinese, Korean, Polish, Brazilian Portuguese, and Arabic with native RTL layout).
 
 Complete feature breakdowns and path specifications are documented in the [MacOSCleaner Wiki](https://github.com/AlexTkDev/MacOSCleaner/wiki).
 
@@ -125,7 +126,22 @@ open MacOSCleaner.xcodeproj
 
 Build and run with **⌘R**, or run tests with **⌘U**.
 
-> *Note: Public source builds use the public fallback cleanup catalog.*
+### Verify Release Checksums & Signature
+
+Compare the downloaded `.dmg` checksum against the SHA-256 value published on [GitHub Releases](https://github.com/AlexTkDev/MacOSCleaner/releases):
+
+```bash
+shasum -a 256 MacOSCleaner-*.dmg
+codesign -dv --verbose=4 /Applications/MacOSCleaner.app
+```
+
+## ⚠️ Known Limitations
+
+- **Not an Antivirus:** Startup Services checks inspect code signatures, binary presence, and launch paths — they do not use malware signatures and cannot guarantee software is safe.
+- **TCC Permissions:** Without Full Disk Access, user `TCC.db` shows "no data"; system `TCC.db` is protected by SIP and read-only. Resetting a permission via `tccutil reset` clears the decision so the app prompts again on next use (it does not permanently block future prompts).
+- **Network Snapshot (`EPERM`):** Non-root inspection via `proc_pidfdinfo` only sees sockets of processes owned by the current user (`UID`). System/root daemons are explicitly marked as restricted (`EPERM`).
+- **Browser Extensions:** Read-only inspection only. Clicking an extension opens the corresponding browser's management page so you can disable or remove it using the browser's built-in controls.
+- **On-Demand Only:** No background daemon, continuous network monitor, or packet capture runs in the background.
 
 ---
 

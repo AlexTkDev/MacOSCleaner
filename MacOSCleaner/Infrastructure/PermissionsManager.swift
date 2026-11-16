@@ -118,16 +118,22 @@ public final class PermissionsManager {
     
     /// Opens the Full Disk Access section in System Settings.
     public func openFullDiskAccessSettings() {
-        // macOS 13+ (Ventura/Sonoma/Sequoia) URL scheme for Full Disk Access
-        let urls = [
-            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AllFiles",
-            "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles",
-            "x-apple.systempreferences:com.apple.preference.security"
-        ]
-        
+        openPrivacySettings(anchor: "Privacy_AllFiles")
+    }
+
+    /// Opens Privacy & Security in System Settings, optionally targeting a specific TCC anchor.
+    public func openPrivacySettings(anchor: String? = nil) {
+        var urls: [String] = []
+        if let anchor, !anchor.isEmpty {
+            urls.append("x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?\(anchor)")
+            urls.append("x-apple.systempreferences:com.apple.preference.security?\(anchor)")
+        }
+        urls.append("x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension")
+        urls.append("x-apple.systempreferences:com.apple.preference.security")
+
         for urlString in urls {
             if let url = URL(string: urlString), NSWorkspace.shared.open(url) {
-                Logger.permissions.info("Opened Full Disk Access settings via: \(urlString, privacy: .public)")
+                Logger.permissions.info("Opened Privacy settings via: \(urlString, privacy: .public)")
                 return
             }
         }

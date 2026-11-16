@@ -9,6 +9,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
     case uninstaller = "Uninstaller"
     case processes = "Processes"
     case startupServices = "Startup Services"
+    case privacy = "Privacy"
     case settings = "Settings"
     
     var id: String { rawValue }
@@ -21,6 +22,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .duplicates:     return "menu_duplicates".localized
         case .processes:      return "menu_processes".localized
         case .startupServices: return "menu_startup_services".localized
+        case .privacy:        return "menu_privacy".localized
         case .uninstaller:    return "menu_uninstaller".localized
         case .settings:       return "menu_settings".localized
         }
@@ -35,6 +37,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .duplicates:      return "duplicates_subtitle".localized
         case .processes:       return "processes_subtitle".localized
         case .startupServices: return "startup_subtitle".localized
+        case .privacy:         return "privacy_subtitle".localized
         case .uninstaller:     return "uninstaller_subtitle".localized
         case .settings:        return "settings_subtitle".localized
         }
@@ -48,6 +51,7 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .duplicates: return "square.on.square"
         case .processes: return "cpu"
         case .startupServices: return "bolt.horizontal"
+        case .privacy: return "hand.raised.fill"
         case .uninstaller: return "trash"
         case .settings: return "gear"
         }
@@ -62,7 +66,8 @@ enum NavigationItem: String, CaseIterable, Identifiable, Hashable {
         case .uninstaller: return "5"
         case .processes: return "6"
         case .startupServices: return "7"
-        case .settings: return "8"
+        case .privacy: return "8"
+        case .settings: return "9"
         }
     }
 }
@@ -77,7 +82,7 @@ struct SidebarSection: Identifiable {
     static let all: [SidebarSection] = [
         SidebarSection(titleKey: nil, items: [.dashboard]),
         SidebarSection(titleKey: "sidebar_section_tools", items: [.cleanup, .diskSpace, .duplicates, .uninstaller]),
-        SidebarSection(titleKey: "sidebar_section_system", items: [.processes, .startupServices]),
+        SidebarSection(titleKey: "sidebar_section_system", items: [.processes, .startupServices, .privacy]),
         SidebarSection(titleKey: nil, items: [.settings]),
     ]
 }

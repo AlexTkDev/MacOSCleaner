@@ -31,6 +31,7 @@ enum UninstallerTab: String, CaseIterable, Identifiable {
 struct UninstallerView: View {
     let settings: AppSettings
     let navigateToCleanup: () -> Void
+    var navigateToPrivacy: ((String?) -> Void)? = nil
     var scanLimited: Bool = false
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var service = UninstallerService()
@@ -551,6 +552,7 @@ struct UninstallerView: View {
                 AppDetailHeaderView(
                     app: app,
                     settings: settings,
+                    onOpenPrivacy: navigateToPrivacy,
                     badges: {
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: 8) { badges(for: app) }
@@ -1387,12 +1389,14 @@ struct SharedBadgeView: View {
 struct AppDetailHeaderView<BadgeContent: View>: View {
     let app: UninstallerService.AppInfo
     let settings: AppSettings
+    var onOpenPrivacy: ((String?) -> Void)? = nil
     @ViewBuilder let badges: BadgeContent
     
     @State private var isExpanded = false
     @State private var aiExplanation = ""
     @State private var isGenerating = false
     @State private var errorMessage: String? = nil
+    @State private var tccSummary: (count: Int, requiresFDA: Bool)? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1449,6 +1453,29 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 badges
                     .layoutPriority(1)
             }
+
+            if let bundleID = app.bundleID, !bundleID.isEmpty, let onOpenPrivacy, let tccSummary {
+                HStack(spacing: 8) {
+                    Image(systemName: "hand.raised.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if tccSummary.requiresFDA && tccSummary.count == 0 {
+                        Text("privacy_uninstaller_tcc_no_fda".localized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(String(format: "privacy_uninstaller_tcc_count".localized, Int64(tccSummary.count)))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Button("privacy_uninstaller_manage".localized) {
+                        onOpenPrivacy(bundleID)
+                    }
+                    .buttonStyle(.link)
+                    .font(.caption)
+                    Spacer()
+                }
+            }
             
             if isExpanded {
                 VStack(alignment: .leading, spacing: 4) {
@@ -1482,6 +1509,11 @@ struct AppDetailHeaderView<BadgeContent: View>: View {
                 .cornerRadius(12)
                 .padding(.top, 8)
             }
+        }
+        .task(id: app.bundleID) {
+            tccSummary = nil
+            guard let bundleID = app.bundleID, !bundleID.isEmpty, onOpenPrivacy != nil else { return }
+            tccSummary = await TCCService().permissionCount(forBundleID: bundleID)
         }
     }
     

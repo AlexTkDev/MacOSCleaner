@@ -13,6 +13,7 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
     public let startTime: Date?
     public let parentPID: pid_t
     public let bundleID: String?
+    public let uid: uid_t?
 
     public init(
         pid: pid_t,
@@ -24,7 +25,8 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         threadCount: Int = 0,
         startTime: Date? = nil,
         parentPID: pid_t = 0,
-        bundleID: String? = nil
+        bundleID: String? = nil,
+        uid: uid_t? = nil
     ) {
         self.id = pid
         self.pid = pid
@@ -37,6 +39,7 @@ public struct RunningProcess: Identifiable, Sendable, Hashable {
         self.startTime = startTime
         self.parentPID = parentPID
         self.bundleID = bundleID
+        self.uid = uid
     }
 
     public var isUserProcess: Bool {

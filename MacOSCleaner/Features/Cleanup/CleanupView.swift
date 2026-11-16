@@ -766,7 +766,8 @@ public struct CleanupView: View {
     private func riskColor(for risk: OperationRisk) -> Color {
         switch risk {
         case .safe: return .green
-        case .moderate: return .orange
+        case .rebuildable: return .blue
+        case .userData: return .orange
         case .protected: return .secondary
         }
     }

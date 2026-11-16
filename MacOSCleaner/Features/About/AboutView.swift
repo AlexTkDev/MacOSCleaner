@@ -3,6 +3,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @State private var showTransparencySheet = false
     var availableUpdate: AvailableUpdate? = nil
 
     var body: some View {
@@ -12,6 +13,9 @@ struct AboutView: View {
                 contentStack
             }
             .frame(width: 380)
+        }
+        .sheet(isPresented: $showTransparencySheet) {
+            AboutTransparencySheet()
         }
     }
 
@@ -51,6 +55,16 @@ struct AboutView: View {
 
             developerCard
             linksCard
+
+            Button {
+                showTransparencySheet = true
+            } label: {
+                Label("about_transparency_button".localized, systemImage: "checkmark.shield")
+                    .font(.subheadline.weight(.medium))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 24)
+            }
+            .secondaryGlassButtonStyle()
 
             Text("about_copyright".localized)
                 .font(.caption2)
@@ -184,6 +198,66 @@ struct AboutView: View {
         }
         .glassCard(cornerRadius: 12)
         .buttonStyle(.plain)
+    }
+}
+
+private struct AboutTransparencySheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("about_transparency_button".localized)
+                    .font(.headline)
+                Spacer()
+                Button("close".localized) { dismiss() }
+                    .secondaryGlassButtonStyle()
+                    .controlSize(.small)
+            }
+            .padding(16)
+
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader("settings_privacy_safety_title".localized)
+                    ForEach(AppTransparencyFact.guarantees) { fact in
+                        factRow(fact)
+                    }
+
+                    Divider()
+
+                    sectionHeader("about_limitations_title".localized)
+                    ForEach(AppTransparencyFact.limitations) { fact in
+                        factRow(fact)
+                    }
+                }
+                .padding(16)
+            }
+        }
+        .frame(width: 480, height: 520)
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+    }
+
+    private func factRow(_ fact: AppTransparencyFact) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: fact.icon)
+                .foregroundStyle(fact.color)
+                .frame(width: 18)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(fact.titleKey.localized)
+                    .font(.callout.weight(.medium))
+                Text(fact.descKey.localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }
 

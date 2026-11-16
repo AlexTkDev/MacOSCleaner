@@ -6,6 +6,7 @@ import SwiftUI
 
 struct RootView: View {
     @State private var selectedItem: NavigationItem = .dashboard
+    @State private var privacyFilterBundleID: String? = nil
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
@@ -198,10 +199,19 @@ struct RootView: View {
             ProcessesView(settings: appSettings)
         case .startupServices:
             StartupServicesView(settings: appSettings)
+        case .privacy:
+            PrivacyView(
+                permissionsManager: permissionsManager,
+                initialBundleIDFilter: $privacyFilterBundleID
+            )
         case .uninstaller:
             UninstallerView(
                 settings: appSettings,
                 navigateToCleanup: { selectedItem = .cleanup },
+                navigateToPrivacy: { bundleID in
+                    privacyFilterBundleID = bundleID
+                    selectedItem = .privacy
+                },
                 scanLimited: !permissionsManager.hasFullDiskAccess
             )
         case .settings:
