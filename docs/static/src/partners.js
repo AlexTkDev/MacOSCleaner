@@ -17,6 +17,7 @@ const PARTNERS = [
   { href: "https://macpip.com/apps/macos-cleaner?ref=badge", alt: "Listed on MacPip", light: "https://macpip.com/badge/macos-cleaner.svg?theme=light", dark: "https://macpip.com/badge/macos-cleaner.svg?theme=dark", w: 174, h: 58 },
   { href: "https://www.no-subscription.com/apps/macoscleaner", alt: "Listed on no-subscription.com", local: "no-subscription", w: 180, h: 40 },
   { href: "https://www.mactools.pro", alt: "Listed on MacTools Pro", light: "https://www.mactools.pro/mactools-badge-light.svg", dark: "https://www.mactools.pro/mactools-badge-dark.svg", w: 240, h: 60 },
+  { href: "https://macbase.app/apps/macoscleaner?ref=badge", alt: "MacOSCleaner is featured on MacBase", light: "https://macbase.app/badge/featured-on-macbase.svg", dark: "https://macbase.app/badge/featured-on-macbase-dark.svg", w: 313, h: 100 },
 ];
 
 (function () {
