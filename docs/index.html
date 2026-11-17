@@ -890,7 +890,10 @@
     <div class="container">
       <h2 id="footer-partners-heading" class="footer-partners-heading">Our partners</h2>
       <!-- Partner list: static/src/partners.js (PARTNERS). Append one object to add a catalog. -->
-      <div class="footer-partners-marquee" data-partners-marquee></div>
+      <!-- Static NativeShelf link stays in raw HTML for non-JS crawlers. partners.js replaces this node. -->
+      <div class="footer-partners-marquee" data-partners-marquee>
+        <a href="https://nativeshelf.com?ref=badge" target="_blank" title="Featured on NativeShelf.com"><img class="badge-for-light" src="https://nativeshelf.com/badge/dark.png?v=6" alt="Featured on NativeShelf.com" width="232" height="68" /><img class="badge-for-dark" src="https://nativeshelf.com/badge/light.png?v=6" alt="Featured on NativeShelf.com" width="232" height="68" /></a>
+      </div>
     </div>
   </section>
 </footer>
@@ -903,7 +906,7 @@
   <button class="modal-btn next" id="modal-next" aria-label="Next screenshot">&#10095;</button>
 </div>
 
-<script src="static/src/partners.js?v=3" defer></script>
+<script src="static/src/partners.js?v=4" defer></script>
 <script src="static/src/script.js?v=3" defer></script>
 </body>
 </html>

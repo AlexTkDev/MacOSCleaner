@@ -18,6 +18,7 @@ const PARTNERS = [
   { href: "https://www.no-subscription.com/apps/macoscleaner", alt: "Listed on no-subscription.com", local: "no-subscription", w: 180, h: 40 },
   { href: "https://www.mactools.pro", alt: "Listed on MacTools Pro", light: "https://www.mactools.pro/mactools-badge-light.svg", dark: "https://www.mactools.pro/mactools-badge-dark.svg", w: 240, h: 60 },
   { href: "https://macbase.app/apps/macoscleaner?ref=badge", alt: "MacOSCleaner is featured on MacBase", light: "https://macbase.app/badge/featured-on-macbase.svg", dark: "https://macbase.app/badge/featured-on-macbase-dark.svg", w: 313, h: 100 },
+  { href: "https://nativeshelf.com?ref=badge", title: "Featured on NativeShelf.com", alt: "Featured on NativeShelf.com", light: "https://nativeshelf.com/badge/dark.png?v=6", dark: "https://nativeshelf.com/badge/light.png?v=6", w: 232, h: 68 },
 ];
 
 (function () {
@@ -114,7 +115,8 @@ const PARTNERS = [
   track.className = "footer-partners-track";
   track.appendChild(buildSet(false));
   track.appendChild(buildSet(true));
-  marquee.appendChild(track);
+  // Homepage footer includes a static NativeShelf link for non-JS crawlers.
+  marquee.replaceChildren(track);
 
   function currentX() {
     const transform = getComputedStyle(track).transform;
