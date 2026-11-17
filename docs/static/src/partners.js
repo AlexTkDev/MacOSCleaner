@@ -3,29 +3,20 @@
 //   official: { href, alt, w, h, light, dark } or { href, alt, w, h, src }
 //   local:    { href, alt, w, h, local }  → static/assets/badges/<local>.svg and <local>-dark.svg
 // Optional fields: title, loading.
-// Awesome-list mentions are the one object with `group` + `links` (one link per line).
 const PARTNERS = [
   { href: "https://macoscleaner.macupdate.com/", alt: "Listed on MacUpdate", local: "macupdate", w: 122, h: 40 },
   { href: "https://alternativeto.net/software/macoscleaner/about/?utm_source=badge&utm_medium=referral", alt: "MacOSCleaner | AlternativeTo", light: "https://alternativeto.net/static/badges/badge-compact-light.svg", dark: "https://alternativeto.net/static/badges/badge-compact-dark.svg", w: 244, h: 83 },
   { href: "https://macworthy.com/apps/macos-cleaner/", alt: "Listed on MacWorthy", local: "macworthy", w: 122, h: 40 },
   { href: "https://macigniter.com/apps/macos-cleaner", alt: "Listed on MacIgniter", local: "macigniter", w: 116, h: 40 },
-  { href: "https://macappindex.com/apps/macos-cleaner?ref=badge", title: "MacOS Cleaner on Mac App Index", alt: "MacOS Cleaner on Mac App Index", light: "https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40", dark: "https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40", w: 160, h: 40, loading: "lazy" },
+  { href: "https://macappindex.com/apps/macos-cleaner?ref=badge", title: "MacOS Cleaner on Mac App Index", alt: "MacOS Cleaner on Mac App Index", light: "https://macappindex.com/apps/macos-cleaner/badge.svg?theme=light&height=40", dark: "https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40", w: 160, h: 40 },
   { href: "https://allmacapps.com/app/macoscleaner", alt: "MacOSCleaner on All Mac Apps", light: "https://badges.allmacapps.com/macoscleaner.svg", dark: "https://badges.allmacapps.com/macoscleaner.svg?theme=dark", w: 208, h: 48 },
-  { href: "https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral", alt: "Listed on MacNative", src: "https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1", w: 168, h: 44 },
+  { href: "https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral", alt: "Listed on MacNative", light: "https://macnative.io/badge?kind=listed&theme=light&slug=macoscleaner&small=1&rounded=1", dark: "https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1", w: 168, h: 44 },
   { href: "https://www.saashub.com/macoscleaner?utm_source=badge&utm_campaign=badge&utm_content=macoscleaner&badge_variant=color&badge_kind=approved", alt: "MacOSCleaner badge", light: "https://cdn-b.saashub.com/img/badges/approved-color.png?v=1", dark: "https://cdn-b.saashub.com/img/badges/approved-dark.png?v=1", w: 300, h: 100 },
   { href: "https://www.oldergeeks.com/downloads/file.php?id=5046", alt: "Listed on OlderGeeks", local: "oldergeeks", w: 122, h: 40 },
   { href: "https://opendmg.app/apps/cleaner/", alt: "Listed on OpenDMG", local: "opendmg", w: 114, h: 40 },
-  { href: "https://macpip.com/apps/macos-cleaner?ref=badge", alt: "Listed on MacPip", src: "https://macpip.com/badge/macos-cleaner.svg?theme=dark", w: 174, h: 58 },
+  { href: "https://macpip.com/apps/macos-cleaner?ref=badge", alt: "Listed on MacPip", light: "https://macpip.com/badge/macos-cleaner.svg?theme=light", dark: "https://macpip.com/badge/macos-cleaner.svg?theme=dark", w: 174, h: 58 },
   { href: "https://www.no-subscription.com/apps/macoscleaner", alt: "Listed on no-subscription.com", local: "no-subscription", w: 180, h: 40 },
-  { href: "https://www.mactools.pro", alt: "Listed on MacTools Pro", light: "https://www.mactools.pro/mactools-badge-light.svg", dark: "https://www.mactools.pro/mactools-badge-dark.svg", w: 240, h: 60, loading: "lazy" },
-  {
-    group: "Featured in awesome lists",
-    links: [
-      { href: "https://github.com/jaywcjlove/awesome-mac", label: "jaywcjlove/awesome-mac" },
-      { href: "https://github.com/xyNNN/awesome-mac", label: "xyNNN/awesome-mac" },
-      { href: "https://github.com/Axorax/awesome-free-apps", label: "Axorax/awesome-free-apps" },
-    ],
-  },
+  { href: "https://www.mactools.pro", alt: "Listed on MacTools Pro", light: "https://www.mactools.pro/mactools-badge-light.svg", dark: "https://www.mactools.pro/mactools-badge-dark.svg", w: 240, h: 60 },
 ];
 
 (function () {

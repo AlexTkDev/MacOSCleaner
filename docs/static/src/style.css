@@ -831,16 +831,30 @@ section {
   font-weight: 600;
 }
 
-.release-cta { margin-top: 36px; }
+.release-cta {
+  margin-top: 24px;
+  max-width: 760px;
+}
 
 .release-cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-muted);
   text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-elevated);
+  transition: color 0.2s, border-color 0.2s;
 }
 
-.release-cta a:hover { color: var(--text); }
+.release-cta a:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
 
 /* ===== Previous Releases Accordion ===== */
 .changelog-previous {
@@ -1013,6 +1027,136 @@ section {
 
 .changelog-footer-link a:hover {
   color: var(--accent);
+}
+
+/* Smooth disclosure animation for changelog accordions */
+.changelog-item::details-content,
+.changelog-archive::details-content {
+  interpolate-size: allow-keywords;
+  overflow: clip;
+  contain: layout;
+}
+
+.changelog-item:not([open])::details-content,
+.changelog-archive:not([open])::details-content {
+  block-size: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .changelog-item::details-content,
+  .changelog-archive::details-content {
+    transition: block-size 0.28s ease-in-out, content-visibility 0.28s ease-in-out, display 0.28s ease-in-out;
+    transition-behavior: allow-discrete;
+  }
+}
+
+.changelog-summary:focus-visible,
+.changelog-archive-summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ===== Older Releases Archive Accordion ===== */
+.changelog-archive {
+  margin-top: 4px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.changelog-archive:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line-strong));
+  background: var(--bg-elevated);
+}
+
+.changelog-archive[open] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.changelog-archive-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.changelog-archive-summary::-webkit-details-marker {
+  display: none;
+}
+
+.changelog-archive-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  flex-shrink: 0;
+  transition: color 0.2s, background 0.2s;
+}
+
+.changelog-archive-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.changelog-archive[open] .changelog-archive-icon,
+.changelog-archive-summary:hover .changelog-archive-icon {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.changelog-archive-label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.changelog-archive-range {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-right: auto;
+}
+
+.changelog-archive-count {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border: 1px solid var(--line);
+  padding: 2px 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.changelog-archive[open] > .changelog-archive-summary .changelog-chevron {
+  transform: rotate(180deg);
+  color: var(--text);
+}
+
+.changelog-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 14px 14px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 540px) {
+  .changelog-archive-range {
+    display: none;
+  }
 }
 
 
