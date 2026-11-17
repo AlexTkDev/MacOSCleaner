@@ -19,6 +19,7 @@ const PARTNERS = [
   { href: "https://www.mactools.pro", alt: "Listed on MacTools Pro", light: "https://www.mactools.pro/mactools-badge-light.svg", dark: "https://www.mactools.pro/mactools-badge-dark.svg", w: 240, h: 60 },
   { href: "https://macbase.app/apps/macoscleaner?ref=badge", alt: "MacOSCleaner is featured on MacBase", light: "https://macbase.app/badge/featured-on-macbase.svg", dark: "https://macbase.app/badge/featured-on-macbase-dark.svg", w: 313, h: 100 },
   { href: "https://nativeshelf.com?ref=badge", title: "Featured on NativeShelf.com", alt: "Featured on NativeShelf.com", light: "https://nativeshelf.com/badge/dark.png?v=6", dark: "https://nativeshelf.com/badge/light.png?v=6", w: 232, h: 68 },
+  { href: "https://macbrowse.com/utilities/macoscleaner?ref=badge", alt: "Listed on Mac Browse", light: "https://macbrowse.com/badge/listed-light.svg", dark: "https://macbrowse.com/badge/listed-dark.svg", w: 220, h: 48 },
 ];
 
 (function () {
