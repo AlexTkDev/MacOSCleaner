@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="166" height="28" viewBox="0 0 166 28" role="img" aria-label="OKIBA に掲載中 ♡ 0">
+<title>OKIBA に掲載中 ♡ 0</title>
+<rect x="0.5" y="0.5" width="165" height="27" fill="#fff" stroke="#000"/>
+<rect x="0" y="0" width="70" height="28" fill="#000"/>
+<g font-family="'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',system-ui,sans-serif" font-size="11" dominant-baseline="central">
+<text x="35" y="14.5" fill="#fff" text-anchor="middle" font-weight="300" textLength="46" lengthAdjust="spacingAndGlyphs">OKIBA</text>
+<text x="80" y="14.5" fill="#000" textLength="44" lengthAdjust="spacingAndGlyphs">に掲載中</text>
+<text x="149" y="14.5" fill="#000" textLength="6.6" lengthAdjust="spacingAndGlyphs">0</text>
+</g>
+<path d="M139 18.6 L135.2 14.8 A2.3 2.3 0 0 1 139 11.6 A2.3 2.3 0 0 1 142.8 14.8 Z" fill="none" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/>
+</svg>

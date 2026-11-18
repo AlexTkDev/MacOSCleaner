@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (C) 2026 AlexTkDev
+# SPDX-License-Identifier: LicenseRef-MacOSCleaner-GPLv3-Commons-NC
+# Licensed under GNU GPLv3 with Commons Clause v1.0 & Non-Commercial Condition (see LICENSE).
 set -euo pipefail
 
 # ==============================================================================

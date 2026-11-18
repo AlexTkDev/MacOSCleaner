@@ -95,6 +95,6 @@ The script is built with modular helper functions:
 ## 📜 Feedback & License
 
 - **[Contributor License Agreement (CLA)](CLA.md)**: Contributions to the codebase are covered by the CLA for dual-licensing compatibility.
-- **License**: Dual-licensed under **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** (Custom Non-Commercial) for open-source and non-commercial distribution, and **Commercial License** for proprietary/commercial integration. Selling software binaries or commercial services derived from this software without a commercial license is strictly prohibited.
+- **License**: Dual-licensed under **[GNU GPLv3 + Commons Clause v1.0 & Non-Commercial Condition](LICENSE)** — free solely for personal non-commercial use, academic/educational projects, testing, and upstream contributions — and a separate **Commercial License** required before any commercial use by a legal entity or an individual (including internal business use, client work, paid services, SaaS, or proprietary integration). Contact the author via [GitHub (@AlexTkDev)](https://github.com/AlexTkDev) or [LinkedIn](https://www.linkedin.com/in/aleksandrtk/).
 
-> **Trademark & Branding Notice**: This license does not grant permission to use the project name ("MacOSCleaner"), logos, app icons, or branding in derivative works or redistributions. Modified versions or redistributions must remove or replace all official project branding.
+> **Trademark & Branding Notice**: This license does not grant permission to use the project names ("MacOSCleaner", "MacOS Cleaner"), logos, app icons, or branding in modified versions or third-party redistributions.

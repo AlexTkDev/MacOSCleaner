@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="168" height="44" viewBox="0 0 168 44" role="img" aria-label="Listed on MacNative">
+  <rect x="0.5" y="0.5" width="167" height="43" rx="22" fill="transparent" stroke="#c9cdd4" stroke-width="1"/>
+  <g transform="translate(8 10)"><g transform="translate(1.1612903225806441 0) scale(0.07741935483870968)">
+    <g stroke="#35294D" stroke-width="7" stroke-linejoin="round">
+      <path d="M215 18 257 51Q269 60 269 78V248Q269 265 252 275L218 292 199 156Z" fill="#7350B5"/>
+      <path d="M44 18H206Q232 18 232 46V263Q232 292 205 292H43Q16 292 16 264V48Q16 18 44 18Z" fill="#FFF9EF"/>
+      <rect x="40" y="49" width="167" height="151" rx="24" fill="#E0D3F5"/>
+      <rect x="40" y="219" width="167" height="49" rx="12" fill="#E0D3F5"/>
+      <rect x="94" y="237" width="61" height="14" rx="7" fill="#F0BEA8" stroke-width="5"/>
+    </g>
+    <g fill="#35294D">
+      <ellipse cx="92" cy="127" rx="8" ry="14"/>
+      <ellipse cx="154" cy="127" rx="8" ry="14"/>
+    </g>
+    <path d="M112 151Q123 168 135 151" stroke="#35294D" stroke-width="7" stroke-linecap="round"/>
+  </g></g>
+  <line x1="36" y1="0" x2="36" y2="44" stroke="#c9cdd4" stroke-width="1"/>
+  <text x="44" y="18" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="7.5" font-weight="600" letter-spacing="0.6" fill="#9aa0ab">LISTED ON</text>
+  <text x="44" y="34" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#14161f">MacNative.io</text>
+</svg>

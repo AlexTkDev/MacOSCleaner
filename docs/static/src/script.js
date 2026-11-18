@@ -713,6 +713,7 @@ const CRYPTO_MODAL_HTML = `
       </div>
       <p class="crypto-hint">Tap "Open in Binance App" or scan QR code in Binance App (Pay to: <strong>Alex8695</strong>)</p>
     </div>
+    <p class="crypto-hint" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 0.72rem;">Voluntary, non-refundable gift · Not tax-deductible · Does not grant a Commercial License, support SLA, or warranty · Blockchain transfers are irreversible — verify token &amp; network first (<a href="https://alextkdev.github.io/MacOSCleaner/privacy.html#donations">terms</a>).</p>
   </div>
 </div>
 `;

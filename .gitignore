@@ -114,6 +114,8 @@ GEMINI.md
 .antigravitycli
 build/
 PLAN.md
+plan.md
+docs/PROMOTION_GUIDE.md
 macos-cache-cleanup.sh
 xcuserdata/
 *.xcuserstate

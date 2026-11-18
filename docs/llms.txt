@@ -1,10 +1,10 @@
 # MacOSCleaner
 
-> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (optional GitHub Releases update check, configurable in Settings). Personal use only.
+> Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (optional GitHub Releases update check, configurable in Settings). Free for personal and academic/educational non-commercial use; any commercial use requires permission or a Commercial License.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
 Requires macOS 26.0+, Apple Silicon (M1+). Current release: v3.0.0.
-License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 (Custom Non-Commercial) and Commercial License.
+License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 & Non-Commercial Condition (personal and academic/educational non-commercial use only) and separate Commercial License (required for any commercial use by individuals or organizations).
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 Bundle ID: input.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
 First launch: if macOS says it can't verify MacOSCleaner (“Apple could not verify “MacOSCleaner” is free of malware”, or that it cannot verify the app is free of malware), Gatekeeper is blocking an ad-hoc signed app on macOS 26. Only for the DMG from the official GitHub Releases page: move MacOSCleaner.app to /Applications, try to open it once, then System Settings > Privacy & Security > scroll down > Open Anyway. Or: `xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app`.
@@ -17,7 +17,8 @@ First launch: if macOS says it can't verify MacOSCleaner (“Apple could not ver
 - [How to clean Xcode caches safely on Mac](https://alextkdev.github.io/MacOSCleaner/guides/clean-xcode-caches-mac.html): DerivedData, DeviceSupport, CoreSimulator, DocumentationCache; keep Archives and dSYMs
 - [Clean Docker disk space on Mac](https://alextkdev.github.io/MacOSCleaner/guides/clean-docker-mac-disk-space.html): docker system df and prune; never delete Docker.raw
 - [macOS System Data is too large](https://alextkdev.github.io/MacOSCleaner/guides/macos-system-data-too-large-developers.html): Developer reclaim order (Xcode → Docker → simulators → caches → thinlocalsnapshots)
-- [Support the Project](https://alextkdev.github.io/MacOSCleaner/support.html): Support options (Ko-fi and Crypto donations), Apple Developer Program ($99/yr) notarization funding goal, and Supporter Hall of Fame
+- [Support the Project](https://alextkdev.github.io/MacOSCleaner/support.html): Voluntary support options (Ko-fi and Crypto donations), Apple Developer Program ($99/yr) notarization goal, and Supporter Hall of Fame
+- [Privacy, Terms & Legal](https://alextkdev.github.io/MacOSCleaner/privacy.html): App & website privacy notice, non-commercial licensing scope, AS IS warranty disclaimer, donation terms, and trademark notices
 - [Full agent brief](https://alextkdev.github.io/MacOSCleaner/llms-full.txt): Self-contained product facts for AI agents
 - [XML Sitemap](https://alextkdev.github.io/MacOSCleaner/sitemap.xml): Indexable URLs for search engines and crawlers
 
@@ -32,7 +33,8 @@ First launch: if macOS says it can't verify MacOSCleaner (“Apple could not ver
 - [v2.1.1 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.1): Root-owned app uninstaller batching, Touch ID for sudo helper, Spotlight reindex, Version SoT
 - [v2.1.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.1.0): AppIntents & Siri support, Duplicate File Finder, Apple Watch-style disk visualization, 10 localizations
 - [Issues](https://github.com/AlexTkDev/MacOSCleaner/issues): Bug reports and feature requests
-- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Dual-licensed under GNU GPLv3 + Commons Clause v1.0 / Commercial
+- [Security Policy](https://github.com/AlexTkDev/MacOSCleaner/blob/release/SECURITY.md): Coordinated vulnerability disclosure and Safe Harbor
+- [License](https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE): Dual-licensed under GNU GPLv3 + Commons Clause v1.0 & Non-Commercial Condition / Commercial License
 
 
 ## Community & Support
