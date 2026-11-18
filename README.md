@@ -156,9 +156,14 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
 
+### Our Partners
 <p>
+<a href="https://alternativeto.net/software/macoscleaner/about/?utm_source=badge&utm_medium=referral"><img src="https://alternativeto.net/static/badges/badge-compact-dark.svg" alt="AlternativeTo" height="40"></a>
+<a href="https://www.saashub.com/macoscleaner?utm_source=badge&utm_campaign=badge&utm_content=macoscleaner&badge_variant=color&badge_kind=approved"><img src="https://cdn-b.saashub.com/img/badges/approved-dark.png?v=1" alt="SaaSHub" height="40"></a>
+<a href="https://macnative.io/apps/macoscleaner?utm_source=macnative-badge&utm_medium=referral"><img src="https://macnative.io/badge?kind=listed&theme=dark&slug=macoscleaner&small=1&rounded=1" alt="MacNative" height="40"></a>
 <a href="https://macappindex.com/apps/macos-cleaner?ref=badge" target="_blank" title="MacOS Cleaner on Mac App Index"><img src="https://macappindex.com/apps/macos-cleaner/badge.svg?theme=dark&height=40" alt="MacOS Cleaner on Mac App Index" width="160" height="40" /></a>
-  <a href="https://macbrowse.com"><img src="https://macbrowse.com/badge/listed-dark.svg" alt="Listed on Mac Browse" width="160" height="40"></a>
+<a href="https://macbrowse.com"><img src="https://macbrowse.com/badge/listed-dark.svg" alt="Listed on Mac Browse" width="160" height="40"></a>
+<a href="https://alextkdev.github.io/MacOSCleaner/#footer-partners-heading" title="All MacOS Cleaner partners"><img src="assets/badges/all-partners-dark.svg" alt="See all partners" width="160" height="40"></a>
 </p>
 
 > *Note: Contributions are subject to the project's [Contributor License Agreement (CLA)](CLA.md).*
