@@ -7,21 +7,22 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
+        **Security note:** Do not report security vulnerabilities here — please see [SECURITY.md](../../SECURITY.md).
   - type: input
     id: macos_version
     attributes:
       label: macOS version
-      description: What version of macOS are you using? (e.g., 14.2.1)
+      description: What version of macOS are you using? (macOS 26.0+ required)
     validations:
       required: true
   - type: dropdown
     id: mac_model
     attributes:
       label: Mac model
-      description: Are you using an Intel or Apple Silicon Mac?
+      description: Which Apple Silicon Mac are you using? (Intel Macs are not supported)
       options:
-        - Apple Silicon (M1/M2/M3)
-        - Intel
+        - Apple Silicon (M1 / M2 / M3 / M4)
+        - Intel (Unsupported)
     validations:
       required: true
   - type: input

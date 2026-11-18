@@ -154,7 +154,7 @@ struct AboutView: View {
 
     private var linksCard: some View {
         VStack(spacing: 0) {
-            Link(destination: safeURL("https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md")) {
+            Link(destination: UpdateChecker.donateURL) {
                 Label("about_donate".localized, systemImage: "heart.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.pink)

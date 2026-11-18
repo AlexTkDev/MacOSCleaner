@@ -1,5 +1,6 @@
 // Copyright (C) 2026 AlexTkDev
-// Licensed under GNU General Public License v3.0 (GPLv3)
+// SPDX-License-Identifier: LicenseRef-MacOSCleaner-GPLv3-Commons-NC
+// Licensed under GNU GPLv3 with Commons Clause v1.0 & Non-Commercial Condition (see LICENSE).
 
 import Foundation
 import LocalAuthentication

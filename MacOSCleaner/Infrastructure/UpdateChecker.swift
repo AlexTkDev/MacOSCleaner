@@ -16,6 +16,7 @@ public struct AvailableUpdate: Sendable, Equatable {
 
 public actor UpdateChecker {
     public static let releasesURL: URL = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases") ?? URL(fileURLWithPath: "/")
+    public static let donateURL: URL = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/blob/release/DONATE.md") ?? URL(fileURLWithPath: "/")
     private static let apiURL: URL = URL(string: "https://api.github.com/repos/AlexTkDev/MacOSCleaner/releases/latest") ?? URL(fileURLWithPath: "/")
 
     private struct Release: Decodable {

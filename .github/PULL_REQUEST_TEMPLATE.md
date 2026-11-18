@@ -12,7 +12,8 @@
 
 ## Checklist
 
-- [] Builds successfully
-- [] Tested locally
-- [] Documentation updated (if needed)
-- [] No unrelated changes included
+- [ ] Builds successfully
+- [ ] Tested locally
+- [ ] Documentation updated (if needed)
+- [ ] No unrelated changes included
+- [ ] I have read and agree to the [Contributor License Agreement (CLA)](../CLA.md) and confirm I am authorized to submit this contribution

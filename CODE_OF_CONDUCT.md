@@ -31,8 +31,12 @@ Project maintainers may remove, edit, or reject contributions and comments that 
 
 ## Scope
 
-This Code of Conduct applies to all project spaces, including issues, pull requests, and discussions.
+This Code of Conduct applies within all project spaces — including GitHub issues, pull requests, discussions, code reviews, and wiki pages — as well as when an individual is officially representing the project in public spaces.
 
 ## Reporting
 
-If you need to report a violation, open a private security or contact channel if available, or reach the repository owner directly.
+To report unacceptable behavior, contact the project maintainer directly via [LinkedIn](https://www.linkedin.com/in/aleksandrtk/) or [GitHub (@AlexTkDev)](https://github.com/AlexTkDev). All complaints will be reviewed promptly and fairly, and the maintainer will respect the privacy and confidentiality of the reporter.
+
+## Attribution
+
+This Code of Conduct is condensed and adapted from the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html), licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

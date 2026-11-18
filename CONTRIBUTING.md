@@ -4,7 +4,7 @@ Thank you for your interest in contributing.
 
 ## Before you start
 
-Please read the README first to understand the project scope, features, and current direction.
+Please read the [README](README.md) first to understand the project scope, features, and current direction. Participation in all project spaces is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## How to contribute
 
@@ -20,9 +20,9 @@ You can contribute in the following ways:
 
 When opening a bug report, include:
 
-- macOS version
+- macOS version (`26.0` or later)
 - MacOSCleaner version or commit
-- device type (Apple Silicon or Intel)
+- Apple Silicon Mac model (e.g., M1, M2, M3, M4 — Intel Macs are not supported)
 - steps to reproduce
 - expected result
 - actual result
@@ -65,7 +65,11 @@ If a larger change is needed, open an issue first.
 Maintainers may ask for changes before merging.
 Please respond to review comments directly in the PR.
 
+## Licensing & CLA
+
+All contributions and Pull Requests are subject to the [Contributor License Agreement (CLA)](CLA.md). By submitting a Pull Request, you confirm that the work is yours to contribute and grant the maintainer the rights needed to distribute the project under both [`LICENSE`](LICENSE) (GNU GPLv3 + Commons Clause v1.0 & Non-Commercial Condition) and separate Commercial Licenses.
+
 ## Security issues
 
-Do not open security issues as public bugs.
-Use the security channel or repository security contact if available.
+Do not open security vulnerabilities as public issues.
+Follow the reporting procedure in [`SECURITY.md`](SECURITY.md).

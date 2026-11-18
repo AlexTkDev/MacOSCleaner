@@ -196,10 +196,7 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 ## 📄 License
 
 Dual-licensed:
-- **[GNU GPLv3 + Commons Clause v1.0](LICENSE)** for personal, non-commercial use, testing, and source-available contributions. Commercial resale and commercial re-licensing are prohibited.
-- **Commercial License** for enterprise, commercial, or proprietary distribution. [Contact the author](https://github.com/AlexTkDev) for licensing inquiries.
+- **[GNU GPLv3 + Commons Clause v1.0 (Non-Commercial)](LICENSE)** — free solely for personal non-commercial use, academic/educational projects, testing, and upstream contributions. Commercial resale, paid services, and commercial re-licensing are prohibited.
+- **Commercial License / Permission** — required before any commercial use by a legal entity or an individual (including internal business use, enterprise deployment, client work, paid services, or proprietary distribution). Contact the author via [GitHub (@AlexTkDev)](https://github.com/AlexTkDev) or [LinkedIn](https://www.linkedin.com/in/aleksandrtk/) for licensing inquiries.
 
-> **Trademark Notice**: The license does not grant permission to use the project name ("MacOSCleaner"), logos, or branding in derivative works.
-
-
-[def]: communit
+> **Trademark Notice**: The license does not grant permission to use the project names ("MacOSCleaner", "MacOS Cleaner"), logos, icons, or branding in modified versions or third-party redistributions.

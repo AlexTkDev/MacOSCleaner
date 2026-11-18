@@ -1,5 +1,6 @@
 // Copyright (C) 2026 AlexTkDev
-// Licensed under GNU General Public License v3.0 (GPLv3)
+// SPDX-License-Identifier: LicenseRef-MacOSCleaner-GPLv3-Commons-NC
+// Licensed under GNU GPLv3 with Commons Clause v1.0 & Non-Commercial Condition (see LICENSE).
 
 import SwiftUI
 import OSLog
@@ -124,9 +125,7 @@ struct MacOSCleanerApp: App {
                 .disabled(isCheckingForUpdates)
                 
                 Button("menu_donate".localized) {
-                    if let url = URL(string: "https://github.com/AlexTkDev/MacOSCleaner/blob/main/DONATE.md") {
-                        NSWorkspace.shared.open(url)
-                    }
+                    NSWorkspace.shared.open(UpdateChecker.donateURL)
                 }
             }
             
