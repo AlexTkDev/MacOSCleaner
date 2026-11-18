@@ -40,6 +40,18 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
 
 section { scroll-margin-top: 60px; }
 
+/* Partners is the last block, so a fragment scroll clamps and leaves the
+   heading at the bottom. Extra room exists only while that hash is active. */
+#footer-partners,
+#footer-partners-heading {
+  scroll-margin-top: 72px;
+}
+
+html:has(#footer-partners:target),
+html:has(#footer-partners-heading:target) {
+  padding-bottom: calc(100vh - 72px);
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg);

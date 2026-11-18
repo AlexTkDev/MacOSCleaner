@@ -13,8 +13,8 @@ function syncViewportHeight() {
   const video = currentSlide.querySelector('video');
   if (video) {
     const applyVideo = () => {
-      const w = video.videoWidth;
-      const h = video.videoHeight;
+      const w = video.videoWidth || Number(video.getAttribute('width'));
+      const h = video.videoHeight || Number(video.getAttribute('height'));
       if (w && h) {
         viewport.style.height = `${Math.round(viewport.clientWidth * (h / w))}px`;
       } else {
@@ -103,6 +103,61 @@ if (shotNext) shotNext.addEventListener('click', () => goToSlide(slideIndex + 1)
 
 window.addEventListener('resize', syncViewportHeight);
 updateCarousel();
+
+// The partners block is the last content on the page, and the demo video
+// used to grow the screenshot stage after the browser had already scrolled
+// to the hash. Re-align once layout settles, unless the reader has scrolled.
+function partnersHashId() {
+  const hash = location.hash;
+  if (!hash || hash === '#') return '';
+  try {
+    return decodeURIComponent(hash.slice(1));
+  } catch (err) {
+    return '';
+  }
+}
+
+function isPartnersHash(id) {
+  return id === 'footer-partners' || id === 'footer-partners-heading';
+}
+
+function scrollPartnersHashIntoView() {
+  const id = partnersHashId();
+  if (!isPartnersHash(id)) return;
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.scrollIntoView({ block: 'start', behavior: 'instant' });
+}
+
+let partnersHashUserMoved = false;
+function notePartnersHashUserMoved(event) {
+  if (event && event.type === 'keydown') {
+    const key = event.key;
+    if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'PageUp' && key !== 'PageDown' && key !== 'Home' && key !== 'End' && key !== ' ') return;
+  }
+  partnersHashUserMoved = true;
+}
+
+function alignPartnersHash() {
+  if (!partnersHashUserMoved) scrollPartnersHashIntoView();
+}
+
+if (isPartnersHash(partnersHashId())) {
+  window.addEventListener('wheel', notePartnersHashUserMoved, { passive: true });
+  window.addEventListener('touchmove', notePartnersHashUserMoved, { passive: true });
+  window.addEventListener('keydown', notePartnersHashUserMoved);
+  alignPartnersHash();
+  window.addEventListener('load', alignPartnersHash);
+  if (demoVideo) {
+    demoVideo.addEventListener('loadedmetadata', () => requestAnimationFrame(alignPartnersHash));
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  if (!isPartnersHash(partnersHashId())) return;
+  partnersHashUserMoved = false;
+  scrollPartnersHashIntoView();
+});
 
 document.addEventListener('keydown', (e) => {
   const screenshots = document.getElementById('screenshots');
