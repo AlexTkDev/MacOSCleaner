@@ -2576,6 +2576,21 @@ footer a img {
   flex: 0 0 auto;
 }
 
+/* No JS: the static list is a direct child. Wrap it instead of clipping the marquee. */
+.footer-partners-marquee:not(:has(.footer-partners-track)) {
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.footer-partners-marquee > .footer-partners-set {
+  flex-wrap: wrap;
+  justify-content: center;
+  width: auto;
+  padding-right: 0;
+  row-gap: 12px;
+}
+
 .footer-partners a {
   display: inline-flex;
   align-items: center;
