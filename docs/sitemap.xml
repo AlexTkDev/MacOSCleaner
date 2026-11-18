@@ -12,7 +12,7 @@
       <image:caption>MacOSCleaner Apple Silicon Native Dashboard with Storage Rings and Category Breakdown</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.png</image:loc>
+      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.jpg</image:loc>
       <image:title>MacOSCleaner Banner</image:title>
       <image:caption>Free source-available macOS cleaner (GPLv3 + Commons Clause) for Apple Silicon</image:caption>
     </image:image>
@@ -28,7 +28,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.png</image:loc>
+      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.jpg</image:loc>
       <image:title>About MacOSCleaner</image:title>
       <image:caption>Architecture, safety mechanisms, and uninstaller forensic scanner details</image:caption>
     </image:image>
@@ -39,7 +39,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
-      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.png</image:loc>
+      <image:loc>https://alextkdev.github.io/MacOSCleaner/static/og-banner.jpg</image:loc>
       <image:title>Support MacOSCleaner</image:title>
       <image:caption>Support development via Ko-fi and Cryptocurrency</image:caption>
     </image:image>
