@@ -104,9 +104,9 @@ if (shotNext) shotNext.addEventListener('click', () => goToSlide(slideIndex + 1)
 window.addEventListener('resize', syncViewportHeight);
 updateCarousel();
 
-// The partners block is the last content on the page, and the demo video
-// used to grow the screenshot stage after the browser had already scrolled
-// to the hash. Re-align once layout settles, unless the reader has scrolled.
+// Partners are the last block. Scroll the page to its real bottom so the
+// badges sit in view and the footer ends with the document. Re-run after
+// the marquee, video metadata, and load, unless the reader has scrolled.
 function partnersHashId() {
   const hash = location.hash;
   if (!hash || hash === '#') return '';
@@ -122,11 +122,9 @@ function isPartnersHash(id) {
 }
 
 function scrollPartnersHashIntoView() {
-  const id = partnersHashId();
-  if (!isPartnersHash(id)) return;
-  const target = document.getElementById(id);
-  if (!target) return;
-  target.scrollIntoView({ block: 'start', behavior: 'instant' });
+  if (!isPartnersHash(partnersHashId())) return;
+  const scroller = document.scrollingElement || document.documentElement;
+  window.scrollTo({ top: scroller.scrollHeight, left: 0, behavior: 'instant' });
 }
 
 let partnersHashUserMoved = false;
