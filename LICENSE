@@ -1,24 +1,80 @@
-The Commons Clause Option to GNU General Public License v3.0
+GNU General Public License v3.0 with Commons Clause v1.0 & Non-Commercial Condition
 
 Copyright (C) 2026 AlexTkDev (https://github.com/AlexTkDev)
 ORCID: https://orcid.org/0009-0002-8907-5406
 
+The Software is provided to you by the Licensor under the terms of the GNU
+General Public License v3.0 (GPLv3) set forth below, strictly subject to the
+"Commons Clause" License Condition v1.0, the Non-Commercial & Educational Use
+Condition, and the Trademark & Branding Restrictions stated below (collectively,
+the "Additional Conditions").
+
+Notwithstanding Sections 2, 4, 7, and 10 of the GPLv3, these Additional
+Conditions are binding scope limitations placed on the original work by the sole
+copyright holder (the Licensor, who is not a "licensee" or "you" under Section 0
+of the GPLv3). No recipient or downstream party may remove, waive, or sever
+these Additional Conditions under Section 7 or otherwise.
+
 ----------------------------------------------------------------------
-COMMONS CLAUSE CONDITION v1.0
+"COMMONS CLAUSE" LICENSE CONDITION v1.0
 ----------------------------------------------------------------------
 
-The Software is provided to you under the terms of the GNU General Public
-License v3.0 (GPLv3) specified below, subject to the following condition:
+The Software is provided to you by the Licensor under the License, as defined
+below, subject to the following condition.
 
 Without limiting other conditions in the License, the grant of rights under the
-License does not include the right to Sell the Software.
+License will not include, and the License does not grant to you, the right to
+Sell the Software.
 
 For purposes of the foregoing, "Sell" means practicing any or all of the rights
 granted to you under the License to provide to third parties, for a fee or
-other consideration (including without limitation the provisioning of a service,
-downloads, or distribution for payment), a product or service whose value
-derives, entirely or substantially, from the functionality of the Software or
-a derivative work.
+other consideration (including without limitation fees for hosting or
+consulting/support services related to the Software), a product or service whose
+value derives, entirely or substantially, from the functionality of the
+Software. Any license notice or attribution required by the License must also
+include this Commons Clause License Condition notice.
+
+Software: MacOSCleaner ("MacOS Cleaner")
+License: GNU General Public License v3.0 (subject to the Additional Conditions herein)
+Licensor: Aleksandr (AlexTkDev — https://github.com/AlexTkDev)
+
+----------------------------------------------------------------------
+NON-COMMERCIAL & EDUCATIONAL USE CONDITION
+----------------------------------------------------------------------
+
+Free permission under this License is granted solely for:
+  1. Personal, private, non-commercial use by a natural person on their own
+     devices;
+  2. Academic, classroom, or non-commercial educational and research projects;
+     and
+  3. Non-commercial evaluation, testing, good-faith security research, and
+     submitting upstream contributions to the official repository
+     (https://github.com/AlexTkDev/MacOSCleaner).
+
+Neither a legal entity (including any company, corporation, enterprise,
+partnership, or organization acting in a commercial or business capacity) nor a
+natural person (including any freelancer, contractor, consultant, or sole
+proprietor) may copy, run, modify, integrate, or distribute the Software, its
+source code, or any derivative work for any commercial purpose — including
+internal business operations, employee workstations, client deliverables, paid
+services, SaaS, or commercial bundling — without first contacting the Licensor
+and obtaining explicit written permission or a separate Commercial License:
+  - GitHub: https://github.com/AlexTkDev
+  - LinkedIn: https://www.linkedin.com/in/aleksandrtk/
+
+----------------------------------------------------------------------
+TRADEMARK & BRANDING RESTRICTIONS
+----------------------------------------------------------------------
+
+This License does not grant permission to use the trade names, trademarks,
+service marks, application icons, logo graphics, or product names of the
+Licensor (including "MacOSCleaner", "MacOS Cleaner", and associated artwork),
+except as strictly required for reasonable and customary nominative use in
+describing the origin of the work or maintaining an unmodified fork on GitHub
+solely for personal study or submitting upstream Pull Requests to the official
+repository. Any modified version, derivative work, or third-party package or
+binary redistribution MUST remove and replace all official project branding,
+names, logos, and icons.
 
 ----------------------------------------------------------------------
 GNU GENERAL PUBLIC LICENSE

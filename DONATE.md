@@ -39,3 +39,11 @@ TAQBrzZuAvJ5Zga7touVzNGXXJykEVp7sp
 `Alex8695`
 
 USDT (TRC20), USDT (BEP20), USDT (TON) and Binance Pay are recommended due to low or zero transaction fees.
+
+---
+
+## Legal Notice
+
+- **Voluntary Gift**: Donations are voluntary, unconditional, non-refundable gifts to support independent development. Donations are not charitable contributions and are not tax-deductible.
+- **No Commercial License or Warranty**: A donation is not a purchase of goods or services and does not grant a Commercial License, technical support, SLA, feature priority, or any warranty. Commercial use of MacOSCleaner requires separate written permission or a Commercial License (see [`LICENSE`](LICENSE)).
+- **Irreversible Transfers**: Cryptocurrency transactions cannot be reversed. Please verify the exact token and network (`TRC20`, `BEP20`, `ERC20`, `TON`, `BTC SegWit`, `Solana`) before sending; funds sent to a wrong address or incompatible network cannot be recovered.
