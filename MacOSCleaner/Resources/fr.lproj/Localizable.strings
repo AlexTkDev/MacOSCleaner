@@ -1166,3 +1166,10 @@
 "uninstaller_spotlight_disabled" = "L'indexation Spotlight est désactivée. Les dates de dernière utilisation reposent sur l'accès fichier et la recherche utilise uniquement l'heuristique.";
 "scan_updated_at" = "Mis à jour %@";
 "scan_updated_just_now" = "à l'instant";
+"cleanup_restart_recommended_title" = "Redémarrage recommandé";
+"cleanup_restart_recommended_body" = "Les services macOS peuvent conserver des références aux caches supprimés en mémoire. Un redémarrage libère les blocs APFS et actualise les index système.";
+"cleanup_restart_required_title" = "Redémarrage requis";
+"cleanup_restart_font_cache_body" = "Le cache des polices système a été vidé. Redémarrez votre Mac pour éviter des anomalies d'affichage du texte dans les apps ouvertes.";
+"uninstaller_restart_recommended_title" = "Redémarrage recommandé";
+"uninstaller_restart_recommended_body" = "Des composants système (daemons, extensions ou modules) ont été supprimés. Redémarrez votre Mac pour les décharger complètement de la mémoire.";
+"restart_mac_button" = "Redémarrer le Mac…";

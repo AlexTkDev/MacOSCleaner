@@ -28,6 +28,7 @@ public final class CleanupCoordinator {
     public var totalFreedBytes: Int64 = 0
     public var apfsDeltaBytes: Int64? = nil
     public var usedPermanentDeletion: Bool = false
+    public var cleanedFontCache: Bool = false
     public var cleanedItems: [CleanupResultItem] = []
     public var skippedItems: [SkippedCleanupItem] = []
     public var lastError: String? = nil
@@ -135,6 +136,7 @@ public final class CleanupCoordinator {
                 try self.stateMachine.transition(to: .executing)
                 self.totalFreedBytes = 0
                 self.apfsDeltaBytes = nil
+                self.cleanedFontCache = false
                 let isImmediatePermanent = self.settings.bypassTrashOnUninstall || self.settings.emptyTrashDuringCleanup
                 self.usedPermanentDeletion = isImmediatePermanent
                 let sessionDeletionMode: OperationRecord.DeletionMode = isImmediatePermanent ? .permanent : .trash
@@ -166,6 +168,7 @@ public final class CleanupCoordinator {
                 let categories = self.itemManager.selectedCleanupCategories(from: options.categories())
                 // Review-only categories — never run category-level wipe.
                 let safeCategories = categories.filter { !CleanupCategory.reviewOnly.contains($0) }
+                self.cleanedFontCache = safeCategories.contains(.fontCache)
                 var records: [OperationRecord] = []
                 var hadPartialFailure = false
                 
@@ -440,6 +443,7 @@ public final class CleanupCoordinator {
         totalFreedBytes = 0
         apfsDeltaBytes = nil
         usedPermanentDeletion = false
+        cleanedFontCache = false
         currentStep = 0
         stepTitle = ""
         lastError = nil

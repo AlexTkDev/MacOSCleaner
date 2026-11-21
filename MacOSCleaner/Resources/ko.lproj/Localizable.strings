@@ -1204,3 +1204,10 @@
 "uninstaller_spotlight_disabled" = "Spotlight 색인이 꺼져 있습니다. 마지막 사용 날짜는 파일 접근 메타데이터를 사용하며 잔여 파일 검색은 휴리스틱만 사용합니다.";
 "scan_updated_at" = "업데이트: %@";
 "scan_updated_just_now" = "방금 전";
+"cleanup_restart_recommended_title" = "재시동 권장";
+"cleanup_restart_recommended_body" = "macOS 백그라운드 서비스가 삭제된 캐시에 대한 핸들을 메모리에 유지할 수 있습니다. 재시동하면 남은 APFS 블록이 해제되고 시스템 인덱스가 새로고침됩니다.";
+"cleanup_restart_required_title" = "재시동 필요";
+"cleanup_restart_font_cache_body" = "시스템 서체 캐시를 비웠습니다. 열려 있는 앱에서 텍스트 렌더링 오류가 발생하지 않도록 Mac을 재시동하세요.";
+"uninstaller_restart_recommended_title" = "재시동 권장";
+"uninstaller_restart_recommended_body" = "시스템 구성 요소(데몬, 확장 프로그램 또는 플러그인)가 제거되었습니다. 메모리에서 완전히 언로드하려면 Mac을 재시동하세요.";
+"restart_mac_button" = "Mac 재시동…";

@@ -599,4 +599,33 @@ final class UninstallerServiceTests: XCTestCase {
         await store.startupServicesViewModel.scanIfNeeded()
         XCTAssertEqual(store.startupServicesViewModel.lastUpdatedAt, fixedDate)
     }
+
+    func testRequiresRestartForRemovedPaths() {
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/LaunchDaemons/com.example.helper.plist")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/SystemExtensions/1234/com.example.ext.systemextension")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/Extensions/ExampleDriver.kext")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/PrivilegedHelperTools/com.example.tool")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/Audio/Plug-Ins/HAL/ExampleAudio.driver")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Applications/Example.app"),
+            URL(fileURLWithPath: "/tmp/Custom.kext")
+        ]))
+
+        XCTAssertFalse(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Applications/Example.app"),
+            URL(fileURLWithPath: "/Users/test/Library/LaunchAgents/com.example.agent.plist"),
+            URL(fileURLWithPath: "/Users/test/Library/Caches/com.example.app"),
+            URL(fileURLWithPath: "/Users/test/Library/Preferences/com.example.app.plist")
+        ]))
+    }
 }

@@ -1167,3 +1167,10 @@
 "uninstaller_spotlight_disabled" = "Spotlight のインデックス作成が無効です。最終使用日はファイルアクセス情報を使用し、検索はヒューリスティックのみで行われます。";
 "scan_updated_at" = "更新: %@";
 "scan_updated_just_now" = "たった今";
+"cleanup_restart_recommended_title" = "再起動をおすすめします";
+"cleanup_restart_recommended_body" = "macOS のバックグラウンドサービスが削除済みキャッシュをメモリ上に保持している場合があります。再起動すると残りの APFS ブロックが解放され、システムインデックスが更新されます。";
+"cleanup_restart_required_title" = "再起動が必要です";
+"cleanup_restart_font_cache_body" = "システムフォントキャッシュを消去しました。開いているアプリでの文字表示の崩れを防ぐため、Mac を再起動してください。";
+"uninstaller_restart_recommended_title" = "再起動をおすすめします";
+"uninstaller_restart_recommended_body" = "システムコンポーネント（デーモン、機能拡張、またはプラグイン）を削除しました。メモリから完全にアンロードするため、Mac を再起動してください。";
+"restart_mac_button" = "Mac を再起動…";

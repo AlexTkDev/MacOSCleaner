@@ -1133,4 +1133,27 @@ public actor UninstallerService {
         let name = url.lastPathComponent.lowercased()
         return sharedCLIConfigNames.contains(name)
     }
+
+    /// True when any removed path belongs to system-wide daemons, kernel/system extensions,
+    /// privileged helpers, or hardware plug-ins that stay resident until reboot.
+    public static func requiresRestartForRemovedPaths(_ urls: [URL]) -> Bool {
+        let systemComponentPrefixes = [
+            "/library/launchdaemons/",
+            "/library/systemextensions/",
+            "/library/extensions/",
+            "/library/privilegedhelpertools/",
+            "/library/audio/plug-ins/",
+            "/library/coremediaio/plug-ins/",
+            "/library/filesystems/",
+            "/library/security/securityagentplugins/"
+        ]
+        return urls.contains { url in
+            let normalized = NormalizedPath.lowercaseKey(url.path)
+            if systemComponentPrefixes.contains(where: { normalized.hasPrefix($0) }) {
+                return true
+            }
+            let ext = url.pathExtension.lowercased()
+            return ext == "kext" || ext == "systemextension"
+        }
+    }
 }

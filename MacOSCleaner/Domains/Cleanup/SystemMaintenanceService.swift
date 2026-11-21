@@ -3,6 +3,8 @@
 // Licensed under GNU GPLv3 with Commons Clause v1.0 & Non-Commercial Condition (see LICENSE).
 
 import Foundation
+import AppKit
+import Carbon
 import LocalAuthentication
 import os.log
 
@@ -86,5 +88,42 @@ public final class SystemMaintenanceService {
             Logger.maintenance.error("Gatekeeper cache purge failed: \(error.localizedDescription, privacy: .public)")
             throw error
         }
+    }
+
+    @MainActor
+    @discardableResult
+    public static func requestSystemRestart() -> Bool {
+        // Send kAERestart to loginwindow so macOS displays its standard confirmation dialog
+        // with countdown and open-windows preservation instead of forcing an abrupt reboot.
+        let target = NSAppleEventDescriptor(bundleIdentifier: "com.apple.loginwindow")
+        let event = NSAppleEventDescriptor(
+            eventClass: AEEventClass(kCoreEventClass),
+            eventID: AEEventID(kAERestart),
+            targetDescriptor: target,
+            returnID: AEReturnID(kAutoGenerateReturnID),
+            transactionID: AETransactionID(kAnyTransactionID)
+        )
+
+        if let aeDesc = event.aeDesc {
+            let status = AESendMessage(aeDesc, nil, AESendMode(kAENoReply), kAEDefaultTimeout)
+            if status == noErr {
+                Logger.maintenance.info("Requested standard system restart via loginwindow AppleEvent")
+                return true
+            }
+            Logger.maintenance.warning("AESendMessage restart failed with OSStatus \(status, privacy: .public), falling back to NSAppleScript")
+        }
+
+        guard let script = NSAppleScript(source: "tell application \"loginwindow\" to «event aevtrrst»") else {
+            Logger.maintenance.error("Failed to create loginwindow restart NSAppleScript")
+            return false
+        }
+        var errorInfo: NSDictionary?
+        script.executeAndReturnError(&errorInfo)
+        if let errorInfo {
+            Logger.maintenance.error("NSAppleScript restart failed: \(String(describing: errorInfo), privacy: .public)")
+            return false
+        }
+        Logger.maintenance.info("Requested standard system restart via NSAppleScript fallback")
+        return true
     }
 }

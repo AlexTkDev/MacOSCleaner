@@ -1204,3 +1204,10 @@
 "uninstaller_spotlight_disabled" = "Indeksowanie Spotlight jest wyłączone. Daty ostatniego użycia korzystają z metadanych dostępu do pliku, a wyszukiwanie używa tylko heurystyki.";
 "scan_updated_at" = "Zaktualizowano %@";
 "scan_updated_just_now" = "przed chwilą";
+"cleanup_restart_recommended_title" = "Zalecane ponowne uruchomienie";
+"cleanup_restart_recommended_body" = "Usługi systemowe macOS mogą utrzymywać w pamięci odwołania do usuniętych pamięci podręcznych. Ponowne uruchomienie zwalnia bloki APFS i odświeża indeksy.";
+"cleanup_restart_required_title" = "Wymagane ponowne uruchomienie";
+"cleanup_restart_font_cache_body" = "Wyczyszczono systemową pamięć podręczną czcionek. Uruchom ponownie Maca, aby uniknąć błędów renderowania tekstu w otwartych aplikacjach.";
+"uninstaller_restart_recommended_title" = "Zalecane ponowne uruchomienie";
+"uninstaller_restart_recommended_body" = "Usunięto komponenty systemowe (demony, rozszerzenia lub wtyczki). Uruchom ponownie Maca, aby całkowicie usunąć je z pamięci.";
+"restart_mac_button" = "Uruchom ponownie Maca…";

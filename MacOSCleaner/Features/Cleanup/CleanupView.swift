@@ -551,6 +551,10 @@ public struct CleanupView: View {
                     }
                 }
 
+                if !viewModel.cleanedItems.isEmpty || viewModel.cleanedFontCache {
+                    restartRecommendationCard
+                }
+
                 HStack(spacing: 12) {
                     Button("dashboard_view_all_history".localized) {
                         openWindow(id: "cleanup-history")
@@ -572,6 +576,51 @@ public struct CleanupView: View {
             .padding(.horizontal, 24)
         }
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
+    }
+
+    @ViewBuilder
+    private var restartRecommendationCard: some View {
+        let isRequired = viewModel.cleanedFontCache
+        let accentColor: Color = isRequired ? .orange : .accentColor
+        let iconName = isRequired ? "exclamationmark.triangle.fill" : "arrow.trianglehead.2.clockwise.rotate.90"
+        let titleKey = isRequired ? "cleanup_restart_required_title" : "cleanup_restart_recommended_title"
+        let bodyKey = isRequired ? "cleanup_restart_font_cache_body" : "cleanup_restart_recommended_body"
+
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: iconName)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(accentColor)
+                .frame(width: 28, height: 28)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(titleKey.localized)
+                    .font(.subheadline.weight(.semibold))
+                Text(bodyKey.localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            Button {
+                SystemMaintenanceService.requestSystemRestart()
+            } label: {
+                Label("restart_mac_button".localized, systemImage: "power")
+                    .font(.subheadline.weight(.medium))
+            }
+            .buttonStyle(.glass)
+            .tint(accentColor)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(accentColor.opacity(isRequired ? 0.10 : 0.06))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(accentColor.opacity(isRequired ? 0.30 : 0.18), lineWidth: 1)
+        )
     }
     
     private func statusView(

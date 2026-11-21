@@ -1204,3 +1204,10 @@
 "uninstaller_spotlight_disabled" = "فهرسة Spotlight متوقفة. تعتمد تواريخ آخر استخدام على بيانات الوصول للملف ويقتصر البحث على المسارات الاستدلالية.";
 "scan_updated_at" = "تم التحديث %@";
 "scan_updated_just_now" = "الآن";
+"cleanup_restart_recommended_title" = "يُوصى بإعادة التشغيل";
+"cleanup_restart_recommended_body" = "قد تحتفظ خدمات macOS الخلفية بمراجع في الذاكرة للملفات المؤقتة المحذوفة. تساعد إعادة التشغيل في تحرير كتل APFS المتبقية وتحديث فهارس النظام.";
+"cleanup_restart_required_title" = "يلزم إعادة التشغيل";
+"cleanup_restart_font_cache_body" = "تم مسح ذاكرة التخزين المؤقت لخطوط النظام. أعد تشغيل Mac لتجنب أخطاء عرض النص في التطبيقات المفتوحة.";
+"uninstaller_restart_recommended_title" = "يُوصى بإعادة التشغيل";
+"uninstaller_restart_recommended_body" = "تمت إزالة مكونات النظام (الخدمات الخلفية أو الملحقات أو الإضافات). أعد تشغيل Mac لإفراغها بالكامل من الذاكرة.";
+"restart_mac_button" = "إعادة تشغيل Mac…";

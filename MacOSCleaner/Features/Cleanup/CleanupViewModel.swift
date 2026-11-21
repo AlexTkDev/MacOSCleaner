@@ -18,6 +18,7 @@ public final class CleanupViewModel {
     public var totalFreedBytes: Int64 { coordinator.totalFreedBytes }
     public var apfsDeltaBytes: Int64? { coordinator.apfsDeltaBytes }
     public var usedPermanentDeletion: Bool { coordinator.usedPermanentDeletion }
+    public var cleanedFontCache: Bool { coordinator.cleanedFontCache }
     public var cleanedItems: [CleanupResultItem] { coordinator.cleanedItems }
     public var skippedItems: [SkippedCleanupItem] { coordinator.skippedItems }
     public var lastError: String? { coordinator.lastError }

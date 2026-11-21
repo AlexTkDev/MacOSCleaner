@@ -1203,3 +1203,10 @@
 "uninstaller_spotlight_disabled" = "Индексация Spotlight выключена. Даты запуска определяются по метаданным доступа, поиск остатков работает только по эвристике.";
 "scan_updated_at" = "Обновлено %@";
 "scan_updated_just_now" = "только что";
+"cleanup_restart_recommended_title" = "Рекомендуется перезагрузка";
+"cleanup_restart_recommended_body" = "Системные службы macOS могут удерживать удалённые кэши в памяти. Перезагрузка полностью освободит блоки APFS и обновит индексы.";
+"cleanup_restart_required_title" = "Требуется перезагрузка";
+"cleanup_restart_font_cache_body" = "Системный кэш шрифтов очищен. Перезагрузите Mac, чтобы избежать искажений текста в открытых приложениях.";
+"uninstaller_restart_recommended_title" = "Рекомендуется перезагрузка";
+"uninstaller_restart_recommended_body" = "Удалены системные компоненты (демоны, расширения или плагины). Перезагрузите Mac для их полной выгрузки из памяти.";
+"restart_mac_button" = "Перезагрузить Mac…";

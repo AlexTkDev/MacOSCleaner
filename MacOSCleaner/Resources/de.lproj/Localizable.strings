@@ -1168,3 +1168,10 @@
 "uninstaller_spotlight_disabled" = "Die Spotlight-Indizierung ist deaktiviert. Zuletzt-verwendet-Daten nutzen Dateizugriffsmetadaten und die Suche verwendet nur Heuristiken.";
 "scan_updated_at" = "Aktualisiert %@";
 "scan_updated_just_now" = "gerade eben";
+"cleanup_restart_recommended_title" = "Neustart empfohlen";
+"cleanup_restart_recommended_body" = "macOS-Hintergrunddienste halten möglicherweise noch offene Verweise auf gelöschte Caches. Ein Neustart gibt APFS-Blöcke frei und aktualisiert Systemindizes.";
+"cleanup_restart_required_title" = "Neustart erforderlich";
+"cleanup_restart_font_cache_body" = "Der System-Schriftcache wurde geleert. Starten Sie Ihren Mac neu, um Darstellungsfehler in geöffneten Apps zu vermeiden.";
+"uninstaller_restart_recommended_title" = "Neustart empfohlen";
+"uninstaller_restart_recommended_body" = "Systemkomponenten (Daemons, Erweiterungen oder Plug-ins) wurden entfernt. Starten Sie Ihren Mac neu, um sie vollständig aus dem Speicher zu entladen.";
+"restart_mac_button" = "Mac neu starten…";

@@ -1204,3 +1204,10 @@
 "uninstaller_spotlight_disabled" = "Spotlight indexing is turned off. Last-used dates fall back to file access metadata and search uses heuristic paths only.";
 "scan_updated_at" = "Updated %@";
 "scan_updated_just_now" = "just now";
+"cleanup_restart_recommended_title" = "Restart Recommended";
+"cleanup_restart_recommended_body" = "macOS background daemons may hold open handles to deleted caches in memory. Restarting frees remaining APFS blocks and refreshes system indexes.";
+"cleanup_restart_required_title" = "Restart Required";
+"cleanup_restart_font_cache_body" = "The system font cache was cleared. Restart your Mac so open apps rebuild font tables and avoid text rendering glitches.";
+"uninstaller_restart_recommended_title" = "Restart Recommended";
+"uninstaller_restart_recommended_body" = "System components (daemons, extensions, or plug-ins) were removed. Restart your Mac to unload them completely from memory.";
+"restart_mac_button" = "Restart Mac…";

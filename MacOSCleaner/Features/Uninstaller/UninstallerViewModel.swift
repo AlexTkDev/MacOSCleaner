@@ -28,6 +28,7 @@ public final class UninstallerViewModel {
     public var showingPostUninstallSheet = false
     public var uninstallErrorMessage: String? = nil
     public var showingUninstallErrorAlert = false
+    public var showingRestartBanner = false
     public var isSpotlightAvailable: Bool = true
     public var lastUpdatedAt: Date? = nil
 
@@ -208,6 +209,7 @@ public final class UninstallerViewModel {
         let emptyTrash = settings.emptyTrashDuringCleanup
         let removeFromDock = settings.removeFromDockOnUninstall
         let showNotifications = settings.showNotifications
+        let candidateURLs = Self.selectedRemovalURLs(for: app)
 
         Task {
             defer { isUninstalling = false }
@@ -218,6 +220,8 @@ public final class UninstallerViewModel {
                     emptyTrashImmediately: emptyTrash,
                     removeFromDock: removeFromDock
                 )
+
+                updateRestartBanner(for: candidateURLs, report: report)
 
                 loadApps(mode: mode)
                 selectedApp = nil
@@ -244,6 +248,7 @@ public final class UninstallerViewModel {
         let emptyTrash = settings.emptyTrashDuringCleanup
         let removeFromDock = settings.removeFromDockOnUninstall
         let showNotifications = settings.showNotifications
+        let candidateURLs = Self.selectedRemovalURLs(for: versionApp)
 
         Task {
             defer { isUninstalling = false }
@@ -254,6 +259,8 @@ public final class UninstallerViewModel {
                     emptyTrashImmediately: emptyTrash,
                     removeFromDock: removeFromDock
                 )
+
+                updateRestartBanner(for: candidateURLs, report: report)
 
                 if let report, report.hasLeftovers || !report.failedDeletions.isEmpty {
                     postUninstallReport = report
@@ -303,6 +310,10 @@ public final class UninstallerViewModel {
         Task {
             do {
                 let freed = try await service.removeLeftovers(items, bypassTrash: bypassTrash)
+                let removedURLs = items.map(\.url).filter { !FileManager.default.fileExists(atPath: $0.path) }
+                if UninstallerService.requiresRestartForRemovedPaths(removedURLs) {
+                    showingRestartBanner = true
+                }
                 self.showingPostUninstallSheet = false
                 self.postUninstallReport = nil
                 if showNotifications {
@@ -318,6 +329,23 @@ public final class UninstallerViewModel {
                 Logger.uninstallerVM.error("Failed to clean leftovers: \(error.localizedDescription, privacy: .public)")
             }
         }
+    }
+
+    private func updateRestartBanner(for candidateURLs: [URL], report: VerificationReport?) {
+        let failedKeys = Set((report?.failedDeletions ?? []).map { NormalizedPath.key($0.url) })
+        let removedURLs = candidateURLs.filter { !failedKeys.contains(NormalizedPath.key($0)) }
+        if UninstallerService.requiresRestartForRemovedPaths(removedURLs) {
+            showingRestartBanner = true
+        }
+    }
+
+    private static func selectedRemovalURLs(for app: UninstallerService.AppInfo) -> [URL] {
+        if !app.versions.isEmpty {
+            return app.versions.flatMap { selectedRemovalURLs(for: $0) }
+        }
+        return [app.url]
+            + app.relatedFiles.filter(\.isSelected).map(\.url)
+            + app.developerComponents.filter(\.isSelected).map(\.url)
     }
 
     public func toggleSelection(_ file: UninstallerService.RelatedFile, in app: UninstallerService.AppInfo) {
@@ -397,6 +425,9 @@ public final class UninstallerViewModel {
                 let result = try await service.removeOrphanedResiduals(targets, bypassTrash: bypassTrash)
                 let removedIDs = Set(result.succeededItems.map(\.id))
                 self.orphanItems.removeAll { removedIDs.contains($0.id) }
+                if UninstallerService.requiresRestartForRemovedPaths(result.succeededItems.map(\.url)) {
+                    self.showingRestartBanner = true
+                }
 
                 if !result.failedItems.isEmpty {
                     self.orphanErrorMessage = String(format: "orphaned_cleanup_failed_count".localized, Int64(result.failedItems.count))

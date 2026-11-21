@@ -1167,3 +1167,10 @@
 "uninstaller_spotlight_disabled" = "L'indicizzazione Spotlight è disattivata. Le date di ultimo utilizzo usano i metadati di accesso ai file e la ricerca usa solo l'euristica.";
 "scan_updated_at" = "Aggiornato %@";
 "scan_updated_just_now" = "proprio ora";
+"cleanup_restart_recommended_title" = "Riavvio consigliato";
+"cleanup_restart_recommended_body" = "I servizi di macOS potrebbero mantenere in memoria riferimenti alle cache eliminate. Il riavvio libera i blocchi APFS residui e aggiorna gli indici.";
+"cleanup_restart_required_title" = "Riavvio necessario";
+"cleanup_restart_font_cache_body" = "La cache dei font di sistema è stata svuotata. Riavvia il Mac per evitare problemi di rendering del testo nelle app aperte.";
+"uninstaller_restart_recommended_title" = "Riavvio consigliato";
+"uninstaller_restart_recommended_body" = "Sono stati rimossi componenti di sistema (daemon, estensioni o plug-in). Riavvia il Mac per scaricarli completamente dalla memoria.";
+"restart_mac_button" = "Riavvia il Mac…";

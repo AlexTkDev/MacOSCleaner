@@ -83,6 +83,9 @@ struct UninstallerView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
                 }
+                if viewModel.showingRestartBanner {
+                    uninstallerRestartBanner
+                }
                 if viewModel.selectedTab == .applications {
                     applicationsContentView
                 } else {
@@ -185,6 +188,47 @@ struct UninstallerView: View {
                 Text(message)
             }
         }
+    }
+
+    private var uninstallerRestartBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.orange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("uninstaller_restart_recommended_title".localized)
+                    .font(.callout.weight(.semibold))
+                Text("uninstaller_restart_recommended_body".localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            Button {
+                SystemMaintenanceService.requestSystemRestart()
+            } label: {
+                Label("restart_mac_button".localized, systemImage: "power")
+                    .font(.callout.weight(.medium))
+            }
+            .buttonStyle(.glass)
+            .tint(.orange)
+
+            Button {
+                viewModel.showingRestartBanner = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("close".localized)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.orange.opacity(0.08))
     }
 
     private var uninstallerHeaderBar: some View {

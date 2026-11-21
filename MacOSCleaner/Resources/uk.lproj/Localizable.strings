@@ -1200,3 +1200,10 @@
 "uninstaller_spotlight_disabled" = "Індексація Spotlight вимкнена. Дати запуску визначаються за метаданими доступу, пошук залишків працює лише за евристикою.";
 "scan_updated_at" = "Оновлено %@";
 "scan_updated_just_now" = "щойно";
+"cleanup_restart_recommended_title" = "Рекомендується перезавантаження";
+"cleanup_restart_recommended_body" = "Системні служби macOS можуть утримувати видалені кеші в пам’яті. Перезавантаження повністю звільнить блоки APFS та оновить індекси.";
+"cleanup_restart_required_title" = "Потрібне перезавантаження";
+"cleanup_restart_font_cache_body" = "Системний кеш шрифтів очищено. Перезавантажте Mac, щоб уникнути помилок відображення тексту у відкритих програмах.";
+"uninstaller_restart_recommended_title" = "Рекомендується перезавантаження";
+"uninstaller_restart_recommended_body" = "Видалено системні компоненти (демони, розширення або плагіни). Перезавантажте Mac, щоб повністю вивантажити їх із пам’яті.";
+"restart_mac_button" = "Перезавантажити Mac…";

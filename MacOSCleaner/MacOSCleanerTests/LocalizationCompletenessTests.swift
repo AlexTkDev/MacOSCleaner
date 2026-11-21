@@ -147,7 +147,14 @@ final class LocalizationCompletenessTests: XCTestCase {
         "uninstaller_browser_data_confirm_warning",
         "uninstaller_spotlight_disabled",
         "scan_updated_at",
-        "scan_updated_just_now"
+        "scan_updated_just_now",
+        "cleanup_restart_recommended_title",
+        "cleanup_restart_recommended_body",
+        "cleanup_restart_required_title",
+        "cleanup_restart_font_cache_body",
+        "uninstaller_restart_recommended_title",
+        "uninstaller_restart_recommended_body",
+        "restart_mac_button"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {
