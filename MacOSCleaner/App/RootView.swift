@@ -8,12 +8,30 @@ import SwiftUI
 struct RootView: View {
     @State private var selectedItem: NavigationItem = .dashboard
     @State private var privacyFilterBundleID: String? = nil
+    @State private var workspaceStore: WorkspaceStore
     let cleanupViewModel: CleanupViewModel
     let journal: TransactionJournal
     let appSettings: AppSettings
     @Bindable var permissionsManager: PermissionsManager
     @Bindable var updatePrompt: UpdatePromptController
     @Binding var availableUpdate: AvailableUpdate?
+
+    init(
+        cleanupViewModel: CleanupViewModel,
+        journal: TransactionJournal,
+        appSettings: AppSettings,
+        permissionsManager: PermissionsManager,
+        updatePrompt: UpdatePromptController,
+        availableUpdate: Binding<AvailableUpdate?>
+    ) {
+        self.cleanupViewModel = cleanupViewModel
+        self.journal = journal
+        self.appSettings = appSettings
+        self.permissionsManager = permissionsManager
+        self.updatePrompt = updatePrompt
+        self._availableUpdate = availableUpdate
+        self._workspaceStore = State(initialValue: WorkspaceStore(journal: journal))
+    }
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.layoutDirection) private var layoutDirection
@@ -101,6 +119,9 @@ struct RootView: View {
                 presentUpdateIfReady()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            permissionsManager.refresh()
+        }
     }
 
     private func presentUpdateIfReady() {
@@ -186,28 +207,30 @@ struct RootView: View {
     private func contentView(for item: NavigationItem) -> some View {
         switch item {
         case .dashboard:
-            DashboardView(journal: journal)
+            DashboardView(viewModel: workspaceStore.dashboardViewModel)
         case .cleanup:
             CleanupView(
                 viewModel: cleanupViewModel,
                 scanLimited: !permissionsManager.hasFullDiskAccess
             )
         case .diskSpace:
-            DiskAnalyzerView(settings: appSettings)
+            DiskAnalyzerView(settings: appSettings, viewModel: workspaceStore.diskAnalyzerViewModel)
         case .duplicates:
-            DuplicatesView(settings: appSettings)
+            DuplicatesView(settings: appSettings, viewModel: workspaceStore.duplicatesViewModel)
         case .processes:
-            ProcessesView(settings: appSettings)
+            ProcessesView(settings: appSettings, viewModel: workspaceStore.processesViewModel)
         case .startupServices:
-            StartupServicesView(settings: appSettings)
+            StartupServicesView(settings: appSettings, viewModel: workspaceStore.startupServicesViewModel)
         case .privacy:
             PrivacyView(
                 permissionsManager: permissionsManager,
-                initialBundleIDFilter: $privacyFilterBundleID
+                initialBundleIDFilter: $privacyFilterBundleID,
+                viewModel: workspaceStore.privacyViewModel
             )
         case .uninstaller:
             UninstallerView(
                 settings: appSettings,
+                viewModel: workspaceStore.uninstallerViewModel,
                 navigateToCleanup: { selectedItem = .cleanup },
                 navigateToPrivacy: { bundleID in
                     privacyFilterBundleID = bundleID

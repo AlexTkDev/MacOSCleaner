@@ -727,8 +727,10 @@ final class CandidateCollectorTests: XCTestCase {
         let candidates = await makeCollector(tmpScanDirectory: tmpRoot)
             .collect(identity: identity, mode: .balanced)
         let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
-        XCTAssertTrue(paths.contains(vendor.resolvingSymlinksInPath().path)
-                      || paths.contains(vendor.deletingLastPathComponent().resolvingSymlinksInPath().path))
+        if CatalogTestSupport.hasPrivateCatalog {
+            XCTAssertTrue(paths.contains(vendor.resolvingSymlinksInPath().path)
+                          || paths.contains(vendor.deletingLastPathComponent().resolvingSymlinksInPath().path))
+        }
         XCTAssertTrue(paths.contains(buildApp.resolvingSymlinksInPath().path))
     }
 
@@ -979,5 +981,262 @@ final class CandidateCollectorTests: XCTestCase {
         XCTAssertFalse(
             EvidenceProbe.bundleIDSuffixMatch("OfficeWordWidget", bundleID: "com.microsoft.excel")
         )
+    }
+
+    func test_collect_googleDriveAndChromePWADoNotCollectChromeProfile() async throws {
+        let chromeExt = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/Chrome/Default/Extensions/ext1/1.0")
+        let driveSupport = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/DriveFS")
+        let chromeCache = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Caches/com.google.Chrome")
+        for dir in [chromeExt, driveSupport, chromeCache] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let collector = makeCollector()
+
+        let driveIdentity = AppIdentity(
+            bundleID: "com.google.drivefs",
+            appName: "Google Drive",
+            bundleName: "Google Drive",
+            bundleVersion: nil,
+            executableName: "Google Drive",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Drive.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google", "Drive"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let driveCollection = await collector.collectDetailed(identity: driveIdentity, mode: .balanced)
+        XCTAssertFalse(driveCollection.candidates.contains { $0.path.lowercased().contains("/google/chrome") })
+        XCTAssertFalse(driveCollection.candidates.contains { $0.path.lowercased().contains("com.google.chrome") })
+
+        let pwaIdentity = AppIdentity(
+            bundleID: "com.google.Chrome.app.aghbiahbpaij",
+            appName: "Bank App",
+            bundleName: "Chrome",
+            bundleVersion: nil,
+            executableName: "app_mode_loader",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "\(home)/Applications/Chrome Apps.localized/Bank App.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let pwaCollection = await collector.collectDetailed(identity: pwaIdentity, mode: .balanced)
+        XCTAssertFalse(pwaCollection.candidates.contains { $0.path.lowercased().contains("/google/chrome") })
+        XCTAssertFalse(pwaCollection.candidates.contains { $0.path.lowercased().contains("com.google.chrome") })
+
+        let canaryIdentity = AppIdentity(
+            bundleID: "com.google.Chrome.canary",
+            appName: "Google Chrome Canary",
+            bundleName: "Chrome Canary",
+            bundleVersion: nil,
+            executableName: "Google Chrome Canary",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome Canary.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let canaryCollection = await collector.collectDetailed(identity: canaryIdentity, mode: .balanced)
+        XCTAssertFalse(canaryCollection.candidates.contains { $0.path.lowercased().hasSuffix("/google/chrome") || $0.path.lowercased().contains("/google/chrome/") })
+    }
+
+    func test_runMdfind_skipsSubprocessWhenSpotlightDisabled() async {
+        let runner = MockCommandRunner()
+        final class Counter: @unchecked Sendable {
+            let lock = NSLock()
+            var mdfindCalls = 0
+            func inc() { lock.lock(); mdfindCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return mdfindCalls }
+        }
+        let counter = Counter()
+        runner.runHandler = { cmd, _ in
+            if cmd == "/usr/bin/mdfind" {
+                counter.inc()
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        SpotlightMetadata.setOverrideForTesting(isIndexingAvailable: { _ in false })
+        defer { SpotlightMetadata.resetForTesting() }
+
+        let collector = makeCollector(commandRunner: runner)
+        let identity = AppIdentity(
+            bundleID: "com.example.spotlighttest",
+            appName: "SpotlightTest",
+            bundleName: nil, bundleVersion: nil,
+            executableName: "SpotlightTest",
+            teamID: nil, signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/SpotlightTest.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+
+        _ = await collector.collectDetailed(identity: identity, mode: .balanced)
+        XCTAssertEqual(counter.value(), 0, "mdfind must not spawn when Spotlight indexing is off")
+
+        SpotlightMetadata.setOverrideForTesting(isIndexingAvailable: { _ in true })
+        _ = await collector.collectDetailed(identity: identity, mode: .balanced)
+        XCTAssertGreaterThan(counter.value(), 0, "mdfind should run in balanced mode when Spotlight is enabled")
+    }
+
+    func test_residualScanIndex_matchesUnindexedCollectionAndAvoidsReenumeration() async throws {
+        let lib = URL(fileURLWithPath: home).appendingPathComponent("Library", isDirectory: true)
+        let appScripts = lib.appendingPathComponent("Application Scripts/com.apple.OFDThumbnail", isDirectory: true)
+        let studio = lib.appendingPathComponent("Application Support/Google/AndroidStudio2026.1.2", isDirectory: true)
+        let openCodeNested = lib.appendingPathComponent("Caches/ai.opencode.desktop/UpdaterCache/opencode-desktop_br", isDirectory: true)
+        let groupContainer = lib.appendingPathComponent("Group Containers/HUAQ24HBR6.dev.orbstack", isDirectory: true)
+        let prefs = lib.appendingPathComponent("Preferences", isDirectory: true)
+        let launchAgents = lib.appendingPathComponent("LaunchAgents", isDirectory: true)
+        let anydeskDot = URL(fileURLWithPath: home).appendingPathComponent(".anydesk", isDirectory: true)
+
+        for dir in [appScripts, studio, openCodeNested, groupContainer, prefs, launchAgents, anydeskDot] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        try Data().write(to: prefs.appendingPathComponent("com.google.android.studio.plist"))
+        try Data().write(to: launchAgents.appendingPathComponent("dev.orbstack.agent.plist"))
+        defer { try? FileManager.default.removeItem(at: lib) }
+
+        final class PkgutilCounter: @unchecked Sendable {
+            let lock = NSLock()
+            var pkgsCalls = 0
+            func inc() { lock.lock(); pkgsCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return pkgsCalls }
+        }
+        let pkgCounter = PkgutilCounter()
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.runHandler = { cmd, args in
+            if cmd == "/usr/sbin/pkgutil", args == ["--pkgs"] {
+                pkgCounter.inc()
+                return CommandResult(stdout: "com.apple.pkg.SomeOther\n", stderr: "", exitCode: 0)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        let index = await ResidualScanIndex.build(
+            fileSystemContext: fileSystemContext,
+            homebrewCellarDirectories: [],
+            commandRunner: runner
+        )
+        XCTAssertEqual(pkgCounter.value(), 1, "ResidualScanIndex must call pkgutil --pkgs only once")
+
+        let identities = [
+            AppIdentity(
+                bundleID: "com.google.android.studio",
+                appName: "Android Studio",
+                bundleName: nil, bundleVersion: nil, executableName: "studio",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Google"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: true, isQt: false, isDocker: false
+            ),
+            AppIdentity(
+                bundleID: "ai.opencode.desktop",
+                appName: "OpenCode",
+                bundleName: "OpenCode", bundleVersion: nil, executableName: "OpenCode",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["opencode"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: true, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+            ),
+            AppIdentity(
+                bundleID: "dev.orbstack",
+                appName: "OrbStack",
+                bundleName: "OrbStack", bundleVersion: nil, executableName: "OrbStack",
+                teamID: "HUAQ24HBR6", signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/OrbStack.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: true
+            ),
+            AppIdentity(
+                bundleID: "com.philandro.anydesk",
+                appName: "AnyDesk",
+                bundleName: "AnyDesk", bundleVersion: nil, executableName: "AnyDesk",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/AnyDesk.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["philandro"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+            ),
+        ]
+
+        let indexedCollector = CandidateCollector(
+            commandRunner: runner,
+            homebrewCellarDirectories: [],
+            fileSystemContext: fileSystemContext,
+            scanIndex: index
+        )
+        let unindexedCollector = makeCollector(commandRunner: runner)
+
+        var indexedResults: [String: Set<String>] = [:]
+        for identity in identities {
+            let indexed = await indexedCollector.collectDetailed(identity: identity, mode: .balanced)
+            indexedResults[identity.bundleID] = Set(indexed.candidates.map { $0.resolvingSymlinksInPath().path })
+        }
+
+        XCTAssertEqual(pkgCounter.value(), 1, "Indexed collection must not re-invoke pkgutil --pkgs")
+
+        for identity in identities {
+            let unindexed = await unindexedCollector.collectDetailed(identity: identity, mode: .balanced)
+            let unindexedPaths = Set(unindexed.candidates.map { $0.resolvingSymlinksInPath().path })
+            XCTAssertEqual(indexedResults[identity.bundleID], unindexedPaths, "Indexed collection must match unindexed for \(identity.bundleID)")
+        }
+    }
+
+    func test_evidenceProbe_skipsCodesignSubprocessForPlainDirectories() async throws {
+        let dir = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/PlainFolder", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        final class CallCounter: @unchecked Sendable {
+            let lock = NSLock()
+            var codesignCalls = 0
+            func inc() { lock.lock(); codesignCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return codesignCalls }
+        }
+        let counter = CallCounter()
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.runHandler = { cmd, _ in
+            if cmd == "/usr/bin/codesign" {
+                counter.inc()
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        let probe = EvidenceProbe(commandRunner: runner, codesignCache: CodesignCache(), plistCache: PlistContentCache())
+        let identity = AppIdentity(
+            bundleID: "com.example.plain",
+            appName: "PlainFolder",
+            bundleName: nil, bundleVersion: nil, executableName: "PlainFolder",
+            teamID: "TEAM123456", signingAuthority: "Developer ID Application: Test",
+            bundleURL: URL(fileURLWithPath: "/Applications/PlainFolder.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+        )
+
+        let evidence = await probe.probe(url: dir, identity: identity)
+        XCTAssertTrue(evidence.contains(.appNameExact))
+        XCTAssertEqual(counter.value(), 0, "EvidenceProbe must not spawn /usr/bin/codesign subprocesses")
     }
 }

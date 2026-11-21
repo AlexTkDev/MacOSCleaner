@@ -87,9 +87,11 @@ struct PrivacyNetworkView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 if let url = item.bundleURL {
-                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                        .resizable()
-                        .frame(width: 24, height: 24)
+                    CachedFileIconView(path: url.path, size: 24, cornerRadius: 5) {
+                        Image(systemName: item.isRestrictedByPermissions ? "lock.shield" : "terminal")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     Image(systemName: item.isRestrictedByPermissions ? "lock.shield" : "terminal")
                         .font(.title3)

@@ -324,7 +324,7 @@ public struct EvidenceCardView: View {
                     .font(.caption)
                     .fontWeight(.bold)
                 Spacer()
-                Text("Score: \(score)")
+                Text(String(format: "uninstaller_evidence_score".localized, Int64(score)))
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.secondary)
             }

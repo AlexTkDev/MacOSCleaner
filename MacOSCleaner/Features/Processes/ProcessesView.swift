@@ -2,12 +2,13 @@ import SwiftUI
 
 public struct ProcessesView: View {
     let settings: AppSettings
-    @State private var viewModel = ProcessesViewModel()
+    @Bindable var viewModel: ProcessesViewModel
     @State private var isEditMode = false
     @State private var expandedGroupIDs: Set<String> = []
 
-    public init(settings: AppSettings) {
+    public init(settings: AppSettings, viewModel: ProcessesViewModel = ProcessesViewModel()) {
         self.settings = settings
+        self.viewModel = viewModel
     }
 
     public var body: some View {
@@ -22,7 +23,7 @@ public struct ProcessesView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                if viewModel.isLoading {
+                if viewModel.isLoading && viewModel.processes.isEmpty {
                     AnimatedScanView(
                         title: "processes_scanning".localized,
                         subtitle: "",
@@ -30,7 +31,7 @@ public struct ProcessesView: View {
                         totalSteps: 1
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.lastError {
+                } else if let error = viewModel.lastError, viewModel.processes.isEmpty {
                     errorView(error)
                 } else if viewModel.filteredProcesses.isEmpty && !viewModel.searchText.isEmpty {
                     emptySearchView
@@ -57,7 +58,10 @@ public struct ProcessesView: View {
             if settings.enableAI {
                 AIExplanationService.shared.prewarm()
             }
-            Task { await viewModel.scan() }
+            Task { await viewModel.scanIfNeeded() }
+            if settings.processRefreshInterval != .manual {
+                viewModel.startAutoRefresh(interval: settings.processRefreshInterval)
+            }
         }
         .onDisappear {
             viewModel.stopAutoRefresh()
@@ -148,6 +152,8 @@ public struct ProcessesView: View {
             }
             .glassButtonStyle()
             .help("processes_tooltip_whitelist".localized)
+
+            ScanStatusPill(lastUpdatedAt: viewModel.lastUpdatedAt)
 
             Button(action: { Task { await viewModel.scan() } }) {
                 Image(systemName: "arrow.clockwise")
@@ -476,25 +482,13 @@ public struct ProcessesView: View {
 
 private struct AppIconView: View {
     let path: String?
-    @State private var icon: NSImage?
 
     var body: some View {
-        if let icon {
-            Image(nsImage: icon)
-                .resizable()
-                .frame(width: 20, height: 20)
-        } else {
+        CachedFileIconView(path: path, size: 20) {
             Image(systemName: "app.fill")
                 .font(.system(size: 18))
                 .foregroundColor(.secondary)
-                .frame(width: 24)
-                .task { await loadIcon() }
         }
-    }
-
-    private func loadIcon() async {
-        guard let path else { return }
-        icon = NSWorkspace.shared.icon(forFile: path)
     }
 }
 

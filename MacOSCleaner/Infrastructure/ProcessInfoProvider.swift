@@ -59,9 +59,12 @@ public actor ProcessInfoProvider {
         let currentPID = ProcessInfo.processInfo.processIdentifier
         guard pid != currentPID else { return nil }
 
-        let path = getPath(for: pid)
-        let taskInfo = getTaskInfo(for: pid)
         let bsdInfo = getBSDInfo(for: pid)
+        let path = getPath(for: pid)
+        if bsdInfo == nil && path == nil {
+            return nil
+        }
+        let taskInfo = getTaskInfo(for: pid)
 
         let name: String
         if let bsdInfo {
@@ -142,8 +145,7 @@ public actor ProcessInfoProvider {
             pid, PROC_PIDTASKINFO, 0,
             &info, Int32(MemoryLayout<proc_taskinfo>.size)
         )
-        if size != Int32(MemoryLayout<proc_taskinfo>.size) {
-            logger.debug("proc_pidinfo(PROC_PIDTASKINFO) failed for pid \(pid): size=\(size)")
+        guard size == Int32(MemoryLayout<proc_taskinfo>.size) else {
             return nil
         }
         return info
@@ -155,8 +157,7 @@ public actor ProcessInfoProvider {
             pid, PROC_PIDTBSDINFO, 0,
             &info, Int32(MemoryLayout<proc_bsdinfo>.size)
         )
-        if size != Int32(MemoryLayout<proc_bsdinfo>.size) {
-            logger.debug("proc_pidinfo(PROC_PIDTBSDINFO) failed for pid \(pid): size=\(size)")
+        guard size == Int32(MemoryLayout<proc_bsdinfo>.size) else {
             return nil
         }
         return info

@@ -7,8 +7,8 @@ message: >-
   permission or a Commercial License from the author.
 type: software
 title: MacOS Cleaner
-version: "3.0.0"
-date-released: "2026-11-16"
+version: "3.0.1"
+date-released: "2026-11-20"
 url: "https://github.com/AlexTkDev/MacOSCleaner"
 repository-code: "https://github.com/AlexTkDev/MacOSCleaner"
 # Custom non-SPDX source-available license; CFF 1.2.0 uses license-url instead of license.

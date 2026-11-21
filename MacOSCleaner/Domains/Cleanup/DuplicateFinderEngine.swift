@@ -86,9 +86,13 @@ public actor DuplicateFinderEngine {
     }
 
     /// Checks if a file path is safe to scan and recommend for user duplicate removal.
-    private func isSafeUserFilePath(_ path: String) -> Bool {
+    func isSafeUserFilePath(_ path: String, allowExternalVolumes: Bool = false) -> Bool {
         // User temp (`/var/folders/…`, `/private/var/folders/…`) is a valid scan root.
         if path.hasPrefix("/var/folders/") || path.hasPrefix("/private/var/folders/") {
+            return true
+        }
+
+        if allowExternalVolumes && SafetyManager.isAllowedExternalVolumePath(path, policy: .userSelected) {
             return true
         }
 
@@ -118,6 +122,15 @@ public actor DuplicateFinderEngine {
         return true
     }
 
+    private static func isExplicitExternalVolumeRoot(_ directory: URL) -> Bool {
+        let normalized = NormalizedPath.string(directory.standardizedFileURL.path)
+        let components = normalized.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+        guard components.count >= 2, components[0].lowercased() == "volumes" else { return false }
+        guard SafetyManager.isAllowedExternalVolumeName(components[1]) else { return false }
+        let resolved = NormalizedPath.resolvedString(normalized)
+        return resolved.lowercased().hasPrefix("/volumes/")
+    }
+
     /// Scans a directory for duplicate files using multi-stage comparison (Size -> Header SHA256 -> Full SHA256).
     public func scan(
         directory: URL,
@@ -126,6 +139,7 @@ public actor DuplicateFinderEngine {
     ) async throws -> [DuplicateGroup] {
         try Task.checkCancellation()
 
+        let allowExternalVolumes = Self.isExplicitExternalVolumeRoot(directory)
         progress?(Progress(stage: .collectingFiles, filesScanned: 0, duplicateGroupsFound: 0))
 
         var filesBySize: [Int64: [URL]] = [:]
@@ -137,6 +151,7 @@ public actor DuplicateFinderEngine {
             .isPackageKey,
             .isSymbolicLinkKey,
             .contentModificationDateKey,
+            .isUbiquitousItemKey,
             .ubiquitousItemDownloadingStatusKey
         ]
 
@@ -160,7 +175,7 @@ public actor DuplicateFinderEngine {
 
             // Skip system & excluded directories immediately
             if resourceValues.isDirectory == true {
-                if Self.excludedDirectoryNames.contains(dirName) || Self.excludedDirectoryExtensions.contains(dirExt) || !isSafeUserFilePath(path) {
+                if Self.excludedDirectoryNames.contains(dirName) || Self.excludedDirectoryExtensions.contains(dirExt) || !isSafeUserFilePath(path, allowExternalVolumes: allowExternalVolumes) {
                     enumerator.skipDescendants()
                 }
                 continue
@@ -175,7 +190,7 @@ public actor DuplicateFinderEngine {
             }
 
             // Enforce system path safety check
-            guard isSafeUserFilePath(path) else { continue }
+            guard isSafeUserFilePath(path, allowExternalVolumes: allowExternalVolumes) else { continue }
 
             // Skip excluded file extensions
             let pathExt = fileURL.pathExtension.lowercased()
@@ -388,7 +403,7 @@ public actor DuplicateFinderEngine {
             progress?(index + 1, total)
 
             let url = item.url
-            guard isSafeUserFilePath(url.path) else {
+            guard isSafeUserFilePath(url.path, allowExternalVolumes: true) else {
                 Logger.duplicateEngine.warning("Refused to trash unsafe path: \(url.path, privacy: .public)")
                 continue
             }

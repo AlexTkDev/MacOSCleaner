@@ -11,51 +11,33 @@ public enum TimeMachineScanner {
     }
     
     /// Queries tmutil to list local snapshots and estimates their size.
-    public static func listLocalSnapshots() async -> [Snapshot] {
+    public static func listLocalSnapshots(
+        commandRunner: any CommandRunning = CommandRunner()
+    ) async -> [Snapshot] {
         guard !Task.isCancelled else { return [] }
-        let runnerTask = Task.detached {
-            guard !Task.isCancelled else { return [Snapshot]() }
-            let task = Process()
-            task.launchPath = "/usr/bin/tmutil"
-            task.arguments = ["listlocalsnapshots", "/"]
-            
-            let pipe = Pipe()
-            task.standardOutput = pipe
-            
-            do {
-                try task.run()
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                task.waitUntilExit()
-                
-                guard !Task.isCancelled else { return [Snapshot]() }
-                guard let output = String(data: data, encoding: .utf8) else {
-                    return []
-                }
-                
-                // tmutil listlocalsnapshots /
-                // Snapshots for disk /:
-                // com.apple.TimeMachine.2023-10-05-152433.local
-                
-                var snapshots: [Snapshot] = []
-                let lines = output.components(separatedBy: .newlines)
-                for line in lines {
-                    let trimmed = line.trimmingCharacters(in: .whitespaces)
-                    if trimmed.hasPrefix("com.apple.TimeMachine") {
-                        snapshots.append(Snapshot(name: trimmed))
-                    }
-                }
-                
-                return snapshots
-            } catch {
-                Logger.tmScanner.error("Failed to run tmutil listlocalsnapshots: \(error.localizedDescription, privacy: .public)")
-                return []
-            }
-        }
+        guard FileManager.default.fileExists(atPath: "/usr/bin/tmutil") else { return [] }
+        do {
+            let result = try await commandRunner.run(
+                command: "/usr/bin/tmutil",
+                arguments: ["listlocalsnapshots", "/"],
+                timeout: .seconds(10)
+            )
+            guard !Task.isCancelled, result.exitCode == 0 else { return [] }
 
-        return await withTaskCancellationHandler {
-            await runnerTask.value
-        } onCancel: {
-            runnerTask.cancel()
+            // tmutil listlocalsnapshots /
+            // Snapshots for disk /:
+            // com.apple.TimeMachine.2023-10-05-152433.local
+            var snapshots: [Snapshot] = []
+            for line in result.stdout.components(separatedBy: .newlines) {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix("com.apple.TimeMachine") {
+                    snapshots.append(Snapshot(name: trimmed))
+                }
+            }
+            return snapshots
+        } catch {
+            Logger.tmScanner.error("Failed to run tmutil listlocalsnapshots: \(error.localizedDescription, privacy: .public)")
+            return []
         }
     }
     

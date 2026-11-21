@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import OSLog
 import CoreServices
@@ -810,9 +811,98 @@ extension CleanupEngine {
     func cleanAppCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         // Only purpose:cache paths from the generated registry — never shared updaters / Keystone.
         var results = try await cleanFromEmbeddedPaths(.appCaches, label: "App caches", dryRun: dryRun, progress: progress)
+        let thirdParty = try await cleanDiscoveredThirdPartyAppCaches(dryRun: dryRun, progress: progress)
+        results.append(contentsOf: thirdParty)
         let sparkle = try await cleanSparkleUpdateDownloads(dryRun: dryRun, progress: progress)
         results.append(contentsOf: sparkle)
         return results
+    }
+
+    private func cleanDiscoveredThirdPartyAppCaches(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
+        let home = fileSystemContext.homePath
+        let cachesDir = "\(home)/Library/Caches"
+        let label = "Third-party app caches"
+        guard fm.fileExists(atPath: cachesDir) else {
+            return [CleanupEngineResult(label: label, freedMB: 0)]
+        }
+
+        let dedicatedCategories: [CleanupCategory] = [
+            .appCaches, .browserCaches, .ideCaches, .systemCaches, .cloudKitCache, .photosCache,
+        ]
+        var alreadyCovered = Set<String>()
+        for category in dedicatedCategories {
+            for entry in EmbeddedCleanupPaths.paths(for: category) {
+                for expanded in CleanupPathExpander.expand(entry.path, home: home, fileManager: fm) {
+                    alreadyCovered.insert(NormalizedPath.lowercaseKey(expanded))
+                }
+            }
+        }
+
+        let excludedEntries: Set<String> = [
+            "apple", "google", "cloudkit", "geoservices", "familycircle",
+            "homebrew", "pip", "yarn", "cocoapods", "npm", "go-build",
+            "firefox", "org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "org.mozilla.nightly",
+            "bravesoftware", "com.google.chrome", "com.google.chrome.beta",
+            "com.google.chrome.canary", "com.google.chrome.dev",
+            "com.brave.browser", "com.brave.browser.beta", "com.brave.browser.nightly",
+            "com.operasoftware.opera", "com.operasoftware.operagx", "com.operasoftware.operadeveloperedition",
+            "com.microsoft.edge", "com.microsoft.edgemac", "com.microsoft.edgemac.beta",
+            "com.microsoft.edgemac.canary", "com.microsoft.edgemac.dev",
+            "com.vivaldi.vivaldi", "company.thebrowser.browser",
+            "com.kagi.kagimacos", "com.duckduckgo.macos.browser",
+            "ru.yandex.desktop.yandex-browser",
+            "com.google.softwareupdate", "com.google.googleupdater", "com.google.keystone",
+        ]
+
+        var totalFreed: Int64 = 0
+        var removed = 0
+        var skipped = 0
+        let entries = (try? fm.contentsOfDirectory(atPath: cachesDir)) ?? []
+
+        for entry in entries {
+            try Task.checkCancellation()
+            let lower = entry.lowercased()
+            if entry.hasPrefix(".") || lower.hasPrefix("com.apple.") || excludedEntries.contains(lower) {
+                continue
+            }
+            if lower.contains("googleupdater") || lower.contains("softwareupdate") || lower.contains("keystone") {
+                continue
+            }
+            if Self.isHeavyContainer(entry) {
+                continue
+            }
+
+            let entryPath = "\(cachesDir)/\(entry)"
+            guard !alreadyCovered.contains(NormalizedPath.lowercaseKey(entryPath)) else { continue }
+            var isDir: ObjCBool = false
+            guard fm.fileExists(atPath: entryPath, isDirectory: &isDir), isDir.boolValue else { continue }
+            let entryURL = URL(fileURLWithPath: entryPath)
+            guard !safetyManager.isSymlinkDirectory(entryURL),
+                  (try? safetyManager.validate(url: entryURL, policy: .cleanup)) != nil else {
+                continue
+            }
+
+            let (freed, item) = try await cleanContents(of: entryPath, dryRun: dryRun, progress: progress)
+            if freed > 0 || item != nil {
+                removed += 1
+                totalFreed += freed
+                if dryRun {
+                    emitFileItem(item, category: "App caches", parentName: label, progress: progress)
+                }
+            } else {
+                skipped += 1
+            }
+        }
+
+        let mb = Int(totalFreed / (1024 * 1024))
+        return [CleanupEngineResult(
+            label: label,
+            freedMB: mb,
+            freedBytes: totalFreed,
+            removedCount: removed,
+            skippedCount: skipped,
+            failedCount: 0
+        )]
     }
 
     /// Stale Sparkle / Electron updater downloads under ~/Library/Caches — regenerable, safe.
@@ -1264,7 +1354,10 @@ extension CleanupEngine {
         freed += cf
         if dryRun { emitFileItem(ci, category: "iOS Simulators", parentName: nil, isSelected: false, progress: progress) }
 
-        if await commandRunner.commandExists("xcrun") {
+        // Guard against macOS /usr/bin/xcrun shim triggering the "Install Command Line Developer Tools"
+        // modal on Macs without Xcode: require CoreSimulator on disk AND a configured Xcode developer dir.
+        let coreSimulatorRoot = "\(home)/Library/Developer/CoreSimulator"
+        if fm.fileExists(atPath: coreSimulatorRoot), await hasInstalledXcodeDeveloperTools() {
             let deleteUnavailable = "command://simctl/delete-unavailable"
             let deleteRuntimes = "command://simctl/delete-old-runtimes"
             let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "xcrun simctl list devices 2>/dev/null | grep -c 'unavailable' || echo 0"])
@@ -2153,6 +2246,56 @@ extension CleanupEngine {
 
     // MARK: 22. Dynamic Cache Discovery
 
+    private func dedicatedCacheDirectoryNames(for planned: Set<CleanupCategory>, home: String) -> Set<String> {
+        // ~/Library/Caches/Google houses updater/Keystone alongside Chrome caches and is
+        // handled via exact sub-paths rather than top-level review/auto-clean.
+        var names: Set<String> = ["google"]
+        let otherPlanned = planned.subtracting([.dynamicCacheDiscovery])
+
+        if otherPlanned.contains(.packageManagers) {
+            names.formUnion(["homebrew", "yarn", "cocoapods"])
+        }
+        if otherPlanned.contains(.languageCaches) {
+            names.insert("go-build")
+        }
+        if otherPlanned.contains(.cloudKitCache) {
+            names.insert("cloudkit")
+        }
+        if otherPlanned.contains(.adobeCaches) {
+            names.insert("adobe")
+        }
+        if otherPlanned.contains(.teamsCache) {
+            names.formUnion(["com.microsoft.teams", "com.microsoft.teams2"])
+        }
+        if otherPlanned.contains(.garminFitbit) {
+            names.formUnion(["com.garmin.connectiq", "com.fitbit.fitbit-os-simulator"])
+        }
+
+        let tildePrefix = "~/library/caches/"
+        let homePrefix = (home.hasSuffix("/") ? home : home + "/").lowercased() + "library/caches/"
+
+        for category in otherPlanned {
+            for entry in EmbeddedCleanupPaths.paths(for: category) {
+                let lower = entry.path.lowercased()
+                let remainder: Substring?
+                if lower.hasPrefix(tildePrefix) {
+                    remainder = lower.dropFirst(tildePrefix.count)
+                } else if lower.hasPrefix(homePrefix) {
+                    remainder = lower.dropFirst(homePrefix.count)
+                } else {
+                    remainder = nil
+                }
+                guard let remainder else { continue }
+                let firstComponent = remainder.split(separator: "/", maxSplits: 1).first.map(String.init) ?? ""
+                if !firstComponent.isEmpty, !firstComponent.contains("*"), !firstComponent.contains("?") {
+                    names.insert(firstComponent)
+                }
+            }
+        }
+
+        return names
+    }
+
     func cleanDynamicCacheDiscovery(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         let home = fileSystemContext.homePath
         let cachesDir = "\(home)/Library/Caches"
@@ -2165,9 +2308,14 @@ extension CleanupEngine {
             return [CleanupEngineResult(label: "Dynamic cache discovery", freedMB: 0)]
         }
 
+        let coveredCaches = dedicatedCacheDirectoryNames(for: CleanupEngine.currentPlannedCategories, home: home)
         let entries = (try? fm.contentsOfDirectory(atPath: cachesDir)) ?? []
         for entry in entries {
             try Task.checkCancellation()
+
+            if coveredCaches.contains(entry.lowercased()) {
+                continue
+            }
 
             // Skip heavy containers (Docker, VMs) — virtual disks cause timeouts
             if Self.isHeavyContainer(entry) {
@@ -2598,9 +2746,27 @@ extension CleanupEngine {
         return [CleanupEngineResult(label: "Chrome Extra Caches", freedMB: mb)]
     }
 
+    private func hasInstalledXcodeDeveloperTools() async -> Bool {
+        // `xcode-select -p` never triggers the interactive CLT install prompt.
+        guard let result = try? await commandRunner.run(
+            command: "/usr/bin/xcode-select",
+            arguments: ["-p"],
+            timeout: .seconds(5)
+        ), result.exitCode == 0 else {
+            return false
+        }
+        let devDir = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !devDir.isEmpty, fm.fileExists(atPath: devDir) else { return false }
+        // simctl ships only with full Xcode, not bare CommandLineTools.
+        return fm.fileExists(atPath: "\(devDir)/usr/bin/simctl")
+    }
+
     private func isAppRunning(bundleIdentifier: String) async -> Bool {
-        let result = try? await commandRunner.run(command: "/bin/bash", arguments: ["-c", "pgrep -x \(bundleIdentifier) >/dev/null 2>&1"])
-        return result?.exitCode == 0
+        await MainActor.run {
+            NSWorkspace.shared.runningApplications.contains {
+                $0.bundleIdentifier?.caseInsensitiveCompare(bundleIdentifier) == .orderedSame && !$0.isTerminated
+            }
+        }
     }
 
     // MARK: 36. Launch Agents (user)

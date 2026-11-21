@@ -33,8 +33,11 @@ public enum GeneratedCleanupPaths {
     public static var systemCaches: [CleanupPath] { cachePaths(for: .systemCaches) }
 
     public static func appPaths(forBundleID bundleID: String) -> AppPaths? {
-        let lower = bundleID.lowercased()
-        guard !lower.isEmpty, !lower.hasPrefix("unknown.") else { return nil }
+        let lower = bundleID.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !lower.isEmpty,
+              !lower.hasPrefix("unknown."),
+              !BrowserRule.isBrowserPWAShimBundleID(lower)
+        else { return nil }
         let snapshot = PrivateCatalogStore.snapshot
         if let key = snapshot.bundleIDToRegistryKey[lower], let paths = snapshot.registry[key] {
             return paths

@@ -29,6 +29,9 @@ struct GlassPillPicker<T: Hashable>: View {
             pillRow(horizontalPadding: 8)
             pillRow(horizontalPadding: 6)
         }
+        .padding(3)
+        // Apply glassEffect outside ViewThatFits so probing candidate widths doesn't update multiple glass surfaces per frame.
+        .glassEffect(Glass.regular, in: Capsule())
         // glassEffect can retain a previous text snapshot — force rebuild on locale change.
         .id(locale.identifier)
     }
@@ -90,7 +93,5 @@ struct GlassPillPicker<T: Hashable>: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(3)
-        .glassEffect(Glass.regular, in: Capsule())
     }
 }

@@ -22,6 +22,16 @@ final class AIExplanationServiceTests: XCTestCase {
         await AIExplanationService.shared.prewarm()
     }
 
+    func testPrewarmIfNeeded_isIdempotent() async {
+        await AIExplanationService.shared.resetPrewarmForTesting()
+        for _ in 0..<5 {
+            await AIExplanationService.shared.prewarmIfNeeded()
+        }
+        let count = await AIExplanationService.shared.prewarmAttemptCountForTesting()
+        XCTAssertEqual(count, 1)
+        await AIExplanationService.shared.resetPrewarmForTesting()
+    }
+
     func testVerdictExtraction() {
         let safeResult = AIExplanationResult.extractVerdict(from: "[SAFE] This cache is temporary and safe to delete.")
         XCTAssertEqual(safeResult.verdict, .safe)

@@ -10,6 +10,7 @@ public final class StartupServicesViewModel {
     public var loginItemsAccess: BackgroundItemsAccessStatus = .available
     public var isLoading: Bool = false
     public var lastError: String? = nil
+    public var lastUpdatedAt: Date? = nil
     public var filter: StartupFilter = .all
 
     public var filteredServices: [StartupService] {
@@ -54,6 +55,12 @@ public final class StartupServicesViewModel {
     }
 
     @MainActor
+    public func scanIfNeeded() async {
+        guard lastUpdatedAt == nil, !isLoading else { return }
+        await scan()
+    }
+
+    @MainActor
     public func scan() async {
         isLoading = true
         lastError = nil
@@ -62,6 +69,7 @@ public final class StartupServicesViewModel {
             services = result.services
             loginItems = result.loginItems
             loginItemsAccess = result.loginItemsAccess
+            lastUpdatedAt = Date()
         } catch {
             lastError = error.localizedDescription
         }

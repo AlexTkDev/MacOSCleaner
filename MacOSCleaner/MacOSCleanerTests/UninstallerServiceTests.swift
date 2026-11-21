@@ -345,4 +345,347 @@ final class UninstallerServiceTests: XCTestCase {
         )
         XCTAssertFalse(app.isIntelOnly)
     }
+
+    func testDeepScan_chromeProfileNeverPreselectedAndDriveDoesNotTouchChrome() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let appsDir = ctx.homeDirectory.appendingPathComponent("Applications", isDirectory: true)
+        let chromeApp = appsDir.appendingPathComponent("Google Chrome.app", isDirectory: true)
+        let driveApp = appsDir.appendingPathComponent("Google Drive.app", isDirectory: true)
+        let chromeProfile = ctx.homeDirectory.appendingPathComponent("Library/Application Support/Google/Chrome", isDirectory: true)
+        let chromeDefault = chromeProfile.appendingPathComponent("Default/Extensions/ext1", isDirectory: true)
+        let chromeCache = ctx.homeDirectory.appendingPathComponent("Library/Caches/com.google.Chrome", isDirectory: true)
+
+        for (app, bid, name) in [
+            (chromeApp, "com.google.Chrome", "Google Chrome"),
+            (driveApp, "com.google.drivefs", "Google Drive"),
+        ] {
+            let contents = app.appendingPathComponent("Contents", isDirectory: true)
+            try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+            let plist: [String: Any] = [
+                "CFBundleIdentifier": bid,
+                "CFBundleName": name,
+                "CFBundleExecutable": name,
+                "CFBundleShortVersionString": "1.0",
+            ]
+            let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+            try data.write(to: contents.appendingPathComponent("Info.plist"))
+        }
+        try FileManager.default.createDirectory(at: chromeDefault, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: chromeCache, withIntermediateDirectories: true)
+
+        let isolatedService = UninstallerService(
+            fileSystemContext: ctx
+        )
+
+        let scannedChrome = try await isolatedService.scan(appURL: chromeApp)
+        let deepChrome = try await isolatedService.deepScan(scannedChrome, mode: .balanced)
+        let browserItems = deepChrome.relatedFiles.filter { $0.isBrowserData }
+        XCTAssertFalse(browserItems.isEmpty)
+        XCTAssertTrue(browserItems.allSatisfy { !$0.isSelected && $0.deletionRisk == .normal })
+
+        let scannedDrive = try await isolatedService.scan(appURL: driveApp)
+        let deepDrive = try await isolatedService.deepScan(scannedDrive, mode: .balanced)
+        XCTAssertFalse(deepDrive.relatedFiles.contains { $0.url.path.lowercased().contains("/google/chrome") })
+    }
+
+    func testSpotlightDisabled_doesNotCrashAndFallsBackSafely() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let appURL = ctx.homeDirectory.appendingPathComponent("Applications/NoSpotlight.app", isDirectory: true)
+        let contents = appURL.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        let plist: [String: Any] = [
+            "CFBundleIdentifier": "com.example.nospotlight",
+            "CFBundleName": "NoSpotlight",
+            "CFBundleExecutable": "NoSpotlight",
+            "CFBundleShortVersionString": "1.0",
+        ]
+        try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+            .write(to: contents.appendingPathComponent("Info.plist"))
+
+        SpotlightMetadata.setOverrideForTesting(
+            isIndexingAvailable: { _ in false },
+            lastUsedDate: { _ in nil }
+        )
+        defer { SpotlightMetadata.resetForTesting() }
+
+        XCTAssertFalse(SpotlightMetadata.isIndexingAvailable(at: ctx.homePath))
+        let missingURL = ctx.homeDirectory.appendingPathComponent("Missing.app")
+        XCTAssertNil(SpotlightMetadata.lastUsedDate(for: missingURL))
+
+        let isolatedService = UninstallerService(
+            fileSystemContext: ctx
+        )
+        let info = try await isolatedService.scan(appURL: appURL)
+        XCTAssertEqual(info.bundleID, "com.example.nospotlight")
+    }
+
+    func testCrashSignalHandler_installsResethandSigaction() {
+        var previous = sigaction()
+        sigaction(SIGWINCH, nil, &previous)
+        defer { sigaction(SIGWINCH, &previous, nil) }
+
+        CrashSignalHandler.install(signals: [SIGWINCH], installExceptionHandler: false)
+
+        var installed = sigaction()
+        let rc = sigaction(SIGWINCH, nil, &installed)
+        XCTAssertEqual(rc, 0)
+        XCTAssertNotEqual(installed.sa_flags & SA_NODEFER, 0)
+        XCTAssertNotNil(installed.__sigaction_u.__sa_handler)
+
+        // Raising a harmless signal (default disposition: ignore) exercises the async-signal-safe
+        // handler end-to-end and verifies disposition resets to SIG_DFL.
+        Darwin.raise(SIGWINCH)
+
+        var after = sigaction()
+        XCTAssertEqual(sigaction(SIGWINCH, nil, &after), 0)
+        XCTAssertNil(after.__sigaction_u.__sa_handler)
+    }
+
+    func testAppIconCache_downsamplesCachesAndRunsOffMainThread() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+
+        let dummyFile = ctx.homeDirectory.appendingPathComponent("DummyApp.app")
+        try FileManager.default.createDirectory(at: dummyFile, withIntermediateDirectories: true)
+
+        final class Box: @unchecked Sendable {
+            let lock = NSLock()
+            var renderCount = 0
+            var ranOnMain = false
+        }
+        let box = Box()
+
+        let cache = AppIconCache(
+            countLimit: 10,
+            totalCostLimit: 4 * 1024 * 1024,
+            maxConcurrentRenders: 2,
+            iconRenderer: { _, _ in
+                box.lock.lock()
+                box.renderCount += 1
+                box.ranOnMain = box.ranOnMain || Thread.isMainThread
+                box.lock.unlock()
+
+                // Create a large 512x512 bitmap image to verify downsampling.
+                let colorSpace = CGColorSpaceCreateDeviceRGB()
+                let bitmapInfo = CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order32Host.rawValue
+                guard let cgCtx = CGContext(
+                    data: nil,
+                    width: 512,
+                    height: 512,
+                    bitsPerComponent: 8,
+                    bytesPerRow: 512 * 4,
+                    space: colorSpace,
+                    bitmapInfo: bitmapInfo
+                ), let cg = cgCtx.makeImage() else {
+                    return nil
+                }
+                return NSImage(cgImage: cg, size: NSSize(width: 256, height: 256))
+            }
+        )
+
+        let firstIcon = await cache.icon(forPath: dummyFile.path, pixelSize: 64)
+        let first = try XCTUnwrap(firstIcon)
+        XCTAssertFalse(box.ranOnMain, "Icon rasterization must happen off MainThread")
+        let rep = try XCTUnwrap(first.representations.first)
+        XCTAssertLessThanOrEqual(rep.pixelsWide, 64)
+        XCTAssertLessThanOrEqual(rep.pixelsHigh, 64)
+
+        let second = await cache.icon(forPath: dummyFile.path, pixelSize: 64)
+        XCTAssertNotNil(second)
+        XCTAssertEqual(box.renderCount, 1, "Second lookup must hit NSCache")
+
+        let missing = await cache.icon(forPath: ctx.homeDirectory.appendingPathComponent("Missing.app").path, pixelSize: 64)
+        XCTAssertNil(missing)
+    }
+
+    func testBoundedConcurrency_capsActiveWorkers() async throws {
+        final class Tracker: @unchecked Sendable {
+            let lock = NSLock()
+            var active = 0
+            var peak = 0
+            func enter() {
+                lock.lock()
+                active += 1
+                peak = max(peak, active)
+                lock.unlock()
+            }
+            func exit() {
+                lock.lock()
+                active -= 1
+                lock.unlock()
+            }
+        }
+        let tracker = Tracker()
+        let inputs = Array(0..<30)
+        let results = try await UninstallerService.mapWithBoundedConcurrency(
+            items: inputs,
+            maxConcurrent: 6
+        ) { value in
+            tracker.enter()
+            try await Task.sleep(for: .milliseconds(15))
+            tracker.exit()
+            return value * 2
+        }
+
+        XCTAssertEqual(results.count, 30)
+        XCTAssertLessThanOrEqual(tracker.peak, 6)
+        XCTAssertGreaterThan(tracker.peak, 1)
+    }
+
+    @MainActor
+    func testUninstallerViewModel_loadAppsIfNeededCachesAcrossTabSwitches() async throws {
+        final class Counter: @unchecked Sendable {
+            let lock = NSLock()
+            var count = 0
+            func inc() { lock.lock(); count += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return count }
+        }
+        let counter = Counter()
+        let stubApp = UninstallerService.AppInfo(
+            url: URL(fileURLWithPath: "/Applications/StubApp.app"),
+            bundleID: "com.example.stub",
+            name: "StubApp",
+            scanState: .deepScanned
+        )
+
+        let vm = UninstallerViewModel(
+            discoverAppsHandler: {
+                counter.inc()
+                return [stubApp]
+            },
+            deepScanHandler: { app, _ in
+                var copy = app
+                copy.scanState = .deepScanned
+                return copy
+            }
+        )
+
+        vm.loadAppsIfNeeded(mode: .safe)
+        try await Task.sleep(for: .milliseconds(50))
+        XCTAssertEqual(counter.value(), 1)
+        XCTAssertNotNil(vm.lastUpdatedAt)
+        XCTAssertEqual(vm.allApps.count, 1)
+
+        // Repeated calls (tab switches) must not rescan.
+        for _ in 0..<5 {
+            vm.loadAppsIfNeeded(mode: .safe)
+        }
+        try await Task.sleep(for: .milliseconds(50))
+        XCTAssertEqual(counter.value(), 1)
+
+        // Explicit refresh reloads.
+        vm.loadApps(mode: .safe)
+        try await Task.sleep(for: .milliseconds(50))
+        XCTAssertEqual(counter.value(), 2)
+    }
+
+    @MainActor
+    func testWorkspaceStore_diskAnalyzerStartsIdleAndViewModelsCache() async {
+        let store = WorkspaceStore(journal: TransactionJournal())
+        XCTAssertNil(store.diskAnalyzerViewModel.rootURL)
+        XCTAssertFalse(store.diskAnalyzerViewModel.isScanning)
+        XCTAssertNil(store.diskAnalyzerViewModel.lastUpdatedAt)
+
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
+        store.processesViewModel.lastUpdatedAt = fixedDate
+        await store.processesViewModel.scanIfNeeded()
+        XCTAssertEqual(store.processesViewModel.lastUpdatedAt, fixedDate)
+
+        store.startupServicesViewModel.lastUpdatedAt = fixedDate
+        await store.startupServicesViewModel.scanIfNeeded()
+        XCTAssertEqual(store.startupServicesViewModel.lastUpdatedAt, fixedDate)
+    }
+
+    func testRequiresRestartForRemovedPaths() {
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/LaunchDaemons/com.example.helper.plist")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/SystemExtensions/1234/com.example.ext.systemextension")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/Extensions/ExampleDriver.kext")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/PrivilegedHelperTools/com.example.tool")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Library/Audio/Plug-Ins/HAL/ExampleAudio.driver")
+        ]))
+        XCTAssertTrue(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Applications/Example.app"),
+            URL(fileURLWithPath: "/tmp/Custom.kext")
+        ]))
+
+        XCTAssertFalse(UninstallerService.requiresRestartForRemovedPaths([
+            URL(fileURLWithPath: "/Applications/Example.app"),
+            URL(fileURLWithPath: "/Users/test/Library/LaunchAgents/com.example.agent.plist"),
+            URL(fileURLWithPath: "/Users/test/Library/Caches/com.example.app"),
+            URL(fileURLWithPath: "/Users/test/Library/Preferences/com.example.app.plist")
+        ]))
+    }
+
+    func testPhysicalSize_symlinkRoot_nestedSymlink_andCancellation() async throws {
+        FileManager.clearSizeCache()
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("POSIXSizeTest-\(UUID().uuidString)", isDirectory: true)
+        let realApp = root.appendingPathComponent("External/RealApp.app", isDirectory: true)
+        let contents = realApp.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        // 16 KB payload file
+        let payload = contents.appendingPathComponent("payload.bin")
+        try Data(repeating: 0x5A, count: 16_384).write(to: payload)
+
+        // Nested symlink pointing back to root (cycle) — must not loop or double-count
+        let nestedLink = contents.appendingPathComponent("LoopLink")
+        try FileManager.default.createSymbolicLink(at: nestedLink, withDestinationURL: realApp)
+
+        // Symlinked root `.app` (like an app offloaded to an external SSD)
+        let symlinkedApp = root.appendingPathComponent("LinkedApp.app", isDirectory: false)
+        try FileManager.default.createSymbolicLink(at: symlinkedApp, withDestinationURL: realApp)
+
+        let directSize = FileManager.default.getPhysicalDirectorySize(url: realApp, excludedPaths: [])
+        let symlinkSize = FileManager.default.getPhysicalDirectorySize(url: symlinkedApp, excludedPaths: [])
+        XCTAssertGreaterThanOrEqual(directSize, 16_384)
+        XCTAssertEqual(directSize, symlinkSize, "Symlinked root app must report same physical size without following nested symlink cycles")
+
+        // Cancelled task must not cache a partial zero/incomplete result
+        let cancelDir = root.appendingPathComponent("CancelDir", isDirectory: true)
+        try FileManager.default.createDirectory(at: cancelDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x3C, count: 8192).write(to: cancelDir.appendingPathComponent("data.bin"))
+
+        let cancelledTask = Task.detached {
+            while !Task.isCancelled {
+                await Task.yield()
+            }
+            return FileManager.default.getPhysicalDirectorySize(url: cancelDir, excludedPaths: [])
+        }
+        cancelledTask.cancel()
+        _ = await cancelledTask.value
+
+        let measured = FileManager.default.getPhysicalDirectorySize(url: cancelDir, excludedPaths: [])
+        XCTAssertGreaterThanOrEqual(measured, 8192)
+    }
+
+    func testLSRegisterCache_coalescesConcurrentDumpCalls() async {
+        let cache = LSRegisterCache()
+        async let first = cache.paths(matching: "com.apple.finder")
+        async let second = cache.paths(matching: "com.apple.finder")
+        async let third = cache.paths(matching: "com.apple.safari")
+        let (r1, r2, r3) = await (first, second, third)
+        XCTAssertEqual(r1, r2)
+        _ = r3
+    }
+
+    @MainActor
+    func testAppQuitter_isRunningUnderTests_blocksLiveAppTermination() {
+        XCTAssertTrue(AppQuitter.isRunningUnderTests)
+        XCTAssertTrue(AppQuitter.cleanupTargets().isEmpty)
+    }
 }

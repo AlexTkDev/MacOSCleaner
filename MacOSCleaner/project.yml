@@ -2,6 +2,8 @@ name: MacOSCleaner
 options:
   bundleIdPrefix: input
   developmentLanguage: en
+attributes:
+  LastUpgradeCheck: "1600"
 
 targets:
   MacOSCleaner:
@@ -87,8 +89,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: input.MacOSCleaner
-        MARKETING_VERSION: 3.0.0
-        CURRENT_PROJECT_VERSION: 3
+        MARKETING_VERSION: 3.0.1
+        CURRENT_PROJECT_VERSION: 4
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_DEBUG_DYLIB: NO
         ENABLE_XOJIT_PREVIEWS: NO
@@ -99,7 +101,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
-        INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches and to open specific extension pages in your browser."
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "MacOSCleaner needs to send Apple Events to close applications before cleaning their caches, open specific extension pages in your browser, and request a standard macOS restart when you choose to restart."
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 AlexTkDev (ORCID 0009-0002-8907-5406). All rights reserved."
         SWIFT_COMPILATION_MODE: wholemodule
         DEAD_CODE_STRIPPING: YES
@@ -107,6 +109,7 @@ targets:
         CLANG_ANALYZER_NONNULL: YES
         GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
         COPY_PHASE_STRIP: NO
+        ARCHS: arm64
         EXCLUDED_ARCHS: "x86_64"
       configs:
         Debug:

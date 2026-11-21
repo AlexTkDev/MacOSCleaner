@@ -85,4 +85,18 @@ final class DashboardViewModelTests: XCTestCase {
         let nonexistentSize = await DashboardViewModel.calculatePathSize(testDir.appendingPathComponent("missing").path)
         XCTAssertEqual(nonexistentSize, 0)
     }
+
+    func testRefresh_updatesCategoriesProgressivelyAndMarksComplete() async {
+        await viewModel.refresh()
+
+        XCTAssertFalse(viewModel.isCategoriesLoading)
+        XCTAssertEqual(viewModel.completedCategoriesCount, viewModel.totalScanCategoriesCount)
+        XCTAssertFalse(viewModel.diskCategories.isEmpty)
+        XCTAssertTrue(viewModel.diskCategories.allSatisfy { !$0.isScanning })
+
+        let ids = viewModel.diskCategories.map(\.id)
+        XCTAssertEqual(Set(ids).count, ids.count)
+        let allowedIDs: Set<String> = ["caches", "logs", "dev", "apps", "media", "other"]
+        XCTAssertTrue(Set(ids).isSubset(of: allowedIDs))
+    }
 }

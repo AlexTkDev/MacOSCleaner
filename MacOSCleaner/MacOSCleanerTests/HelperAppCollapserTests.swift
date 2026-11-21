@@ -121,8 +121,7 @@ final class HelperAppCollapserTests: XCTestCase {
             scanState: .discovered,
             size: 100,
             version: "1",
-            lastUsed: nil,
-            iconData: nil
+            lastUsed: nil
         )
     }
 }

@@ -13,6 +13,7 @@ public final class ProcessesViewModel {
     }
     public var isLoading: Bool = false
     public var lastError: String? = nil
+    public var lastUpdatedAt: Date? = nil
     public var blacklist: [String] = []
     public var whitelist: [String] = []
     public var showBlacklistAlert = false
@@ -166,6 +167,11 @@ public final class ProcessesViewModel {
         self.processManager = processManager
     }
 
+    public func scanIfNeeded() async {
+        guard lastUpdatedAt == nil, !isLoading else { return }
+        await scan()
+    }
+
     public func scan() async {
         isLoading = true
         lastError = nil
@@ -176,6 +182,7 @@ public final class ProcessesViewModel {
             let wl = Array(await processManager.getWhitelist()).sorted()
             blacklist = bl
             whitelist = wl
+            lastUpdatedAt = Date()
         } catch {
             lastError = error.localizedDescription
             logger.error("Scan failed: \(error.localizedDescription)")

@@ -308,4 +308,44 @@ final class CleanupTrashTests: XCTestCase {
         XCTAssertEqual(op?.deletionMode, OperationRecord.DeletionMode.trash.rawValue)
         XCTAssertEqual(op?.failed, 0)
     }
+
+    func testExecuteCleanup_tracksCleanedFontCacheAndResets() async throws {
+        let mockRunner = MockCommandRunner()
+        let customEngine = CleanupEngine(
+            commandRunner: mockRunner,
+            safetyManager: SafetyManager(homeDirectory: fileSystemContext.homePath, fileSystemContext: fileSystemContext),
+            fileSystemContext: fileSystemContext
+        )
+        let customCoordinator = CleanupCoordinator(
+            engine: customEngine,
+            journal: journal,
+            settings: settings,
+            trashManager: trashManager,
+            itemManager: itemManager,
+            trashDirectoryURL: trashDirectory
+        )
+        coordinator = customCoordinator
+
+        customCoordinator.startScan(options: CleanupOptions(targetCategories: []))
+        try await waitForState(.preview)
+
+        let fontLabel = CleanupCategory.fontCache.localizedTitle
+        itemManager.appendFileItem(
+            path: "command://font/cache-clear",
+            sizeBytes: 0,
+            modificationDate: nil,
+            isDirectory: false,
+            category: fontLabel,
+            parentName: fontLabel,
+            isSelected: true,
+            isCommandBacked: true
+        )
+
+        customCoordinator.executeCleanup(options: CleanupOptions(targetCategories: [.fontCache], cleanFontCache: true))
+        try await waitForState(.completed)
+
+        XCTAssertTrue(customCoordinator.cleanedFontCache)
+        customCoordinator.reset()
+        XCTAssertFalse(customCoordinator.cleanedFontCache)
+    }
 }

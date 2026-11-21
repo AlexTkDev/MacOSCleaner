@@ -162,9 +162,11 @@ struct PrivacyTCCView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 if let url = group.appURL {
-                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                        .resizable()
-                        .frame(width: 28, height: 28)
+                    CachedFileIconView(path: url.path, size: 28, cornerRadius: 6) {
+                        Image(systemName: "app.dashed")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     Image(systemName: "app.dashed")
                         .font(.title2)

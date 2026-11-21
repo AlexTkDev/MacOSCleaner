@@ -159,14 +159,13 @@ struct AnimatedScanView: View {
 
             Text(subtitle)
                 .font(.headline)
+                .monospacedDigit()
                 .foregroundColor(.primary)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(minHeight: isCompact ? 32 : 40, alignment: .top)
                 .padding(.horizontal, 40)
-                .id(subtitle)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .bottom).combined(with: .opacity).animation(.spring(response: 0.35, dampingFraction: 0.8)),
-                    removal: .move(edge: .top).combined(with: .opacity).animation(.spring(response: 0.25, dampingFraction: 0.9))
-                ))
+                .transaction { $0.animation = nil }
 
             if totalSteps > 1 {
                 GeometryReader { geo in

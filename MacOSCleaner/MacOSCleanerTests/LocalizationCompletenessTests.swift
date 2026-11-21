@@ -141,7 +141,32 @@ final class LocalizationCompletenessTests: XCTestCase {
         "risk.user_data",
         "risk.protected",
         "about_transparency_button",
-        "about_limitations_title"
+        "about_limitations_title",
+        "uninstaller_browser_data_warning",
+        "uninstaller_browser_data_badge",
+        "uninstaller_browser_data_confirm_warning",
+        "uninstaller_spotlight_disabled",
+        "scan_updated_at",
+        "scan_updated_just_now",
+        "cleanup_restart_recommended_title",
+        "cleanup_restart_recommended_body",
+        "cleanup_restart_required_title",
+        "cleanup_restart_font_cache_body",
+        "uninstaller_restart_recommended_title",
+        "uninstaller_restart_recommended_body",
+        "restart_mac_button",
+        "uninstaller_orphan_scanning_dirs",
+        "uninstaller_orphan_analyzing_count",
+        "uninstaller_orphan_analyzing_progress",
+        "uninstaller_orphan_cat_caches",
+        "uninstaller_orphan_cat_preferences",
+        "uninstaller_orphan_cat_app_support",
+        "uninstaller_orphan_cat_logs",
+        "uninstaller_orphan_cat_containers",
+        "uninstaller_orphan_cat_developer",
+        "uninstaller_orphan_cat_launch_agents",
+        "uninstaller_orphan_cat_other",
+        "uninstaller_evidence_score"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

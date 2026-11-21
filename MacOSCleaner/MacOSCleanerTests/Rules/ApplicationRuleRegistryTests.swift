@@ -144,6 +144,86 @@ final class BrowserRuleTests: XCTestCase {
         let evidence = rule.evidence(for: url, identity: identity)
         XCTAssertTrue(evidence.contains { $0.source == .appName })
     }
+
+    func test_doesNotMatch_googleDrive_chromePWA_or_substringApps() {
+        let rule = BrowserRule()
+
+        let googleDrive = AppIdentity(
+            bundleID: "com.google.drivefs",
+            appName: "Google Drive",
+            bundleName: "Google Drive", bundleVersion: nil,
+            executableName: "Google Drive",
+            teamID: "EQHXZ8M8AV", signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Drive.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertFalse(rule.matches(identity: googleDrive))
+        XCTAssertTrue(
+            rule.evidence(
+                for: URL(fileURLWithPath: "/Users/test/Library/Application Support/Google/Chrome/Default"),
+                identity: googleDrive
+            ).isEmpty
+        )
+
+        let chromePWA = AppIdentity(
+            bundleID: "com.google.Chrome.app.aghbiahbpaij",
+            appName: "Banking Portal",
+            bundleName: "Chrome", bundleVersion: nil,
+            executableName: "app_mode_loader",
+            teamID: "EQHXZ8M8AV", signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Users/test/Applications/Chrome Apps.localized/Banking Portal.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertFalse(rule.matches(identity: chromePWA))
+        XCTAssertTrue(
+            rule.evidence(
+                for: URL(fileURLWithPath: "/Users/test/Library/Application Support/Google/Chrome/Default"),
+                identity: chromePWA
+            ).isEmpty
+        )
+
+        let pixelmator = AppIdentity(
+            bundleID: "com.pixelmatorteam.pixelmator.x",
+            appName: "Pixelmator Pro",
+            bundleName: nil, bundleVersion: nil,
+            executableName: "Pixelmator Pro",
+            teamID: nil, signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Pixelmator Pro.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        XCTAssertFalse(rule.matches(identity: pixelmator))
+    }
+
+    func test_chromeCanary_doesNotScoreStableChromeFolder() {
+        let rule = BrowserRule()
+        let canary = AppIdentity(
+            bundleID: "com.google.Chrome.canary",
+            appName: "Google Chrome Canary",
+            bundleName: "Chrome Canary", bundleVersion: nil,
+            executableName: "Google Chrome Canary",
+            teamID: "EQHXZ8M8AV", signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome Canary.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"], helperNames: [], frameworkNames: [],
+            xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let stableDefault = URL(fileURLWithPath: "/Users/test/Library/Application Support/Google/Chrome/Default")
+        XCTAssertTrue(rule.evidence(for: stableDefault, identity: canary).isEmpty)
+    }
 }
 
 final class DockerRuleTests: XCTestCase {

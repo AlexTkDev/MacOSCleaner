@@ -4,8 +4,18 @@ struct PrivacyView: View {
     let permissionsManager: PermissionsManager
     @Binding var initialBundleIDFilter: String?
 
-    @State private var viewModel = PrivacyViewModel()
+    @Bindable var viewModel: PrivacyViewModel
     @FocusState private var isSearchFocused: Bool
+
+    init(
+        permissionsManager: PermissionsManager,
+        initialBundleIDFilter: Binding<String?>,
+        viewModel: PrivacyViewModel = PrivacyViewModel()
+    ) {
+        self.permissionsManager = permissionsManager
+        self._initialBundleIDFilter = initialBundleIDFilter
+        self.viewModel = viewModel
+    }
 
     var body: some View {
         GlassEffectContainer {

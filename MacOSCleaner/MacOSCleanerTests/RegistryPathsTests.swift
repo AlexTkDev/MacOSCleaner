@@ -338,6 +338,34 @@ final class RegistryPathsTests: XCTestCase {
         XCTAssertTrue(RegistryPathTemplates.uninstallTemplates(forBundleID: "com.google.Chrome").isEmpty)
     }
 
+    func test_chromePWAShimDoesNotMatchParentPrefixIndex() {
+        let wire = PrivateCatalogWire(
+            formatVersion: PrivateCatalogFormat.formatVersion,
+            engineHash: "fixture",
+            uiHash: "fixture-ui",
+            watermarks: [],
+            apps: [
+                PrivateCatalogWireApp(
+                    key: "com.google.Chrome",
+                    bundleIDs: ["com.google.Chrome"],
+                    bundleIDPrefixes: ["com.google.Chrome."],
+                    category: CleanupCategory.browserCaches.rawValue,
+                    paths: [
+                        PrivateCatalogWirePath(template: "<APP_SUPPORT>/Google/Chrome", purpose: "app_data", isGlob: false, requiresAdmin: false),
+                    ]
+                ),
+            ],
+            toolchains: [],
+            uiApps: [],
+            uiToolchains: []
+        )
+        PrivateCatalogStore.setOverrideForTesting(PrivateCatalogCodec.snapshot(from: wire, source: .privateAsset))
+        defer { PrivateCatalogStore.resetForTesting() }
+
+        XCTAssertNotNil(GeneratedCleanupPaths.appPaths(forBundleID: "com.google.Chrome"))
+        XCTAssertNil(GeneratedCleanupPaths.appPaths(forBundleID: "com.google.Chrome.app.aghbiahbpaij"))
+    }
+
     func test_watermarksNeverBecomeCleanupPaths() throws {
         try CatalogTestSupport.requirePrivateCatalog()
         let marks = GeneratedCleanupPaths.watermarks

@@ -22,7 +22,9 @@ public struct FileSystemContext: Sendable {
             let temp = FileManager.default.temporaryDirectory.resolvingSymlinksInPath().standardizedFileURL
             self.allowedRoots = [
                 home,
+                URL(fileURLWithPath: "/Applications", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
                 URL(fileURLWithPath: "/Library", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
+                URL(fileURLWithPath: "/Volumes", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
                 URL(fileURLWithPath: "/private/tmp", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
                 URL(fileURLWithPath: "/tmp", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
                 URL(fileURLWithPath: "/usr/local", isDirectory: true).resolvingSymlinksInPath().standardizedFileURL,
@@ -68,11 +70,11 @@ public struct FileSystemContext: Sendable {
         }
     }
 
-    /// Fail-closed guard for destructive test operations.
+    /// Fail-closed guard for destructive operations outside allowed roots.
     public func assertAllowedForMutation(_ url: URL) throws {
         guard enforceAllowedRoots else { return }
         guard isInsideAllowedRoots(url) else {
-            throw SafetyError.protectedPath("outside test root: \(url.path)")
+            throw SafetyError.protectedPath("outside allowed root: \(url.path)")
         }
     }
 }

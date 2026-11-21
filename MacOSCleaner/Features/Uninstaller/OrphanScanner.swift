@@ -44,6 +44,24 @@ public struct OrphanItem: Identifiable, Sendable, Hashable {
         self.isSelected = isSelected
     }
 
+    public static func localizedCategoryName(for category: String) -> String {
+        switch category {
+        case "Caches": return "uninstaller_orphan_cat_caches".localized
+        case "Preferences": return "uninstaller_orphan_cat_preferences".localized
+        case "Application Support": return "uninstaller_orphan_cat_app_support".localized
+        case "Logs": return "uninstaller_orphan_cat_logs".localized
+        case "Containers": return "uninstaller_orphan_cat_containers".localized
+        case "Developer": return "uninstaller_orphan_cat_developer".localized
+        case "Launch Agents", "LaunchAgents": return "uninstaller_orphan_cat_launch_agents".localized
+        case "Other": return "uninstaller_orphan_cat_other".localized
+        default: return category
+        }
+    }
+
+    public var localizedCategory: String {
+        Self.localizedCategoryName(for: category)
+    }
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(NormalizedPath.key(url))
     }
@@ -57,9 +75,11 @@ public actor OrphanScanner {
     private let safetyManager: SafetyManager
     private let commandRunner: CommandRunner
     private let fileSystemContext: FileSystemContext
+    private let appDiscovery: AppDiscovery
     private let codesignCache: CodesignCache
     private let plistCache: PlistContentCache
     private let ruleRegistry: ApplicationRuleRegistry
+    private let homebrewCellarDirectories: [URL]
     private let fileManager = FileManager.default
 
     public init(
@@ -68,36 +88,45 @@ public actor OrphanScanner {
         fileSystemContext: FileSystemContext = .production,
         codesignCache: CodesignCache = CodesignCache(),
         plistCache: PlistContentCache = PlistContentCache(),
-        ruleRegistry: ApplicationRuleRegistry = .shared
+        ruleRegistry: ApplicationRuleRegistry = .shared,
+        appDiscovery: AppDiscovery? = nil,
+        homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories
     ) {
         self.safetyManager = safetyManager
         self.commandRunner = commandRunner
         self.fileSystemContext = fileSystemContext
+        self.appDiscovery = appDiscovery ?? AppDiscovery(
+            commandRunner: commandRunner,
+            homebrewCellarDirectories: homebrewCellarDirectories
+        )
         self.codesignCache = codesignCache
         self.plistCache = plistCache
         self.ruleRegistry = ruleRegistry
+        self.homebrewCellarDirectories = homebrewCellarDirectories
     }
 
     public func scanOrphans(progress: (@Sendable (String) -> Void)? = nil) async throws -> [OrphanItem] {
         try Task.checkCancellation()
-        progress?("Discovering installed applications...")
+        progress?("uninstaller.progress.discovering".localized)
         
-        // 1. Discover installed apps
-        let discovery = AppDiscovery()
-        let installedURLs = await discovery.findAll()
-        var identities: [AppIdentity] = []
-        for url in installedURLs {
-            let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
-            identities.append(identity)
-        }
+        // 1. Discover installed apps & Homebrew formulae
+        let installedURLs = await appDiscovery.findAll()
+        let runner = commandRunner
+        let identities = (try? await UninstallerService.mapWithBoundedConcurrency(
+            items: installedURLs,
+            maxConcurrent: UninstallerService.maxConcurrentDiscoveryTasks
+        ) { url in
+            await AppIdentity.resolve(from: url, commandRunner: runner)
+        }) ?? []
+        let installedHomebrewFormulae = collectInstalledHomebrewFormulae()
         
         try Task.checkCancellation()
-        progress?("Scanning target directories...")
+        progress?("uninstaller_orphan_scanning_dirs".localized)
         
         // 2. Collect ALL files from scan directories
         let allFiles = await collectAllScanTargets()
         
-        progress?("Analyzing \(allFiles.count) potential orphans...")
+        progress?(String(format: "uninstaller_orphan_analyzing_count".localized, Int64(allFiles.count)))
         let probe = EvidenceProbe(
             commandRunner: commandRunner,
             codesignCache: codesignCache,
@@ -107,26 +136,29 @@ public actor OrphanScanner {
         var orphans: [OrphanItem] = []
         var processed = 0
         let total = allFiles.count
+        var commandExistsCache: [String: Bool] = [:]
         
         for file in allFiles {
             try Task.checkCancellation()
             processed += 1
             if processed % 100 == 0 {
-                progress?("Analyzing \(processed)/\(total)...")
+                progress?(String(format: "uninstaller_orphan_analyzing_progress".localized, Int64(processed), Int64(total)))
             }
             
             // Basic safety & size filters
             guard (try? safetyManager.validate(url: file, policy: .uninstall)) != nil else { continue }
             
             // Skip Apple system items, system daemons, and developer toolchain containers
-            if isSystemOrProtected(file: file) {
+            if Self.isSystemOrProtected(file: file) {
                 continue
             }
             
             let isOwned = await checkOwnership(
                 file: file,
                 identities: identities,
-                probe: probe
+                probe: probe,
+                installedHomebrewFormulae: installedHomebrewFormulae,
+                commandExistsCache: &commandExistsCache
             )
             
             if !isOwned {
@@ -148,9 +180,10 @@ public actor OrphanScanner {
                 else if pathStr.contains("/Application Support/") { category = "Application Support" }
                 else if pathStr.contains("/Logs/") { category = "Logs" }
                 else if pathStr.contains("/Containers/") || pathStr.contains("/Group Containers/") { category = "Containers" }
+                else if pathStr.contains("/LaunchAgents/") || pathStr.contains("/LaunchDaemons/") { category = "Launch Agents" }
                 else if pathStr.contains("/Developer/") || pathStr.contains("CommandLineTools") { category = "Developer" }
                 
-                let extracted = extractBundleIDAndName(from: file)
+                let extracted = Self.extractBundleIDAndName(from: file)
                 
                 // Generic folders without any bundle ID or specific orphan markers are not orphans
                 if extracted.bundleID == nil {
@@ -192,34 +225,50 @@ public actor OrphanScanner {
         return orphans.sorted { $0.sizeBytes > $1.sizeBytes }
     }
 
-    private func isSystemOrProtected(file: URL) -> Bool {
+    static func isSystemOrProtected(file: URL) -> Bool {
         let rawFilename = file.lastPathComponent.lowercased()
-        let filename = stripTeamIDPrefix(from: rawFilename)
+        let filename = Self.stripTeamIDPrefix(from: rawFilename)
             .replacingOccurrences(of: "group.", with: "")
             .replacingOccurrences(of: "groups.", with: "")
+
+        let protectedPrefixes = [
+            "com.apple.",
+            "com.mac.",
+            "is.workflow.",
+            "org.swift.",
+            "org.llvm.",
+            "org.gnu.",
+            "org.cups.",
+            "org.sparkle-project.",
+            "org.openldap.",
+            "org.apache.",
+            "tvappservices.",
+            "com.crashlytics.",
+            "io.fabric."
+        ]
+
+        // Shared telemetry/crash SDKs and updaters have no standalone .app bundle.
+        let protectedSharedSDKs = [
+            "io.sentry",
+            "com.plausiblelabs.crashreporter",
+            "com.google.keystone",
+            "sentrycrash"
+        ]
 
         // Apple system containers, groups, daemons and system tools
         if rawFilename.contains("com.apple.") ||
            rawFilename.contains(".apple.") ||
            rawFilename.contains("group.com.apple") ||
            rawFilename.contains("groups.com.apple") ||
-           filename.hasPrefix("com.apple.") ||
-           filename.hasPrefix("com.mac.") ||
-           filename.hasPrefix("is.workflow.") ||
-           filename.hasPrefix("org.swift.") ||
-           filename.hasPrefix("org.llvm.") ||
-           filename.hasPrefix("org.gnu.") ||
-           filename.hasPrefix("org.cups.") ||
-           filename.hasPrefix("org.sparkle-project.") ||
-           filename.hasPrefix("org.openldap.") ||
-           filename.hasPrefix("org.apache.") {
+           protectedPrefixes.contains(where: { filename.hasPrefix($0) }) ||
+           protectedSharedSDKs.contains(where: { filename == $0 || filename.hasPrefix("\($0).") }) {
             return true
         }
 
         return false
     }
 
-    private func stripTeamIDPrefix(from string: String) -> String {
+    private static func stripTeamIDPrefix(from string: String) -> String {
         let pattern = #"^[A-Z0-9]{10}\.(?:groups?\.)?"#
         if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
             let range = NSRange(location: 0, length: string.utf16.count)
@@ -227,18 +276,120 @@ public actor OrphanScanner {
         }
         return string
     }
+
+    private func collectInstalledHomebrewFormulae() -> Set<String> {
+        var formulae = Set<String>()
+        var dirsToScan: [URL] = []
+        for cellar in homebrewCellarDirectories {
+            dirsToScan.append(cellar)
+            let optSibling = cellar.deletingLastPathComponent().appendingPathComponent("opt", isDirectory: true)
+            dirsToScan.append(optSibling)
+        }
+        for dir in dirsToScan {
+            guard let contents = try? fileManager.contentsOfDirectory(
+                at: dir,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ) else { continue }
+            for entry in contents {
+                let name = entry.lastPathComponent.lowercased()
+                if !name.isEmpty {
+                    formulae.insert(name)
+                }
+            }
+        }
+        return formulae
+    }
+
+    static func extractLaunchdExecutablePaths(from plistURL: URL) -> [String] {
+        autoreleasepool {
+            guard let data = try? Data(contentsOf: plistURL),
+                  let dict = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else {
+                return []
+            }
+            var candidates: [String] = []
+            if let program = dict["Program"] as? String, !program.isEmpty {
+                candidates.append(program)
+            }
+            if let args = dict["ProgramArguments"] as? [String], let first = args.first, !first.isEmpty {
+                let wrappers: Set<String> = [
+                    "/bin/sh", "/bin/bash", "/bin/zsh", "/usr/bin/env",
+                    "/usr/bin/java", "/opt/homebrew/bin/brew", "/usr/local/bin/brew"
+                ]
+                if !wrappers.contains(first) {
+                    candidates.append(first)
+                }
+                for arg in args.dropFirst() where arg.hasPrefix("/") {
+                    if !arg.hasPrefix("/bin/") && !arg.hasPrefix("/usr/bin/") && !arg.hasPrefix("/System/") {
+                        candidates.append(arg)
+                    }
+                }
+            }
+            return candidates
+        }
+    }
+
+    private func cachedCommandExists(_ toolName: String, cache: inout [String: Bool]) async -> Bool {
+        if let cached = cache[toolName] { return cached }
+        let quickPaths = [
+            "/opt/homebrew/bin/\(toolName)",
+            "/usr/local/bin/\(toolName)",
+            "/usr/bin/\(toolName)",
+            "/bin/\(toolName)"
+        ]
+        if quickPaths.contains(where: { fileManager.isExecutableFile(atPath: $0) }) {
+            cache[toolName] = true
+            return true
+        }
+        let exists = await commandRunner.commandExists(toolName)
+        cache[toolName] = exists
+        return exists
+    }
     
     private func checkOwnership(
         file: URL,
         identities: [AppIdentity],
-        probe: EvidenceProbe
+        probe: EvidenceProbe,
+        installedHomebrewFormulae: Set<String>,
+        commandExistsCache: inout [String: Bool]
     ) async -> Bool {
         let rawFilename = file.lastPathComponent.lowercased()
-        let filename = stripTeamIDPrefix(from: rawFilename)
+        let filename = Self.stripTeamIDPrefix(from: rawFilename)
             .replacingOccurrences(of: "group.", with: "")
             .replacingOccurrences(of: "groups.", with: "")
         let path = file.path.lowercased()
         let cleanName = (filename as NSString).deletingPathExtension.lowercased()
+
+        // 0. Homebrew / CLI service LaunchAgents & LaunchDaemons (formulae have no .app bundle)
+        if path.contains("/launchagents/") || path.contains("/launchdaemons/") {
+            if (rawFilename.hasPrefix("homebrew.mxcl.") || rawFilename.hasPrefix("homebrew.cask.")),
+               rawFilename.hasSuffix(".plist") {
+                let prefixLen = rawFilename.hasPrefix("homebrew.mxcl.")
+                    ? "homebrew.mxcl.".count
+                    : "homebrew.cask.".count
+                let formulaName = String(rawFilename.dropFirst(prefixLen).dropLast(".plist".count))
+                if !formulaName.isEmpty, installedHomebrewFormulae.contains(formulaName) {
+                    return true
+                }
+                let execPaths = Self.extractLaunchdExecutablePaths(from: file)
+                if execPaths.contains(where: { fileManager.fileExists(atPath: $0) }) {
+                    return true
+                }
+            } else if rawFilename.hasSuffix(".plist") {
+                let cliPrefixes = [
+                    "/opt/homebrew/", "/usr/local/cellar/", "/usr/local/opt/",
+                    "/opt/local/", "/nix/", "/.nix-profile/"
+                ]
+                let execPaths = Self.extractLaunchdExecutablePaths(from: file)
+                if execPaths.contains(where: { exec in
+                    let lowerExec = exec.lowercased()
+                    return cliPrefixes.contains(where: { lowerExec.contains($0) })
+                        && fileManager.fileExists(atPath: exec)
+                }) {
+                    return true
+                }
+            }
+        }
 
         // 1. Direct identity matching: app name, bundle ID, vendor names
         for identity in identities {
@@ -297,15 +448,14 @@ public actor OrphanScanner {
         if filename.hasPrefix(".") {
             let toolName = String(filename.dropFirst())
             if !toolName.isEmpty {
-                let exists = await commandRunner.commandExists(toolName)
-                if exists {
+                if await cachedCommandExists(toolName, cache: &commandExistsCache) {
                     return true
                 }
             }
         }
 
         if cleanName.contains("java") || cleanName.contains("openjdk") {
-            if await commandRunner.commandExists("java") {
+            if await cachedCommandExists("java", cache: &commandExistsCache) {
                 return true
             }
         }
@@ -329,7 +479,63 @@ public actor OrphanScanner {
         return false
     }
 
-    private func extractBundleIDAndName(from file: URL) -> (bundleID: String?, name: String) {
+    private func stripTeamIDPrefix(from string: String) -> String {
+        Self.stripTeamIDPrefix(from: string)
+    }
+
+    public static func displayName(fromDotSeparated base: String) -> String {
+        let rawParts = base.split(separator: ".").map(String.init)
+        guard rawParts.count >= 2 else { return base }
+
+        // Versioned tool/app plists like "python3.8", "python3.12", "app.2.0"
+        if rawParts.dropFirst().allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) {
+            return base
+        }
+
+        var parts = rawParts
+        let technicalTails: Set<String> = ["lssharedfilelist"]
+        while parts.count > 2, let last = parts.last, technicalTails.contains(last.lowercased()) {
+            parts.removeLast()
+        }
+
+        let last = parts.last ?? base
+        if parts.count >= 2, !last.isEmpty, last.allSatisfy(\.isNumber) {
+            let prev = parts[parts.count - 2]
+            let tldStopwords: Set<String> = ["com", "org", "net", "io", "app", "dev", "co", "uk", "de", "ru"]
+            if !tldStopwords.contains(prev.lowercased()) {
+                if prev.last?.isNumber == true {
+                    return "\(prev).\(last)"
+                }
+                return "\(formatSegment(prev)) \(last)"
+            }
+            return base
+        }
+
+        return formatSegment(last)
+    }
+
+    private static func formatSegment(_ segment: String) -> String {
+        guard !segment.isEmpty else { return segment }
+        if segment.contains(where: \.isUppercase) {
+            return segment
+        }
+        return segment.prefix(1).uppercased() + segment.dropFirst()
+    }
+
+    private static let residualFileExtensions: Set<String> = [
+        "plist", "savedstate", "sfl", "sfl2", "sfl3", "sfl4",
+        "binarycookies", "log", "json", "yaml", "yml", "xml", "conf"
+    ]
+
+    private static func strippingResidualExtension(from filename: String) -> String {
+        let ext = (filename as NSString).pathExtension.lowercased()
+        guard !ext.isEmpty, residualFileExtensions.contains(ext) else {
+            return filename
+        }
+        return (filename as NSString).deletingPathExtension
+    }
+
+    public static func extractBundleIDAndName(from file: URL) -> (bundleID: String?, name: String) {
         var filename = file.lastPathComponent
         let path = file.path
 
@@ -339,32 +545,26 @@ public actor OrphanScanner {
                            .replacingOccurrences(of: "groups.", with: "")
 
         // Check if plist has embedded bundle identifier
-        if filename.hasSuffix(".plist") {
+        if filename.lowercased().hasSuffix(".plist") {
             let base = (filename as NSString).deletingPathExtension
             if base.contains(".") && !base.hasPrefix(".") {
-                let parts = base.components(separatedBy: ".")
-                let lastPart = parts.last?.capitalized ?? base
-                return (base, lastPart)
+                return (base, displayName(fromDotSeparated: base))
             }
         }
 
         // Check Containers & Group Containers
         if path.contains("/Containers/") || path.contains("/Group Containers/") {
-            let clean = (filename as NSString).deletingPathExtension
+            let clean = strippingResidualExtension(from: filename)
             if clean.contains(".") {
-                let parts = clean.components(separatedBy: ".")
-                let lastPart = parts.last?.capitalized ?? clean
-                return (clean, lastPart)
+                return (clean, displayName(fromDotSeparated: clean))
             }
         }
 
         // Check Saved Application State
-        if filename.hasSuffix(".savedState") {
+        if filename.lowercased().hasSuffix(".savedstate") {
             let base = (filename as NSString).deletingPathExtension
             if base.contains(".") {
-                let parts = base.components(separatedBy: ".")
-                let lastPart = parts.last?.capitalized ?? base
-                return (base, lastPart)
+                return (base, displayName(fromDotSeparated: base))
             }
         }
 
@@ -372,10 +572,8 @@ public actor OrphanScanner {
         if filename.contains(".") && !filename.hasPrefix(".") {
             let prefixes = ["com.", "org.", "net.", "io.", "app.", "dev.", "co.", "uk.", "de.", "ru."]
             if prefixes.contains(where: { filename.lowercased().hasPrefix($0) }) {
-                let clean = (filename as NSString).deletingPathExtension
-                let parts = clean.components(separatedBy: ".")
-                let lastPart = parts.last?.capitalized ?? clean
-                return (clean, lastPart)
+                let clean = strippingResidualExtension(from: filename)
+                return (clean, displayName(fromDotSeparated: clean))
             }
         }
 
@@ -449,7 +647,17 @@ public actor OrphanScanner {
         let ruleScore = rule.evidence(for: file, identity: syntheticIdentity).reduce(0) { $0 + $1.weight }
 
         let assessment = ConfidenceEngine.assess(evidence, ruleScore: ruleScore, identity: syntheticIdentity)
-        return (evidence, assessment.score, assessment.tier)
+        var tier = assessment.tier
+        let lowerFilename = file.lastPathComponent.lowercased()
+        if lowerFilename.hasPrefix("homebrew.mxcl.") || lowerFilename.hasPrefix("homebrew.cask.") {
+            // Homebrew formula services must never be marked Guaranteed (they may belong to CLI formulae).
+            if Self.extractLaunchdExecutablePaths(from: file).isEmpty {
+                tier = min(tier, .possible)
+            } else {
+                tier = min(tier, .veryLikely)
+            }
+        }
+        return (evidence, assessment.score, tier)
     }
     
     private func collectAllScanTargets() async -> Set<URL> {
@@ -487,28 +695,33 @@ public actor OrphanScanner {
         ]
         
         var targets = Set<URL>()
-        for base in basePaths {
-            let url = NormalizedPath.url(base, isDirectory: true)
-            guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else { continue }
-            for content in contents {
-                targets.insert(content.resolvingSymlinksInPath())
+        autoreleasepool {
+            for base in basePaths {
+                let url = NormalizedPath.url(base, isDirectory: true)
+                guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isSymbolicLinkKey], options: .skipsHiddenFiles) else { continue }
+                for content in contents {
+                    let isSymlink = (try? content.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true
+                    targets.insert(NormalizedPath.canonicalize(isSymlink ? content.resolvingSymlinksInPath() : content))
+                }
             }
-        }
-        
-        for relative in [".config", ".cache", ".local/share"] {
-            let xdgPath = NormalizedPath.joinHome(home, relative)
-            let url = NormalizedPath.url(xdgPath, isDirectory: true)
-            guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else { continue }
-            for content in contents {
-                targets.insert(content.resolvingSymlinksInPath())
+            
+            for relative in [".config", ".cache", ".local/share"] {
+                let xdgPath = NormalizedPath.joinHome(home, relative)
+                let url = NormalizedPath.url(xdgPath, isDirectory: true)
+                guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isSymbolicLinkKey], options: .skipsHiddenFiles) else { continue }
+                for content in contents {
+                    let isSymlink = (try? content.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true
+                    targets.insert(NormalizedPath.canonicalize(isSymlink ? content.resolvingSymlinksInPath() : content))
+                }
             }
-        }
 
-        // Home dot-folders (~/.cursor, ~/.anydesk, ~/.antigravity)
-        let homeURL = NormalizedPath.url(home, isDirectory: true)
-        if let homeContents = try? fileManager.contentsOfDirectory(at: homeURL, includingPropertiesForKeys: nil, options: []) {
-            for item in homeContents where item.lastPathComponent.hasPrefix(".") {
-                targets.insert(item.resolvingSymlinksInPath())
+            // Home dot-folders (~/.cursor, ~/.anydesk, ~/.antigravity)
+            let homeURL = NormalizedPath.url(home, isDirectory: true)
+            if let homeContents = try? fileManager.contentsOfDirectory(at: homeURL, includingPropertiesForKeys: [.isSymbolicLinkKey], options: []) {
+                for item in homeContents where item.lastPathComponent.hasPrefix(".") {
+                    let isSymlink = (try? item.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true
+                    targets.insert(NormalizedPath.canonicalize(isSymlink ? item.resolvingSymlinksInPath() : item))
+                }
             }
         }
         

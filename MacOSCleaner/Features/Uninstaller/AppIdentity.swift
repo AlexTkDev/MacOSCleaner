@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 public struct AppIdentity: Sendable, Hashable {
     public let bundleID: String
@@ -32,20 +33,22 @@ public struct AppIdentity: Sendable, Hashable {
 
 public extension AppIdentity {
     static func resolve(from url: URL, commandRunner: CommandRunner = CommandRunner()) async -> AppIdentity {
-        let bundle = Bundle(url: url)
-        let bundleID = bundle?.bundleIdentifier ?? "unknown.\(url.deletingPathExtension().lastPathComponent)"
-        let appName = url.deletingPathExtension().lastPathComponent
-        let bundleName = bundle?.infoDictionary?["CFBundleName"] as? String
-        let bundleVersion = bundle?.infoDictionary?["CFBundleShortVersionString"] as? String
-        let executableName = bundle?.infoDictionary?["CFBundleExecutable"] as? String ?? appName
-
-        let teamID = await extractTeamID(url: url, commandRunner: commandRunner)
-        let authority = await extractSigningAuthority(url: url, commandRunner: commandRunner)
-        let isAdHoc = authority?.contains("Ad Hoc") == true || authority?.contains("not signed") == true
-        let isAppStore = fileExists(at: url.appendingPathComponent("Contents/_MASReceipt"))
-        let entitlements = await extractEntitlements(url: url, commandRunner: commandRunner)
-        let isSandboxed = entitlements?["com.apple.security.app-sandbox"] as? Bool ?? false
-        let appGroups = Set(entitlements?["com.apple.security.application-groups"] as? [String] ?? [])
+        let (bundleID, appName, bundleName, bundleVersion, executableName, signing, isAppStore) = autoreleasepool {
+            let bundle = Bundle(url: url)
+            let bid = bundle?.bundleIdentifier ?? "unknown.\(url.deletingPathExtension().lastPathComponent)"
+            let name = url.deletingPathExtension().lastPathComponent
+            let bName = bundle?.infoDictionary?["CFBundleName"] as? String
+            let bVersion = bundle?.infoDictionary?["CFBundleShortVersionString"] as? String
+            let execName = bundle?.infoDictionary?["CFBundleExecutable"] as? String ?? name
+            let signMeta = extractSigningMetadata(url: url)
+            let mas = fileExists(at: url.appendingPathComponent("Contents/_MASReceipt"))
+            return (bid, name, bName, bVersion, execName, signMeta, mas)
+        }
+        let teamID = signing.teamID
+        let authority = signing.authority
+        let isAdHoc = signing.isAdHoc
+        let isSandboxed = signing.isSandboxed
+        let appGroups = signing.appGroups
 
         let frameworkNames = await scanFrameworks(url: url)
         let xpcServiceNames = await scanXPCServices(url: url)
@@ -95,35 +98,61 @@ public extension AppIdentity {
 
 // MARK: - Private helpers
 
-private func extractTeamID(url: URL, commandRunner: CommandRunner) async -> String? {
-    let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-dv", "--verbose=4", url.path])
-    guard let output = result?.stderr else { return nil }
-    if let range = output.range(of: "TeamIdentifier=") {
-        let start = range.upperBound
-        let end = output[start...].firstIndex(where: { $0.isWhitespace || $0.isNewline }) ?? output.endIndex
-        return String(output[start..<end])
-    }
-    return nil
+private struct SigningMetadata {
+    let teamID: String?
+    let authority: String?
+    let isAdHoc: Bool
+    let isSandboxed: Bool
+    let appGroups: Set<String>
+
+    static let unsigned = SigningMetadata(
+        teamID: nil,
+        authority: nil,
+        isAdHoc: false,
+        isSandboxed: false,
+        appGroups: []
+    )
 }
 
-private func extractSigningAuthority(url: URL, commandRunner: CommandRunner) async -> String? {
-    let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-dv", "--verbose=4", url.path])
-    guard let output = result?.stderr else { return nil }
-    if let range = output.range(of: "Authority=") {
-        let start = range.upperBound
-        let end = output[start...].firstIndex(where: { $0.isWhitespace || $0.isNewline }) ?? output.endIndex
-        return String(output[start..<end])
+/// In-process code-signing metadata lookup (no subprocess spawn, no network, no full-bundle hashing).
+private func extractSigningMetadata(url: URL) -> SigningMetadata {
+    var staticCode: SecStaticCode?
+    guard SecStaticCodeCreateWithPath(url as CFURL, SecCSFlags(), &staticCode) == errSecSuccess,
+          let code = staticCode else {
+        return .unsigned
     }
-    return nil
-}
 
-private func extractEntitlements(url: URL, commandRunner: CommandRunner) async -> [String: Any]? {
-    let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-d", "--entitlements", ":-", "--xml", url.path])
-    guard let output = result?.stdout, !output.isEmpty,
-          let data = output.data(using: .utf8),
-          let plist = try? PropertyListSerialization.propertyList(from: data, format: nil)
-    else { return nil }
-    return plist as? [String: Any]
+    var infoRef: CFDictionary?
+    let flags = SecCSFlags(rawValue: kSecCSSigningInformation)
+    guard SecCodeCopySigningInformation(code, flags, &infoRef) == errSecSuccess,
+          let info = infoRef as? [String: Any] else {
+        return .unsigned
+    }
+
+    let rawTeam = (info[kSecCodeInfoTeamIdentifier as String] as? String)?
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    let teamID = (rawTeam?.isEmpty == false) ? rawTeam : nil
+
+    let rawFlags = (info[kSecCodeInfoFlags as String] as? NSNumber)?.uint32Value ?? 0
+    let isAdHoc = (rawFlags & SecCodeSignatureFlags.adhoc.rawValue) != 0
+
+    var authority: String?
+    if let certs = info[kSecCodeInfoCertificates as String] as? [SecCertificate],
+       let leaf = certs.first {
+        authority = SecCertificateCopySubjectSummary(leaf) as String?
+    }
+
+    let entitlements = info[kSecCodeInfoEntitlementsDict as String] as? [String: Any]
+    let isSandboxed = entitlements?["com.apple.security.app-sandbox"] as? Bool ?? false
+    let appGroups = Set(entitlements?["com.apple.security.application-groups"] as? [String] ?? [])
+
+    return SigningMetadata(
+        teamID: teamID,
+        authority: authority,
+        isAdHoc: isAdHoc,
+        isSandboxed: isSandboxed,
+        appGroups: appGroups
+    )
 }
 
 private func fileExists(at path: URL) -> Bool {

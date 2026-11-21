@@ -104,7 +104,7 @@ struct SettingsGeneralView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     SettingsLabeledControl(
                         "settings_current_version".localized,
-                        subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.0.0")"
+                        subtitle: "v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.0.1")"
                     ) {
                         if isCheckingForUpdates {
                             ProgressView().controlSize(.small)
