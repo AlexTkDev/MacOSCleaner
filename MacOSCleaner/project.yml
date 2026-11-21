@@ -2,6 +2,8 @@ name: MacOSCleaner
 options:
   bundleIdPrefix: input
   developmentLanguage: en
+attributes:
+  LastUpgradeCheck: "1600"
 
 targets:
   MacOSCleaner:
