@@ -36,9 +36,6 @@
   </p>
 </div>
 
-> [!IMPORTANT]
-> **MacOSCleaner 3.0.1 is coming in the next few days** with fixes and improvements based on user feedback (see [#39](https://github.com/AlexTkDev/MacOSCleaner/issues/39)). The developer recommends waiting for 3.0.1 before installing or updating.
-
 ---
 
 <a id="safety"></a>
