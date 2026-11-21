@@ -46,13 +46,13 @@
       "@type": "SoftwareApplication",
       "name": "MacOSCleaner",
       "alternateName": ["macOS Cleaner", "Mac Cleaner"],
-      "softwareVersion": "3.0.0",
+      "softwareVersion": "3.0.1",
       "operatingSystem": "macOS 26.0 or later",
       "applicationCategory": "UtilitiesApplication",
       "applicationSubCategory": "Disk Cleanup & App Uninstaller Utility",
       "isAccessibleForFree": true,
       "url": "https://alextkdev.github.io/MacOSCleaner/",
-      "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.0/MacOSCleaner.dmg",
+      "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.1/MacOSCleaner.dmg",
       "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
       "author": {
         "@type": "Person",
@@ -237,8 +237,8 @@
             <p>
               Dragging an app to Trash often leaves preferences, support files, caches, and launch agents behind.
               MacOSCleaner’s <strong>app uninstaller</strong> for Mac is built to <strong>remove app leftovers</strong>
-              with a forensic-style scan: Bundle ID, Team ID, Spotlight hits, plists, and Launch Services — across multiple levels.
-              You get confidence tiers so “guaranteed” hits are obvious and questionable paths stay optional.
+              with a single-pass indexed scan (<code>ResidualScanIndex</code>): Bundle ID, Team ID, Spotlight hits (with Spotlight-off fallback), plists, and Launch Services — across multiple levels and even for apps on external volumes (<code>/Volumes/.../Applications</code>).
+              Active Homebrew, MacPorts, and Nix services stay protected from false positives, and confidence tiers keep “guaranteed” hits obvious while questionable paths remain optional.
               That makes uninstall cleaner than a simple delete, and safer than a blind script.
             </p>
           </div>

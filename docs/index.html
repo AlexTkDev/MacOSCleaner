@@ -99,13 +99,16 @@
       "description": "Free solely for personal and academic/educational non-commercial use. Any commercial use by individuals or organizations requires prior written permission or a Commercial License."
     },
     "description": "Free source-available macOS cleaner (GPLv3 + Commons Clause) for Apple Silicon. Clean Mac storage, inspect TCC permissions and active sockets, uninstall apps with leftover scan, clean Xcode and Docker data — zero telemetry.",
-    "softwareVersion": "3.0.0",
+    "softwareVersion": "3.0.1",
     "fileFormat": "application/x-apple-diskimage",
-    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.0/MacOSCleaner.dmg",
+    "downloadUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.1/MacOSCleaner.dmg",
     "installUrl": "https://github.com/AlexTkDev/MacOSCleaner/releases/latest",
-    "releaseNotes": "https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0",
+    "releaseNotes": "https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1",
     "license": "https://github.com/AlexTkDev/MacOSCleaner/blob/release/LICENSE",
     "featureList": [
+      "Single-pass ResidualScanIndex, in-process SecStaticCode verification, and iterative POSIX directory sizing",
+      "External volume (/Volumes/.../Applications) and symlinked .app support with Spotlight-off fallback",
+      "Progressive live-scanning disk ring dashboard and system restart prompts after critical cleanup",
       "Privacy Inspector: TCC permissions viewer & reset, on-demand network sockets, and browser extensions",
       "Compact 48pt Liquid Glass Navigation Rail with unified header and ⌘1–⌘9 shortcuts",
       "Honest APFS free-space delta and unified Trash-by-default deletion policy",
@@ -260,9 +263,9 @@
 <header class="hero">
   <div class="container">
     <div class="hero-copy">
-      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0">
+      <a class="hero-badge" href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1">
         <span class="dot" aria-hidden="true"></span>
-        v3.0.0 — Privacy Inspector, 48pt Navigation Rail &amp; Honest APFS Accounting
+        v3.0.1 — Single-Pass Uninstaller Index, Live Disk Rings &amp; External Volume Support
         <span aria-hidden="true">→</span>
       </a>
       <p class="hero-eyebrow">Free macOS Cleaner &amp; App Uninstaller</p>
@@ -281,7 +284,7 @@
     </div>
 
     <figure class="hero-window">
-      <img src="static/assets/hero-dashboard.webp" width="2272" height="1648" alt="MacOSCleaner v3.0.0 dashboard" fetchpriority="high" decoding="async">
+      <img src="static/assets/hero-dashboard.webp" width="2272" height="1648" alt="MacOSCleaner v3.0.1 dashboard" fetchpriority="high" decoding="async">
     </figure>
 
     <div class="hero-stats">
@@ -340,7 +343,7 @@
           </span>
           Smart Cleanup (2,427 Paths)
         </h3>
-        <p>55+ categories, 2,427 path definitions covering 305+ apps and 105 toolchains — app caches, browsers, package managers, Xcode, Docker, AI assistants, orphaned leftovers, and project build artifacts verified by project markers. Parallel scan across all cores with honest APFS space delta.</p>
+        <p>55+ categories, 2,427 path definitions covering 305+ apps and 105 toolchains — exact per-bundle browser cache templates (profiles &amp; extensions untouched), deduplicated dynamic cache discovery, package managers, Xcode, Docker, AI assistants, and project build artifacts verified by project markers. Parallel scan across all cores with honest APFS space delta and post-cleanup restart prompts.</p>
       </li>
       <li class="bento-span-3">
         <h3>
@@ -349,7 +352,7 @@
           </span>
           Forensic App Uninstaller
         </h3>
-        <p>Drag &amp; drop any <code>.app</code>. Scans up to 5 levels with 30 evidence types (Bundle ID, Team ID, Spotlight, plist, Launch Services). Safe or Balanced mode. Confidence tiers: guaranteed → ignore.</p>
+        <p>Drag &amp; drop any <code>.app</code>. Single-pass <code>ResidualScanIndex</code> across 30 evidence signals and 2,427 paths. Discovers apps in <code>/Applications</code>, <code>~/Applications</code>, and external volumes (even with Spotlight off). Protects active Homebrew/MacPorts/Nix services and prompts for restart when system extensions or daemons are removed.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -358,7 +361,7 @@
           </span>
           Duplicate File Finder
         </h3>
-        <p>Multi-stage cryptographic engine (file size → 4&nbsp;KB hash → full SHA-256) running parallel on Swift Actors. Safely detects 100% exact duplicates and protects master original files.</p>
+        <p>Multi-stage cryptographic engine (file size → 4&nbsp;KB hash → full SHA-256) running parallel on Swift Actors. Safely detects 100% exact duplicates, protects master original files, skips dataless iCloud items (<code>.isUbiquitousItemKey</code> / <code>SF_DATALESS</code>), and supports opt-in external volume scanning.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -367,7 +370,7 @@
           </span>
           Navigable Disk Space Analyzer
         </h3>
-        <p>Drill into nested directories with clickable breadcrumbs. Honest APFS physical sizing (<code>totalFileAllocatedSize</code>), Quick Look spacebar preview, category filters (Video / Audio / Photos / Apps / Documents / Archives). Skips dataless iCloud files. Reveal in Finder or move to Trash.</p>
+        <p>Drill into nested directories with clickable breadcrumbs. Honest APFS physical sizing (<code>totalFileAllocatedSize</code>), Quick Look spacebar preview, category filters (Video / Audio / Photos / Apps / Documents / Archives). Skips dataless iCloud files (<code>SF_DATALESS</code> / <code>.isUbiquitousItemKey</code>) and supports opt-in external volume scanning. Reveal in Finder or move to Trash.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -538,49 +541,49 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">04 · Changelog</p>
-      <h2>What's new in v3.0.0 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0" target="_blank" rel="noopener" class="changelog-link" title="View v3.0.0 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
-      <p>Privacy Inspector (TCC, active sockets, browser extensions), compact 48pt Liquid Glass Navigation Rail, honest APFS space &amp; Trash accounting, expanded toolchain/AI caches, code-signed Startup &amp; BTM inspection, and automatic Dock cleanup</p>
+      <h2>What's new in v3.0.1 <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1" target="_blank" rel="noopener" class="changelog-link" title="View v3.0.1 on GitHub" style="display: inline-flex; vertical-align: middle; margin-left: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></h2>
+      <p>Single-pass ResidualScanIndex for fast low-memory uninstaller deep scans, live progressive Dashboard disk rings, external volume &amp; symlinked app support, browser profile isolation, Homebrew/Nix orphan protection, and post-cleanup restart prompts</p>
     </div>
     
     <!-- Active Latest Release Details -->
     <div class="release-list reveal">
       <article>
-        <h3>Privacy Inspector (New)</h3>
+        <h3>High-Speed Uninstaller &amp; POSIX Sizing</h3>
         <ul>
-          <li><strong>TCC Permissions Viewer &amp; Reset</strong> — read-only SQLite access (<code>?mode=ro&amp;immutable=1</code>) with SIP fallback for system <code>TCC.db</code>; per-app and per-permission reset via <code>tccutil reset</code> with verification</li>
-          <li><strong>Active Socket Snapshot</strong> — on-demand <code>proc_pidfdinfo</code> inspection for current-UID processes (root daemons marked <code>EPERM</code>) plus static <code>Info.plist</code> network indicators</li>
-          <li><strong>Browser Extensions</strong> — read-only audit for Safari, Chrome, Edge, Brave, Arc, and Firefox with permission risk badges and direct settings navigation</li>
+          <li><strong>Single-Pass <code>ResidualScanIndex</code></strong> — bulk <code>URLResourceValues</code> snapshot and inverted prefix/token index across <code>~/Library</code>, <code>/Library</code>, XDG, receipts, and Homebrew Cellar with bounded concurrency</li>
+          <li><strong>In-Process <code>SecStaticCode</code> &amp; <code>LSRegisterCache</code></strong> — replaced <code>/usr/bin/codesign</code> subprocesses with in-process Security framework calls and streaming Launch Services parsing</li>
+          <li><strong>Iterative POSIX Directory Sizing</strong> — allocation-free <code>opendir</code>/<code>readdir</code>/<code>fstatat</code> traversal with <code>SF_DATALESS</code> skipping, inode cycle guards, and batched <code>autoreleasepool</code> memory bounds</li>
         </ul>
       </article>
       <article>
-        <h3>Redesigned 48pt Rail &amp; Native Liquid Glass</h3>
+        <h3>Browser Profile Isolation &amp; Smarter Orphans</h3>
         <ul>
-          <li><strong>48pt Compact Navigation Rail</strong> — full-height vertical icon rail with <code>SidebarSection</code> groups, unified workspace header bar, RTL/light/dark support, and synchronized <code>⌘1</code>–<code>⌘9</code> shortcuts</li>
-          <li><strong>True Native Liquid Glass</strong> — removed compatibility stubs, fixed glass-on-glass overlays, and added <code>reduceMotion</code> / <code>reduceTransparency</code> support</li>
-          <li><strong>Cleanup Completion Report</strong> — HIG-aligned summary card with category icons, scrollable skipped/blocked callouts, and desktop hover/tap fixes</li>
+          <li><strong>Strict Browser Profile Protection</strong> — targets exact cache templates per bundle ID so Chrome/Chromium profiles, extensions, cookies, and PWA data remain untouched</li>
+          <li><strong>Package Manager &amp; SDK Awareness</strong> — <code>OrphanScanner</code> verifies active Homebrew (<code>homebrew.mxcl.*</code>, <code>homebrew.cask.*</code>), MacPorts, and Nix binaries plus shared telemetry/updater SDKs to eliminate false positives</li>
+          <li><strong>Versioned Plists &amp; Deduplicated Caches</strong> — preserves dotted names (<code>python3.8.plist</code>), groups <code>LaunchAgents</code>/<code>LaunchDaemons</code>, and skips caches already covered by dedicated categories</li>
         </ul>
       </article>
       <article>
-        <h3>Smarter Cleanup &amp; Honest APFS Accounting</h3>
+        <h3>External Volumes, Spotlight-Off &amp; Icon Pipeline</h3>
         <ul>
-          <li><strong>Unified Trash-by-Default</strong> — consolidated <code>bypassTrashOnUninstall</code> across every module (removed duplicate toggles and fixed <code>trashedThisRun</code> double-counting)</li>
-          <li><strong>Honest APFS Delta &amp; Expanded Caches</strong> — reports physical size and <code>volumeAvailableCapacityForImportantUsage</code> delta; expanded to <strong>305 apps, 105 toolchains, and 2,427 paths</strong></li>
-          <li><strong>Project Markers &amp; Installer Hunter</strong> — requires sibling project files before cleaning build folders; inspects messenger/Homebrew installers and <code>.zip</code> central directories without mounting</li>
+          <li><strong>External Volume &amp; Symlinked Apps</strong> — discovers apps in writable <code>/Volumes/.../Applications</code> and symlinked <code>.app</code> bundles while guarding volume roots, Time Machine, and OS directories</li>
+          <li><strong>Spotlight-Disabled Resilience</strong> — nil-safe <code>SpotlightMetadata</code> fallback and async indexing probe prevent crashes when <code>mdutil -a -i off</code> is set; no spurious CLT prompts on Macs without Xcode</li>
+          <li><strong>Off-Main Icon Pipeline &amp; Tab Persistence</strong> — <code>AppIconCache</code> with <code>RenderGate</code> (max 4 concurrent, 64/128px downsampling) and <code>WorkspaceStore</code> eliminate tab-switch rescans and memory spikes</li>
         </ul>
       </article>
       <article>
-        <h3>Startup Signatures, BTM &amp; Dock Cleanup</h3>
+        <h3>Live Disk Rings &amp; System Restart Prompts</h3>
         <ul>
-          <li><strong>Code-Signed Startup &amp; BTM</strong> — async <code>SecStaticCodeCheckValidity</code> signature/notarization checks, BTM Login Items (<code>sfltool dumpbtm</code>), orphaned binary flags, and <strong>Needs Attention</strong> filter</li>
-          <li><strong>No Hidden Admin Prompts</strong> — migrated <code>LaunchdControl</code> to <code>bootout</code>/<code>bootstrap</code> and removed silent <code>osascript</code> escalations from default cleanup</li>
-          <li><strong>Automatic Dock Cleanup</strong> — <code>DockTileManager</code> removes uninstalled app icons from <code>com.apple.dock</code> with URL normalization and multi-version protection</li>
+          <li><strong>Progressive Live Dashboard Rings</strong> — <code>DiskRingsChartView</code> renders real-time <code>Free</code>/<code>Total</code> capacity immediately and animates category arcs and byte counters as scanning progresses</li>
+          <li><strong>System Restart Recommendations</strong> — post-cleanup and post-uninstall restart prompts (<code>kAERestart</code> to <code>com.apple.loginwindow</code>) after clearing Font Cache, <code>.kext</code>/<code>.systemextension</code> bundles, LaunchDaemons, or hardware plug-ins</li>
+          <li><strong>14-Language Localization Parity</strong> — localized scan progress, leftover categories, and restart banners across all 14 supported languages</li>
         </ul>
       </article>
     </div>
 
     <div class="release-current-cta reveal" style="margin-top: 24px;">
-      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-        View v3.0.0 release notes on GitHub →
+      <a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+        View v3.0.1 release notes on GitHub →
       </a>
     </div>
 
@@ -590,6 +593,25 @@
       <h3 class="changelog-subhead">Previous Releases</h3>
       
       <div class="changelog-timeline">
+        <!-- v3.0.0 -->
+        <details class="changelog-item">
+          <summary class="changelog-summary">
+            <span class="changelog-version">v3.0.0</span>
+            <span class="changelog-title">Privacy Inspector, 48pt Navigation Rail &amp; Honest APFS Accounting</span>
+            <span class="changelog-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div class="changelog-content">
+            <ul>
+              <li><strong>Privacy Inspector</strong> — read-only TCC permissions viewer (<code>?mode=ro&amp;immutable=1</code>) with per-app/per-permission <code>tccutil reset</code>, on-demand <code>proc_pidfdinfo</code> active sockets, and read-only browser extension audits.</li>
+              <li><strong>48pt Rail &amp; Native Liquid Glass</strong> — compact vertical navigation rail with <code>SidebarSection</code> groups, unified workspace header bar, <code>⌘1</code>–<code>⌘9</code> shortcuts, and <code>reduceMotion</code> / <code>reduceTransparency</code> support.</li>
+              <li><strong>Honest APFS Accounting &amp; Unified Trash</strong> — consolidated <code>bypassTrashOnUninstall</code> across every module, physical APFS space delta reporting, project-marker build validation, and <strong>2,427 path rules</strong> (305 apps, 105 toolchains).</li>
+              <li><strong>Startup Signatures, BTM &amp; Dock Cleanup</strong> — async <code>SecStaticCodeCheckValidity</code> signature/notarization checks, BTM Login Items (<code>sfltool dumpbtm</code>), <code>launchctl bootout</code> migration, and automatic Dock icon cleanup.</li>
+            </ul>
+            <p class="changelog-footer-link"><a href="https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0" target="_blank" rel="noopener">View release on GitHub ↗</a></p>
+          </div>
+        </details>
         <!-- v2.3.0 -->
         <details class="changelog-item">
           <summary class="changelog-summary">
@@ -805,7 +827,7 @@
       <li>
         <span class="step-num">01</span>
         <h3>Scan</h3>
-        <p>Stack-based iterator batches work and deduplicates inodes. Size cache avoids redundant work. Categories run concurrently across cores.</p>
+        <p>Single-pass <code>ResidualScanIndex</code> and iterative POSIX <code>fstatat</code> sizing deduplicate inodes and skip dataless iCloud files. Categories run concurrently across cores.</p>
       </li>
       <li>
         <span class="step-num">02</span>
@@ -832,9 +854,9 @@
     <div class="download-panel reveal">
       <div>
         <h2>Download</h2>
-        <p class="dl-meta">v3.0.0 · macOS 26.0+ · Apple Silicon M1 and newer</p>
+        <p class="dl-meta">v3.0.1 · macOS 26.0+ · Apple Silicon M1 and newer</p>
         <div class="actions">
-          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.0/MacOSCleaner.dmg">
+          <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.1/MacOSCleaner.dmg">
             Download DMG <span class="arrow">→</span>
           </a>
           <a class="btn btn-secondary" href="https://github.com/AlexTkDev/MacOSCleaner/releases">All Releases</a>
