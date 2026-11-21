@@ -71,12 +71,17 @@ public enum AppQuitter {
         return Outcome(forced: forced, stillRunning: stillRunning)
     }
 
+    nonisolated public static var isRunningUnderTests: Bool {
+        NSClassFromString("XCTestCase") != nil
+            || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || ProcessInfo.processInfo.environment["XCTestBundlePath"] != nil
+    }
+
     /// Regular, non-Apple, policy-allowed apps. Shared by cleanup so the policy filter lives in one place.
     public static func cleanupTargets(policy: ProcessSafetyPolicy = ProcessSafetyPolicy()) -> [Handle] {
         // Unit tests call executeCleanup against an isolated filesystem. Quitting live apps there
         // would kill the developer's session.
-        guard NSClassFromString("XCTestCase") == nil,
-              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
+        guard !isRunningUnderTests else {
             return []
         }
         return NSWorkspace.shared.runningApplications.compactMap { application in

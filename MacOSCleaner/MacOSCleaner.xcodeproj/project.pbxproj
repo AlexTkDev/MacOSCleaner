@@ -142,6 +142,7 @@
 		8BCC68E6073167D5461A58D8 /* PreReleaseAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D97AF5D11A34E4AE0B853F /* PreReleaseAuditTests.swift */; };
 		8C793CF8075DF8122AD8A90C /* CrashSignalHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9CA5A89EB62AA27FA5D524 /* CrashSignalHandler.swift */; };
 		8E3DECCD5B86A373058DED54 /* StartupServicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0086F9F7800BFD540E5F25E /* StartupServicesViewModel.swift */; };
+		8E41A27853E6D68E9FEF0A4C /* ResidualScanIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188DC3E0ED256C5925C31FF1 /* ResidualScanIndex.swift */; };
 		8E85254D5D4361719099D2E9 /* LiveResidualAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1157C1A1D919A5A05D6F76FE /* LiveResidualAuditTests.swift */; };
 		8F1C2ACF00DF4A34A6CA9862 /* AnimatedScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6703835CE5100161449E56 /* AnimatedScanView.swift */; };
 		92E0F73F02E1797F191A0BCD /* RaycastRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB502AA9A1CC1FB93686DC00 /* RaycastRule.swift */; };
@@ -307,6 +308,7 @@
 		1587E61B0489D075EE10BA3D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		16400AE1862B76A844B01CFC /* CleanupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupView.swift; sourceTree = "<group>"; };
 		180E53446953349EB5FB2E04 /* SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfo.swift; sourceTree = "<group>"; };
+		188DC3E0ED256C5925C31FF1 /* ResidualScanIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResidualScanIndex.swift; sourceTree = "<group>"; };
 		18DB8F9D655F658EFAE5FCA3 /* FinalCutProRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalCutProRule.swift; sourceTree = "<group>"; };
 		197DA9FDB4A034B4100A2AFB /* AppDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDiscovery.swift; sourceTree = "<group>"; };
 		19CCFAD2C8F9A825ED7D6932 /* Stage3RegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stage3RegressionTests.swift; sourceTree = "<group>"; };
@@ -836,6 +838,7 @@
 				44C2514ADFBB5E6A83A2FB55 /* ParentLinker.swift */,
 				9F3C14ACE1F94B5CA8FFCEAC /* PostUninstallLeftoversSheet.swift */,
 				543E2F8CAD125A9356D10CCB /* RegistryPathTemplates.swift */,
+				188DC3E0ED256C5925C31FF1 /* ResidualScanIndex.swift */,
 				F9D80391D31B2181E0D29B17 /* ScoringWeights.swift */,
 				5D23B7F7FCB2071E33A02DE4 /* UIMetadataProvider.swift */,
 				6B3C1F6747CB777D0BD96AF9 /* UninstallerService.swift */,
@@ -1444,6 +1447,7 @@
 				92E0F73F02E1797F191A0BCD /* RaycastRule.swift in Sources */,
 				FA96D45AFA0FCF6E94C1032B /* RegistryPathTemplates.swift in Sources */,
 				B9FEEA903909722CAAB16EFE /* RegistryTypes.swift in Sources */,
+				8E41A27853E6D68E9FEF0A4C /* ResidualScanIndex.swift in Sources */,
 				E16DD32548BBD2D1A11C9C92 /* RootView.swift in Sources */,
 				66763C6A242E5249D7133F25 /* RunScheduledCleanupIntent.swift in Sources */,
 				A663BEC17B22AFC47D7098AC /* RunningProcess.swift in Sources */,

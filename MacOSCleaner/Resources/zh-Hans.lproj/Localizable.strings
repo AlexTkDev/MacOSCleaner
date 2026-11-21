@@ -1174,3 +1174,15 @@
 "uninstaller_restart_recommended_title" = "建议重新启动";
 "uninstaller_restart_recommended_body" = "已移除系统组件（守护进程、扩展或插件）。请重新启动 Mac 以将其从内存中完全卸载。";
 "restart_mac_button" = "重新启动 Mac…";
+"uninstaller_orphan_scanning_dirs" = "正在扫描目标目录...";
+"uninstaller_orphan_analyzing_count" = "正在分析 %lld 个潜在残留项...";
+"uninstaller_orphan_analyzing_progress" = "正在分析 %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "缓存";
+"uninstaller_orphan_cat_preferences" = "偏好设置";
+"uninstaller_orphan_cat_app_support" = "应用程序支持";
+"uninstaller_orphan_cat_logs" = "日志";
+"uninstaller_orphan_cat_containers" = "容器";
+"uninstaller_orphan_cat_developer" = "开发者";
+"uninstaller_orphan_cat_launch_agents" = "启动代理";
+"uninstaller_orphan_cat_other" = "其他";
+"uninstaller_evidence_score" = "评分：%lld";

@@ -90,13 +90,15 @@ public final class AppIconCache: @unchecked Sendable {
         let customRenderer = self.customRenderer
         let rendered: NSImage? = await Task.detached(priority: .utility) {
             guard !Task.isCancelled else { return nil }
-            let raw: NSImage? = if let customRenderer {
-                customRenderer(normalizedPath, targetPixels)
-            } else {
-                NSWorkspace.shared.icon(forFile: normalizedPath)
+            return autoreleasepool {
+                let raw: NSImage? = if let customRenderer {
+                    customRenderer(normalizedPath, targetPixels)
+                } else {
+                    NSWorkspace.shared.icon(forFile: normalizedPath)
+                }
+                guard let raw else { return nil }
+                return Self.downsample(raw, targetPixelSize: targetPixels)
             }
-            guard let raw else { return nil }
-            return Self.downsample(raw, targetPixelSize: targetPixels)
         }.value
 
         await renderGate.release()

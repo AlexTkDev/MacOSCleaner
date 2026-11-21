@@ -1173,3 +1173,15 @@
 "uninstaller_restart_recommended_title" = "Redémarrage recommandé";
 "uninstaller_restart_recommended_body" = "Des composants système (daemons, extensions ou modules) ont été supprimés. Redémarrez votre Mac pour les décharger complètement de la mémoire.";
 "restart_mac_button" = "Redémarrer le Mac…";
+"uninstaller_orphan_scanning_dirs" = "Analyse des dossiers cibles...";
+"uninstaller_orphan_analyzing_count" = "Analyse de %lld résidus potentiels...";
+"uninstaller_orphan_analyzing_progress" = "Analyse %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Caches";
+"uninstaller_orphan_cat_preferences" = "Préférences";
+"uninstaller_orphan_cat_app_support" = "Support d’applications";
+"uninstaller_orphan_cat_logs" = "Journaux";
+"uninstaller_orphan_cat_containers" = "Conteneurs";
+"uninstaller_orphan_cat_developer" = "Développeur";
+"uninstaller_orphan_cat_launch_agents" = "Agents de lancement";
+"uninstaller_orphan_cat_other" = "Autre";
+"uninstaller_evidence_score" = "Score : %lld";

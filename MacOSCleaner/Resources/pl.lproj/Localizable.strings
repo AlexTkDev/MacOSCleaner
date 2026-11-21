@@ -1211,3 +1211,15 @@
 "uninstaller_restart_recommended_title" = "Zalecane ponowne uruchomienie";
 "uninstaller_restart_recommended_body" = "Usunięto komponenty systemowe (demony, rozszerzenia lub wtyczki). Uruchom ponownie Maca, aby całkowicie usunąć je z pamięci.";
 "restart_mac_button" = "Uruchom ponownie Maca…";
+"uninstaller_orphan_scanning_dirs" = "Skanowanie katalogów docelowych...";
+"uninstaller_orphan_analyzing_count" = "Analizowanie %lld potencjalnych pozostałości...";
+"uninstaller_orphan_analyzing_progress" = "Analizowanie %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Pamięć podręczna";
+"uninstaller_orphan_cat_preferences" = "Preferencje";
+"uninstaller_orphan_cat_app_support" = "Wsparcie aplikacji";
+"uninstaller_orphan_cat_logs" = "Dzienniki";
+"uninstaller_orphan_cat_containers" = "Kontenery";
+"uninstaller_orphan_cat_developer" = "Deweloper";
+"uninstaller_orphan_cat_launch_agents" = "Agenci uruchamiania";
+"uninstaller_orphan_cat_other" = "Inne";
+"uninstaller_evidence_score" = "Wynik: %lld";

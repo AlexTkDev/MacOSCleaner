@@ -1092,4 +1092,149 @@ final class CandidateCollectorTests: XCTestCase {
         _ = await collector.collectDetailed(identity: identity, mode: .balanced)
         XCTAssertGreaterThan(counter.value(), 0, "mdfind should run in balanced mode when Spotlight is enabled")
     }
+
+    func test_residualScanIndex_matchesUnindexedCollectionAndAvoidsReenumeration() async throws {
+        let lib = URL(fileURLWithPath: home).appendingPathComponent("Library", isDirectory: true)
+        let appScripts = lib.appendingPathComponent("Application Scripts/com.apple.OFDThumbnail", isDirectory: true)
+        let studio = lib.appendingPathComponent("Application Support/Google/AndroidStudio2026.1.2", isDirectory: true)
+        let openCodeNested = lib.appendingPathComponent("Caches/ai.opencode.desktop/UpdaterCache/opencode-desktop_br", isDirectory: true)
+        let groupContainer = lib.appendingPathComponent("Group Containers/HUAQ24HBR6.dev.orbstack", isDirectory: true)
+        let prefs = lib.appendingPathComponent("Preferences", isDirectory: true)
+        let launchAgents = lib.appendingPathComponent("LaunchAgents", isDirectory: true)
+        let anydeskDot = URL(fileURLWithPath: home).appendingPathComponent(".anydesk", isDirectory: true)
+
+        for dir in [appScripts, studio, openCodeNested, groupContainer, prefs, launchAgents, anydeskDot] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        try Data().write(to: prefs.appendingPathComponent("com.google.android.studio.plist"))
+        try Data().write(to: launchAgents.appendingPathComponent("dev.orbstack.agent.plist"))
+        defer { try? FileManager.default.removeItem(at: lib) }
+
+        final class PkgutilCounter: @unchecked Sendable {
+            let lock = NSLock()
+            var pkgsCalls = 0
+            func inc() { lock.lock(); pkgsCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return pkgsCalls }
+        }
+        let pkgCounter = PkgutilCounter()
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.runHandler = { cmd, args in
+            if cmd == "/usr/sbin/pkgutil", args == ["--pkgs"] {
+                pkgCounter.inc()
+                return CommandResult(stdout: "com.apple.pkg.SomeOther\n", stderr: "", exitCode: 0)
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        let index = await ResidualScanIndex.build(
+            fileSystemContext: fileSystemContext,
+            homebrewCellarDirectories: [],
+            commandRunner: runner
+        )
+        XCTAssertEqual(pkgCounter.value(), 1, "ResidualScanIndex must call pkgutil --pkgs only once")
+
+        let identities = [
+            AppIdentity(
+                bundleID: "com.google.android.studio",
+                appName: "Android Studio",
+                bundleName: nil, bundleVersion: nil, executableName: "studio",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/Android Studio.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["Google"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: true, isQt: false, isDocker: false
+            ),
+            AppIdentity(
+                bundleID: "ai.opencode.desktop",
+                appName: "OpenCode",
+                bundleName: "OpenCode", bundleVersion: nil, executableName: "OpenCode",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/OpenCode.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["opencode"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: true, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+            ),
+            AppIdentity(
+                bundleID: "dev.orbstack",
+                appName: "OrbStack",
+                bundleName: "OrbStack", bundleVersion: nil, executableName: "OrbStack",
+                teamID: "HUAQ24HBR6", signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/OrbStack.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: true
+            ),
+            AppIdentity(
+                bundleID: "com.philandro.anydesk",
+                appName: "AnyDesk",
+                bundleName: "AnyDesk", bundleVersion: nil, executableName: "AnyDesk",
+                teamID: nil, signingAuthority: nil,
+                bundleURL: URL(fileURLWithPath: "/Applications/AnyDesk.app"),
+                isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+                vendorNames: ["philandro"], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+                isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+            ),
+        ]
+
+        let indexedCollector = CandidateCollector(
+            commandRunner: runner,
+            homebrewCellarDirectories: [],
+            fileSystemContext: fileSystemContext,
+            scanIndex: index
+        )
+        let unindexedCollector = makeCollector(commandRunner: runner)
+
+        var indexedResults: [String: Set<String>] = [:]
+        for identity in identities {
+            let indexed = await indexedCollector.collectDetailed(identity: identity, mode: .balanced)
+            indexedResults[identity.bundleID] = Set(indexed.candidates.map { $0.resolvingSymlinksInPath().path })
+        }
+
+        XCTAssertEqual(pkgCounter.value(), 1, "Indexed collection must not re-invoke pkgutil --pkgs")
+
+        for identity in identities {
+            let unindexed = await unindexedCollector.collectDetailed(identity: identity, mode: .balanced)
+            let unindexedPaths = Set(unindexed.candidates.map { $0.resolvingSymlinksInPath().path })
+            XCTAssertEqual(indexedResults[identity.bundleID], unindexedPaths, "Indexed collection must match unindexed for \(identity.bundleID)")
+        }
+    }
+
+    func test_evidenceProbe_skipsCodesignSubprocessForPlainDirectories() async throws {
+        let dir = URL(fileURLWithPath: home).appendingPathComponent("Library/Application Support/PlainFolder", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        final class CallCounter: @unchecked Sendable {
+            let lock = NSLock()
+            var codesignCalls = 0
+            func inc() { lock.lock(); codesignCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return codesignCalls }
+        }
+        let counter = CallCounter()
+        let runner = MockCommandRunner()
+        runner.runDelay = .zero
+        runner.runHandler = { cmd, _ in
+            if cmd == "/usr/bin/codesign" {
+                counter.inc()
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        let probe = EvidenceProbe(commandRunner: runner, codesignCache: CodesignCache(), plistCache: PlistContentCache())
+        let identity = AppIdentity(
+            bundleID: "com.example.plain",
+            appName: "PlainFolder",
+            bundleName: nil, bundleVersion: nil, executableName: "PlainFolder",
+            teamID: "TEAM123456", signingAuthority: "Developer ID Application: Test",
+            bundleURL: URL(fileURLWithPath: "/Applications/PlainFolder.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false, isJava: false, isQt: false, isDocker: false
+        )
+
+        let evidence = await probe.probe(url: dir, identity: identity)
+        XCTAssertTrue(evidence.contains(.appNameExact))
+        XCTAssertEqual(counter.value(), 0, "EvidenceProbe must not spawn /usr/bin/codesign subprocesses")
+    }
 }

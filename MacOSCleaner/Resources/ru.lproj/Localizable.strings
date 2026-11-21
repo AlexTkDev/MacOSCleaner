@@ -1210,3 +1210,15 @@
 "uninstaller_restart_recommended_title" = "Рекомендуется перезагрузка";
 "uninstaller_restart_recommended_body" = "Удалены системные компоненты (демоны, расширения или плагины). Перезагрузите Mac для их полной выгрузки из памяти.";
 "restart_mac_button" = "Перезагрузить Mac…";
+"uninstaller_orphan_scanning_dirs" = "Сканирование целевых каталогов...";
+"uninstaller_orphan_analyzing_count" = "Анализ %lld возможных остатков...";
+"uninstaller_orphan_analyzing_progress" = "Анализ %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Кэши";
+"uninstaller_orphan_cat_preferences" = "Настройки";
+"uninstaller_orphan_cat_app_support" = "Поддержка программ";
+"uninstaller_orphan_cat_logs" = "Журналы";
+"uninstaller_orphan_cat_containers" = "Контейнеры";
+"uninstaller_orphan_cat_developer" = "Разработчик";
+"uninstaller_orphan_cat_launch_agents" = "Агенты запуска";
+"uninstaller_orphan_cat_other" = "Другое";
+"uninstaller_evidence_score" = "Оценка: %lld";

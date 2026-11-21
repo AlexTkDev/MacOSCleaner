@@ -154,7 +154,19 @@ final class LocalizationCompletenessTests: XCTestCase {
         "cleanup_restart_font_cache_body",
         "uninstaller_restart_recommended_title",
         "uninstaller_restart_recommended_body",
-        "restart_mac_button"
+        "restart_mac_button",
+        "uninstaller_orphan_scanning_dirs",
+        "uninstaller_orphan_analyzing_count",
+        "uninstaller_orphan_analyzing_progress",
+        "uninstaller_orphan_cat_caches",
+        "uninstaller_orphan_cat_preferences",
+        "uninstaller_orphan_cat_app_support",
+        "uninstaller_orphan_cat_logs",
+        "uninstaller_orphan_cat_containers",
+        "uninstaller_orphan_cat_developer",
+        "uninstaller_orphan_cat_launch_agents",
+        "uninstaller_orphan_cat_other",
+        "uninstaller_evidence_score"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

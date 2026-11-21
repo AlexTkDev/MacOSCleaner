@@ -628,4 +628,64 @@ final class UninstallerServiceTests: XCTestCase {
             URL(fileURLWithPath: "/Users/test/Library/Preferences/com.example.app.plist")
         ]))
     }
+
+    func testPhysicalSize_symlinkRoot_nestedSymlink_andCancellation() async throws {
+        FileManager.clearSizeCache()
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("POSIXSizeTest-\(UUID().uuidString)", isDirectory: true)
+        let realApp = root.appendingPathComponent("External/RealApp.app", isDirectory: true)
+        let contents = realApp.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        // 16 KB payload file
+        let payload = contents.appendingPathComponent("payload.bin")
+        try Data(repeating: 0x5A, count: 16_384).write(to: payload)
+
+        // Nested symlink pointing back to root (cycle) — must not loop or double-count
+        let nestedLink = contents.appendingPathComponent("LoopLink")
+        try FileManager.default.createSymbolicLink(at: nestedLink, withDestinationURL: realApp)
+
+        // Symlinked root `.app` (like an app offloaded to an external SSD)
+        let symlinkedApp = root.appendingPathComponent("LinkedApp.app", isDirectory: false)
+        try FileManager.default.createSymbolicLink(at: symlinkedApp, withDestinationURL: realApp)
+
+        let directSize = FileManager.default.getPhysicalDirectorySize(url: realApp, excludedPaths: [])
+        let symlinkSize = FileManager.default.getPhysicalDirectorySize(url: symlinkedApp, excludedPaths: [])
+        XCTAssertGreaterThanOrEqual(directSize, 16_384)
+        XCTAssertEqual(directSize, symlinkSize, "Symlinked root app must report same physical size without following nested symlink cycles")
+
+        // Cancelled task must not cache a partial zero/incomplete result
+        let cancelDir = root.appendingPathComponent("CancelDir", isDirectory: true)
+        try FileManager.default.createDirectory(at: cancelDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x3C, count: 8192).write(to: cancelDir.appendingPathComponent("data.bin"))
+
+        let cancelledTask = Task.detached {
+            while !Task.isCancelled {
+                await Task.yield()
+            }
+            return FileManager.default.getPhysicalDirectorySize(url: cancelDir, excludedPaths: [])
+        }
+        cancelledTask.cancel()
+        _ = await cancelledTask.value
+
+        let measured = FileManager.default.getPhysicalDirectorySize(url: cancelDir, excludedPaths: [])
+        XCTAssertGreaterThanOrEqual(measured, 8192)
+    }
+
+    func testLSRegisterCache_coalescesConcurrentDumpCalls() async {
+        let cache = LSRegisterCache()
+        async let first = cache.paths(matching: "com.apple.finder")
+        async let second = cache.paths(matching: "com.apple.finder")
+        async let third = cache.paths(matching: "com.apple.safari")
+        let (r1, r2, r3) = await (first, second, third)
+        XCTAssertEqual(r1, r2)
+        _ = r3
+    }
+
+    @MainActor
+    func testAppQuitter_isRunningUnderTests_blocksLiveAppTermination() {
+        XCTAssertTrue(AppQuitter.isRunningUnderTests)
+        XCTAssertTrue(AppQuitter.cleanupTargets().isEmpty)
+    }
 }

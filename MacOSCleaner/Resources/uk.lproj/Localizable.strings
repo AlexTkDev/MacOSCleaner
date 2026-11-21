@@ -1207,3 +1207,15 @@
 "uninstaller_restart_recommended_title" = "Рекомендується перезавантаження";
 "uninstaller_restart_recommended_body" = "Видалено системні компоненти (демони, розширення або плагіни). Перезавантажте Mac, щоб повністю вивантажити їх із пам’яті.";
 "restart_mac_button" = "Перезавантажити Mac…";
+"uninstaller_orphan_scanning_dirs" = "Сканування цільових каталогів...";
+"uninstaller_orphan_analyzing_count" = "Аналіз %lld можливих залишків...";
+"uninstaller_orphan_analyzing_progress" = "Аналіз %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Кеші";
+"uninstaller_orphan_cat_preferences" = "Налаштування";
+"uninstaller_orphan_cat_app_support" = "Підтримка програм";
+"uninstaller_orphan_cat_logs" = "Журнали";
+"uninstaller_orphan_cat_containers" = "Контейнери";
+"uninstaller_orphan_cat_developer" = "Розробник";
+"uninstaller_orphan_cat_launch_agents" = "Агенти запуску";
+"uninstaller_orphan_cat_other" = "Інше";
+"uninstaller_evidence_score" = "Оцінка: %lld";

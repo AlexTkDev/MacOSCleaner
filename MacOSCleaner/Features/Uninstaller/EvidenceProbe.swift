@@ -191,18 +191,17 @@ public actor EvidenceProbe {
             evidence.insert(.flutterBuild)
         }
 
-        // Code signature probe
+        // Code signature probe (in-process Security framework; never spawns codesign subprocesses)
         let binaryExts: Set<String> = ["", "app", "bundle", "kext", "framework", "dylib", "xpc"]
-        let fileExt = url.pathExtension
+        let fileExt = url.pathExtension.lowercased()
         if binaryExts.contains(fileExt) || fileExt.isEmpty {
-            if let candidateTeamID = await codesignCache.getTeamID(url: url, commandRunner: commandRunner) {
-                if candidateTeamID == identity.teamID && identity.teamID != nil {
+            if CodesignCache.isSignableCandidate(url: url) {
+                let signing = await codesignCache.getSigningInfo(url: url)
+                if let candidateTeamID = signing.teamID, candidateTeamID == identity.teamID, identity.teamID != nil {
                     evidence.insert(.teamID)
                 }
-            }
-            if let auth = identity.signingAuthority {
-                let result = try? await commandRunner.run(command: "/usr/bin/codesign", arguments: ["-dv", "--verbose=4", url.path])
-                if let output = result?.stderr, output.contains(auth) {
+                if let auth = identity.signingAuthority,
+                   signing.authorities.contains(where: { $0.contains(auth) }) {
                     evidence.insert(.developerSignature)
                 }
             }
@@ -251,15 +250,50 @@ public actor EvidenceProbe {
     /// Needle starts a token in haystack: "arc" matches "arc helper"/"arcupdater", not "searchmarquis".
     static func tokenPrefixMatch(_ haystack: String, _ needle: String) -> Bool {
         guard !needle.isEmpty else { return false }
-        let pattern = "(?<![\\p{L}\\p{N}])" + NSRegularExpression.escapedPattern(for: needle)
-        return haystack.range(of: pattern, options: [.regularExpression, .caseInsensitive]) != nil
+        var searchStart = haystack.startIndex
+        while searchStart < haystack.endIndex,
+              let range = haystack.range(of: needle, options: [.caseInsensitive], range: searchStart..<haystack.endIndex) {
+            let precededByWordChar: Bool
+            if range.lowerBound == haystack.startIndex {
+                precededByWordChar = false
+            } else {
+                let prev = haystack[haystack.index(before: range.lowerBound)]
+                precededByWordChar = prev.isLetter || prev.isNumber
+            }
+            if !precededByWordChar {
+                return true
+            }
+            searchStart = haystack.index(after: range.lowerBound)
+        }
+        return false
     }
 
     /// Needle is a whole word in haystack: "arc" matches "arc.app", not "architecture".
     static func wordBoundaryMatch(_ haystack: String, _ needle: String) -> Bool {
         guard !needle.isEmpty else { return false }
-        let pattern = "(?<![\\p{L}\\p{N}])" + NSRegularExpression.escapedPattern(for: needle) + "(?![\\p{L}\\p{N}])"
-        return haystack.range(of: pattern, options: [.regularExpression, .caseInsensitive]) != nil
+        var searchStart = haystack.startIndex
+        while searchStart < haystack.endIndex,
+              let range = haystack.range(of: needle, options: [.caseInsensitive], range: searchStart..<haystack.endIndex) {
+            let precededByWordChar: Bool
+            if range.lowerBound == haystack.startIndex {
+                precededByWordChar = false
+            } else {
+                let prev = haystack[haystack.index(before: range.lowerBound)]
+                precededByWordChar = prev.isLetter || prev.isNumber
+            }
+            let followedByWordChar: Bool
+            if range.upperBound == haystack.endIndex {
+                followedByWordChar = false
+            } else {
+                let next = haystack[range.upperBound]
+                followedByWordChar = next.isLetter || next.isNumber
+            }
+            if !precededByWordChar && !followedByWordChar {
+                return true
+            }
+            searchStart = haystack.index(after: range.lowerBound)
+        }
+        return false
     }
 
     /// "Android Studio" ↔ "AndroidStudio2026.1.2"; ".anydesk" ↔ "AnyDesk".

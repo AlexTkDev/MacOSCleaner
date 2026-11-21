@@ -337,11 +337,22 @@ public actor UninstallerService {
 
     // MARK: - Deep Forensics
 
-    public func deepScan(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
+    public nonisolated func buildResidualScanIndex() async -> ResidualScanIndex {
+        await ResidualScanIndex.build(
+            fileSystemContext: fileSystemContext,
+            commandRunner: commandRunner
+        )
+    }
+
+    public nonisolated func deepScan(
+        _ app: AppInfo,
+        mode: ScanMode = .balanced,
+        scanIndex: ResidualScanIndex? = nil
+    ) async throws -> AppInfo {
         if !app.versions.isEmpty {
             var scannedVersions: [AppInfo] = []
             for versionApp in app.versions {
-                let scanned = try await deepScanSingle(versionApp, mode: mode)
+                let scanned = try await deepScanSingle(versionApp, mode: mode, scanIndex: scanIndex)
                 scannedVersions.append(scanned)
             }
             scannedVersions.sort { preferredApp($0, $1) == $0 }
@@ -362,11 +373,15 @@ public actor UninstallerService {
             updated.scanState = .deepScanned
             return updated
         } else {
-            return try await deepScanSingle(app, mode: mode)
+            return try await deepScanSingle(app, mode: mode, scanIndex: scanIndex)
         }
     }
 
-    private func deepScanSingle(_ app: AppInfo, mode: ScanMode = .balanced) async throws -> AppInfo {
+    nonisolated private func deepScanSingle(
+        _ app: AppInfo,
+        mode: ScanMode = .balanced,
+        scanIndex: ResidualScanIndex? = nil
+    ) async throws -> AppInfo {
         let identity: AppIdentity
         if let existing = app.identity {
             identity = existing
@@ -380,7 +395,12 @@ public actor UninstallerService {
 
         let graph = EvidenceGraph(identity: identity)
 
-        async let relatedTask: [RelatedFile] = runDeepRelatedFiles(identity: identity, graph: graph, mode: mode)
+        async let relatedTask: [RelatedFile] = runDeepRelatedFiles(
+            identity: identity,
+            graph: graph,
+            mode: mode,
+            scanIndex: scanIndex
+        )
         async let developerTask: [RelatedCleanupComponent] = DeveloperComponentsDetector.detect(
             appName: identity.appName,
             bundleID: identity.bundleID
@@ -414,12 +434,13 @@ public actor UninstallerService {
         }
     }
 
-    private func attachAbsorbedHelpers(
+    nonisolated private func attachAbsorbedHelpers(
         _ related: [RelatedFile],
         helperURLs: [URL],
         parentBundlePath: String
     ) async -> [RelatedFile] {
         guard !helperURLs.isEmpty else { return related }
+        let fm = FileManager.default
         var existing = Set(related.map { NormalizedPath.key($0.url) })
         var result = related
         for url in helperURLs {
@@ -429,7 +450,7 @@ public actor UninstallerService {
             if safetyManager.isBrowserUserDataPath(path) { continue }
             guard existing.insert(path).inserted else { continue }
             var isDir: ObjCBool = false
-            guard fileManager.fileExists(atPath: path, isDirectory: &isDir) else { continue }
+            guard fm.fileExists(atPath: path, isDirectory: &isDir) else { continue }
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
@@ -443,11 +464,18 @@ public actor UninstallerService {
         return dedupAndSort(result.map { ($0, $0.confidence) })
     }
 
-    private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph, mode: ScanMode = .balanced) async -> [RelatedFile] {
+    nonisolated private func runDeepRelatedFiles(
+        identity: AppIdentity,
+        graph: EvidenceGraph,
+        mode: ScanMode = .balanced,
+        scanIndex: ResidualScanIndex? = nil
+    ) async -> [RelatedFile] {
+        let fm = FileManager.default
         let collector = CandidateCollector(
             commandRunner: commandRunner,
             fileSystemContext: fileSystemContext,
-            safetyManager: safetyManager
+            safetyManager: safetyManager,
+            scanIndex: scanIndex
         )
         let collection = await collector.collectDetailed(identity: identity, mode: mode)
         let probe = EvidenceProbe(commandRunner: commandRunner, codesignCache: codesignCache, plistCache: plistCache)
@@ -489,15 +517,14 @@ public actor UninstallerService {
             let assessment = ConfidenceEngine.assess(node.evidence, ruleScore: ruleScore, identity: identity)
             guard assessment.tier >= minimumTier else { continue }
             guard (try? safetyManager.validate(url: node.url, policy: .uninstallApp(bundleID: identity.bundleID))) != nil else { continue }
-            guard !Self.isProtectedMailPath(node.url.path) else { continue }
+            guard !Self.isProtectedMailPath(node.url.path, homeDirectory: fileSystemContext.homePath) else { continue }
             guard node.url.path != identity.bundleURL.path else { continue }
             guard !identity.bundleURL.path.hasPrefix(node.url.path + "/") else { continue }
             guard !node.url.path.hasPrefix(identity.bundleURL.path + "/") else { continue }
 
             var isDir: ObjCBool = false
-            guard fileManager.fileExists(atPath: node.url.path, isDirectory: &isDir) else { continue }
+            guard fm.fileExists(atPath: node.url.path, isDirectory: &isDir) else { continue }
 
-            let fileSize = await getDirectorySize(url: node.url)
             // Browser user data carries logins/sessions/extensions — never preselect or label "safe".
             let isBrowserData = safetyManager.isBrowserUserDataPath(node.url.path)
             let risk: DeletionRisk = (node.url.path.contains("Preferences") || isBrowserData)
@@ -510,7 +537,7 @@ public actor UninstallerService {
                 url: node.url,
                 // App configuration/settings and browser user data are opt-in only.
                 isSelected: isSelectedByDefault,
-                size: fileSize,
+                size: 0,
                 deletionRisk: isConfig ? .normal : risk,
                 evidence: assessment.evidence,
                 confidence: assessment.tier,
@@ -519,8 +546,22 @@ public actor UninstallerService {
             related.append((file, assessment.tier))
         }
 
-        // Dedup by prefix, sort by tier then path
-        var result = dedupAndSort(related)
+        // Collapse covered descendants before paying directory-size I/O.
+        let collapsed = dedupAndSort(related)
+        var result: [RelatedFile] = []
+        result.reserveCapacity(collapsed.count)
+        for file in collapsed {
+            let fileSize = await getDirectorySize(url: file.url)
+            result.append(RelatedFile(
+                url: file.url,
+                isSelected: file.isSelected,
+                size: fileSize,
+                deletionRisk: file.deletionRisk,
+                evidence: file.evidence,
+                confidence: file.confidence,
+                isBrowserData: file.isBrowserData
+            ))
+        }
 
         let sharedSet = Set(collection.sharedPaths.map(NormalizedPath.key))
         let informationalSet = Set(collection.informationalPaths.map(NormalizedPath.key))
@@ -586,7 +627,7 @@ public actor UninstallerService {
                 continue // SSOT is developerComponents / unlocked related above
             }
             var isDir: ObjCBool = false
-            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            guard fm.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
@@ -604,7 +645,7 @@ public actor UninstallerService {
             let standardized = NormalizedPath.canonicalize(url)
             guard existing.insert(NormalizedPath.key(standardized)).inserted else { continue }
             var isDir: ObjCBool = false
-            guard fileManager.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
+            guard fm.fileExists(atPath: standardized.path, isDirectory: &isDir) else { continue }
             let fileSize = await getDirectorySize(url: standardized)
             result.append(RelatedFile(
                 url: standardized,
@@ -672,12 +713,19 @@ public actor UninstallerService {
     }
 
     private func terminateRunningApp(_ app: AppInfo) async {
+        guard !AppQuitter.isRunningUnderTests else { return }
         let appBundleURL = app.url.standardizedFileURL
         let bundleID = app.bundleID?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let context = fileSystemContext
 
         let runningApps = await MainActor.run {
             NSWorkspace.shared.runningApplications.filter { running in
                 if running.processIdentifier == ProcessInfo.processInfo.processIdentifier { return false }
+                if context.enforceAllowedRoots,
+                   let runningURL = running.bundleURL,
+                   !context.isInsideAllowedRoots(runningURL) {
+                    return false
+                }
                 if let bundleID, !bundleID.isEmpty, running.bundleIdentifier == bundleID {
                     return true
                 }
@@ -880,7 +928,7 @@ public actor UninstallerService {
             await DockTileManager.removeFromDock(appURL: app.url, bundleID: app.bundleID, commandRunner: commandRunner)
         }
 
-        if let bundleID = app.bundleID {
+        if !AppQuitter.isRunningUnderTests, let bundleID = app.bundleID {
             do {
                 _ = try await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--forget", bundleID])
                 Logger.uninstaller.debug("pkgutil --forget \(bundleID, privacy: .public)")
@@ -982,12 +1030,12 @@ public actor UninstallerService {
         return "name:" + app.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
-    private func aggregateRelatedFiles(from versions: [AppInfo]) -> [RelatedFile] {
+    nonisolated private func aggregateRelatedFiles(from versions: [AppInfo]) -> [RelatedFile] {
         let allRelated = versions.flatMap(\.relatedFiles)
         return dedupAndSort(allRelated.map { ($0, $0.confidence) })
     }
 
-    private func aggregateDeveloperComponents(from versions: [AppInfo]) -> [RelatedCleanupComponent] {
+    nonisolated private func aggregateDeveloperComponents(from versions: [AppInfo]) -> [RelatedCleanupComponent] {
         var seen = Set<String>()
         var result: [RelatedCleanupComponent] = []
         for v in versions {
@@ -1052,7 +1100,7 @@ public actor UninstallerService {
         return result
     }
 
-    private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {
+    nonisolated private func preferredApp(_ lhs: AppInfo, _ rhs: AppInfo) -> AppInfo {
         let lhsIsStandard = lhs.url.path.hasPrefix("/Applications/")
         let rhsIsStandard = rhs.url.path.hasPrefix("/Applications/")
         if lhsIsStandard != rhsIsStandard {
@@ -1066,7 +1114,7 @@ public actor UninstallerService {
         return lhs.url.path <= rhs.url.path ? lhs : rhs
     }
 
-    private func dedupAndSort(_ items: [(file: RelatedFile, tier: ConfidenceTier)]) -> [RelatedFile] {
+    nonisolated private func dedupAndSort(_ items: [(file: RelatedFile, tier: ConfidenceTier)]) -> [RelatedFile] {
         let sortedByPath = items.map(\.file).sorted { $0.url.path.count < $1.url.path.count }
         var deduplicated: [String: RelatedFile] = [:]
         for file in sortedByPath {

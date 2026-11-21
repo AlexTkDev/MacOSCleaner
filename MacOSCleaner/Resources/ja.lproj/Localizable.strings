@@ -1174,3 +1174,15 @@
 "uninstaller_restart_recommended_title" = "再起動をおすすめします";
 "uninstaller_restart_recommended_body" = "システムコンポーネント（デーモン、機能拡張、またはプラグイン）を削除しました。メモリから完全にアンロードするため、Mac を再起動してください。";
 "restart_mac_button" = "Mac を再起動…";
+"uninstaller_orphan_scanning_dirs" = "対象ディレクトリをスキャンしています...";
+"uninstaller_orphan_analyzing_count" = "%lld 件の不要ファイル候補を分析中...";
+"uninstaller_orphan_analyzing_progress" = "分析中 %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "キャッシュ";
+"uninstaller_orphan_cat_preferences" = "環境設定";
+"uninstaller_orphan_cat_app_support" = "アプリケーションサポート";
+"uninstaller_orphan_cat_logs" = "ログ";
+"uninstaller_orphan_cat_containers" = "コンテナ";
+"uninstaller_orphan_cat_developer" = "開発者";
+"uninstaller_orphan_cat_launch_agents" = "起動エージェント";
+"uninstaller_orphan_cat_other" = "その他";
+"uninstaller_evidence_score" = "スコア: %lld";

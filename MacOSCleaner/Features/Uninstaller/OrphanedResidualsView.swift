@@ -326,7 +326,7 @@ public struct OrphanedResidualsView: View {
                             .fontWeight(.medium)
                             .lineLimit(1)
 
-                        if let bid = item.bundleID {
+                        if let bid = item.bundleID, bid.lowercased() != item.name.lowercased() {
                             Text(bid)
                                 .font(.system(size: 9, design: .monospaced))
                                 .foregroundColor(.secondary)
@@ -336,7 +336,7 @@ public struct OrphanedResidualsView: View {
                                 .cornerRadius(4)
                         }
 
-                        Text(item.category)
+                        Text(item.localizedCategory)
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 4)
@@ -417,6 +417,7 @@ public struct OrphanedResidualsView: View {
         case "Caches": return "archivebox.fill"
         case "Containers": return "shippingbox.fill"
         case "Logs": return "doc.text.fill"
+        case "Launch Agents", "LaunchAgents": return "bolt.horizontal.fill"
         case "Developer": return "wrench.and.screwdriver.fill"
         default: return "doc.fill"
         }

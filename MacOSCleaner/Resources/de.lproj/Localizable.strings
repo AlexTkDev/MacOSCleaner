@@ -1175,3 +1175,15 @@
 "uninstaller_restart_recommended_title" = "Neustart empfohlen";
 "uninstaller_restart_recommended_body" = "Systemkomponenten (Daemons, Erweiterungen oder Plug-ins) wurden entfernt. Starten Sie Ihren Mac neu, um sie vollständig aus dem Speicher zu entladen.";
 "restart_mac_button" = "Mac neu starten…";
+"uninstaller_orphan_scanning_dirs" = "Zielverzeichnisse werden gescannt...";
+"uninstaller_orphan_analyzing_count" = "%lld mögliche Überreste werden analysiert...";
+"uninstaller_orphan_analyzing_progress" = "Analyse %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Caches";
+"uninstaller_orphan_cat_preferences" = "Einstellungen";
+"uninstaller_orphan_cat_app_support" = "Programmunterstützung";
+"uninstaller_orphan_cat_logs" = "Protokolle";
+"uninstaller_orphan_cat_containers" = "Container";
+"uninstaller_orphan_cat_developer" = "Entwickler";
+"uninstaller_orphan_cat_launch_agents" = "Launch Agents";
+"uninstaller_orphan_cat_other" = "Andere";
+"uninstaller_evidence_score" = "Punkte: %lld";

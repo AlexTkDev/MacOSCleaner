@@ -53,7 +53,11 @@ extension FileManager {
         return result
     }()
 
-    nonisolated(unsafe) private static let _sizeCache = NSCache<NSString, NSNumber>()
+    nonisolated(unsafe) private static let _sizeCache: NSCache<NSString, NSNumber> = {
+        let cache = NSCache<NSString, NSNumber>()
+        cache.countLimit = 4096
+        return cache
+    }()
     private static let _sizeCacheLock = NSLock()
 
     public nonisolated static func clearSizeCache() {
@@ -122,47 +126,60 @@ extension FileManager {
             includingPropertiesForKeys: keys,
             options: []
         )
-        while let fileURL = enumerator?.nextObject() as? URL {
-            if Task.isCancelled {
-                cancelled = true
-                break
-            }
-            let shouldExclude: Bool
-            if excludedPaths.isEmpty {
-                shouldExclude = false
-            } else if excludedPaths == FileManager.defaultExcludedPaths {
-                shouldExclude = FileManager.shouldExclude(url: fileURL)
-            } else {
-                let filePath = fileURL.path
-                shouldExclude = excludedPaths.contains { filePath.contains($0) }
-            }
-            if shouldExclude {
-                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
-                    enumerator?.skipDescendants()
+        var batchCount = 0
+        var stopEnumerating = false
+        while !stopEnumerating {
+            autoreleasepool {
+                batchCount = 0
+                while batchCount < 256 {
+                    guard let fileURL = enumerator?.nextObject() as? URL else {
+                        stopEnumerating = true
+                        break
+                    }
+                    batchCount += 1
+                    if Task.isCancelled {
+                        cancelled = true
+                        stopEnumerating = true
+                        break
+                    }
+                    let shouldExclude: Bool
+                    if excludedPaths.isEmpty {
+                        shouldExclude = false
+                    } else if excludedPaths == FileManager.defaultExcludedPaths {
+                        shouldExclude = FileManager.shouldExclude(url: fileURL)
+                    } else {
+                        let filePath = fileURL.path
+                        shouldExclude = excludedPaths.contains { filePath.contains($0) }
+                    }
+                    if shouldExclude {
+                        if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                            enumerator?.skipDescendants()
+                        }
+                        continue
+                    }
+
+                    guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
+                        continue
+                    }
+                    if FileManager.isNotDownloadedUbiquitous(values) {
+                        if values.isDirectory == true { enumerator?.skipDescendants() }
+                        continue
+                    }
+
+                    if let fileSize = values.fileSize,
+                       let allocated = values.totalFileAllocatedSize, allocated > 0,
+                       fileSize / allocated >= FileManager.sparseFileRatioThreshold {
+                        continue
+                    }
+
+                    // Prefer allocated (physical) size — APFS clones inflate logical fileSize.
+                    // allocated == 0 is valid for sparse files; only fall back if key is missing.
+                    if let allocated = values.totalFileAllocatedSize {
+                        size += Int64(allocated)
+                    } else if let fileSize = values.fileSize {
+                        size += Int64(fileSize)
+                    }
                 }
-                continue
-            }
-
-            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
-                continue
-            }
-            if FileManager.isNotDownloadedUbiquitous(values) {
-                if values.isDirectory == true { enumerator?.skipDescendants() }
-                continue
-            }
-
-            if let fileSize = values.fileSize,
-               let allocated = values.totalFileAllocatedSize, allocated > 0,
-               fileSize / allocated >= FileManager.sparseFileRatioThreshold {
-                continue
-            }
-
-            // Prefer allocated (physical) size — APFS clones inflate logical fileSize.
-            // allocated == 0 is valid for sparse files; only fall back if key is missing.
-            if let allocated = values.totalFileAllocatedSize {
-                size += Int64(allocated)
-            } else if let fileSize = values.fileSize {
-                size += Int64(fileSize)
             }
         }
 
@@ -183,7 +200,8 @@ extension FileManager {
         url: URL,
         excludedPaths: [String] = FileManager.defaultExcludedPaths
     ) -> Int64 {
-        let cacheKey = "physical:\(url.path)" as NSString
+        let rootPath = url.path
+        let cacheKey = "physical:\(rootPath)" as NSString
         FileManager._sizeCacheLock.lock()
         if let cached = FileManager._sizeCache.object(forKey: cacheKey) {
             FileManager._sizeCacheLock.unlock()
@@ -191,63 +209,119 @@ extension FileManager {
         }
         FileManager._sizeCacheLock.unlock()
 
-        var size: Int64 = 0
-        var cancelled = false
-        if let values = try? url.resourceValues(forKeys: [
-            .isRegularFileKey,
-            .fileSizeKey,
-            .totalFileAllocatedSizeKey,
-            .isUbiquitousItemKey,
-            .ubiquitousItemDownloadingStatusKey
-        ]),
-           values.isRegularFile == true {
-            if FileManager.isNotDownloadedUbiquitous(values) {
+        var rootStat = Darwin.stat()
+        if stat(rootPath, &rootStat) != 0 {
+            if lstat(rootPath, &rootStat) != 0 {
                 return 0
             }
-            size = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
-        } else {
-            let keys: [URLResourceKey] = [
-                .fileSizeKey,
-                .totalFileAllocatedSizeKey,
-                .isDirectoryKey,
-                .isUbiquitousItemKey,
-                .ubiquitousItemDownloadingStatusKey
-            ]
-            let enumerator = self.enumerator(
-                at: url,
-                includingPropertiesForKeys: keys,
-                options: []
-            )
-            while let fileURL = enumerator?.nextObject() as? URL {
-                if Task.isCancelled {
+        }
+
+        if (rootStat.st_flags & UInt32(SF_DATALESS)) != 0 {
+            return 0
+        }
+
+        if (rootStat.st_mode & S_IFMT) != S_IFDIR {
+            let size = Int64(rootStat.st_blocks) * 512
+            if !Task.isCancelled {
+                FileManager._sizeCacheLock.lock()
+                FileManager._sizeCache.setObject(NSNumber(value: size), forKey: cacheKey)
+                FileManager._sizeCacheLock.unlock()
+            }
+            return size
+        }
+
+        let useDefaultExclusions = excludedPaths == FileManager.defaultExcludedPaths
+        let customExcluded = useDefaultExclusions ? [] : excludedPaths
+        let isSystemRoot = useDefaultExclusions && rootPath.hasPrefix("/System")
+        if isSystemRoot {
+            return 0
+        }
+
+        var size: Int64 = 0
+        var cancelled = false
+        var visitedDirInodes = Set<UInt64>()
+        var stack: [String] = [rootPath]
+        var checkCounter = 0
+
+        while let currentDir = stack.popLast() {
+            if Task.isCancelled {
+                cancelled = true
+                break
+            }
+            guard let dir = opendir(currentDir) else { continue }
+            let fd = dirfd(dir)
+
+            var dirStat = Darwin.stat()
+            if fstat(fd, &dirStat) == 0 {
+                if (dirStat.st_flags & UInt32(SF_DATALESS)) != 0 {
+                    closedir(dir)
+                    continue
+                }
+                if !visitedDirInodes.insert(dirStat.st_ino).inserted {
+                    closedir(dir)
+                    continue
+                }
+            }
+
+            while let entry = readdir(dir) {
+                checkCounter &+= 1
+                if (checkCounter & 63) == 0, Task.isCancelled {
                     cancelled = true
                     break
                 }
-                let shouldExclude: Bool
-                if excludedPaths.isEmpty {
-                    shouldExclude = false
-                } else if excludedPaths == FileManager.defaultExcludedPaths {
-                    shouldExclude = FileManager.shouldExclude(url: fileURL)
-                } else {
-                    let filePath = fileURL.path
-                    shouldExclude = excludedPaths.contains { filePath.contains($0) }
-                }
-                if shouldExclude {
-                    if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
-                        enumerator?.skipDescendants()
+
+                let isDot = withUnsafePointer(to: &entry.pointee.d_name) { ptr -> Bool in
+                    let cPtr = UnsafeRawPointer(ptr).assumingMemoryBound(to: CChar.self)
+                    if cPtr[0] == 46 { // '.'
+                        if cPtr[1] == 0 { return true }
+                        if cPtr[1] == 46 && cPtr[2] == 0 { return true }
                     }
+                    return false
+                }
+                if isDot { continue }
+
+                let name = withUnsafePointer(to: &entry.pointee.d_name) { ptr in
+                    String(cString: UnsafeRawPointer(ptr).assumingMemoryBound(to: CChar.self))
+                }
+                let childPath = currentDir == "/" ? "/\(name)" : "\(currentDir)/\(name)"
+
+                var childStat = Darwin.stat()
+                let statOK = withUnsafePointer(to: &entry.pointee.d_name) { ptr in
+                    let cPtr = UnsafeRawPointer(ptr).assumingMemoryBound(to: CChar.self)
+                    return fstatat(fd, cPtr, &childStat, AT_SYMLINK_NOFOLLOW) == 0
+                }
+                guard statOK else { continue }
+
+                if (childStat.st_flags & UInt32(SF_DATALESS)) != 0 {
                     continue
                 }
 
-                guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
-                if FileManager.isNotDownloadedUbiquitous(values) {
-                    if values.isDirectory == true { enumerator?.skipDescendants() }
-                    continue
-                }
-                guard let fileSize = values.fileSize else { continue }
+                let fileType = childStat.st_mode & S_IFMT
+                let isDir = fileType == S_IFDIR
 
-                size += Int64(values.totalFileAllocatedSize ?? fileSize)
+                if !excludedPaths.isEmpty {
+                    if useDefaultExclusions {
+                        if Self.shouldExcludePOSIXEntry(
+                            name: name,
+                            fullPath: childPath,
+                            isDirectory: isDir
+                        ) {
+                            continue
+                        }
+                    } else if customExcluded.contains(where: { childPath.contains($0) }) {
+                        continue
+                    }
+                }
+
+                if isDir {
+                    stack.append(childPath)
+                } else if fileType == S_IFREG || fileType == S_IFLNK {
+                    size += Int64(childStat.st_blocks) * 512
+                }
             }
+
+            closedir(dir)
+            if cancelled { break }
         }
 
         guard !cancelled else { return size }
@@ -256,5 +330,18 @@ extension FileManager {
         FileManager._sizeCache.setObject(NSNumber(value: size), forKey: cacheKey)
         FileManager._sizeCacheLock.unlock()
         return size
+    }
+
+    private static func shouldExcludePOSIXEntry(name: String, fullPath: String, isDirectory: Bool) -> Bool {
+        if fullPath.hasPrefix("/System") { return true }
+        if let dotIndex = name.lastIndex(of: "."), dotIndex < name.index(before: name.endIndex) {
+            let ext = name[name.index(after: dotIndex)...].lowercased()
+            if excludedExtensions.contains(ext) { return true }
+        }
+        if excludedFileNames.contains(name) { return true }
+        if isDirectory, excludedDirectoryNames.contains(where: { name.hasSuffix($0) }) {
+            return true
+        }
+        return false
     }
 }

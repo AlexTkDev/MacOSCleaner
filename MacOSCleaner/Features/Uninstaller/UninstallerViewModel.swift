@@ -45,6 +45,7 @@ public final class UninstallerViewModel {
     public var showingOrphanErrorAlert = false
 
     private var deepScanCache: [String: UninstallerService.AppInfo] = [:]
+    private var activeScanIndex: ResidualScanIndex?
     private var scanTask: Task<Void, Never>?
     private var priorityDeepScanTask: Task<Void, Never>?
     private var orphanScanTask: Task<Void, Never>?
@@ -96,6 +97,7 @@ public final class UninstallerViewModel {
         deepScanCompleted = 0
         deepScanTotal = 0
         deepScanCache.removeAll()
+        activeScanIndex = nil
 
         let discover = discoverAppsHandler
         let deepScanRunner = deepScanHandler
@@ -121,41 +123,60 @@ public final class UninstallerViewModel {
             deepScanCompleted = 0
             deepScanTotal = total
 
-            for app in fresh {
-                guard !Task.isCancelled else { break }
-                let key = NormalizedPath.key(app.url)
-                // Preserve user checkbox edits if this app was already deep-scanned (e.g. via selectApp).
-                if let existingIdx = allApps.firstIndex(where: { $0.id == app.id || sameAppURL($0.url, app.url) }),
-                   allApps[existingIdx].scanState == .deepScanned {
-                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
-                    continue
-                }
-                if let alreadyScanned = deepScanCache[key] {
-                    applyDeepScanResult(alreadyScanned)
-                    deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
-                    continue
-                }
+            let scanIndex: ResidualScanIndex?
+            if deepScanRunner == nil {
+                let built = await Task.detached(priority: .utility) {
+                    await service.buildResidualScanIndex()
+                }.value
+                guard !Task.isCancelled else { return }
+                activeScanIndex = built
+                scanIndex = built
+            } else {
+                scanIndex = nil
+            }
 
-                let innerTask = Task.detached(priority: .utility) { () -> UninstallerService.AppInfo? in
-                    if let deepScanRunner {
-                        return try? await deepScanRunner(app, mode)
+            let maxConcurrent = 4
+            var iterator = fresh.makeIterator()
+
+            await withTaskGroup(of: (UninstallerService.AppInfo, UninstallerService.AppInfo?).self) { group in
+                for _ in 0..<maxConcurrent {
+                    guard !Task.isCancelled,
+                          let next = nextPendingDeepScanApp(from: &iterator) else { break }
+                    group.addTask {
+                        if let deepScanRunner {
+                            return (next, try? await deepScanRunner(next, mode))
+                        }
+                        return (next, try? await service.deepScan(next, mode: mode, scanIndex: scanIndex))
                     }
-                    return try? await service.deepScan(app, mode: mode)
-                }
-                let scanned: UninstallerService.AppInfo? = await withTaskCancellationHandler {
-                    await innerTask.value
-                } onCancel: {
-                    innerTask.cancel()
                 }
 
-                guard !Task.isCancelled else { break }
-                if let scanned {
-                    applyDeepScanResult(scanned)
+                for await (app, scanned) in group {
+                    if Task.isCancelled {
+                        group.cancelAll()
+                        break
+                    }
+                    if let existingIdx = allApps.firstIndex(where: { $0.id == app.id || sameAppURL($0.url, app.url) }),
+                       allApps[existingIdx].scanState == .deepScanned {
+                        deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
+                    } else {
+                        if let scanned {
+                            applyDeepScanResult(scanned)
+                        }
+                        deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
+                    }
+                    if let next = nextPendingDeepScanApp(from: &iterator) {
+                        group.addTask {
+                            if let deepScanRunner {
+                                return (next, try? await deepScanRunner(next, mode))
+                            }
+                            return (next, try? await service.deepScan(next, mode: mode, scanIndex: scanIndex))
+                        }
+                    }
                 }
-                deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
             }
 
             if !Task.isCancelled {
+                activeScanIndex = nil
                 isDeepScanning = false
             }
         }
@@ -179,12 +200,13 @@ public final class UninstallerViewModel {
         priorityDeepScanTask?.cancel()
         let service = self.service
         let deepScanRunner = self.deepScanHandler
+        let scanIndex = self.activeScanIndex
         priorityDeepScanTask = Task {
             let result: UninstallerService.AppInfo?
             if let deepScanRunner {
                 result = try? await deepScanRunner(current, mode)
             } else {
-                result = try? await service.deepScan(current, mode: mode)
+                result = try? await service.deepScan(current, mode: mode, scanIndex: scanIndex)
             }
             guard !Task.isCancelled, let result else { return }
             applyDeepScanResult(result)
@@ -449,6 +471,27 @@ public final class UninstallerViewModel {
                 self.showingOrphanErrorAlert = true
             }
         }
+    }
+
+    private func nextPendingDeepScanApp(
+        from iterator: inout IndexingIterator<[UninstallerService.AppInfo]>
+    ) -> UninstallerService.AppInfo? {
+        while !Task.isCancelled {
+            guard let next = iterator.next() else { return nil }
+            let key = NormalizedPath.key(next.url)
+            if let existingIdx = allApps.firstIndex(where: { $0.id == next.id || sameAppURL($0.url, next.url) }),
+               allApps[existingIdx].scanState == .deepScanned {
+                deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
+                continue
+            }
+            if let alreadyScanned = deepScanCache[key] {
+                applyDeepScanResult(alreadyScanned)
+                deepScanCompleted = min(deepScanTotal, deepScanCompleted + 1)
+                continue
+            }
+            return next
+        }
+        return nil
     }
 
     private func applyDeepScanResult(_ result: UninstallerService.AppInfo) {

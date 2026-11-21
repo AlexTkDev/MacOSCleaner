@@ -1211,3 +1211,15 @@
 "uninstaller_restart_recommended_title" = "Restart Recommended";
 "uninstaller_restart_recommended_body" = "System components (daemons, extensions, or plug-ins) were removed. Restart your Mac to unload them completely from memory.";
 "restart_mac_button" = "Restart Mac…";
+"uninstaller_orphan_scanning_dirs" = "Scanning target directories...";
+"uninstaller_orphan_analyzing_count" = "Analyzing %lld potential leftovers...";
+"uninstaller_orphan_analyzing_progress" = "Analyzing %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "Caches";
+"uninstaller_orphan_cat_preferences" = "Preferences";
+"uninstaller_orphan_cat_app_support" = "Application Support";
+"uninstaller_orphan_cat_logs" = "Logs";
+"uninstaller_orphan_cat_containers" = "Containers";
+"uninstaller_orphan_cat_developer" = "Developer";
+"uninstaller_orphan_cat_launch_agents" = "Launch Agents";
+"uninstaller_orphan_cat_other" = "Other";
+"uninstaller_evidence_score" = "Score: %lld";

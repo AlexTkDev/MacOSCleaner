@@ -33,18 +33,20 @@ public struct AppIdentity: Sendable, Hashable {
 
 public extension AppIdentity {
     static func resolve(from url: URL, commandRunner: CommandRunner = CommandRunner()) async -> AppIdentity {
-        let bundle = Bundle(url: url)
-        let bundleID = bundle?.bundleIdentifier ?? "unknown.\(url.deletingPathExtension().lastPathComponent)"
-        let appName = url.deletingPathExtension().lastPathComponent
-        let bundleName = bundle?.infoDictionary?["CFBundleName"] as? String
-        let bundleVersion = bundle?.infoDictionary?["CFBundleShortVersionString"] as? String
-        let executableName = bundle?.infoDictionary?["CFBundleExecutable"] as? String ?? appName
-
-        let signing = extractSigningMetadata(url: url)
+        let (bundleID, appName, bundleName, bundleVersion, executableName, signing, isAppStore) = autoreleasepool {
+            let bundle = Bundle(url: url)
+            let bid = bundle?.bundleIdentifier ?? "unknown.\(url.deletingPathExtension().lastPathComponent)"
+            let name = url.deletingPathExtension().lastPathComponent
+            let bName = bundle?.infoDictionary?["CFBundleName"] as? String
+            let bVersion = bundle?.infoDictionary?["CFBundleShortVersionString"] as? String
+            let execName = bundle?.infoDictionary?["CFBundleExecutable"] as? String ?? name
+            let signMeta = extractSigningMetadata(url: url)
+            let mas = fileExists(at: url.appendingPathComponent("Contents/_MASReceipt"))
+            return (bid, name, bName, bVersion, execName, signMeta, mas)
+        }
         let teamID = signing.teamID
         let authority = signing.authority
         let isAdHoc = signing.isAdHoc
-        let isAppStore = fileExists(at: url.appendingPathComponent("Contents/_MASReceipt"))
         let isSandboxed = signing.isSandboxed
         let appGroups = signing.appGroups
 

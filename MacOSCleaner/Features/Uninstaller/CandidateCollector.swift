@@ -23,6 +23,17 @@ public actor CandidateCollector {
     private let fileSystemContext: FileSystemContext
     private let lsRegisterCache: LSRegisterCache
     private let safetyManager: SafetyManager
+    private let scanIndex: ResidualScanIndex?
+
+    private static let maxMatchedSubdirVisits = 128
+    private static let heavyNestedSkipDirectoryNames: Set<String> = [
+        "node_modules", ".git", "cache_data", "code cache", "gpucache",
+        "indexeddb", "blob_storage", "service worker", "local storage",
+        "session storage", "file system", "dawncache", "graphitedawncache",
+        "grshadercache", "shadercache", "crashpad", "dictionaries",
+        "webstorage", "partitions", "extensions", "extension state",
+        "deriveddata", "coresimulator", "virtualmachines", "vms"
+    ]
 
     private static let homeResidualDenyList: Set<String> = [
         ".ssh", ".gnupg", ".Trash", ".trash", ".CFUserTextEncoding",
@@ -39,7 +50,8 @@ public actor CandidateCollector {
         tmpScanDirectory: URL? = nil,
         fileSystemContext: FileSystemContext = .production,
         lsRegisterCache: LSRegisterCache = .shared,
-        safetyManager: SafetyManager? = nil
+        safetyManager: SafetyManager? = nil,
+        scanIndex: ResidualScanIndex? = nil
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
@@ -47,6 +59,7 @@ public actor CandidateCollector {
         self.fileSystemContext = fileSystemContext
         self.lsRegisterCache = lsRegisterCache
         self.safetyManager = safetyManager ?? SafetyManager(homeDirectory: fileSystemContext.homePath, fileSystemContext: fileSystemContext)
+        self.scanIndex = scanIndex
         if let darwinCacheDirectory {
             self.darwinUserDirectories = [darwinCacheDirectory.resolvingSymlinksInPath()]
         } else {
@@ -69,13 +82,8 @@ public actor CandidateCollector {
         await collectDetailed(identity: identity, mode: mode).candidates
     }
 
-    public func collectDetailed(identity: AppIdentity, mode: ScanMode = .balanced) async -> CandidateCollection {
-        var candidates = Set<URL>()
-        let home = fileSystemContext.homePath
-        let maxDepth = mode == .safe ? 3 : 5
-
-        // 1. Fixed popular paths
-        let basePaths = [
+    public static func basePaths(home: String) -> [String] {
+        [
             NormalizedPath.joinHome(home, "Library/Application Support"),
             NormalizedPath.joinHome(home, "Library/Caches"),
             NormalizedPath.joinHome(home, "Library/Containers"),
@@ -132,18 +140,33 @@ public actor CandidateCollector {
             "/Library/Extensions",
             "/Library/Services",
         ]
+    }
 
-        for base in basePaths {
-            let url = NormalizedPath.url(base, isDirectory: true)
-            candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
-        }
+    public func collectDetailed(identity: AppIdentity, mode: ScanMode = .balanced) async -> CandidateCollection {
+        var candidates = Set<URL>()
+        let home = fileSystemContext.homePath
+        let maxDepth = mode == .safe ? 3 : 5
 
-        // XDG dirs — CLI/Electron app configs (heuristic — public fallback)
-        for relative in [".config", ".cache", ".local/share"] {
-            let xdgPath = NormalizedPath.joinHome(home, relative)
-            if fileManager.fileExists(atPath: xdgPath) {
-                let xdgURL = NormalizedPath.url(xdgPath, isDirectory: true)
-                candidates.formUnion(await shallowScan(xdgURL, identity: identity, mode: mode))
+        // 1. Fixed popular paths + XDG dirs
+        if let scanIndex {
+            for entry in scanIndex.candidateBaseEntries(for: identity) {
+                if matchCandidate(entry.url, identity: identity, mode: mode) {
+                    candidates.insert(entry.url)
+                }
+            }
+        } else {
+            for base in Self.basePaths(home: home) {
+                let url = NormalizedPath.url(base, isDirectory: true)
+                candidates.formUnion(await shallowScan(url, identity: identity, mode: mode))
+            }
+
+            // XDG dirs — CLI/Electron app configs (heuristic — public fallback)
+            for relative in [".config", ".cache", ".local/share"] {
+                let xdgPath = NormalizedPath.joinHome(home, relative)
+                if fileManager.fileExists(atPath: xdgPath) {
+                    let xdgURL = NormalizedPath.url(xdgPath, isDirectory: true)
+                    candidates.formUnion(await shallowScan(xdgURL, identity: identity, mode: mode))
+                }
             }
         }
 
@@ -151,27 +174,51 @@ public actor CandidateCollector {
         candidates.formUnion(collectDarwinUserDirs(identity: identity))
 
         // Installer receipt metadata on disk (.plist / .bom), in addition to pkgutil.
-        candidates.formUnion(collectReceiptFiles(identity: identity))
+        let receiptFiles = collectReceiptFiles(identity: identity)
+        candidates.formUnion(receiptFiles)
 
         // 2. Deep scan critical folders
-        let deepFolders = [
-            NormalizedPath.joinHome(home, "Library/Application Support"),
-            NormalizedPath.joinHome(home, "Library/Caches"),
-            NormalizedPath.joinHome(home, "Library/Containers"),
-            NormalizedPath.joinHome(home, "Library/Group Containers"),
-            NormalizedPath.joinHome(home, "Library/HTTPStorages"),
-            NormalizedPath.joinHome(home, "Library/WebKit"),
-            NormalizedPath.joinHome(home, "Library/Preferences"),
-            NormalizedPath.joinHome(home, "Library/Application Scripts"),
-        ]
-        for dir in deepFolders {
-            let url = NormalizedPath.url(dir, isDirectory: true)
-            candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
+        if let scanIndex {
+            let deepFolders = [
+                NormalizedPath.joinHome(home, "Library/Application Support"),
+                NormalizedPath.joinHome(home, "Library/Caches"),
+                NormalizedPath.joinHome(home, "Library/Preferences"),
+            ]
+            for dir in deepFolders {
+                let url = NormalizedPath.url(dir, isDirectory: true)
+                var visits = 0
+                candidates.formUnion(deepScanIndexed(
+                    url,
+                    identity: identity,
+                    depth: 0,
+                    maxDepth: maxDepth,
+                    mode: mode,
+                    scanIndex: scanIndex,
+                    alreadyMatchedRoots: candidates,
+                    matchedSubdirVisits: &visits
+                ))
+            }
+        } else {
+            let deepFolders = [
+                NormalizedPath.joinHome(home, "Library/Application Support"),
+                NormalizedPath.joinHome(home, "Library/Caches"),
+                NormalizedPath.joinHome(home, "Library/Containers"),
+                NormalizedPath.joinHome(home, "Library/Group Containers"),
+                NormalizedPath.joinHome(home, "Library/HTTPStorages"),
+                NormalizedPath.joinHome(home, "Library/WebKit"),
+                NormalizedPath.joinHome(home, "Library/Preferences"),
+                NormalizedPath.joinHome(home, "Library/Application Scripts"),
+            ]
+            for dir in deepFolders {
+                let url = NormalizedPath.url(dir, isDirectory: true)
+                var visits = 0
+                candidates.formUnion(await deepScan(url, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode, matchedSubdirVisits: &visits))
+            }
         }
 
         // 3. Package-manager receipts. Homebrew can keep the same app bundle in
         // several versioned formulae (python@3.12 and python@3.14).
-        let receiptPaths = await collectPkgutilReceiptPaths(identity: identity)
+        let receiptPaths = await collectPkgutilReceiptPaths(identity: identity, receiptFiles: receiptFiles)
         candidates.formUnion(receiptPaths)
 
         // Homebrew sibling kegs: discover as candidates, never elevate to receiptPaths
@@ -204,7 +251,21 @@ public actor CandidateCollector {
             if fileManager.fileExists(atPath: jbPath) {
                 let jbURL = NormalizedPath.url(jbPath, isDirectory: true)
                 candidates.formUnion(await shallowScan(jbURL, identity: identity, mode: mode))
-                candidates.formUnion(await deepScan(jbURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode))
+                var jbVisits = 0
+                if let scanIndex {
+                    candidates.formUnion(deepScanIndexed(
+                        jbURL,
+                        identity: identity,
+                        depth: 0,
+                        maxDepth: maxDepth,
+                        mode: mode,
+                        scanIndex: scanIndex,
+                        alreadyMatchedRoots: candidates,
+                        matchedSubdirVisits: &jbVisits
+                    ))
+                } else {
+                    candidates.formUnion(await deepScan(jbURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: mode, matchedSubdirVisits: &jbVisits))
+                }
             }
         }
 
@@ -330,14 +391,16 @@ public actor CandidateCollector {
 
     private func collectDarwinUserDirs(identity: AppIdentity) -> Set<URL> {
         var found = Set<URL>()
+        if let scanIndex {
+            for entry in scanIndex.darwinEntries where matchesDarwinEntry(entry.name, identity: identity) {
+                found.insert(entry.url)
+            }
+            return NormalizedPath.urls(found)
+        }
         for directory in darwinUserDirectories {
-            guard let contents = try? fileManager.contentsOfDirectory(
-                at: directory,
-                includingPropertiesForKeys: nil,
-                options: [.skipsHiddenFiles]
-            ) else { continue }
-            for item in contents where matchesDarwinEntry(item.lastPathComponent, identity: identity) {
-                found.insert(NormalizedPath.canonicalize(item))
+            for entry in ResidualScanIndex.readDirectory(at: directory, options: [.skipsHiddenFiles], fileManager: fileManager)
+            where matchesDarwinEntry(entry.name, identity: identity) {
+                found.insert(entry.url)
             }
         }
         return NormalizedPath.urls(found)
@@ -376,26 +439,27 @@ public actor CandidateCollector {
     private func collectReceiptFiles(identity: AppIdentity) -> Set<URL> {
         let bundleID = identity.bundleID.lowercased()
         guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown.") else { return [] }
-        guard let contents = try? fileManager.contentsOfDirectory(
-            at: receiptsDirectory,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) else { return [] }
+        let entries: [ResidualScanIndex.IndexedEntry]
+        if let scanIndex {
+            entries = scanIndex.receiptEntries
+        } else {
+            entries = ResidualScanIndex.readDirectory(at: receiptsDirectory, options: [.skipsHiddenFiles], fileManager: fileManager)
+        }
 
         let sanitizedApp = identity.appName
             .replacingOccurrences(of: " ", with: "_")
             .lowercased()
         var found = Set<URL>()
-        for item in contents {
-            let lower = item.lastPathComponent.lowercased()
+        for entry in entries {
+            let lower = entry.lowerName
             let stem = (lower as NSString).deletingPathExtension
             guard lower.hasSuffix(".plist") || lower.hasSuffix(".bom") else { continue }
             if stem == bundleID || stem.hasPrefix(bundleID + ".") || lower.contains(bundleID) {
-                found.insert(NormalizedPath.canonicalize(item))
+                found.insert(entry.url)
                 continue
             }
             if sanitizedApp.count >= 2, stem == sanitizedApp || stem.hasPrefix(sanitizedApp + ".") || stem.hasPrefix(sanitizedApp + "_") || stem.hasPrefix(sanitizedApp + "-") {
-                found.insert(NormalizedPath.canonicalize(item))
+                found.insert(entry.url)
             }
         }
         return NormalizedPath.urls(found)
@@ -403,18 +467,19 @@ public actor CandidateCollector {
 
     /// Shallow home entries (dotdirs / top-level app folders). No curated private path list.
     private func collectHomeResiduals(identity: AppIdentity, home: String) -> Set<URL> {
-        let homeURL = NormalizedPath.url(home, isDirectory: true)
-        guard let contents = try? fileManager.contentsOfDirectory(
-            at: homeURL,
-            includingPropertiesForKeys: nil,
-            options: []
-        ) else { return [] }
+        let entries: [ResidualScanIndex.IndexedEntry]
+        if let scanIndex {
+            entries = scanIndex.homeEntries
+        } else {
+            let homeURL = NormalizedPath.url(home, isDirectory: true)
+            entries = ResidualScanIndex.readDirectory(at: homeURL, options: [], fileManager: fileManager)
+        }
 
         var found = Set<URL>()
-        for item in contents {
-            let name = item.lastPathComponent
+        for entry in entries {
+            let name = entry.name
             if Self.homeResidualDenyList.contains(name) { continue }
-            let lower = name.lowercased()
+            let lower = entry.lowerName
             let bare = lower.hasPrefix(".") ? String(lower.dropFirst()) : lower
             guard bare.count >= 3 else { continue }
 
@@ -434,7 +499,7 @@ public actor CandidateCollector {
                 }
             }
             if matched {
-                found.insert(NormalizedPath.canonicalize(item))
+                found.insert(entry.url)
             }
         }
         return NormalizedPath.urls(found)
@@ -457,32 +522,32 @@ public actor CandidateCollector {
     ) async -> Set<URL> {
         guard depth <= maxDepth else { return [] }
         var found = Set<URL>()
-        guard let contents = try? fileManager.contentsOfDirectory(
-            at: url,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        ) else { return found }
+        let entries: [ResidualScanIndex.IndexedEntry]
+        if let scanIndex {
+            entries = (depth == 0)
+                ? scanIndex.tmpTopLevelEntries
+                : scanIndex.entries(inDirectory: url, options: [.skipsHiddenFiles], fileManager: fileManager)
+        } else {
+            entries = ResidualScanIndex.readDirectory(at: url, options: [.skipsHiddenFiles], fileManager: fileManager)
+        }
 
-        for item in contents {
-            let lower = item.lastPathComponent.lowercased()
+        for entry in entries {
+            let lower = entry.lowerName
             if lower == targetApp {
-                found.insert(NormalizedPath.canonicalize(item))
+                found.insert(entry.url)
                 continue
             }
-            var isDir: ObjCBool = false
-            guard fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue else {
-                continue
-            }
+            guard entry.isDirectory else { continue }
             if appName.count >= 2, EvidenceProbe.wordBoundaryMatch(lower, appName) {
                 // Descend into name-matching project folders (e.g. MacOSCleaner-Polish/…).
                 found.formUnion(
-                    await scanTmpDir(item, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
+                    await scanTmpDir(entry.url, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
                 )
             } else if depth < maxDepth {
                 // Shallow walk only a couple levels for Build/Products/Debug layouts.
                 if lower == "build" || lower == "products" || lower == "debug" || lower == "release" {
                     found.formUnion(
-                        await scanTmpDir(item, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
+                        await scanTmpDir(entry.url, targetApp: targetApp, appName: appName, depth: depth + 1, maxDepth: maxDepth)
                     )
                 }
             }
@@ -559,10 +624,23 @@ public actor CandidateCollector {
     /// Sibling `.app` bundles in configured Homebrew Cellar directories that share
     /// the same bundle name. Returned as candidates only — never receiptPaths.
     private func collectHomebrewSiblingApps(identity: AppIdentity) -> Set<URL> {
-        guard !homebrewCellarDirectories.isEmpty else { return [] }
         let targetName = identity.bundleURL.lastPathComponent.lowercased()
         guard targetName.hasSuffix(".app") else { return [] }
+        let targetBundleID = identity.bundleID.lowercased()
 
+        if let scanIndex {
+            guard let entries = scanIndex.homebrewAppsByLowerName[targetName] else { return [] }
+            var found = Set<URL>()
+            for entry in entries {
+                if let bid = entry.bundleIDLower, !bid.isEmpty, bid != targetBundleID {
+                    continue
+                }
+                found.insert(entry.url)
+            }
+            return found
+        }
+
+        guard !homebrewCellarDirectories.isEmpty else { return [] }
         var found = Set<URL>()
         for cellar in homebrewCellarDirectories {
             guard let formulae = try? fileManager.contentsOfDirectory(
@@ -586,7 +664,7 @@ public actor CandidateCollector {
                         let resolved = app.resolvingSymlinksInPath()
                         if let bundleID = Bundle(url: resolved)?.bundleIdentifier?.lowercased(),
                            !bundleID.isEmpty,
-                           bundleID != identity.bundleID.lowercased() {
+                           bundleID != targetBundleID {
                             continue
                         }
                         found.insert(resolved)
@@ -599,22 +677,41 @@ public actor CandidateCollector {
 
     /// Files recorded in installer receipts for packages whose id matches the bundle ID.
     /// Paths inside the app bundle are skipped — the bundle is removed as a whole anyway.
-    private func collectPkgutilReceiptPaths(identity: AppIdentity) async -> Set<URL> {
+    private func collectPkgutilReceiptPaths(identity: AppIdentity, receiptFiles: Set<URL>? = nil) async -> Set<URL> {
         let bundleID = identity.bundleID.lowercased()
         guard !bundleID.isEmpty, !bundleID.hasPrefix("unknown.") else { return [] }
 
-        let receiptFiles = collectReceiptFiles(identity: identity)
-        let receiptStems = Set(receiptFiles.map { ($0.deletingPathExtension().lastPathComponent).lowercased() })
+        let resolvedReceipts = receiptFiles ?? collectReceiptFiles(identity: identity)
+        let receiptStems = Set(resolvedReceipts.map { ($0.deletingPathExtension().lastPathComponent).lowercased() })
 
-        var packageIDs: Set<String> = [identity.bundleID]
-        if let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--pkgs"]) {
-            for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
-                let lowerLine = line.lowercased()
-                if lowerLine == bundleID {
-                    packageIDs.insert(line)
-                } else if lowerLine.hasPrefix(bundleID + ".") {
-                    if receiptStems.isEmpty || receiptStems.contains(lowerLine) || receiptStems.contains(where: { lowerLine.hasPrefix($0) }) {
+        var packageIDs: Set<String> = []
+        if let scanIndex {
+            if let packages = scanIndex.pkgutilPackages {
+                for line in packages {
+                    let lowerLine = line.lowercased()
+                    if lowerLine == bundleID {
                         packageIDs.insert(line)
+                    } else if lowerLine.hasPrefix(bundleID + ".") {
+                        if receiptStems.isEmpty || receiptStems.contains(lowerLine) || receiptStems.contains(where: { lowerLine.hasPrefix($0) }) {
+                            packageIDs.insert(line)
+                        }
+                    }
+                }
+            } else {
+                // Fallback when pkgutil --pkgs returned empty (e.g. mock test runners)
+                packageIDs.insert(identity.bundleID)
+            }
+        } else {
+            packageIDs.insert(identity.bundleID)
+            if let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--pkgs"]) {
+                for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
+                    let lowerLine = line.lowercased()
+                    if lowerLine == bundleID {
+                        packageIDs.insert(line)
+                    } else if lowerLine.hasPrefix(bundleID + ".") {
+                        if receiptStems.isEmpty || receiptStems.contains(lowerLine) || receiptStems.contains(where: { lowerLine.hasPrefix($0) }) {
+                            packageIDs.insert(line)
+                        }
                     }
                 }
             }
@@ -623,9 +720,16 @@ public actor CandidateCollector {
         var found = Set<URL>()
         let bundlePrefix = identity.bundleURL.standardizedFileURL.path + "/"
         for packageID in packageIDs {
-            guard let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--files", packageID]),
-                  result.exitCode == 0 else { continue }
-            for line in result.stdout.components(separatedBy: .newlines) where !line.isEmpty {
+            let lines: [String]
+            if let scanIndex {
+                lines = await scanIndex.pkgutilFiles(for: packageID, commandRunner: commandRunner)
+            } else if let result = try? await commandRunner.run(command: "/usr/sbin/pkgutil", arguments: ["--files", packageID]),
+                      result.exitCode == 0 {
+                lines = result.stdout.components(separatedBy: .newlines).filter { !$0.isEmpty }
+            } else {
+                continue
+            }
+            for line in lines where !line.isEmpty {
                 let path = NormalizedPath.join("/", line)
                 guard !path.hasPrefix(bundlePrefix), fileManager.fileExists(atPath: path) else { continue }
                 found.insert(NormalizedPath.url(path))
@@ -636,13 +740,83 @@ public actor CandidateCollector {
 
     private func shallowScan(_ url: URL, identity: AppIdentity, mode: ScanMode = .balanced) async -> Set<URL> {
         var found = Set<URL>()
-        guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil) else {
-            return found
-        }
-        for item in contents {
-            if matchCandidate(item, identity: identity, mode: mode) {
-                found.insert(NormalizedPath.canonicalize(item))
+        let entries = scanIndex?.entries(inDirectory: url, fileManager: fileManager)
+            ?? ResidualScanIndex.readDirectory(at: url, fileManager: fileManager)
+        for entry in entries {
+            if matchCandidate(entry.url, identity: identity, mode: mode) {
+                found.insert(entry.url)
             }
+        }
+        return found
+    }
+
+    private func deepScanIndexed(
+        _ url: URL,
+        identity: AppIdentity,
+        depth: Int,
+        maxDepth: Int,
+        mode: ScanMode,
+        scanIndex: ResidualScanIndex,
+        alreadyMatchedRoots: Set<URL>,
+        matchedSubdirVisits: inout Int,
+        insideMatch: Bool = false
+    ) -> Set<URL> {
+        guard depth <= maxDepth else { return [] }
+        var found = Set<URL>()
+        let entries = scanIndex.entries(inDirectory: url, fileManager: fileManager)
+
+        for entry in entries {
+            if depth == 0 {
+                guard entry.isDirectory else { continue }
+                let matched = alreadyMatchedRoots.contains(entry.url)
+                let descend = matched || Self.shouldDescendForResidualScan(entry.url, identity: identity)
+                guard descend else { continue }
+                if matched {
+                    guard matchedSubdirVisits < Self.maxMatchedSubdirVisits else { continue }
+                    matchedSubdirVisits += 1
+                }
+                found.formUnion(deepScanIndexed(
+                    entry.url,
+                    identity: identity,
+                    depth: depth + 1,
+                    maxDepth: maxDepth,
+                    mode: mode,
+                    scanIndex: scanIndex,
+                    alreadyMatchedRoots: alreadyMatchedRoots,
+                    matchedSubdirVisits: &matchedSubdirVisits,
+                    insideMatch: matched
+                ))
+                continue
+            }
+
+            if insideMatch, Self.heavyNestedSkipDirectoryNames.contains(entry.lowerName) {
+                continue
+            }
+
+            let matched = matchCandidate(entry.url, identity: identity, mode: mode)
+            if matched {
+                found.insert(entry.url)
+            }
+            guard entry.isDirectory else { continue }
+
+            let nextInside = matched || insideMatch
+            let descend = nextInside || Self.shouldDescendForResidualScan(entry.url, identity: identity)
+            guard descend else { continue }
+            if nextInside {
+                guard matchedSubdirVisits < Self.maxMatchedSubdirVisits else { continue }
+                matchedSubdirVisits += 1
+            }
+            found.formUnion(deepScanIndexed(
+                entry.url,
+                identity: identity,
+                depth: depth + 1,
+                maxDepth: maxDepth,
+                mode: mode,
+                scanIndex: scanIndex,
+                alreadyMatchedRoots: alreadyMatchedRoots,
+                matchedSubdirVisits: &matchedSubdirVisits,
+                insideMatch: nextInside
+            ))
         }
         return found
     }
@@ -653,33 +827,40 @@ public actor CandidateCollector {
         depth: Int,
         maxDepth: Int,
         mode: ScanMode,
+        matchedSubdirVisits: inout Int,
         insideMatch: Bool = false
     ) async -> Set<URL> {
         guard depth <= maxDepth else { return [] }
         var found = Set<URL>()
-        guard let contents = try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil) else {
-            return found
-        }
-        for item in contents {
-            let matched = matchCandidate(item, identity: identity, mode: mode)
-            if matched {
-                found.insert(NormalizedPath.canonicalize(item))
+        let entries = scanIndex?.entries(inDirectory: url, fileManager: fileManager)
+            ?? ResidualScanIndex.readDirectory(at: url, fileManager: fileManager)
+        for entry in entries {
+            if insideMatch, Self.heavyNestedSkipDirectoryNames.contains(entry.lowerName) {
+                continue
             }
-            var isDir: ObjCBool = false
-            if fileManager.fileExists(atPath: item.path, isDirectory: &isDir), isDir.boolValue {
+            let matched = matchCandidate(entry.url, identity: identity, mode: mode)
+            if matched {
+                found.insert(entry.url)
+            }
+            if entry.isDirectory {
                 // Walk matched trees fully; for unmatched siblings only descend vendor hubs
                 // (Google/) so we don't traverse Chrome profiles while scanning Studio.
-                let descend = matched
-                    || insideMatch
-                    || Self.shouldDescendForResidualScan(item, identity: identity)
+                let nextInside = matched || insideMatch
+                let descend = nextInside
+                    || Self.shouldDescendForResidualScan(entry.url, identity: identity)
                 guard descend else { continue }
+                if nextInside {
+                    guard matchedSubdirVisits < Self.maxMatchedSubdirVisits else { continue }
+                    matchedSubdirVisits += 1
+                }
                 let sub = await deepScan(
-                    item,
+                    entry.url,
                     identity: identity,
                     depth: depth + 1,
                     maxDepth: maxDepth,
                     mode: mode,
-                    insideMatch: matched || insideMatch
+                    matchedSubdirVisits: &matchedSubdirVisits,
+                    insideMatch: nextInside
                 )
                 found.formUnion(sub)
             }
@@ -924,15 +1105,16 @@ public actor CandidateCollector {
             for base in nestedBases {
                 let vendorURL = NormalizedPath.url(base, isDirectory: true).appendingPathComponent(vendor)
                 guard fileManager.fileExists(atPath: vendorURL.path) else { continue }
+                var visits = 0
                 if let product {
                     let productURL = vendorURL.appendingPathComponent(product)
                     if fileManager.fileExists(atPath: productURL.path) {
                         found.insert(NormalizedPath.canonicalize(productURL))
-                        found.formUnion(await deepScan(productURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
+                        found.formUnion(await deepScan(productURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced, matchedSubdirVisits: &visits))
                     }
                 } else {
                     found.insert(NormalizedPath.canonicalize(vendorURL))
-                    found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
+                    found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced, matchedSubdirVisits: &visits))
                 }
             }
             // ~/Library/{Vendor} — only for single-vendor roots, never mega-vendors like Google.
@@ -940,9 +1122,10 @@ public actor CandidateCollector {
                 let libraryVendor = NormalizedPath.url(NormalizedPath.joinHome(home, "Library"), isDirectory: true)
                     .appendingPathComponent(vendor)
                 if fileManager.fileExists(atPath: libraryVendor.path) {
+                    var visits = 0
                     found.insert(NormalizedPath.canonicalize(libraryVendor))
                     found.formUnion(
-                        await deepScan(libraryVendor, identity: identity, depth: 0, maxDepth: min(maxDepth, 3), mode: .balanced)
+                        await deepScan(libraryVendor, identity: identity, depth: 0, maxDepth: min(maxDepth, 3), mode: .balanced, matchedSubdirVisits: &visits)
                     )
                 }
             }

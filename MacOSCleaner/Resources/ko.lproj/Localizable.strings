@@ -1211,3 +1211,15 @@
 "uninstaller_restart_recommended_title" = "재시동 권장";
 "uninstaller_restart_recommended_body" = "시스템 구성 요소(데몬, 확장 프로그램 또는 플러그인)가 제거되었습니다. 메모리에서 완전히 언로드하려면 Mac을 재시동하세요.";
 "restart_mac_button" = "Mac 재시동…";
+"uninstaller_orphan_scanning_dirs" = "대상 디렉터리 스캔 중...";
+"uninstaller_orphan_analyzing_count" = "잠재적 잔여 파일 %lld개 분석 중...";
+"uninstaller_orphan_analyzing_progress" = "분석 중 %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "캐시";
+"uninstaller_orphan_cat_preferences" = "환경설정";
+"uninstaller_orphan_cat_app_support" = "응용 프로그램 지원";
+"uninstaller_orphan_cat_logs" = "로그";
+"uninstaller_orphan_cat_containers" = "컨테이너";
+"uninstaller_orphan_cat_developer" = "개발자";
+"uninstaller_orphan_cat_launch_agents" = "실행 에이전트";
+"uninstaller_orphan_cat_other" = "기타";
+"uninstaller_evidence_score" = "점수: %lld";

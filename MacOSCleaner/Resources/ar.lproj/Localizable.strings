@@ -1211,3 +1211,15 @@
 "uninstaller_restart_recommended_title" = "يُوصى بإعادة التشغيل";
 "uninstaller_restart_recommended_body" = "تمت إزالة مكونات النظام (الخدمات الخلفية أو الملحقات أو الإضافات). أعد تشغيل Mac لإفراغها بالكامل من الذاكرة.";
 "restart_mac_button" = "إعادة تشغيل Mac…";
+"uninstaller_orphan_scanning_dirs" = "جارٍ فحص المجلدات المستهدفة...";
+"uninstaller_orphan_analyzing_count" = "جارٍ تحليل %lld بقايا محتملة...";
+"uninstaller_orphan_analyzing_progress" = "جارٍ التحليل %lld/%lld...";
+"uninstaller_orphan_cat_caches" = "ذاكرة التخزين المؤقت";
+"uninstaller_orphan_cat_preferences" = "التفضيلات";
+"uninstaller_orphan_cat_app_support" = "دعم التطبيقات";
+"uninstaller_orphan_cat_logs" = "السجلات";
+"uninstaller_orphan_cat_containers" = "الحاويات";
+"uninstaller_orphan_cat_developer" = "المطور";
+"uninstaller_orphan_cat_launch_agents" = "وكلاء التشغيل";
+"uninstaller_orphan_cat_other" = "أخرى";
+"uninstaller_evidence_score" = "النتيجة: %lld";

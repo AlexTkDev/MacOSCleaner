@@ -69,31 +69,43 @@ public actor DirectorySizeCache {
             options: []
         ) else { return CachedDirectoryInfo(size: 0, fileCount: 0, timestamp: Date()) }
 
-        while let fileURL = enumerator.nextObject() as? URL {
-            if Task.isCancelled {
-                break
-            }
-            let shouldExclude = FileManager.shouldExclude(url: fileURL)
-            if shouldExclude {
-                if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
-                    enumerator.skipDescendants()
+        var stopEnumerating = false
+        while !stopEnumerating {
+            autoreleasepool {
+                var batchCount = 0
+                while batchCount < 256 {
+                    guard let fileURL = enumerator.nextObject() as? URL else {
+                        stopEnumerating = true
+                        break
+                    }
+                    batchCount += 1
+                    if Task.isCancelled {
+                        stopEnumerating = true
+                        break
+                    }
+                    let shouldExclude = FileManager.shouldExclude(url: fileURL)
+                    if shouldExclude {
+                        if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                            enumerator.skipDescendants()
+                        }
+                        continue
+                    }
+                    guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
+                        continue
+                    }
+                    if FileManager.isNotDownloadedUbiquitous(values) {
+                        if values.isDirectory == true { enumerator.skipDescendants() }
+                        continue
+                    }
+                    fileCount += 1
+                    // Prefer allocated (physical) size — what deleting actually reclaims.
+                    // Use allocated even when 0 (true sparse files); only fall back if key is missing.
+                    if let allocated = values.totalFileAllocatedSize {
+                        size += Int64(allocated)
+                    } else if let fileSize = values.fileSize {
+                        size += Int64(fileSize)
+                    }
                 }
-                continue
-            }
-            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else {
-                continue
-            }
-            if FileManager.isNotDownloadedUbiquitous(values) {
-                if values.isDirectory == true { enumerator.skipDescendants() }
-                continue
-            }
-            fileCount += 1
-            // Prefer allocated (physical) size — what deleting actually reclaims.
-            // Use allocated even when 0 (true sparse files); only fall back if key missing.
-            if let allocated = values.totalFileAllocatedSize {
-                size += Int64(allocated)
-            } else if let fileSize = values.fileSize {
-                size += Int64(fileSize)
             }
         }
         return CachedDirectoryInfo(size: size, fileCount: fileCount, timestamp: Date())
