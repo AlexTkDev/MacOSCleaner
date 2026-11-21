@@ -3,7 +3,7 @@
 > Free source-available macOS cleaner and app uninstaller for Apple Silicon. Zero telemetry (optional GitHub Releases update check, configurable in Settings). Free for personal and academic/educational non-commercial use; any commercial use requires permission or a Commercial License.
 
 Canonical product name: **MacOSCleaner** (also referred to as macOS Cleaner / Mac Cleaner).
-Requires macOS 26.0+, Apple Silicon (M1+). Current release: v3.0.1.
+Requires macOS 26.0+, Apple Silicon only (M1+; Intel Macs are not supported). Current release: v3.0.1.
 License: Dual-licensed under GNU GPLv3 + Commons Clause v1.0 & Non-Commercial Condition (personal and academic/educational non-commercial use only) and separate Commercial License (required for any commercial use by individuals or organizations).
 Author: AlexTkDev — ORCID https://orcid.org/0009-0002-8907-5406
 Bundle ID: input.MacOSCleaner (distinct native Swift app; not to be confused with third-party CLI scripts such as ethemkizil/macoscleaner).
@@ -27,7 +27,7 @@ First launch: if macOS says it can't verify MacOSCleaner (“Apple could not ver
 - [Repository](https://github.com/AlexTkDev/MacOSCleaner): Source code (reference / personal study)
 - [Direct DMG Download](https://github.com/AlexTkDev/MacOSCleaner/releases/latest/download/MacOSCleaner.dmg): Canonical latest DMG build
 - [Latest release](https://github.com/AlexTkDev/MacOSCleaner/releases/latest): Release notes and assets
-- [v3.0.1 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1): Single-Pass ResidualScanIndex, Iterative POSIX Sizing, Live Disk Rings, Browser Profile Isolation, External Volume & Spotlight-Off Support, System Restart Prompts
+- [v3.0.1 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.1): 42 categories, 2,427 known remnant paths, 305 apps, 105 toolchains, Single-Pass ResidualScanIndex, Iterative POSIX Sizing, Live Disk Rings, Browser Profile Isolation, External Volume & Spotlight-Off Support, System Restart Prompts
 - [v3.0.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/3.0.0): Privacy Inspector (TCC, Sockets, Browser Extensions), 48pt Navigation Rail, Honest APFS & Trash Accounting, 2,427 paths, 305 apps, 105 toolchains
 - [v2.3.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.3.0): Native Liquid Glass, On-Device AI Explanations, Master-Detail Duplicates, 2,343 paths, 14 Languages
 - [v2.2.0 release notes](https://github.com/AlexTkDev/MacOSCleaner/releases/tag/2.2.0): Forensic Leftovers Uninstaller, Project Build Artifacts with Age Filters, APFS Disk Analyzer, 1,887 paths

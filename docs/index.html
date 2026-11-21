@@ -112,12 +112,12 @@
       "Privacy Inspector: TCC permissions viewer & reset, on-demand network sockets, and browser extensions",
       "Compact 48pt Liquid Glass Navigation Rail with unified header and ⌘1–⌘9 shortcuts",
       "Honest APFS free-space delta and unified Trash-by-default deletion policy",
-      "2,427 path rules for 305 apps and 105 CLI toolchains",
-      "AppIntents & Siri voice automation with biometric confirmation",
+      "2,427 known remnant paths for 305 apps and 105 developer toolchains",
+      "Siri & Shortcuts automation via 5 App Intents with biometric authentication",
       "Master-Detail Duplicate File Finder with Quick Look",
       "Apple Watch-style disk ring dashboard",
       "On-device Apple Intelligence explanations (@Generable verdicts)",
-      "Smart Cleanup for 55+ categories with project-marker artifact validation",
+      "Smart Cleanup for 42 categories with project-marker artifact validation",
       "App Uninstaller with 3-second soft quit, forensic leftover scan, and Dock icon cleanup",
       "Navigable Disk Space Analyzer with APFS allocated sizing",
       "Dedicated Cleanup History window (⌘Y) and full keyboard navigation",
@@ -279,7 +279,7 @@
           ★ Star on GitHub
         </a>
       </div>
-      <p class="hero-meta">source-available (GPLv3 + Commons Clause) · apple silicon · apple intelligence &amp; siri · macOS 26.0+ · no telemetry</p>
+      <p class="hero-meta">source-available (GPLv3 + Commons Clause) · apple silicon only · apple intelligence &amp; siri · macOS 26.0+ · no telemetry</p>
 
     </div>
 
@@ -289,16 +289,16 @@
 
     <div class="hero-stats">
       <div class="stat">
-        <div class="stat-num" data-count="55" data-suffix="+">0+</div>
+        <div class="stat-num" data-count="42">0</div>
         <div class="stat-label">cleanup categories</div>
       </div>
       <div class="stat">
-        <div class="stat-num" data-count="2427" data-suffix="+">0+</div>
-        <div class="stat-label">built-in paths</div>
+        <div class="stat-num" data-count="2427">0</div>
+        <div class="stat-label">known remnant paths</div>
       </div>
       <div class="stat">
         <div class="stat-num" data-count="30">0</div>
-        <div class="stat-label">evidence types</div>
+        <div class="stat-label">evidence signals</div>
       </div>
       <div class="stat">
         <div class="stat-num" data-count="0">0</div>
@@ -325,7 +325,7 @@
           </span>
           On-Device Apple Intelligence
         </h3>
-        <p>Native local AI explanations powered by Apple <code>FoundationModels</code>. Explains files, caches, running processes, and startup agents on-device with zero latency and no cloud relay. Tap the sparkles icon anywhere to ask.</p>
+        <p>Native local AI explanations powered by Apple <code>FoundationModels</code>. Classifies items as safe, caution, or danger with streaming explanations and an Apple Intelligence storage overview in Settings — zero cloud calls.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -334,16 +334,16 @@
           </span>
           Siri &amp; Shortcuts Automation
         </h3>
-        <p>Native AppIntents integration for voice control and automated Shortcuts workflows. Trigger "Quick Clean", "Scan Storage", or "Uninstall App" with Siri or custom macOS Shortcuts — zero background daemons or battery drain.</p>
+        <p>Native automation via <strong>5 App Intents</strong> (<code>GetStorageStatusIntent</code>, plus authenticated <code>CleanCategoryIntent</code>, <code>CleanDeveloperCachesIntent</code>, <code>EmptyTrashIntent</code>, and <code>RunScheduledCleanupIntent</code>) — zero background daemons.</p>
       </li>
       <li class="bento-span-3">
         <h3>
           <span class="cell-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 22-1-4"/><path d="M19 13.99a1 1 0 0 0 1-1V12a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v.99a1 1 0 0 0 1 1"/><path d="M5 14h14l1.973 6.767A1 1 0 0 1 20 22H4a1 1 0 0 1-.973-1.233z"/><path d="m8 22 1-4"/></svg>
           </span>
-          Smart Cleanup (2,427 Paths)
+          Smart Cleanup (42 Categories)
         </h3>
-        <p>55+ categories, 2,427 path definitions covering 305+ apps and 105 toolchains — exact per-bundle browser cache templates (profiles &amp; extensions untouched), deduplicated dynamic cache discovery, package managers, Xcode, Docker, AI assistants, and project build artifacts verified by project markers. Parallel scan across all cores with honest APFS space delta and post-cleanup restart prompts.</p>
+        <p>42 cleanup categories and 2,427 known remnant paths covering 305 apps and 105 developer toolchains — exact per-bundle browser cache templates (profiles &amp; extensions untouched), deduplicated dynamic cache discovery, package managers, Xcode, Docker, AI models, and project build folders verified by project markers. Honest APFS space delta and post-cleanup restart prompts.</p>
       </li>
       <li class="bento-span-3">
         <h3>
@@ -352,7 +352,7 @@
           </span>
           Forensic App Uninstaller
         </h3>
-        <p>Drag &amp; drop any <code>.app</code>. Single-pass <code>ResidualScanIndex</code> across 30 evidence signals and 2,427 paths. Discovers apps in <code>/Applications</code>, <code>~/Applications</code>, and external volumes (even with Spotlight off). Protects active Homebrew/MacPorts/Nix services and prompts for restart when system extensions or daemons are removed.</p>
+        <p>Drag &amp; drop any <code>.app</code>. Fast indexed deep scan (<code>ResidualScanIndex</code>) across 30 evidence signals and 2,427 known remnant paths. Finds apps in <code>/Applications</code>, <code>~/Applications</code>, and writable <code>/Volumes/.../Applications</code> (even with Spotlight off). 3-stage removal (soft quit → <code>launchd</code> bootout → Trash) with Dock cleanup, Homebrew/MacPorts/Nix protection, and restart banners.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -361,7 +361,7 @@
           </span>
           Duplicate File Finder
         </h3>
-        <p>Multi-stage cryptographic engine (file size → 4&nbsp;KB hash → full SHA-256) running parallel on Swift Actors. Safely detects 100% exact duplicates, protects master original files, skips dataless iCloud items (<code>.isUbiquitousItemKey</code> / <code>SF_DATALESS</code>), and supports opt-in external volume scanning.</p>
+        <p>Master-Detail split view with a 3-stage check (size → 4&nbsp;KB header SHA-256 → full SHA-256) on Swift Actors. Quick Look (<code>Space</code>), high-res photo previews, middle-truncated paths, <code>Select All Duplicates</code>, iCloud dataless skipping, and opt-in external volume scanning.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -370,7 +370,7 @@
           </span>
           Navigable Disk Space Analyzer
         </h3>
-        <p>Drill into nested directories with clickable breadcrumbs. Honest APFS physical sizing (<code>totalFileAllocatedSize</code>), Quick Look spacebar preview, category filters (Video / Audio / Photos / Apps / Documents / Archives). Skips dataless iCloud files (<code>SF_DATALESS</code> / <code>.isUbiquitousItemKey</code>) and supports opt-in external volume scanning. Reveal in Finder or move to Trash.</p>
+        <p>On-demand folder drill-down with breadcrumbs, APFS allocated block sizing (<code>totalFileAllocatedSizeKey</code>), hardlink deduplication, Quick Look (<code>Space</code>), and category filters (Videos / Audio / Photos / Apps / Documents / Archives). Skips offloaded iCloud files and scans only external volumes you pick.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -379,7 +379,7 @@
           </span>
           Process Manager
         </h3>
-        <p>Flat or Grouped views. Sort by CPU, Memory, Name, or Threads. Whitelist critical apps; blacklist noisy ones for quick termination. System processes stay protected.</p>
+        <p>Live CPU/RAM monitor with Flat or Grouped views. Sort by CPU, Memory, Name, or Threads. Whitelist critical apps or blacklist noisy ones; safeguards <code>kernel_task</code>, <code>launchd</code>, and core system processes.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -388,7 +388,7 @@
           </span>
           Startup Services
         </h3>
-        <p>LaunchAgents, LaunchDaemons, and BTM Login Items (<code>sfltool dumpbtm</code>). Verifies <code>SecStaticCode</code> signatures and notarization, flags missing binaries or <code>/tmp</code> launch paths, and unloads user agents via <code>launchctl bootout</code>.</p>
+        <p>Groups LaunchAgents, LaunchDaemons, and Login Items (<code>sfltool dumpbtm</code>). Verifies <code>SecStaticCode</code> signatures and notarization (<code>Needs Attention</code> filter), flags missing binaries or <code>/tmp</code> launch paths, and unloads agents via <code>launchctl bootout</code>.</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -397,7 +397,7 @@
           </span>
           Privacy Inspector &amp; Safety
         </h3>
-        <p>Inspect &amp; reset TCC permissions (<code>tccutil reset</code>), capture on-demand active sockets (<code>proc_pidfdinfo</code>), and audit browser extensions. Unified Trash-by-default deletion; <code>SafetyManager</code> protects <code>/System</code>, <code>~/.ssh</code>, <code>.env</code>, and IDE configs.</p>
+        <p>Read-only TCC permission audit (<code>tccutil reset</code>), on-demand active sockets (<code>proc_pidfdinfo</code>), and browser extension risk ratings. Trash-by-default deletion; blocklists protect SIP, <code>/System</code>, <code>~/.ssh</code>, <code>.env</code> / <code>.npmrc</code> / <code>.yarnrc</code> / <code>.pypirc</code>, IDE folders, and Finder favorites (<code>FavoriteItems.sfl3</code> / <code>.sfl4</code>).</p>
       </li>
       <li class="bento-span-2">
         <h3>
@@ -406,7 +406,7 @@
           </span>
           14 Languages &amp; Liquid Glass
         </h3>
-        <p>English, Deutsch, 日本語, Français, 简体中文, 繁體中文, Italiano, Português, Español, Русский, Українська, 한국어, Polski, العربية (RTL) — UI and error localizations. Adaptive Liquid Glass UI for macOS 26+.</p>
+        <p>English, Deutsch, 日本語, Français, 简体中文, 繁體中文, Italiano, Português, Español, Русский, Українська, 한국어, Polski, العربية (RTL) — full localizations. Native macOS 26+ Liquid Glass UI with a <code>48pt</code> rail and <code>⌘1</code>–<code>⌘9</code>, <code>⌘Y</code>, <code>⌘,</code>, <code>⌘F</code> shortcuts.</p>
       </li>
     </ul>
   </div>
@@ -442,7 +442,7 @@
       <div class="shot-viewport">
         <div class="carousel-track">
           <div class="carousel-slide carousel-slide--video">
-            <video src="static/assets/screenshots/demo_video_v3.mp4" width="1704" height="1236" loop muted playsinline controls id="demo-video" style="width:100%;height:auto;display:block;"></video>
+            <video src="static/assets/screenshots/demo_video_v3-0-1.mp4" width="1704" height="1236" loop muted playsinline controls id="demo-video" style="width:100%;height:auto;display:block;"></video>
           </div>
           <button type="button" class="carousel-slide" aria-label="Enlarge Dashboard screenshot"><img src="static/assets/screenshots/Dashboard_v3.webp" width="2272" height="1648" alt="Dashboard" loading="lazy" fetchpriority="low" decoding="async"></button>
           <button type="button" class="carousel-slide" aria-label="Enlarge Cleanup Page screenshot"><img src="static/assets/screenshots/Cleanup_page_v3.webp" width="2272" height="1648" alt="Cleanup Page" loading="lazy" fetchpriority="low" decoding="async"></button>
@@ -473,8 +473,8 @@
   <div class="container">
     <div class="section-header reveal">
       <p class="sec-label">03 · What gets cleaned</p>
-      <h2>55 categories, one scan</h2>
-      <p>Every category is scanned; risk badges appear after scan — you pick what to delete</p>
+      <h2>42 categories, one scan</h2>
+      <p>Every category is scanned; risk badges appear after scan, and review-only items stay unchecked by default</p>
     </div>
     <div class="cells reveal">
       <div class="cell-cat">
@@ -484,7 +484,7 @@
           </span>
           App &amp; browser caches
         </h3>
-        <p>Google, Spotify, JetBrains, Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc, Zen Browser, Dia, Telegram, Discord, Slack, Signal, Teams</p>
+        <p>Google, Spotify, JetBrains, Safari, Chrome, Firefox, Edge, Brave, Vivaldi, Arc, Zen Browser, Dia, Telegram, Discord, Slack, Signal, Teams — exact cache templates per bundle ID (profiles &amp; extensions untouched)</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -502,7 +502,7 @@
           </span>
           Dev tools &amp; build artifacts
         </h3>
-        <p>Xcode DerivedData, Simulators, Android SDK, Gradle/Maven, Flutter/Dart, Tuist, Go, Rust, Python, Swift PM, Bazel; project-local build caches with age filters</p>
+        <p>Xcode DerivedData, Simulators, Android SDK, Gradle/Maven, Flutter/Dart, Tuist, Go <code>modcache</code>, Rust, Python, Swift PM, Bazel; old project build folders verified by project markers</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -511,7 +511,7 @@
           </span>
           IDE &amp; AI caches
         </h3>
-        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Claude Code CLI, Goose, Continue.dev, Ollama, MLX, Hugging Face, WhisperKit, Superwhisper</p>
+        <p>Cursor, VS Code, Windsurf, Zed, JetBrains, Claude Code, Goose, Continue.dev, Ollama, MLX, Hugging Face, WhisperKit, Superwhisper</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -520,7 +520,7 @@
           </span>
           System &amp; Docker
         </h3>
-        <p>QuickLook, fonts, Spotlight, CloudKit, Time Machine snapshot thinning, Docker prune, crash reports, Mail downloads, privileged DNS flush</p>
+        <p>QuickLook, guarded Font Cache reset, Spotlight, CloudKit, Time Machine snapshot thinning (<code>thinlocalsnapshots</code>), Docker prune, crash reports, Mail downloads, privileged DNS flush</p>
       </div>
       <div class="cell-cat">
         <h3>
@@ -529,10 +529,10 @@
           </span>
           Orphans &amp; leftovers
         </h3>
-        <p>Post-uninstall leftovers sheet; standalone orphaned remnants (Guaranteed, Very Likely, Possible); installers; iOS backups</p>
+        <p>Post-uninstall leftovers sheet; standalone orphaned remnants (Guaranteed, Very Likely, Possible); forgotten installers (<code>.dmg</code>, <code>.pkg</code>, <code>.iso</code>, <code>.zip</code> inspected without mounting); iOS backups</p>
       </div>
     </div>
-    <p class="clean-note reveal">Opt-in toggles: <code>.DS_Store</code>, Time Machine snapshots, Font Cache, DNS Flush, and AI Models. Developer caches (Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>) are included in standard cleanup by default without separate toggles.</p>
+    <p class="clean-note reveal">Review-only items are unchecked by default. Opt-in toggles: <code>.DS_Store</code>, Time Machine snapshots (<code>thinlocalsnapshots</code>), guarded Font Cache reset, DNS Flush, and AI Models. Developer caches (Maven <code>~/.m2</code>, Go <code>GOMODCACHE</code>, Flutter <code>.dart_tool</code>) are included in standard cleanup without separate toggles.</p>
   </div>
 </section>
 
@@ -854,7 +854,7 @@
     <div class="download-panel reveal">
       <div>
         <h2>Download</h2>
-        <p class="dl-meta">v3.0.1 · macOS 26.0+ · Apple Silicon M1 and newer</p>
+        <p class="dl-meta">v3.0.1 · macOS 26.0+ · Apple Silicon only (Intel Macs are not supported)</p>
         <div class="actions">
           <a class="btn btn-primary" href="https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.1/MacOSCleaner.dmg">
             Download DMG <span class="arrow">→</span>
@@ -877,7 +877,8 @@
           <div class="t-line"><span class="prompt">$</span> open MacOSCleaner.xcodeproj</div>
         </div>
         <div class="terminal-body">
-          <div class="t-line"><span class="cmt"># if Gatekeeper says it can't verify the app</span></div>
+          <div class="t-line"><span class="cmt"># verify release checksum &amp; signature; clear quarantine if needed</span></div>
+          <div class="t-line"><span class="prompt">$</span> shasum -a 256 MacOSCleaner-*.dmg</div>
           <div class="t-line"><span class="prompt">$</span> xattr -dr com.apple.quarantine /Applications/MacOSCleaner.app</div>
         </div>
       </div>
