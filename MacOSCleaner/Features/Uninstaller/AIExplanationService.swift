@@ -82,9 +82,32 @@ public actor AIExplanationService {
         availabilityState == .ready
     }
     
+    private var didPrewarm = false
+    private var prewarmAttempts = 0
+
     public nonisolated func prewarm() {
+        guard isAvailable else { return }
+        Task.detached(priority: .background) {
+            await self.prewarmIfNeeded()
+        }
+    }
+
+    public func prewarmIfNeeded() {
+        guard !didPrewarm else { return }
+        didPrewarm = true
+        prewarmAttempts += 1
+        guard isAvailable else { return }
         let session = LanguageModelSession(model: SystemLanguageModel.default)
         session.prewarm()
+    }
+
+    func prewarmAttemptCountForTesting() -> Int {
+        prewarmAttempts
+    }
+
+    func resetPrewarmForTesting() {
+        didPrewarm = false
+        prewarmAttempts = 0
     }
 
     // MARK: - Localized Instructions via Swift switch (No "Respond in X" in instructions)

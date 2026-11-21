@@ -40,55 +40,45 @@ public final class PermissionsManager {
         }
     }
     
-    /// Checks if the application has Full Disk Access by attempting to read protected paths.
-    public static func checkFullDiskAccess() -> Bool {
+    /// Target paths guarded by macOS TCC that only succeed when Full Disk Access is granted.
+    static func fdaProbeTargets(homeDirectory: String) -> (files: [String], directories: [String]) {
+        let files = [
+            "/Library/Application Support/com.apple.TCC/TCC.db",
+            homeDirectory + "/Library/Safari/CloudTabs.db",
+            homeDirectory + "/Library/Safari/Bookmarks.plist",
+        ]
+        let directories = [
+            homeDirectory + "/Library/Suggestions",
+            homeDirectory + "/Library/Mail",
+            homeDirectory + "/Library/Safari",
+        ]
+        return (files, directories)
+    }
+
+    /// Checks if the application has Full Disk Access by attempting to read TCC-protected paths.
+    public static func checkFullDiskAccess(
+        homeDirectory: String = FileManager.default.homeDirectoryForCurrentUser.path
+    ) -> Bool {
         let fm = FileManager.default
+        let targets = fdaProbeTargets(homeDirectory: homeDirectory)
 
-        let timeMachine = "/Library/Preferences/com.apple.TimeMachine.plist"
-        if fm.fileExists(atPath: timeMachine), let handle = FileHandle(forReadingAtPath: timeMachine) {
-            try? handle.close()
-            Logger.permissions.info("Full Disk Access check passed via Time Machine preferences")
-            return true
-        }
-
-        // 1. Check system TCC.db (POSIX 644 world-readable, guarded by macOS TCC)
-        let systemTCC = "/Library/Application Support/com.apple.TCC/TCC.db"
-        if fm.fileExists(atPath: systemTCC) {
-            if let handle = FileHandle(forReadingAtPath: systemTCC) {
-                try? handle.close()
-                Logger.permissions.info("Full Disk Access check passed via system TCC.db")
-                return true
-            }
-        }
-
-        // 2. Check user-level TCC protected directories (listing requires FDA)
-        let homeDir = fm.homeDirectoryForCurrentUser.path
-        let userTCCDirs = [
-            homeDir + "/Library/Suggestions",
-            homeDir + "/Library/Mail"
-        ]
-        for dir in userTCCDirs {
-            guard fm.fileExists(atPath: dir) else { continue }
-            do {
-                _ = try fm.contentsOfDirectory(atPath: dir)
-                Logger.permissions.info("Full Disk Access check passed via directory: \(dir)")
-                return true
-            } catch {
-                // Throws EPERM if FDA is not granted
-            }
-        }
-
-        // 3. Check Safari protected files
-        let safariFiles = [
-            homeDir + "/Library/Safari/CloudTabs.db",
-            homeDir + "/Library/Safari/Bookmarks.plist"
-        ]
-        for file in safariFiles {
+        for file in targets.files {
             guard fm.fileExists(atPath: file) else { continue }
             if let handle = FileHandle(forReadingAtPath: file) {
                 try? handle.close()
-                Logger.permissions.info("Full Disk Access check passed via Safari file: \(file)")
+                Logger.permissions.info("Full Disk Access check passed via file: \(file, privacy: .public)")
                 return true
+            }
+        }
+
+        for dir in targets.directories {
+            guard fm.fileExists(atPath: dir) else { continue }
+            do {
+                _ = try fm.contentsOfDirectory(atPath: dir)
+                Logger.permissions.info("Full Disk Access check passed via directory: \(dir, privacy: .public)")
+                return true
+            } catch {
+                // Throws EPERM if FDA is not granted
             }
         }
 

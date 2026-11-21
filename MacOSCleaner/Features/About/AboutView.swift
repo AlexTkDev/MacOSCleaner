@@ -262,5 +262,5 @@ private struct AboutTransparencySheet: View {
 }
 
 #Preview {
-    AboutView(availableUpdate: AvailableUpdate(version: "3.0.0", dmgURL: nil))
+    AboutView(availableUpdate: AvailableUpdate(version: "3.0.1", dmgURL: nil))
 }

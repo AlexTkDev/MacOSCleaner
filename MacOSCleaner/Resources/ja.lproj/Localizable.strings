@@ -1161,3 +1161,9 @@
 "privacy_uninstaller_show_less" = "折りたたむ";
 "privacy_ext_open_in_browser_help" = "スクリプトを使ってブラウザで拡張機能ページを開きます（macOS がオートメーション許可を求める場合があります）。";
 "privacy_ext_automation_denied_hint" = "%1$@ へのオートメーション許可が拒否されました。「%2$@」のURLをコピーしましたのでアドレスバーに貼り付けてください。";
+"uninstaller_browser_data_warning" = "ブラウザのプロファイル、拡張機能、ログインセッションは既定で選択解除されています。削除するとサイトからログアウトされ拡張機能が失われます。";
+"uninstaller_browser_data_badge" = "ブラウザデータ";
+"uninstaller_browser_data_confirm_warning" = "警告：選択したブラウザプロファイルデータを削除すると、ウェブサイトからログアウトされ、拡張機能やWebアプリデータが削除されます。";
+"uninstaller_spotlight_disabled" = "Spotlight のインデックス作成が無効です。最終使用日はファイルアクセス情報を使用し、検索はヒューリスティックのみで行われます。";
+"scan_updated_at" = "更新: %@";
+"scan_updated_just_now" = "たった今";

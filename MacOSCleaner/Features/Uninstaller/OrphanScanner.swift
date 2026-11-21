@@ -57,6 +57,7 @@ public actor OrphanScanner {
     private let safetyManager: SafetyManager
     private let commandRunner: CommandRunner
     private let fileSystemContext: FileSystemContext
+    private let appDiscovery: AppDiscovery
     private let codesignCache: CodesignCache
     private let plistCache: PlistContentCache
     private let ruleRegistry: ApplicationRuleRegistry
@@ -68,11 +69,13 @@ public actor OrphanScanner {
         fileSystemContext: FileSystemContext = .production,
         codesignCache: CodesignCache = CodesignCache(),
         plistCache: PlistContentCache = PlistContentCache(),
-        ruleRegistry: ApplicationRuleRegistry = .shared
+        ruleRegistry: ApplicationRuleRegistry = .shared,
+        appDiscovery: AppDiscovery? = nil
     ) {
         self.safetyManager = safetyManager
         self.commandRunner = commandRunner
         self.fileSystemContext = fileSystemContext
+        self.appDiscovery = appDiscovery ?? AppDiscovery(commandRunner: commandRunner)
         self.codesignCache = codesignCache
         self.plistCache = plistCache
         self.ruleRegistry = ruleRegistry
@@ -83,13 +86,14 @@ public actor OrphanScanner {
         progress?("Discovering installed applications...")
         
         // 1. Discover installed apps
-        let discovery = AppDiscovery()
-        let installedURLs = await discovery.findAll()
-        var identities: [AppIdentity] = []
-        for url in installedURLs {
-            let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
-            identities.append(identity)
-        }
+        let installedURLs = await appDiscovery.findAll()
+        let runner = commandRunner
+        let identities = (try? await UninstallerService.mapWithBoundedConcurrency(
+            items: installedURLs,
+            maxConcurrent: UninstallerService.maxConcurrentDiscoveryTasks
+        ) { url in
+            await AppIdentity.resolve(from: url, commandRunner: runner)
+        }) ?? []
         
         try Task.checkCancellation()
         progress?("Scanning target directories...")

@@ -3,12 +3,13 @@ import QuickLook
 
 public struct DiskAnalyzerView: View {
     let settings: AppSettings
-    @State private var viewModel = DiskAnalyzerViewModel()
-    
-    public init(settings: AppSettings) {
+    @Bindable var viewModel: DiskAnalyzerViewModel
+
+    public init(settings: AppSettings, viewModel: DiskAnalyzerViewModel = DiskAnalyzerViewModel()) {
         self.settings = settings
+        self.viewModel = viewModel
     }
-    
+
     public var body: some View {
         VStack(spacing: 0) {
             headerControlsView
@@ -22,6 +23,8 @@ public struct DiskAnalyzerView: View {
 
                 if viewModel.isScanning {
                     scanningView
+                } else if viewModel.rootURL == nil {
+                    idlePromptView
                 } else if viewModel.displayedItems.isEmpty {
                     emptyView
                 } else {
@@ -34,9 +37,6 @@ public struct DiskAnalyzerView: View {
         .onAppear {
             if settings.enableAI {
                 AIExplanationService.shared.prewarm()
-            }
-            if viewModel.rootURL == nil {
-                viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
             }
         }
     }
@@ -79,8 +79,16 @@ public struct DiskAnalyzerView: View {
                 width: 170
             )
 
+            ScanStatusPill(lastUpdatedAt: viewModel.lastUpdatedAt)
+
             // Scan Action Button
-            Button(action: { viewModel.selectFolderAndScan() }) {
+            Button(action: {
+                if let root = viewModel.rootURL {
+                    viewModel.startScan(for: root)
+                } else {
+                    viewModel.selectFolderAndScan()
+                }
+            }) {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.clockwise")
                     Text("disk_analyzer_scan".localized)
@@ -202,6 +210,45 @@ public struct DiskAnalyzerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
+    private var idlePromptView: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            Image(systemName: "internaldrive")
+                .font(.system(size: 48))
+                .foregroundStyle(Color.accentColor.gradient)
+
+            Text("disk_analyzer_select_folder".localized)
+                .font(.title3.weight(.semibold))
+
+            HStack(spacing: 10) {
+                Button {
+                    viewModel.startScan(for: FileManager.default.homeDirectoryForCurrentUser)
+                } label: {
+                    Label("duplicate_folder_home".localized, systemImage: "house")
+                }
+                .prominentGlassButtonStyle(tint: .accentColor)
+
+                Button {
+                    let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+                        ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")
+                    viewModel.startScan(for: downloads)
+                } label: {
+                    Label("duplicate_folder_downloads".localized, systemImage: "arrow.down.circle")
+                }
+                .secondaryGlassButtonStyle()
+
+                Button {
+                    viewModel.selectFolderAndScan()
+                } label: {
+                    Label("duplicate_folder_custom".localized, systemImage: "folder.badge.plus")
+                }
+                .secondaryGlassButtonStyle()
+            }
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private var emptyView: some View {
         VStack(spacing: 12) {
             Spacer()

@@ -9,7 +9,6 @@ struct ProcessRow: View {
     let onForceKill: () -> Void
     let onToggleSelection: () -> Void
 
-    @State private var appIcon: NSImage?
     @State private var isExpanded = false
     @State private var aiExplanation = ""
     @State private var verdict: AIExplanationResult.Verdict? = nil
@@ -25,15 +24,10 @@ struct ProcessRow: View {
             }
             .buttonStyle(.plain)
 
-            if let icon = appIcon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: 20, height: 20)
-            } else {
+            CachedFileIconView(path: process.path, size: 20) {
                 Image(systemName: iconName)
                     .font(.system(size: 18))
                     .foregroundColor(iconColor)
-                    .frame(width: 24)
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -186,14 +180,6 @@ struct ProcessRow: View {
             }
         }
         .padding(.vertical, 10)
-        .task {
-            await loadAppIcon()
-        }
-    }
-
-    private func loadAppIcon() async {
-        guard let path = process.path else { return }
-        appIcon = NSWorkspace.shared.icon(forFile: path)
     }
 
     private var iconName: String {

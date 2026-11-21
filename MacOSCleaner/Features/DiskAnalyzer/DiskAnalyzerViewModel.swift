@@ -20,7 +20,8 @@ public final class DiskAnalyzerViewModel {
     public var quickLookURL: URL?
     public var selectedCategory: FileCategory = .all
     public var searchQuery: String = ""
-    
+    public var lastUpdatedAt: Date?
+
     private var scanTask: Task<Void, Never>?
     
     public init() {}
@@ -87,6 +88,7 @@ public final class DiskAnalyzerViewModel {
                 
                 self.rootItem = scannedRoot
                 self.pathTrail = [scannedRoot]
+                self.lastUpdatedAt = Date()
                 self.isScanning = false
             } catch {
                 self.logger.error("Scan failed: \(error.localizedDescription)")

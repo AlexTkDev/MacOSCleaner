@@ -23,20 +23,32 @@ public actor UninstallerService {
     private let safetyManager: SafetyManager
     private let trashManager: TrashManager
     private let commandRunner: CommandRunner
+    private let fileSystemContext: FileSystemContext
+    private let appDiscovery: AppDiscovery
     private let codesignCache = CodesignCache()
     private let plistCache = PlistContentCache()
     private let ruleRegistry: ApplicationRuleRegistry
 
     public init(
         fileManager: FileManager = .default,
-        safetyManager: SafetyManager = SafetyManager(),
-        trashManager: TrashManager = TrashManager(),
-        commandRunner: CommandRunner = CommandRunner()
+        safetyManager: SafetyManager? = nil,
+        trashManager: TrashManager? = nil,
+        commandRunner: CommandRunner = CommandRunner(),
+        fileSystemContext: FileSystemContext = .production,
+        appDiscovery: AppDiscovery? = nil
     ) {
         self.fileManager = fileManager
-        self.safetyManager = safetyManager
-        self.trashManager = trashManager
+        self.fileSystemContext = fileSystemContext
+        let resolvedSafety = safetyManager ?? SafetyManager(
+            homeDirectory: fileSystemContext.homePath,
+            fileSystemContext: fileSystemContext
+        )
+        self.safetyManager = resolvedSafety
+        self.trashManager = trashManager ?? TrashManager(
+            safetyManager: resolvedSafety
+        )
         self.commandRunner = commandRunner
+        self.appDiscovery = appDiscovery ?? AppDiscovery(commandRunner: commandRunner)
         self.ruleRegistry = ApplicationRuleRegistry.createDefault()
     }
 
@@ -86,14 +98,24 @@ public actor UninstallerService {
         public let deletionRisk: DeletionRisk
         public let evidence: Set<Evidence>
         public let confidence: ConfidenceTier
+        public let isBrowserData: Bool
 
-        public init(url: URL, isSelected: Bool = true, size: Int64 = 0, deletionRisk: DeletionRisk = .normal, evidence: Set<Evidence> = [], confidence: ConfidenceTier = .possible) {
+        public init(
+            url: URL,
+            isSelected: Bool = true,
+            size: Int64 = 0,
+            deletionRisk: DeletionRisk = .normal,
+            evidence: Set<Evidence> = [],
+            confidence: ConfidenceTier = .possible,
+            isBrowserData: Bool = false
+        ) {
             self.url = NormalizedPath.url(url)
             self.isSelected = isSelected
             self.size = size
             self.deletionRisk = deletionRisk
             self.evidence = evidence
             self.confidence = confidence
+            self.isBrowserData = isBrowserData
         }
 
         public func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -129,7 +151,6 @@ public actor UninstallerService {
         public var size: Int64 = 0
         public var version: String = ""
         public var lastUsed: Date? = nil
-        public var iconData: Data? = nil
         public var isIntelOnly: Bool = false
         /// Multiple versions of the same app grouped together.
         public var versions: [AppInfo] = []
@@ -147,7 +168,6 @@ public actor UninstallerService {
             size: Int64 = 0,
             version: String = "",
             lastUsed: Date? = nil,
-            iconData: Data? = nil,
             isIntelOnly: Bool = false,
             versions: [AppInfo] = []
         ) {
@@ -163,7 +183,6 @@ public actor UninstallerService {
             self.size = size
             self.version = version
             self.lastUsed = lastUsed
-            self.iconData = iconData
             self.isIntelOnly = isIntelOnly
             self.versions = versions
         }
@@ -197,10 +216,11 @@ public actor UninstallerService {
 
     // MARK: - Scan All Applications (Discovery only)
 
+    public static let maxConcurrentDiscoveryTasks = 6
+
     public func scanAllApplications() async throws -> [AppInfo] {
-        let discovery = AppDiscovery(commandRunner: commandRunner)
         // Keep distinct bundle URLs separate even when bundle IDs collide.
-        let listable = uniqueApplicationURLs(await discovery.findAll())
+        let listable = uniqueApplicationURLs(await appDiscovery.findAll())
             .filter { AppDiscovery.isListableApplication($0) }
         // Progress denominator ≈ final sidebar (helpers indexed but not counted).
         let primaryCount = listable.filter { !HelperAppCollapser.isLikelyHelperURL($0) }.count
@@ -212,54 +232,76 @@ public actor UninstallerService {
             progress.percentage = 0.0
         }
 
-        return try await withThrowingTaskGroup(of: AppInfo?.self) { group in
-            for url in listable {
-                group.addTask {
-                    do {
-                        let app = try await self.discoverAndIndex(url)
-                        let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
-                        await MainActor.run {
-                            if countsTowardProgress {
-                                self.progress.currentStep += 1
-                                self.progress.percentage = Double(self.progress.currentStep)
-                                    / Double(self.progress.totalSteps)
-                            }
-                        }
-                        return app
-                    } catch {
-                        Logger.uninstaller.warning(
-                            "Skip '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)"
-                        )
-                        let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
-                        await MainActor.run {
-                            if countsTowardProgress {
-                                self.progress.currentStep += 1
-                                self.progress.percentage = Double(self.progress.currentStep)
-                                    / Double(self.progress.totalSteps)
-                            }
-                        }
-                        return nil
+        let results: [AppInfo?] = try await Self.mapWithBoundedConcurrency(
+            items: listable,
+            maxConcurrent: Self.maxConcurrentDiscoveryTasks
+        ) { url -> AppInfo? in
+            do {
+                let app = try await self.discoverAndIndex(url)
+                let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
+                await MainActor.run {
+                    if countsTowardProgress {
+                        self.progress.currentStep += 1
+                        self.progress.percentage = Double(self.progress.currentStep)
+                            / Double(self.progress.totalSteps)
                     }
                 }
+                return app
+            } catch {
+                Logger.uninstaller.warning(
+                    "Skip '\(url.lastPathComponent, privacy: .public)': \(error.localizedDescription, privacy: .public)"
+                )
+                let countsTowardProgress = !HelperAppCollapser.isLikelyHelperURL(url)
+                await MainActor.run {
+                    if countsTowardProgress {
+                        self.progress.currentStep += 1
+                        self.progress.percentage = Double(self.progress.currentStep)
+                            / Double(self.progress.totalSteps)
+                    }
+                }
+                return nil
+            }
+        }
+
+        let apps = results.compactMap { $0 }
+        let merged = mergeApps(apps)
+        let collapsed = HelperAppCollapser.collapse(merged).apps
+
+        await MainActor.run {
+            // Align counter with what the UI actually lists.
+            progress.totalSteps = max(collapsed.count, 1)
+            progress.currentStep = collapsed.count
+            progress.message = "uninstaller.progress.complete".localized
+            progress.percentage = 1.0
+        }
+
+        return collapsed.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+    }
+
+    static func mapWithBoundedConcurrency<Item: Sendable, Output: Sendable>(
+        items: [Item],
+        maxConcurrent: Int = maxConcurrentDiscoveryTasks,
+        operation: @Sendable @escaping (Item) async throws -> Output
+    ) async throws -> [Output] {
+        guard !items.isEmpty else { return [] }
+        let limit = max(1, maxConcurrent)
+        return try await withThrowingTaskGroup(of: Output.self) { group in
+            var iterator = items.makeIterator()
+            for _ in 0..<min(limit, items.count) {
+                guard let next = iterator.next() else { break }
+                group.addTask { try await operation(next) }
             }
 
-            var apps: [AppInfo] = []
-            for try await app in group {
-                if let app = app { apps.append(app) }
+            var results: [Output] = []
+            results.reserveCapacity(items.count)
+            while let value = try await group.next() {
+                results.append(value)
+                try Task.checkCancellation()
+                if let next = iterator.next() {
+                    group.addTask { try await operation(next) }
+                }
             }
-
-            let merged = mergeApps(apps)
-            let collapsed = HelperAppCollapser.collapse(merged).apps
-
-            await MainActor.run {
-                // Align counter with what the UI actually lists.
-                progress.totalSteps = max(collapsed.count, 1)
-                progress.currentStep = collapsed.count
-                progress.message = "uninstaller.progress.complete".localized
-                progress.percentage = 1.0
-            }
-
-            return collapsed.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            return results
         }
     }
 
@@ -268,17 +310,13 @@ public actor UninstallerService {
         NormalizedPath.unique(urls).sorted { $0.path.localizedCompare($1.path) == .orderedAscending }
     }
 
-    private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
+    nonisolated private func discoverAndIndex(_ url: URL) async throws -> AppInfo {
         try safetyManager.validate(url: url, policy: .uninstall)
 
         let identity = await AppIdentity.resolve(from: url, commandRunner: commandRunner)
 
         let size = await getDirectorySize(url: url)
-        let iconData = await MainActor.run {
-            NSWorkspace.shared.icon(forFile: url.path).tiffRepresentation
-        }
-        let mdItem = MDItemCreate(nil, url.path as CFString)
-        let lastUsed = MDItemCopyAttribute(mdItem, kMDItemLastUsedDate) as? Date
+        let lastUsed = SpotlightMetadata.lastUsedDate(for: url)
 
         let isIntelOnly = Self.isIntelOnlyApp(at: url)
 
@@ -293,7 +331,6 @@ public actor UninstallerService {
             size: size,
             version: version(from: url),
             lastUsed: lastUsed,
-            iconData: iconData,
             isIntelOnly: isIntelOnly
         )
     }
@@ -318,7 +355,6 @@ public actor UninstallerService {
             updated.url = primary.url
             updated.version = versionSummary
             updated.lastUsed = scannedVersions.compactMap(\.lastUsed).max()
-            updated.iconData = primary.iconData ?? app.iconData
             updated.relatedFiles = aggregateRelatedFiles(from: scannedVersions)
             updated.developerComponents = aggregateDeveloperComponents(from: scannedVersions)
             updated.absorbedHelperURLs = NormalizedPath.unique(scannedVersions.flatMap(\.absorbedHelperURLs))
@@ -390,6 +426,7 @@ public actor UninstallerService {
             let standardized = NormalizedPath.canonicalize(url)
             let path = NormalizedPath.key(standardized)
             if path.hasPrefix(parentBundlePath + "/") { continue }
+            if safetyManager.isBrowserUserDataPath(path) { continue }
             guard existing.insert(path).inserted else { continue }
             var isDir: ObjCBool = false
             guard fileManager.fileExists(atPath: path, isDirectory: &isDir) else { continue }
@@ -407,7 +444,11 @@ public actor UninstallerService {
     }
 
     private func runDeepRelatedFiles(identity: AppIdentity, graph: EvidenceGraph, mode: ScanMode = .balanced) async -> [RelatedFile] {
-        let collector = CandidateCollector(commandRunner: commandRunner)
+        let collector = CandidateCollector(
+            commandRunner: commandRunner,
+            fileSystemContext: fileSystemContext,
+            safetyManager: safetyManager
+        )
         let collection = await collector.collectDetailed(identity: identity, mode: mode)
         let probe = EvidenceProbe(commandRunner: commandRunner, codesignCache: codesignCache, plistCache: plistCache)
 
@@ -447,7 +488,7 @@ public actor UninstallerService {
             let ruleScore = rule.evidence(for: node.url, identity: identity).reduce(0) { $0 + $1.weight }
             let assessment = ConfidenceEngine.assess(node.evidence, ruleScore: ruleScore, identity: identity)
             guard assessment.tier >= minimumTier else { continue }
-            guard (try? safetyManager.validate(url: node.url, policy: .uninstall)) != nil else { continue }
+            guard (try? safetyManager.validate(url: node.url, policy: .uninstallApp(bundleID: identity.bundleID))) != nil else { continue }
             guard !Self.isProtectedMailPath(node.url.path) else { continue }
             guard node.url.path != identity.bundleURL.path else { continue }
             guard !identity.bundleURL.path.hasPrefix(node.url.path + "/") else { continue }
@@ -457,21 +498,23 @@ public actor UninstallerService {
             guard fileManager.fileExists(atPath: node.url.path, isDirectory: &isDir) else { continue }
 
             let fileSize = await getDirectorySize(url: node.url)
-            // Browser user data carries logins/sessions — never label it "safe".
-            let risk: DeletionRisk = (node.url.path.contains("Preferences") || safetyManager.isBrowserUserDataPath(node.url.path))
+            // Browser user data carries logins/sessions/extensions — never preselect or label "safe".
+            let isBrowserData = safetyManager.isBrowserUserDataPath(node.url.path)
+            let risk: DeletionRisk = (node.url.path.contains("Preferences") || isBrowserData)
                 ? .normal : .safe
 
             let isConfig = Self.isApplicationConfigurationPath(node.url.path)
-            let isSelectedByDefault = isConfig ? false : (assessment.tier >= .veryLikely)
+            let isSelectedByDefault = (isConfig || isBrowserData) ? false : (assessment.tier >= .veryLikely)
 
             let file = RelatedFile(
                 url: node.url,
-                // App configuration/settings are optional (unselected by default); others preselected if veryLikely+
+                // App configuration/settings and browser user data are opt-in only.
                 isSelected: isSelectedByDefault,
                 size: fileSize,
                 deletionRisk: isConfig ? .normal : risk,
                 evidence: assessment.evidence,
-                confidence: assessment.tier
+                confidence: assessment.tier,
+                isBrowserData: isBrowserData
             )
             related.append((file, assessment.tier))
         }
@@ -505,7 +548,8 @@ public actor UninstallerService {
                     size: file.size,
                     deletionRisk: .shared,
                     evidence: file.evidence,
-                    confidence: file.confidence
+                    confidence: file.confidence,
+                    isBrowserData: file.isBrowserData
                 )
             }
             if informationalSet.contains(path) {
@@ -515,7 +559,8 @@ public actor UninstallerService {
                     size: file.size,
                     deletionRisk: .normal,
                     evidence: file.evidence,
-                    confidence: file.confidence
+                    confidence: file.confidence,
+                    isBrowserData: file.isBrowserData
                 )
             }
             if Self.isCLIConfigPath(file.url) {
@@ -525,7 +570,8 @@ public actor UninstallerService {
                     size: file.size,
                     deletionRisk: .shared,
                     evidence: file.evidence,
-                    confidence: file.confidence
+                    confidence: file.confidence,
+                    isBrowserData: file.isBrowserData
                 )
             }
             return file
@@ -548,7 +594,8 @@ public actor UninstallerService {
                 size: fileSize,
                 deletionRisk: .shared,
                 evidence: [],
-                confidence: .guaranteed
+                confidence: .guaranteed,
+                isBrowserData: safetyManager.isBrowserUserDataPath(standardized.path)
             ))
         }
 
@@ -565,7 +612,8 @@ public actor UninstallerService {
                 size: fileSize,
                 deletionRisk: .normal,
                 evidence: [],
-                confidence: .guaranteed
+                confidence: .guaranteed,
+                isBrowserData: safetyManager.isBrowserUserDataPath(standardized.path)
             ))
         }
 
@@ -590,9 +638,11 @@ public actor UninstallerService {
         let scanner = OrphanScanner(
             safetyManager: safetyManager,
             commandRunner: commandRunner,
+            fileSystemContext: fileSystemContext,
             codesignCache: codesignCache,
             plistCache: plistCache,
-            ruleRegistry: ruleRegistry
+            ruleRegistry: ruleRegistry,
+            appDiscovery: appDiscovery
         )
         return try await scanner.scanOrphans(progress: progress)
     }
@@ -801,10 +851,11 @@ public actor UninstallerService {
         var failedDeletions: [FailedDeletion] = []
         let allTargets = [app.url] + deletionTargets
 
+        let uninstallPolicy = DeletionPolicy.uninstallApp(bundleID: app.bundleID)
         if bypassTrash {
             for target in allTargets {
                 do {
-                    try safetyManager.validate(url: target, policy: .uninstall)
+                    try safetyManager.validate(url: target, policy: uninstallPolicy)
                     try fileManager.removeItem(at: target)
                     Logger.uninstaller.debug("Removed: \(target.path, privacy: .public)")
                 } catch {
@@ -818,8 +869,8 @@ public actor UninstallerService {
                 }
             }
         } else {
-            trashedURLs = try await trashManager.trashItems(urls: allTargets, policy: .uninstall)
-            for target in deletionTargets where fileManager.fileExists(atPath: target.path) {
+            trashedURLs = try await trashManager.trashItems(urls: allTargets, policy: uninstallPolicy)
+            for target in allTargets where fileManager.fileExists(atPath: target.path) {
                 failedDeletions.append(FailedDeletion(url: target, reason: "cleanup_skip_reason_permission".localized))
             }
             Logger.uninstaller.info("Trashed \(trashedURLs.count) item(s) for '\(app.name, privacy: .public)'")
@@ -851,14 +902,23 @@ public actor UninstallerService {
 
         Logger.uninstaller.info("Uninstall complete: '\(app.name, privacy: .public)'")
 
-        // Verification
+        // Verification — exclude files the user explicitly left unchecked (e.g. browser profiles).
+        let intentionallyKeptPaths = Set(
+            app.relatedFiles
+                .filter { !$0.isSelected }
+                .map { NormalizedPath.lowercaseKey($0.url.path) }
+        )
         if let identity = app.identity {
             let engine = VerificationEngine(
                 commandRunner: commandRunner,
                 codesignCache: codesignCache,
-                plistCache: plistCache
+                plistCache: plistCache,
+                fileSystemContext: fileSystemContext,
+                safetyManager: safetyManager
             )
-            let report = await engine.verify(identity: identity).withFailedDeletions(failedDeletions)
+            let report = await engine
+                .verify(identity: identity, excludedPaths: intentionallyKeptPaths)
+                .withFailedDeletions(failedDeletions)
             if report.hasLeftovers {
                 Logger.uninstaller.warning("\(report.count, privacy: .public) leftover(s) after uninstall of '\(app.name, privacy: .public)'")
             } else {
@@ -901,7 +961,7 @@ public actor UninstallerService {
         return false
     }
 
-    private func version(from url: URL) -> String {
+    nonisolated private func version(from url: URL) -> String {
         Bundle(url: url)?.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? Bundle(url: url)?.infoDictionary?["CFBundleVersion"] as? String
             ?? "version_unknown".localized
@@ -909,8 +969,8 @@ public actor UninstallerService {
 
     /// Physical size: what deleting the item actually frees. Sparse VM images
     /// (OrbStack data.img.raw) report tens of GB here, not their logical 500 GB.
-    private func getDirectorySize(url: URL) async -> Int64 {
-        fileManager.getPhysicalDirectorySize(url: url, excludedPaths: [])
+    nonisolated private func getDirectorySize(url: URL) async -> Int64 {
+        FileManager.default.getPhysicalDirectorySize(url: url, excludedPaths: [])
     }
 
     public static func groupKey(for app: AppInfo) -> String {
@@ -983,7 +1043,6 @@ public actor UninstallerService {
                     size: sortedVersions.reduce(0) { $0 + $1.size },
                     version: versionSummary,
                     lastUsed: latestLastUsed,
-                    iconData: sortedVersions.compactMap(\.iconData).first,
                     isIntelOnly: primary.isIntelOnly,
                     versions: sortedVersions
                 )
@@ -1022,22 +1081,24 @@ public actor UninstallerService {
             if let existing = deduplicated[pathKey] {
                 deduplicated[pathKey] = RelatedFile(
                     url: NormalizedPath.canonicalize(file.url),
-                    isSelected: existing.isSelected || file.isSelected,
+                    isSelected: (existing.isBrowserData || file.isBrowserData) ? false : (existing.isSelected || file.isSelected),
                     size: max(existing.size, file.size),
                     deletionRisk: existing.deletionRisk == .shared || file.deletionRisk == .shared
                         ? .shared
                         : (existing.deletionRisk == .normal || file.deletionRisk == .normal ? .normal : existing.deletionRisk),
                     evidence: existing.evidence.union(file.evidence),
-                    confidence: max(existing.confidence, file.confidence)
+                    confidence: max(existing.confidence, file.confidence),
+                    isBrowserData: existing.isBrowserData || file.isBrowserData
                 )
             } else {
                 deduplicated[pathKey] = RelatedFile(
                     url: NormalizedPath.canonicalize(file.url),
-                    isSelected: file.isSelected,
+                    isSelected: file.isBrowserData ? false : file.isSelected,
                     size: file.size,
                     deletionRisk: file.deletionRisk,
                     evidence: file.evidence,
-                    confidence: file.confidence
+                    confidence: file.confidence,
+                    isBrowserData: file.isBrowserData
                 )
             }
         }

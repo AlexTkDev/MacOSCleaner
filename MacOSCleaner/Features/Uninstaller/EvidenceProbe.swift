@@ -41,7 +41,12 @@ public actor EvidenceProbe {
 
         if lowerFileName == lowerBundleID || strippedFileName == lowerBundleID {
             evidence.insert(.bundleIDExact)
-        } else if lowerFileName.hasPrefix(lowerBundleID + ".") || strippedFileName.hasPrefix(lowerBundleID + ".") || (strippedFileName.contains(".") && lowerBundleID.hasPrefix(strippedFileName)) {
+        } else if lowerFileName.hasPrefix(lowerBundleID + ".") || strippedFileName.hasPrefix(lowerBundleID + ".") {
+            evidence.insert(.bundleIDPrefix)
+        } else if strippedFileName.contains("."),
+                  lowerBundleID.hasPrefix(strippedFileName + "."),
+                  !BrowserRule.isBrowserPWAShimBundleID(lowerBundleID),
+                  !(BrowserRule.isKnownBrowserBundleID(strippedFileName) && strippedFileName != lowerBundleID) {
             evidence.insert(.bundleIDPrefix)
         }
         if url.pathExtension.lowercased() == "app",

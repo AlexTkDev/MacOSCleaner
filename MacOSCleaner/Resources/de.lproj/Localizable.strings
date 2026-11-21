@@ -1162,3 +1162,9 @@
 "privacy_uninstaller_show_less" = "Weniger anzeigen";
 "privacy_ext_open_in_browser_help" = "Öffnet die Erweiterungsseite im Browser per Automations-Skript (macOS fragt ggf. einmalig nach Berechtigung).";
 "privacy_ext_automation_denied_hint" = "Automationszugriff auf %1$@ wurde verweigert. Link für „%2$@“ wurde kopiert — bitte in die Adressleiste einfügen.";
+"uninstaller_browser_data_warning" = "Browserprofile, Erweiterungen und Anmeldesitzungen sind standardmäßig abgewählt. Das Löschen meldet Sie von Websites ab und entfernt Erweiterungen.";
+"uninstaller_browser_data_badge" = "Browserdaten";
+"uninstaller_browser_data_confirm_warning" = "Warnung: Ausgewählte Browserprofildaten melden Sie von Websites ab und entfernen Erweiterungen sowie lokale Web-App-Daten.";
+"uninstaller_spotlight_disabled" = "Die Spotlight-Indizierung ist deaktiviert. Zuletzt-verwendet-Daten nutzen Dateizugriffsmetadaten und die Suche verwendet nur Heuristiken.";
+"scan_updated_at" = "Aktualisiert %@";
+"scan_updated_just_now" = "gerade eben";

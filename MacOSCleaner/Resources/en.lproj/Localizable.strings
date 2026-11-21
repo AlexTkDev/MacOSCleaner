@@ -1198,3 +1198,9 @@
 "privacy_uninstaller_show_less" = "Show less";
 "privacy_ext_open_in_browser_help" = "Opens this extension's page in the browser via Automation script (macOS may ask permission once).";
 "privacy_ext_automation_denied_hint" = "Automation access to %1$@ was denied, so the script couldn't open the tab. Extension link for “%2$@” was copied — paste it into the address bar.";
+"uninstaller_browser_data_warning" = "Browser profiles, extensions, and site logins are unselected by default. Selecting them will sign you out of websites and remove installed extensions.";
+"uninstaller_browser_data_badge" = "Browser Data";
+"uninstaller_browser_data_confirm_warning" = "Warning: Selected browser profile data will sign you out of websites and permanently remove extensions and local web app data.";
+"uninstaller_spotlight_disabled" = "Spotlight indexing is turned off. Last-used dates fall back to file access metadata and search uses heuristic paths only.";
+"scan_updated_at" = "Updated %@";
+"scan_updated_just_now" = "just now";

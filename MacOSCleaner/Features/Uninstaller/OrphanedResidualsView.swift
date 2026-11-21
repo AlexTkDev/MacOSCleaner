@@ -7,36 +7,25 @@ private extension Logger {
 }
 
 public struct OrphanedResidualsView: View {
-    let service: UninstallerService
+    @Bindable var viewModel: UninstallerViewModel
     let settings: AppSettings
 
-    @State private var items: [OrphanItem] = []
-    @State private var isLoading = false
-    @State private var hasScanned = false
-    @State private var scanProgressMessage = ""
-    @State private var searchText = ""
-    @State private var selectedFilterTier: ConfidenceTier? = nil
-    @State private var expandedItemIDs: Set<UUID> = []
     @State private var showingConfirmation = false
-    @State private var isCleaning = false
-    @State private var scanTask: Task<Void, Never>? = nil
-    @State private var errorMessage: String? = nil
-    @State private var showingErrorAlert = false
 
-    public init(service: UninstallerService, settings: AppSettings) {
-        self.service = service
+    public init(viewModel: UninstallerViewModel, settings: AppSettings) {
+        self.viewModel = viewModel
         self.settings = settings
     }
 
     private var filteredItems: [OrphanItem] {
-        items.filter { item in
-            let matchesSearch = searchText.isEmpty
-                || item.name.localizedCaseInsensitiveContains(searchText)
-                || (item.bundleID?.localizedCaseInsensitiveContains(searchText) ?? false)
-                || item.url.path.localizedCaseInsensitiveContains(searchText)
+        viewModel.orphanItems.filter { item in
+            let matchesSearch = viewModel.orphanSearchText.isEmpty
+                || item.name.localizedCaseInsensitiveContains(viewModel.orphanSearchText)
+                || (item.bundleID?.localizedCaseInsensitiveContains(viewModel.orphanSearchText) ?? false)
+                || item.url.path.localizedCaseInsensitiveContains(viewModel.orphanSearchText)
 
             let matchesTier: Bool
-            if let filterTier = selectedFilterTier {
+            if let filterTier = viewModel.orphanFilterTier {
                 matchesTier = item.confidence == filterTier
             } else {
                 matchesTier = true
@@ -47,7 +36,7 @@ public struct OrphanedResidualsView: View {
     }
 
     private var selectedItems: [OrphanItem] {
-        items.filter(\.isSelected)
+        viewModel.orphanItems.filter(\.isSelected)
     }
 
     private var selectedSizeBytes: Int64 {
@@ -56,18 +45,17 @@ public struct OrphanedResidualsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            // Content
-            if isLoading {
+            if viewModel.isLoadingOrphans {
                 AnimatedScanView(
                     title: "uninstaller_scanning_leftovers".localized,
-                    subtitle: scanProgressMessage,
+                    subtitle: viewModel.orphanScanProgressMessage,
                     currentStep: 1,
                     totalSteps: 1
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if !hasScanned {
+            } else if !viewModel.hasScannedOrphans {
                 heroStateView
-            } else if items.isEmpty {
+            } else if viewModel.orphanItems.isEmpty {
                 emptyStateView
             } else {
                 resultsView
@@ -87,7 +75,7 @@ public struct OrphanedResidualsView: View {
                     : "uninstaller_move_trash".localized,
                 role: .destructive
             ) {
-                performCleaning()
+                viewModel.cleanSelectedOrphans(selectedItems, settings: settings)
             }
             Button("cancel".localized, role: .cancel) { }
         } message: {
@@ -97,10 +85,10 @@ public struct OrphanedResidualsView: View {
                 ByteCountFormatter.localizedString(fromByteCount: selectedSizeBytes, countStyle: .file)
             ))
         }
-        .alert("error".localized, isPresented: $showingErrorAlert) {
+        .alert("error".localized, isPresented: $viewModel.showingOrphanErrorAlert) {
             Button("ok".localized, role: .cancel) { }
         } message: {
-            if let errorMessage {
+            if let errorMessage = viewModel.orphanErrorMessage {
                 Text(errorMessage)
             }
         }
@@ -127,7 +115,7 @@ public struct OrphanedResidualsView: View {
                     .frame(maxWidth: 480)
             }
 
-            Button(action: startScan) {
+            Button(action: { viewModel.startOrphanScan() }) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                     Text("uninstaller_start_leftover_scan".localized)
@@ -161,7 +149,7 @@ public struct OrphanedResidualsView: View {
                     .foregroundColor(.secondary)
             }
 
-            Button(action: startScan) {
+            Button(action: { viewModel.startOrphanScan() }) {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.clockwise")
                     Text("uninstaller_reload".localized)
@@ -180,16 +168,15 @@ public struct OrphanedResidualsView: View {
         VStack(spacing: 0) {
             // Filter Bar
             HStack(spacing: 10) {
-                // Search box
                 HStack(spacing: 6) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
                         .font(.caption)
-                    TextField("uninstaller_search".localized, text: $searchText)
+                    TextField("uninstaller_search".localized, text: $viewModel.orphanSearchText)
                         .textFieldStyle(.plain)
                         .font(.caption)
-                    if !searchText.isEmpty {
-                        Button(action: { searchText = "" }) {
+                    if !viewModel.orphanSearchText.isEmpty {
+                        Button(action: { viewModel.orphanSearchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
                                 .font(.caption2)
@@ -203,7 +190,6 @@ public struct OrphanedResidualsView: View {
                 .cornerRadius(8)
                 .frame(maxWidth: 240)
 
-                // Filter chips
                 HStack(spacing: 4) {
                     filterChip(title: "uninstaller_filter_all".localized, tier: nil)
                     filterChip(title: ConfidenceTier.guaranteed.displayKey.localized, tier: .guaranteed)
@@ -213,7 +199,7 @@ public struct OrphanedResidualsView: View {
 
                 Spacer()
 
-                Button(action: startScan) {
+                Button(action: { viewModel.startOrphanScan() }) {
                     Image(systemName: "arrow.clockwise")
                 }
                 .glassButtonStyle()
@@ -225,7 +211,6 @@ public struct OrphanedResidualsView: View {
 
             Divider()
 
-            // List of items
             List {
                 ForEach(filteredItems) { item in
                     orphanRow(for: item)
@@ -241,7 +226,7 @@ public struct OrphanedResidualsView: View {
             // Bottom Action Bar
             HStack(spacing: 12) {
                 Button(action: toggleSelectAll) {
-                    Text(items.allSatisfy(\.isSelected) ? "deselect_all".localized : "select_all".localized)
+                    Text(viewModel.orphanItems.allSatisfy(\.isSelected) ? "deselect_all".localized : "select_all".localized)
                         .font(.caption)
                 }
                 .buttonStyle(.plain)
@@ -251,7 +236,7 @@ public struct OrphanedResidualsView: View {
                     .foregroundColor(.secondary)
                     .font(.caption2)
 
-                Text(String(format: "uninstaller_leftovers_found_count".localized, Int64(items.count)))
+                Text(String(format: "uninstaller_leftovers_found_count".localized, Int64(viewModel.orphanItems.count)))
                     .font(.caption)
                     .foregroundColor(.secondary)
 
@@ -262,7 +247,7 @@ public struct OrphanedResidualsView: View {
 
                 Button(action: { showingConfirmation = true }) {
                     HStack(spacing: 6) {
-                        if isCleaning {
+                        if viewModel.isCleaningOrphans {
                             ProgressView().controlSize(.small)
                         } else {
                             Image(systemName: "trash")
@@ -274,7 +259,7 @@ public struct OrphanedResidualsView: View {
                 }
                 .destructiveGlassButtonStyle()
                 .controlSize(.large)
-                .disabled(selectedItems.isEmpty || isCleaning)
+                .disabled(selectedItems.isEmpty || viewModel.isCleaningOrphans)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -284,10 +269,10 @@ public struct OrphanedResidualsView: View {
 
     @ViewBuilder
     private func filterChip(title: String, tier: ConfidenceTier?) -> some View {
-        let isSelected = selectedFilterTier == tier
+        let isSelected = viewModel.orphanFilterTier == tier
         Button(action: {
             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                selectedFilterTier = tier
+                viewModel.orphanFilterTier = tier
             }
         }) {
             Text(title)
@@ -307,16 +292,16 @@ public struct OrphanedResidualsView: View {
     }
 
     private func toggleSelectAll() {
-        let allSelected = items.allSatisfy(\.isSelected)
-        for i in items.indices {
-            items[i].isSelected = !allSelected
+        let allSelected = viewModel.orphanItems.allSatisfy(\.isSelected)
+        for i in viewModel.orphanItems.indices {
+            viewModel.orphanItems[i].isSelected = !allSelected
         }
     }
 
     @ViewBuilder
     private func orphanRow(for item: OrphanItem) -> some View {
-        let isExpanded = expandedItemIDs.contains(item.id)
-        let index = items.firstIndex(where: { $0.id == item.id })
+        let isExpanded = viewModel.expandedOrphanIDs.contains(item.id)
+        let index = viewModel.orphanItems.firstIndex(where: { $0.id == item.id })
 
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
@@ -324,7 +309,7 @@ public struct OrphanedResidualsView: View {
                     get: { item.isSelected },
                     set: { val in
                         if let idx = index {
-                            items[idx].isSelected = val
+                            viewModel.orphanItems[idx].isSelected = val
                         }
                     }
                 ))
@@ -394,9 +379,9 @@ public struct OrphanedResidualsView: View {
                 Button {
                     withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                         if isExpanded {
-                            expandedItemIDs.remove(item.id)
+                            viewModel.expandedOrphanIDs.remove(item.id)
                         } else {
-                            expandedItemIDs.insert(item.id)
+                            viewModel.expandedOrphanIDs.insert(item.id)
                         }
                     }
                 } label: {
@@ -434,77 +419,6 @@ public struct OrphanedResidualsView: View {
         case "Logs": return "doc.text.fill"
         case "Developer": return "wrench.and.screwdriver.fill"
         default: return "doc.fill"
-        }
-    }
-
-    // MARK: - Actions
-
-    private func startScan() {
-        scanTask?.cancel()
-        isLoading = true
-        scanProgressMessage = "uninstaller.progress.discovering".localized
-
-        scanTask = Task {
-            do {
-                let found = try await service.scanOrphanedResiduals { message in
-                    Task { @MainActor in
-                        self.scanProgressMessage = message
-                    }
-                }
-                await MainActor.run {
-                    self.items = found
-                    self.isLoading = false
-                    self.hasScanned = true
-                }
-            } catch {
-                Logger.orphanView.error("Orphan scan failed: \(error.localizedDescription, privacy: .public)")
-                await MainActor.run {
-                    self.isLoading = false
-                    self.hasScanned = true
-                }
-            }
-        }
-    }
-
-    private func performCleaning() {
-        let targets = selectedItems
-        guard !targets.isEmpty else { return }
-
-        isCleaning = true
-        Task {
-            defer { isCleaning = false }
-            do {
-                let result = try await service.removeOrphanedResiduals(
-                    targets,
-                    bypassTrash: settings.bypassTrashOnUninstall
-                )
-                
-                await MainActor.run {
-                    let removedIDs = Set(result.succeededItems.map(\.id))
-                    self.items.removeAll { removedIDs.contains($0.id) }
-                    
-                    if !result.failedItems.isEmpty {
-                        self.errorMessage = String(format: "orphaned_cleanup_failed_count".localized, Int64(result.failedItems.count))
-                        self.showingErrorAlert = true
-                    }
-                    
-                    if settings.showNotifications, !result.succeededItems.isEmpty {
-                        let title = "uninstaller_complete_title".localized
-                        let body = String(
-                            format: "uninstaller_leftovers_cleaned_notification".localized,
-                            Int64(result.succeededItems.count),
-                            ByteCountFormatter.localizedString(fromByteCount: result.freed, countStyle: .file)
-                        )
-                        NotificationManager.shared.sendNotification(title: title, body: body)
-                    }
-                }
-            } catch {
-                Logger.orphanView.error("Cleaning failed: \(error.localizedDescription, privacy: .public)")
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.showingErrorAlert = true
-                }
-            }
         }
     }
 }

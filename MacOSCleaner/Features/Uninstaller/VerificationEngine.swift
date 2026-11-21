@@ -13,6 +13,7 @@ public actor VerificationEngine {
     private let weights: ScoringWeights
     private let ruleRegistry: ApplicationRuleRegistry
     private let fileSystemContext: FileSystemContext
+    private let safetyManager: SafetyManager
 
     public init(
         commandRunner: any CommandRunning = CommandRunner(),
@@ -21,7 +22,8 @@ public actor VerificationEngine {
         thresholds: ScoreThresholds = .default,
         weights: ScoringWeights = .default,
         ruleRegistry: ApplicationRuleRegistry = ApplicationRuleRegistry.createDefault(),
-        fileSystemContext: FileSystemContext = .production
+        fileSystemContext: FileSystemContext = .production,
+        safetyManager: SafetyManager? = nil
     ) {
         self.commandRunner = commandRunner
         self.codesignCache = codesignCache
@@ -30,17 +32,28 @@ public actor VerificationEngine {
         self.weights = weights
         self.ruleRegistry = ruleRegistry
         self.fileSystemContext = fileSystemContext
+        self.safetyManager = safetyManager ?? SafetyManager(
+            homeDirectory: fileSystemContext.homePath,
+            fileSystemContext: fileSystemContext
+        )
     }
 
-    public func verify(identity: AppIdentity) async -> VerificationReport {
+    public func verify(identity: AppIdentity, excludedPaths: Set<String> = []) async -> VerificationReport {
         Logger.verification.info("Verifying '\(identity.appName, privacy: .public)' after uninstall")
 
         let collector = CandidateCollector(
             fileManager: .default,
             commandRunner: commandRunner,
-            fileSystemContext: fileSystemContext
+            fileSystemContext: fileSystemContext,
+            safetyManager: safetyManager
         )
-        let candidates = await collector.collect(identity: identity)
+        let rawCandidates = await collector.collect(identity: identity)
+        let candidates = rawCandidates.filter { candidate in
+            let lowerKey = NormalizedPath.lowercaseKey(candidate.path)
+            return !excludedPaths.contains { excluded in
+                NormalizedPath.isEqualOrDescendant(lowerKey, of: excluded)
+            }
+        }
 
         guard !candidates.isEmpty else {
             Logger.verification.info("0 leftovers found")
@@ -82,6 +95,7 @@ public actor VerificationEngine {
         var leftoverItems: [LeftoverItem] = []
         for artifact in leftovers {
             let details = artifactMap[artifact.url]
+            let isBrowserData = safetyManager.isBrowserUserDataPath(artifact.url.path)
             leftoverItems.append(
                 LeftoverItem(
                     url: artifact.url,
@@ -92,7 +106,7 @@ public actor VerificationEngine {
                     evidence: details?.evidence ?? artifact.evidence,
                     rawEvidence: details?.rawEvidence ?? [],
                     confidence: details?.tier ?? .possible,
-                    isSelected: true
+                    isSelected: !isBrowserData
                 )
             )
         }

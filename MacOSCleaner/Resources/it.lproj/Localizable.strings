@@ -1161,3 +1161,9 @@
 "privacy_uninstaller_show_less" = "Mostra meno";
 "privacy_ext_open_in_browser_help" = "Apre la pagina di questa estensione nel browser tramite script (macOS può richiedere il permesso Automazione).";
 "privacy_ext_automation_denied_hint" = "Accesso Automazione a %1$@ negato. Il link per «%2$@» è stato copiato — incollalo nella barra degli indirizzi.";
+"uninstaller_browser_data_warning" = "Profili del browser, estensioni e sessioni dei siti sono deselezionati per impostazione predefinita. Eliminarli disconnetterà dai siti e rimuoverà le estensioni.";
+"uninstaller_browser_data_badge" = "Dati del browser";
+"uninstaller_browser_data_confirm_warning" = "Attenzione: i dati del profilo selezionati disconnetteranno dai siti web e rimuoveranno estensioni e dati delle web app.";
+"uninstaller_spotlight_disabled" = "L'indicizzazione Spotlight è disattivata. Le date di ultimo utilizzo usano i metadati di accesso ai file e la ricerca usa solo l'euristica.";
+"scan_updated_at" = "Aggiornato %@";
+"scan_updated_just_now" = "proprio ora";

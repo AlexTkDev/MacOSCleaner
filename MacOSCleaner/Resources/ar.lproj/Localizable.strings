@@ -1198,3 +1198,9 @@
 "privacy_uninstaller_show_less" = "عرض أقل";
 "privacy_ext_open_in_browser_help" = "يفتح صفحة هذه الإضافة في المتصفح عبر نص برمجي (قد يطلب macOS إذن الأتمتة مرة واحدة).";
 "privacy_ext_automation_denied_hint" = "تم رفض إذن الأتمتة لـ %1$@. تم نسخ رابط «%2$@» — الصقه في شريط العنوان.";
+"uninstaller_browser_data_warning" = "ملفات تعريف المتصفح والإضافات وجلسات المواقع غير محددة افتراضيًا. سيؤدي حذفها إلى تسجيل الخروج من المواقع وإزالة الإضافات.";
+"uninstaller_browser_data_badge" = "بيانات المتصفح";
+"uninstaller_browser_data_confirm_warning" = "تحذير: ستؤدي إزالة بيانات ملف تعريف المتصفح المحددة إلى تسجيل خروجك من المواقع وإزالة الإضافات وبيانات تطبيقات الويب نهائيًا.";
+"uninstaller_spotlight_disabled" = "فهرسة Spotlight متوقفة. تعتمد تواريخ آخر استخدام على بيانات الوصول للملف ويقتصر البحث على المسارات الاستدلالية.";
+"scan_updated_at" = "تم التحديث %@";
+"scan_updated_just_now" = "الآن";

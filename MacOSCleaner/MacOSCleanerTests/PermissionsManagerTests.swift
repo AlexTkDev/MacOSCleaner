@@ -101,4 +101,15 @@ final class PermissionsManagerTests: XCTestCase {
         XCTAssertTrue(manager.showGuidance)
         XCTAssertFalse(manager.guidanceDismissed)
     }
+
+    func testFDAProbeTargets_excludeWorldReadableTimeMachinePlist() {
+        let targets = PermissionsManager.fdaProbeTargets(homeDirectory: "/Users/test")
+        XCTAssertFalse(
+            targets.files.contains("/Library/Preferences/com.apple.TimeMachine.plist"),
+            "World-readable TimeMachine.plist causes false-positive FDA detection"
+        )
+        XCTAssertTrue(targets.files.contains("/Library/Application Support/com.apple.TCC/TCC.db"))
+        XCTAssertTrue(targets.directories.contains("/Users/test/Library/Mail"))
+        XCTAssertTrue(targets.directories.contains("/Users/test/Library/Safari"))
+    }
 }

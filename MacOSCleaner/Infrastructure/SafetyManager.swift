@@ -18,15 +18,57 @@ public enum SafetyError: Error, Equatable, LocalizedError {
 }
 
 /// Context of a deletion request. Regular cleanup must never touch login/session
-/// data; a full app uninstall is allowed to remove the app's user data.
-public enum DeletionPolicy: Sendable {
+/// data; a full app uninstall is allowed to remove the app's user data only when
+/// the target belongs to the app being uninstalled.
+public enum DeletionPolicy: Sendable, Equatable {
     case cleanup
     case uninstall
+    case uninstallApp(bundleID: String?)
     case userSelected
+
+    public var isUninstall: Bool {
+        switch self {
+        case .uninstall, .uninstallApp:
+            return true
+        case .cleanup, .userSelected:
+            return false
+        }
+    }
 }
 
 public struct SafetyManager: Sendable {
+    private enum BrowserCacheLayout: Sendable {
+        case chromium(channelSubdirs: Set<String> = [])
+        case firefox
+        case safariLibrary
+        case browserContainer
+        case opaqueUserData
+    }
+
+    private struct BrowserRootSpec: Sendable {
+        let canonicalRoot: String
+        let lowerRoot: String
+        let ownerBundleIDs: Set<String>
+        let layout: BrowserCacheLayout
+        let isSystemProtected: Bool
+
+        init(
+            root: String,
+            ownerBundleIDs: Set<String>,
+            layout: BrowserCacheLayout,
+            isSystemProtected: Bool = false
+        ) {
+            let normalized = NormalizedPath.string(URL(fileURLWithPath: root).standardizedFileURL.path)
+            self.canonicalRoot = normalized
+            self.lowerRoot = normalized.lowercased()
+            self.ownerBundleIDs = Set(ownerBundleIDs.map { $0.lowercased() })
+            self.layout = layout
+            self.isSystemProtected = isSystemProtected
+        }
+    }
+
     private let home: String
+    private let homeVariants: [String]
     private let refuseList: [String]
     private let allowedExceptions: [String]
     private let customAllowedExceptions: [String]
@@ -40,26 +82,66 @@ public struct SafetyManager: Sendable {
 
     // Directories that must never be deleted wholesale, though their children may be
     // (e.g. ~/Library/Preferences itself vs. an app's plist inside it). Exact match only.
-    private let exactRefuseList: Set<String>
+    private let exactRefuseLowerMap: [String: String]
 
-    // Browser user-data roots holding logins, cookies and site sessions.
-    // Under .cleanup only well-known cache subdirectories inside them may be deleted.
-    private let browserUserDataRoots: [String]
-
-    // Lowercased directory names inside browser user-data roots that are safe caches.
-    private let browserCacheDirNames: Set<String>
+    // Browser user-data roots holding logins, cookies, extensions, and site sessions.
+    private let browserSpecs: [BrowserRootSpec]
 
     // Lowercased basenames of credential/session files (Chromium family) protected
     // anywhere under Application Support during cleanup.
     private let credentialFileNames: Set<String>
 
+    private static let chromiumRootCacheDirs: Set<String> = [
+        "grshadercache", "shadercache", "graphite_dawn_cache", "crashpad",
+    ]
+    private static let chromiumProfileCacheDirs: Set<String> = [
+        "cache", "code cache", "gpucache",
+    ]
+    private static let firefoxProfileCacheDirs: Set<String> = [
+        "cache2", "startupcache", "thumbnails",
+    ]
+    private static let safariLibraryCacheDirs: Set<String> = [
+        "favicon cache", "touch icons cache", "template icons",
+    ]
+    private static let browserProtectedSegments: Set<String> = [
+        "extensions",
+        "extension state",
+        "extension rules",
+        "extension scripts",
+        "local extension settings",
+        "sync extension settings",
+        "managed extension settings",
+        "local extension storage",
+        "local storage",
+        "session storage",
+        "indexeddb",
+        "sync data",
+        "sessions",
+        "nativemessaginghosts",
+        "external extensions",
+        "databases",
+        "file system",
+        "blob_storage",
+        "shared_proto_db",
+        "autofillstrikedatabase",
+        "network",
+        "cookies",
+        "login data",
+        "web data",
+    ]
+
     private let fileSystemContext: FileSystemContext?
 
     public init(allowedExceptions: [String] = [], homeDirectory: String? = nil, fileSystemContext: FileSystemContext? = nil) {
-        let home = homeDirectory
+        let rawHome = homeDirectory
             ?? fileSystemContext?.homePath
             ?? NSHomeDirectory()
-        self.home = home
+        let stdHome = NormalizedPath.string(URL(fileURLWithPath: rawHome).standardizedFileURL.path)
+        let resolvedHome = NormalizedPath.resolvedString(stdHome)
+        let homeVariants = resolvedHome == stdHome ? [stdHome] : [stdHome, resolvedHome]
+
+        self.home = stdHome
+        self.homeVariants = homeVariants
         self.fileSystemContext = fileSystemContext
 
         self.immutableRefuseRoots = [
@@ -77,7 +159,7 @@ public struct SafetyManager: Sendable {
             "/nix",
         ]
 
-        self.refuseList = [
+        var refuse: [String] = [
             "/System",
             "/Library",
             "/usr",
@@ -91,20 +173,24 @@ public struct SafetyManager: Sendable {
             "/nix",
             "/Applications",
             "/Users/Shared",
-            "\(home)/.ssh",
-            "\(home)/.gnupg",
-            "\(home)/Documents",
-            "\(home)/Desktop",
-            "\(home)/Downloads",
-            "\(home)/Movies",
-            "\(home)/Music",
-            "\(home)/Pictures",
-            "\(home)/Backups",
-            "/",
         ]
+        for h in homeVariants {
+            refuse.append(contentsOf: [
+                "\(h)/.ssh",
+                "\(h)/.gnupg",
+                "\(h)/Documents",
+                "\(h)/Desktop",
+                "\(h)/Downloads",
+                "\(h)/Movies",
+                "\(h)/Music",
+                "\(h)/Pictures",
+                "\(h)/Backups",
+            ])
+        }
+        refuse.append("/")
+        self.refuseList = Self.dedupePreservingOrder(refuse)
 
-        let defaultExceptions = [
-            "\(home)/Library",
+        var defaultExceptions: [String] = [
             "/Library/Application Support",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
@@ -129,18 +215,6 @@ public struct SafetyManager: Sendable {
             "/Library/SystemExtensions",
             "/Library/StagedExtensions",
             "/Library/Preferences",
-            "\(home)/Library/Application Support/MacOSCleaner",
-            "\(home)/Library/Application Scripts/input.MacOSCleaner",
-            "\(home)/Library/Caches",
-            "\(home)/Library/Developer",
-            "\(home)/Library/Logs",
-            "\(home)/Library/Application Support",
-            "\(home)/Library/Containers",
-            "\(home)/Library/Android",
-            "\(home)/Library/Safari",
-            "\(home)/Library/WebKit",
-            "\(home)/Library/Application Support/Google/Chrome",
-            "\(home)/Library/Application Support/Chrome",
             "/opt/homebrew/Cellar",
             "/opt/homebrew/Caskroom",
             "/usr/local/Cellar",
@@ -148,71 +222,116 @@ public struct SafetyManager: Sendable {
             URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
             URL(fileURLWithPath: NSTemporaryDirectory()).resolvingSymlinksInPath().standardizedFileURL.path,
         ]
+        for h in homeVariants {
+            defaultExceptions.append(contentsOf: [
+                "\(h)/Library",
+                "\(h)/Library/Application Support/MacOSCleaner",
+                "\(h)/Library/Application Scripts/input.MacOSCleaner",
+                "\(h)/Library/Caches",
+                "\(h)/Library/Developer",
+                "\(h)/Library/Logs",
+                "\(h)/Library/Application Support",
+                "\(h)/Library/Containers",
+                "\(h)/Library/Android",
+                "\(h)/Library/Safari",
+                "\(h)/Library/WebKit",
+            ])
+        }
 
         self.customAllowedExceptions = allowedExceptions
-        self.allowedExceptions = defaultExceptions + allowedExceptions
+        self.allowedExceptions = Self.dedupePreservingOrder(defaultExceptions + allowedExceptions)
 
-        self.hardRefuseList = [
+        var hardRefuse: [String] = [
             "/Library/Application Support/Apple",
             "/Library/Application Support/Script Editor",
-            "\(home)/Library/Application Support/Apple",
-            "\(home)/Library/Keychains",
-            "\(home)/Library/Calendars",
-            "\(home)/Library/Reminders",
-            "\(home)/Library/Contacts",
-            "\(home)/Library/Application Support/AddressBook",
-            "\(home)/Library/Messages",
-            "\(home)/Library/Mobile Documents",
-            "\(home)/Library/Preferences/com.google.Keystone.Agent.plist",
-            "\(home)/Library/Google/GoogleSoftwareUpdate",
-            "\(home)/Library/Application Support/Google/GoogleUpdater",
-            "\(home)/Library/Caches/com.google.SoftwareUpdate",
-            "\(home)/Library/Caches/com.google.GoogleUpdater",
-            "\(home)/Library/HTTPStorages/com.google.GoogleUpdater",
-            "\(home)/Library/LaunchAgents/com.google.keystone.agent.plist",
-            "\(home)/Library/LaunchAgents/com.google.keystone.xpcservice.plist",
-            "\(home)/Library/LaunchAgents/com.google.GoogleUpdater.wake.plist",
-            "\(home)/Library/Application Support/Chrome/Default/Login Data",
-            "\(home)/Library/Application Support/Chrome/Default/Cookies",
-            "\(home)/Library/Application Support/Google/Chrome/Default/Login Data",
-            "\(home)/Library/Application Support/Google/Chrome/Default/Cookies",
-            "\(home)/Library/Application Support/com.apple.TCC",
             "/Library/Application Support/com.apple.TCC",
             "/var/db/dslocal",
             "/private/var/db/dslocal",
-            // Sensitive user credentials roots
-            "\(home)/.ssh",
-            "\(home)/.gnupg",
         ]
+        for h in homeVariants {
+            hardRefuse.append(contentsOf: [
+                "\(h)/Library/Application Support/Apple",
+                "\(h)/Library/Keychains",
+                "\(h)/Library/Calendars",
+                "\(h)/Library/Reminders",
+                "\(h)/Library/Contacts",
+                "\(h)/Library/Application Support/AddressBook",
+                "\(h)/Library/Messages",
+                "\(h)/Library/Mobile Documents",
+                "\(h)/Library/Preferences/com.google.Keystone.Agent.plist",
+                "\(h)/Library/Google/GoogleSoftwareUpdate",
+                "\(h)/Library/Application Support/Google/GoogleUpdater",
+                "\(h)/Library/Caches/com.google.SoftwareUpdate",
+                "\(h)/Library/Caches/com.google.GoogleUpdater",
+                "\(h)/Library/HTTPStorages/com.google.GoogleUpdater",
+                "\(h)/Library/LaunchAgents/com.google.keystone.agent.plist",
+                "\(h)/Library/LaunchAgents/com.google.keystone.xpcservice.plist",
+                "\(h)/Library/LaunchAgents/com.google.GoogleUpdater.wake.plist",
+                "\(h)/Library/Application Support/Chrome/Default/Login Data",
+                "\(h)/Library/Application Support/Chrome/Default/Cookies",
+                "\(h)/Library/Application Support/Google/Chrome/Default/Login Data",
+                "\(h)/Library/Application Support/Google/Chrome/Default/Cookies",
+                "\(h)/Library/Application Support/com.apple.TCC",
+                "\(h)/.ssh",
+                "\(h)/.gnupg",
+            ])
+        }
+        self.hardRefuseList = Self.dedupePreservingOrder(hardRefuse)
 
-        let appSupport = "\(home)/Library/Application Support"
-        self.browserUserDataRoots = [
-            "\(appSupport)/Google/Chrome",
-            "\(appSupport)/Google/Chrome Beta",
-            "\(appSupport)/Google/Chrome Canary",
-            "\(appSupport)/Google/Chrome Dev",
-            "\(appSupport)/Chrome",
-            "\(appSupport)/Chromium",
-            "\(appSupport)/BraveSoftware",
-            "\(appSupport)/Microsoft Edge",
-            "\(appSupport)/Microsoft Edge Beta",
-            "\(appSupport)/Microsoft Edge Canary",
-            "\(appSupport)/Microsoft Edge Dev",
-            "\(appSupport)/Arc/User Data",
-            "\(appSupport)/Firefox/Profiles",
-            "\(appSupport)/Vivaldi",
-            "\(appSupport)/Yandex/YandexBrowser",
-            "\(appSupport)/com.operasoftware.Opera",
-            "\(appSupport)/com.operasoftware.OperaGX",
-            "\(appSupport)/com.operasoftware.OperaDeveloperEdition",
+        var specs: [BrowserRootSpec] = [
+            BrowserRootSpec(
+                root: "/Library/Application Support/Google/Chrome",
+                ownerBundleIDs: [],
+                layout: .opaqueUserData,
+                isSystemProtected: true
+            ),
+            BrowserRootSpec(
+                root: "/Library/Google/Chrome",
+                ownerBundleIDs: [],
+                layout: .opaqueUserData,
+                isSystemProtected: true
+            ),
         ]
-        self.browserCacheDirNames = [
-            "cache", "code cache", "gpucache",
-            "shadercache", "grshadercache", "crashpad",
-            // Narrow Service Worker: only CacheStorage / ScriptCache are regenerable caches.
-            "cachestorage", "scriptcache",
-            "cache2", "startupcache", "thumbnails",
-        ]
+        for h in homeVariants {
+            let appSupport = "\(h)/Library/Application Support"
+            specs.append(contentsOf: [
+                BrowserRootSpec(root: "\(appSupport)/Google/Chrome", ownerBundleIDs: ["com.google.chrome"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Google/Chrome Beta", ownerBundleIDs: ["com.google.chrome.beta"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Google/Chrome Canary", ownerBundleIDs: ["com.google.chrome.canary"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Google/Chrome Dev", ownerBundleIDs: ["com.google.chrome.dev"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Chrome", ownerBundleIDs: ["com.google.chrome"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Chromium", ownerBundleIDs: ["org.chromium.chromium"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/BraveSoftware/Brave-Browser", ownerBundleIDs: ["com.brave.browser"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/BraveSoftware/Brave-Browser-Beta", ownerBundleIDs: ["com.brave.browser.beta"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/BraveSoftware/Brave-Browser-Nightly", ownerBundleIDs: ["com.brave.browser.nightly"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Microsoft Edge", ownerBundleIDs: ["com.microsoft.edgemac"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Microsoft Edge Beta", ownerBundleIDs: ["com.microsoft.edgemac.beta"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Microsoft Edge Canary", ownerBundleIDs: ["com.microsoft.edgemac.canary"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Microsoft Edge Dev", ownerBundleIDs: ["com.microsoft.edgemac.dev"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Arc", ownerBundleIDs: ["company.thebrowser.browser"], layout: .chromium(channelSubdirs: ["user data"])),
+                BrowserRootSpec(root: "\(appSupport)/Firefox", ownerBundleIDs: ["org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "org.mozilla.nightly"], layout: .firefox),
+                BrowserRootSpec(root: "\(appSupport)/Mozilla", ownerBundleIDs: ["org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "org.mozilla.nightly"], layout: .firefox),
+                BrowserRootSpec(root: "\(appSupport)/Vivaldi", ownerBundleIDs: ["com.vivaldi.vivaldi"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Yandex", ownerBundleIDs: ["ru.yandex.desktop.yandex-browser"], layout: .chromium(channelSubdirs: ["yandexbrowser"])),
+                BrowserRootSpec(root: "\(appSupport)/com.operasoftware.Opera", ownerBundleIDs: ["com.operasoftware.opera"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/com.operasoftware.OperaGX", ownerBundleIDs: ["com.operasoftware.operagx"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/com.operasoftware.OperaDeveloperEdition", ownerBundleIDs: ["com.operasoftware.operadeveloperedition"], layout: .chromium()),
+                BrowserRootSpec(root: "\(appSupport)/Opera Software", ownerBundleIDs: ["com.operasoftware.opera", "com.operasoftware.operagx", "com.operasoftware.operadeveloperedition"], layout: .chromium(channelSubdirs: ["opera stable", "opera gx stable", "opera developer"])),
+                BrowserRootSpec(root: "\(appSupport)/Orion", ownerBundleIDs: ["com.kagi.kagimacos"], layout: .opaqueUserData),
+                BrowserRootSpec(root: "\(appSupport)/DuckDuckGo", ownerBundleIDs: ["com.duckduckgo.macos.browser"], layout: .opaqueUserData),
+                BrowserRootSpec(root: "\(appSupport)/TorBrowser-Data", ownerBundleIDs: ["org.torproject.torbrowser"], layout: .opaqueUserData),
+                BrowserRootSpec(root: "\(appSupport)/Waterfox", ownerBundleIDs: ["net.waterfox.waterfox"], layout: .firefox),
+                BrowserRootSpec(root: "\(appSupport)/LibreWolf", ownerBundleIDs: ["io.gitlab.librewolf-community"], layout: .firefox),
+                BrowserRootSpec(root: "\(appSupport)/MullvadBrowser", ownerBundleIDs: ["net.mullvad.mullvadbrowser"], layout: .firefox),
+                BrowserRootSpec(root: "\(h)/Library/Safari", ownerBundleIDs: [], layout: .safariLibrary, isSystemProtected: true),
+                BrowserRootSpec(root: "\(h)/Library/Containers/com.apple.Safari", ownerBundleIDs: [], layout: .browserContainer, isSystemProtected: true),
+                BrowserRootSpec(root: "\(h)/Library/WebKit/com.apple.Safari", ownerBundleIDs: [], layout: .opaqueUserData, isSystemProtected: true),
+                BrowserRootSpec(root: "\(h)/Library/Containers/com.duckduckgo.macos.browser", ownerBundleIDs: ["com.duckduckgo.macos.browser"], layout: .browserContainer),
+                BrowserRootSpec(root: "\(h)/Library/Containers/com.kagi.kagimacOS", ownerBundleIDs: ["com.kagi.kagimacos"], layout: .browserContainer),
+            ])
+        }
+        self.browserSpecs = specs
+
         self.credentialFileNames = [
             "login data", "login data for account", "cookies",
             "web data", "account web data", "local state", "secure preferences",
@@ -222,36 +341,49 @@ public struct SafetyManager: Sendable {
             "sessionstore.jsonlz4", "logins-backup.json",
         ]
 
-        self.exactRefuseList = [
+        var exactRefuse: [String] = [
             "/Users",
-            home,
-            "\(home)/Library",
-            "\(home)/Library/Preferences",
-            "\(home)/Library/Preferences/ByHost",
-            "\(home)/Library/Application Support",
-            "\(home)/Library/Caches",
-            "\(home)/Library/Containers",
-            "\(home)/Library/Group Containers",
-            "\(home)/Library/Logs",
-            "\(home)/Library/WebKit",
-            "\(home)/Library/HTTPStorages",
-            "\(home)/Library/Application Scripts",
-            "\(home)/Library/Developer",
-            "\(home)/Library/Messages",
-            "\(home)/Library/Mobile Documents",
-            "\(home)/Library/Cookies",
-            "\(home)/Backups",
             "/Library/Application Support",
             "/Library/Preferences",
             "/Library/LaunchAgents",
             "/Library/LaunchDaemons",
             "/Library/PrivilegedHelperTools",
-            "\(home)/Library/LaunchAgents",
             "/tmp",
             "/private/tmp",
             URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
             URL(fileURLWithPath: NSTemporaryDirectory()).resolvingSymlinksInPath().standardizedFileURL.path,
         ]
+        for h in homeVariants {
+            exactRefuse.append(contentsOf: [
+                h,
+                "\(h)/Library",
+                "\(h)/Library/Preferences",
+                "\(h)/Library/Preferences/ByHost",
+                "\(h)/Library/Application Support",
+                "\(h)/Library/Caches",
+                "\(h)/Library/Containers",
+                "\(h)/Library/Group Containers",
+                "\(h)/Library/Logs",
+                "\(h)/Library/WebKit",
+                "\(h)/Library/HTTPStorages",
+                "\(h)/Library/Application Scripts",
+                "\(h)/Library/Developer",
+                "\(h)/Library/Messages",
+                "\(h)/Library/Mobile Documents",
+                "\(h)/Library/Cookies",
+                "\(h)/Backups",
+                "\(h)/Library/LaunchAgents",
+            ])
+        }
+        var exactMap: [String: String] = [:]
+        for item in exactRefuse {
+            let normalized = NormalizedPath.string(item)
+            let key = normalized.lowercased()
+            if exactMap[key] == nil {
+                exactMap[key] = normalized
+            }
+        }
+        self.exactRefuseLowerMap = exactMap
     }
 
     public func validate(url: URL, policy: DeletionPolicy = .cleanup) throws {
@@ -260,7 +392,7 @@ public struct SafetyManager: Sendable {
         }
 
         let standardized = url.standardizedFileURL
-        let path = standardized.path
+        let path = NormalizedPath.string(standardized.path)
 
         guard !path.isEmpty else {
             throw SafetyError.pathNormalizationFailed
@@ -272,108 +404,131 @@ public struct SafetyManager: Sendable {
 
         try validateSymlinkComponents(of: standardized)
 
-        let resolvedPath = standardized.resolvingSymlinksInPath().path
-        let pathsToCheck = [path, resolvedPath]
+        let resolvedPath = NormalizedPath.string(standardized.resolvingSymlinksInPath().standardizedFileURL.path)
+        let pathsToCheck = resolvedPath == path ? [path] : [path, resolvedPath]
 
         for p in pathsToCheck {
-            for refused in hardRefuseList where p == refused || p.hasPrefix(refused + "/") {
-                throw SafetyError.protectedPath(refused)
-            }
+            let lowerP = p.lowercased()
 
-            // Apple system group containers must never be removed
-            if p == "\(home)/Library/Group Containers" {
-                throw SafetyError.protectedPath(p)
-            }
-            if p.hasPrefix("\(home)/Library/Group Containers/group.com.apple")
-                || p.hasPrefix("\(home)/Library/Group Containers/com.apple") {
-                throw SafetyError.protectedPath("\(home)/Library/Group Containers")
-            }
-
-            if exactRefuseList.contains(p) {
-                throw SafetyError.protectedPath(p)
-            }
-
-            // Protect ~/Library/Mail under uninstall unless inside ~/Library/Mail/Bundles
-            if policy == .uninstall && (p == "\(home)/Library/Mail" || p.hasPrefix("\(home)/Library/Mail/")) {
-                let bundles = "\(home)/Library/Mail/Bundles"
-                if !(p == bundles || p.hasPrefix(bundles + "/")) {
-                    throw SafetyError.protectedPath("\(home)/Library/Mail")
+            for refused in hardRefuseList {
+                if NormalizedPath.isEqualOrDescendant(lowerP, of: refused.lowercased()) {
+                    throw SafetyError.protectedPath(refused)
                 }
             }
 
-            if policy == .cleanup, let refused = cleanupProtectedPath(p) {
+            // Apple system group containers must never be removed
+            for h in homeVariants {
+                let lowerGC = "\(h.lowercased())/library/group containers"
+                if lowerP == lowerGC {
+                    throw SafetyError.protectedPath("\(h)/Library/Group Containers")
+                }
+                if lowerP.hasPrefix("\(lowerGC)/group.com.apple")
+                    || lowerP.hasPrefix("\(lowerGC)/com.apple") {
+                    throw SafetyError.protectedPath("\(h)/Library/Group Containers")
+                }
+            }
+
+            if let exactRefused = exactRefuseLowerMap[lowerP] {
+                throw SafetyError.protectedPath(exactRefused)
+            }
+
+            // Protect ~/Library/Mail under uninstall unless inside ~/Library/Mail/Bundles
+            if policy.isUninstall {
+                for h in homeVariants {
+                    let lowerMail = "\(h.lowercased())/library/mail"
+                    let lowerBundles = "\(h.lowercased())/library/mail/bundles"
+                    if NormalizedPath.isEqualOrDescendant(lowerP, of: lowerMail)
+                        && !NormalizedPath.isEqualOrDescendant(lowerP, of: lowerBundles) {
+                        throw SafetyError.protectedPath("\(h)/Library/Mail")
+                    }
+                }
+            }
+
+            if let refused = browserProtectedPath(p, lowerP: lowerP, policy: policy) {
+                throw SafetyError.protectedPath(refused)
+            }
+
+            if policy == .cleanup, let refused = cleanupProtectedPath(p, lowerPath: lowerP) {
                 throw SafetyError.protectedPath(refused)
             }
 
             // Under cleanup, home dot-directories are blocked unless they match an explicit
             // regenerable cache in EmbeddedCleanupPaths, an opt-in AI model root, or custom exception.
             if policy == .cleanup {
-                let normalizedHome = home.hasSuffix("/") ? String(home.dropLast()) : home
-                if p == "\(normalizedHome)/go/pkg/mod" {
-                    throw SafetyError.protectedPath(p)
-                }
-                if p.hasPrefix("\(normalizedHome)/.") && p != "\(normalizedHome)/.DS_Store" {
-                    let hasCustomException = customAllowedExceptions.contains { exception in
-                        p == exception || p.hasPrefix(exception + "/")
+                for h in homeVariants {
+                    let trimmedHome = h.hasSuffix("/") ? String(h.dropLast()) : h
+                    let lowerHome = trimmedHome.lowercased()
+                    if lowerP == "\(lowerHome)/go/pkg/mod" {
+                        throw SafetyError.protectedPath("\(trimmedHome)/go/pkg/mod")
                     }
-                    if !hasCustomException
-                        && !Self.isRegenerableCachePath(p, home: normalizedHome)
-                        && !Self.isReviewableAIModelPath(p, home: normalizedHome) {
-                        throw SafetyError.protectedPath(p)
+                    if lowerP.hasPrefix("\(lowerHome)/.") && lowerP != "\(lowerHome)/.ds_store" {
+                        let hasCustomException = customAllowedExceptions.contains { exception in
+                            NormalizedPath.isEqualOrDescendant(lowerP, of: exception.lowercased())
+                        }
+                        if !hasCustomException
+                            && !Self.isRegenerableCachePath(p, homeVariants: homeVariants)
+                            && !Self.isReviewableAIModelPath(p, homeVariants: homeVariants) {
+                            throw SafetyError.protectedPath(p)
+                        }
                     }
                 }
             }
 
             // Custom exceptions never override immutable system / shared roots themselves.
             // Only pre-declared narrow subpaths (Homebrew Cellar, /Library/LaunchAgents, …) may pass.
-            if isUnderImmutableRefuseRoot(p) {
-                if p == "/Applications" || p.hasPrefix("/Applications/") {
-                    if policy == .uninstall, p != "/Applications" {
+            if isUnderImmutableRefuseRoot(lowerP) {
+                if lowerP == "/applications" || lowerP.hasPrefix("/applications/") {
+                    if policy.isUninstall, lowerP != "/applications" {
                         continue
                     }
                     throw SafetyError.protectedPath("/Applications")
                 }
 
                 let hasNarrowException = allowedExceptions.contains { exception in
-                    guard p == exception || p.hasPrefix(exception + "/") else { return false }
+                    let lowerException = exception.lowercased()
+                    guard NormalizedPath.isEqualOrDescendant(lowerP, of: lowerException) else { return false }
                     // Exception must be deeper than the immutable root (never the root itself).
-                    guard let root = immutableRefuseRoot(matching: exception) else { return false }
-                    return exception != root && exception.hasPrefix(root + "/")
+                    guard let root = immutableRefuseRoot(matchingLowerPath: lowerException) else { return false }
+                    return lowerException != root.lowercased() && lowerException.hasPrefix(root.lowercased() + "/")
                 }
                 if hasNarrowException {
                     continue
                 }
-                throw SafetyError.protectedPath(immutableRefuseRoot(matching: p) ?? p)
+                throw SafetyError.protectedPath(immutableRefuseRoot(matchingLowerPath: lowerP) ?? p)
             }
 
             // Custom exceptions must never override user personal content roots.
-            let isUserContentRoot = [
-                "\(home)/Documents",
-                "\(home)/Desktop",
-                "\(home)/Downloads",
-                "\(home)/Movies",
-                "\(home)/Music",
-                "\(home)/Pictures",
-                "\(home)/Backups",
-            ].contains { p == $0 || p.hasPrefix($0 + "/") }
+            let isUserContentRoot = homeVariants.contains { h in
+                [
+                    "\(h)/Documents",
+                    "\(h)/Desktop",
+                    "\(h)/Downloads",
+                    "\(h)/Movies",
+                    "\(h)/Music",
+                    "\(h)/Pictures",
+                    "\(h)/Backups",
+                ].contains { NormalizedPath.isEqualOrDescendant(lowerP, of: $0.lowercased()) }
+            }
 
             if policy == .userSelected {
-                let isStrictUserContentDescendant = [
-                    "\(home)/Documents",
-                    "\(home)/Desktop",
-                    "\(home)/Downloads",
-                    "\(home)/Movies",
-                    "\(home)/Music",
-                    "\(home)/Pictures",
-                    "\(home)/Backups",
-                ].contains { p.hasPrefix($0 + "/") }
+                let isStrictUserContentDescendant = homeVariants.contains { h in
+                    [
+                        "\(h)/Documents",
+                        "\(h)/Desktop",
+                        "\(h)/Downloads",
+                        "\(h)/Movies",
+                        "\(h)/Music",
+                        "\(h)/Pictures",
+                        "\(h)/Backups",
+                    ].contains { lowerP.hasPrefix($0.lowercased() + "/") }
+                }
                 if isStrictUserContentDescendant {
                     continue
                 }
             }
 
             let isException = !isUserContentRoot && allowedExceptions.contains { exception in
-                p == exception || p.hasPrefix(exception + "/")
+                NormalizedPath.isEqualOrDescendant(lowerP, of: exception.lowercased())
             }
 
             if isException {
@@ -381,10 +536,12 @@ public struct SafetyManager: Sendable {
             }
 
             // Regenerable project build artifacts / aged backup leaves under user project roots
-            if Self.isProjectLocalBuildArtifact(p, home: home)
-                || Self.isReviewableBackupLeaf(p, home: home)
-                || Self.isReviewableInstallerLeaf(p, home: home)
-                || Self.isReviewableLargeArchiveLeaf(p, home: home) {
+            if homeVariants.contains(where: {
+                Self.isProjectLocalBuildArtifact(p, home: $0)
+                    || Self.isReviewableBackupLeaf(p, home: $0)
+                    || Self.isReviewableInstallerLeaf(p, home: $0)
+                    || Self.isReviewableLargeArchiveLeaf(p, home: $0)
+            }) {
                 continue
             }
 
@@ -392,11 +549,16 @@ public struct SafetyManager: Sendable {
                 throw SafetyError.protectedPath(p)
             }
 
+            if Self.isAllowedExternalVolumePath(p, policy: policy) {
+                continue
+            }
+
             for refused in refuseList {
-                let isExactMatch = (p == refused)
-                let isSubdirectory = (refused == "/")
-                    ? (!p.hasPrefix(home + "/") && p != "/" && p.hasPrefix("/"))
-                    : p.hasPrefix(refused + "/")
+                let lowerRefused = refused.lowercased()
+                let isExactMatch = (lowerP == lowerRefused)
+                let isSubdirectory = (lowerRefused == "/")
+                    ? (!homeVariants.contains { lowerP.hasPrefix($0.lowercased() + "/") } && lowerP != "/" && lowerP.hasPrefix("/"))
+                    : lowerP.hasPrefix(lowerRefused + "/")
 
                 if isExactMatch {
                     throw SafetyError.protectedPath(refused)
@@ -404,7 +566,7 @@ public struct SafetyManager: Sendable {
 
                 guard isSubdirectory else { continue }
 
-                if refused == "/Applications" && policy == .uninstall {
+                if lowerRefused == "/applications" && policy.isUninstall {
                     continue
                 }
 
@@ -415,8 +577,26 @@ public struct SafetyManager: Sendable {
 
     /// True for paths inside (or being) a browser user-data root — logins, cookies, profiles.
     public func isBrowserUserDataPath(_ path: String) -> Bool {
-        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
-        return browserUserDataRoots.contains { standardized == $0 || standardized.hasPrefix($0 + "/") }
+        let stdLower = NormalizedPath.lowercaseKey(path)
+        let resolvedLower = NormalizedPath.resolvedLowercaseKey(path)
+        return browserSpecs.contains { spec in
+            NormalizedPath.isEqualOrDescendant(stdLower, of: spec.lowerRoot)
+                || NormalizedPath.isEqualOrDescendant(resolvedLower, of: spec.lowerRoot)
+        }
+    }
+
+    /// True if uninstalling `bundleID` must not touch `path` because it is a browser user-data
+    /// root (or ancestor) owned by another browser or protected by the system.
+    public func isProtectedBrowserTarget(_ path: String, uninstallingBundleID bundleID: String?) -> Bool {
+        let std = NormalizedPath.string(URL(fileURLWithPath: path).standardizedFileURL.path)
+        let resolved = NormalizedPath.resolvedString(std)
+        let policy = DeletionPolicy.uninstallApp(bundleID: bundleID)
+        for candidate in [std, resolved] {
+            if browserProtectedPath(candidate, lowerP: candidate.lowercased(), policy: policy) != nil {
+                return true
+            }
+        }
+        return false
     }
 
     /// Whether a directory URL is a symlink and must not be traversed into.
@@ -428,12 +608,184 @@ public struct SafetyManager: Sendable {
         return isSymlink(at: url)
     }
 
-    private func isUnderImmutableRefuseRoot(_ path: String) -> Bool {
-        immutableRefuseRoots.contains { path == $0 || path.hasPrefix($0 + "/") }
+    private static let protectedExternalVolumeNames: Set<String> = [
+        "recovery", "preboot", "vm", "update", "iscpreboot", "xarts",
+        "hardware", "base system", "macos base system", "timemachine",
+    ]
+    private static let protectedExternalVolumeSegments: Set<String> = [
+        ".spotlight-v100", ".fseventsd", ".documentrevisions-v100",
+        ".trashes", ".temporaryitems", "backups.backupdb", ".vol", ".mobilebackups",
+    ]
+    private static let protectedExternalTopLevelDirs: Set<String> = [
+        "system", "usr", "bin", "sbin", "private", "etc", "var", "dev", "cores",
+    ]
+
+    /// True if `volumeName` is a safe user-accessible mounted external volume (not hidden, system, or Time Machine).
+    public static func isAllowedExternalVolumeName(_ volumeName: String) -> Bool {
+        let trimmed = volumeName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !trimmed.hasPrefix(".") else { return false }
+        let lower = trimmed.lowercased()
+        if protectedExternalVolumeNames.contains(lower) { return false }
+        if lower.contains("timemachine") || lower.contains("time machine") || lower.contains("backups.backupdb") {
+            return false
+        }
+        return true
     }
 
-    private func immutableRefuseRoot(matching path: String) -> String? {
-        immutableRefuseRoots.first { path == $0 || path.hasPrefix($0 + "/") }
+    /// Allows explicit user-driven operations (`.uninstall`, `.uninstallApp`, `.userSelected`)
+    /// on files/apps inside a mounted non-root external volume (`/Volumes/<Disk>/<child>`).
+    /// Automated `.cleanup` never operates on external volumes, and `/Volumes` or `/Volumes/<Disk>`
+    /// mount roots themselves are always refused.
+    public static func isAllowedExternalVolumePath(_ path: String, policy: DeletionPolicy) -> Bool {
+        guard policy.isUninstall || policy == .userSelected else { return false }
+        let normalized = NormalizedPath.string(URL(fileURLWithPath: path).standardizedFileURL.path)
+        let components = normalized.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+        guard components.count >= 3, components[0].lowercased() == "volumes" else { return false }
+
+        let volumeName = components[1]
+        guard isAllowedExternalVolumeName(volumeName) else { return false }
+
+        let lowerComponents = components.dropFirst(2).map { $0.lowercased() }
+        if let top = lowerComponents.first, protectedExternalTopLevelDirs.contains(top) {
+            return false
+        }
+        if lowerComponents.contains(where: { protectedExternalVolumeSegments.contains($0) }) {
+            return false
+        }
+        let lowerPath = normalized.lowercased()
+        if lowerPath.contains("/library/application support/apple")
+            || lowerPath.contains("/library/application support/com.apple.tcc") {
+            return false
+        }
+        return true
+    }
+
+    private func browserProtectedPath(_ path: String, lowerP: String, policy: DeletionPolicy) -> String? {
+        // Strict ancestors of any browser root (e.g. ~/Library/Application Support/Google)
+        // must never be deleted wholesale under any policy.
+        for spec in browserSpecs where NormalizedPath.isStrictAncestor(lowerP, of: spec.lowerRoot) {
+            return path
+        }
+
+        // Check most specific matching spec (longest root wins if any overlap exists).
+        let matchingSpecs = browserSpecs
+            .filter { NormalizedPath.isEqualOrDescendant(lowerP, of: $0.lowerRoot) }
+            .sorted { $0.lowerRoot.count > $1.lowerRoot.count }
+
+        guard let spec = matchingSpecs.first else {
+            return nil
+        }
+
+        switch policy {
+        case .cleanup:
+            if lowerP == spec.lowerRoot {
+                return spec.canonicalRoot
+            }
+            return isAllowedBrowserCachePath(spec: spec, lowerP: lowerP) ? nil : path
+
+        case .uninstall:
+            // Generic uninstall without an owning app bundleID must never touch browser profiles.
+            return spec.canonicalRoot
+
+        case .uninstallApp(let bundleID):
+            guard !spec.isSystemProtected else {
+                return spec.canonicalRoot
+            }
+            guard let rawBundleID = bundleID?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !rawBundleID.isEmpty,
+                  !BrowserRule.isBrowserPWAShimBundleID(rawBundleID)
+            else {
+                return spec.canonicalRoot
+            }
+            return spec.ownerBundleIDs.contains(rawBundleID.lowercased()) ? nil : spec.canonicalRoot
+
+        case .userSelected:
+            return spec.isSystemProtected ? spec.canonicalRoot : nil
+        }
+    }
+
+    private func isAllowedBrowserCachePath(spec: BrowserRootSpec, lowerP: String) -> Bool {
+        let relPath = String(lowerP.dropFirst(spec.lowerRoot.count))
+        let components = relPath.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+        guard !components.isEmpty else { return false }
+
+        if components.contains(where: { Self.browserProtectedSegments.contains($0) }) {
+            return false
+        }
+
+        switch spec.layout {
+        case .opaqueUserData:
+            if spec.isSystemProtected {
+                return false
+            }
+            return components[0] == "crashpad"
+
+        case .safariLibrary:
+            return Self.safariLibraryCacheDirs.contains(components[0])
+
+        case .browserContainer:
+            if components.count >= 3,
+               components[0] == "data",
+               components[1] == "library",
+               (components[2] == "caches" || components[2] == "logs") {
+                return true
+            }
+            if components.count >= 2,
+               components[0] == "data",
+               components[1] == "tmp" {
+                return true
+            }
+            return false
+
+        case .firefox:
+            if components[0] == "crashpad" {
+                return true
+            }
+            let idx = components[0] == "firefox" ? 1 : 0
+            guard components.count >= idx + 3 else { return false }
+            guard components[idx] == "profiles" else { return false }
+            return Self.firefoxProfileCacheDirs.contains(components[idx + 2])
+
+        case .chromium(let channelSubdirs):
+            let startIdx = channelSubdirs.contains(components[0]) ? 1 : 0
+            guard components.count > startIdx else { return false }
+
+            if Self.chromiumRootCacheDirs.contains(components[startIdx]) {
+                return true
+            }
+
+            guard components.count >= startIdx + 2 else { return false }
+            let profile = components[startIdx]
+            guard Self.isChromiumProfileDirName(profile) else { return false }
+
+            let dir = components[startIdx + 1]
+            if Self.chromiumProfileCacheDirs.contains(dir) {
+                return true
+            }
+            if dir == "service worker", components.count >= startIdx + 3 {
+                return components[startIdx + 2] == "cachestorage" || components[startIdx + 2] == "scriptcache"
+            }
+            return false
+        }
+    }
+
+    private static func isChromiumProfileDirName(_ lowerName: String) -> Bool {
+        lowerName == "default"
+            || lowerName == "guest profile"
+            || lowerName == "system profile"
+            || lowerName.hasPrefix("profile ")
+    }
+
+    private func isUnderImmutableRefuseRoot(_ lowerPath: String) -> Bool {
+        immutableRefuseRoots.contains {
+            NormalizedPath.isEqualOrDescendant(lowerPath, of: $0.lowercased())
+        }
+    }
+
+    private func immutableRefuseRoot(matchingLowerPath lowerPath: String) -> String? {
+        immutableRefuseRoots.first {
+            NormalizedPath.isEqualOrDescendant(lowerPath, of: $0.lowercased())
+        }
     }
 
     /// Walk each path component; intermediate symlink directories that escape are refused.
@@ -481,33 +833,13 @@ public struct SafetyManager: Sendable {
         return (st.st_mode & S_IFMT) == S_IFLNK
     }
 
-    private func cleanupProtectedPath(_ path: String) -> String? {
-        let lowerPath = path.lowercased()
-
+    private func cleanupProtectedPath(_ path: String, lowerPath: String) -> String? {
         // Protect Mail wholesale during cleanup (never touch attachments or mailbox databases)
-        if lowerPath == "\(home.lowercased())/library/mail" || lowerPath.hasPrefix("\(home.lowercased())/library/mail/") {
-            return "\(home)/Library/Mail"
-        }
-
-        for root in browserUserDataRoots {
-            if path == root || root.hasPrefix(path + "/") {
-                return path
+        for h in homeVariants {
+            let lowerMail = "\(h.lowercased())/library/mail"
+            if NormalizedPath.isEqualOrDescendant(lowerPath, of: lowerMail) {
+                return "\(h)/Library/Mail"
             }
-            guard path.hasPrefix(root + "/") else { continue }
-            let components = path.dropFirst(root.count + 1)
-                .split(separator: "/")
-                .map { $0.lowercased() }
-            // Only CacheStorage / ScriptCache under Service Worker, not registration/state.
-            if components.contains("service worker") {
-                if components.contains("cachestorage") || components.contains("scriptcache") {
-                    return nil
-                }
-                return path
-            }
-            if components.contains(where: { browserCacheDirNames.contains($0) }) {
-                return nil
-            }
-            return path
         }
 
         // Project settings and IDE configurations (e.g. .vscode, .idea, .zed)
@@ -586,26 +918,37 @@ public struct SafetyManager: Sendable {
 
     /// True when `path` matches a known regenerable dot-cache template from `EmbeddedCleanupPaths`.
     public static func isRegenerableCachePath(_ path: String, home: String) -> Bool {
-        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
-        let baseHome = home.hasSuffix("/") ? String(home.dropLast()) : home
-        for template in EmbeddedCleanupPaths.regenerableDotCacheTemplates() {
-            let resolved = template.hasPrefix("~") ? baseHome + template.dropFirst() : template
-            let normalized = URL(fileURLWithPath: resolved).standardizedFileURL.path
-            if standardized == normalized || standardized.hasPrefix(normalized + "/") {
-                return true
+        let stdHome = NormalizedPath.string(URL(fileURLWithPath: home).standardizedFileURL.path)
+        let resolvedHome = NormalizedPath.resolvedString(stdHome)
+        let variants = resolvedHome == stdHome ? [stdHome] : [stdHome, resolvedHome]
+        return isRegenerableCachePath(path, homeVariants: variants)
+    }
+
+    private static func isRegenerableCachePath(_ path: String, homeVariants: [String]) -> Bool {
+        let lowerPath = NormalizedPath.lowercaseKey(path)
+        for h in homeVariants {
+            let baseHome = h.hasSuffix("/") ? String(h.dropLast()) : h
+            for template in EmbeddedCleanupPaths.regenerableDotCacheTemplates() {
+                let resolved = template.hasPrefix("~") ? baseHome + template.dropFirst() : template
+                let lowerTarget = NormalizedPath.lowercaseKey(resolved)
+                if NormalizedPath.isEqualOrDescendant(lowerPath, of: lowerTarget) {
+                    return true
+                }
             }
         }
         return false
     }
 
-    private static func isReviewableAIModelPath(_ path: String, home: String) -> Bool {
-        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
-        let baseHome = home.hasSuffix("/") ? String(home.dropLast()) : home
-        for template in GeneratedCleanupPaths.aiUserContentTemplates() {
-            let resolved = PathToken.home.resolveTemplate(template, home: baseHome)
-            let normalized = URL(fileURLWithPath: resolved).standardizedFileURL.path
-            if standardized == normalized || standardized.hasPrefix(normalized + "/") {
-                return true
+    private static func isReviewableAIModelPath(_ path: String, homeVariants: [String]) -> Bool {
+        let lowerPath = NormalizedPath.lowercaseKey(path)
+        for h in homeVariants {
+            let baseHome = h.hasSuffix("/") ? String(h.dropLast()) : h
+            for template in GeneratedCleanupPaths.aiUserContentTemplates() {
+                let resolved = PathToken.home.resolveTemplate(template, home: baseHome)
+                let lowerTarget = NormalizedPath.lowercaseKey(resolved)
+                if NormalizedPath.isEqualOrDescendant(lowerPath, of: lowerTarget) {
+                    return true
+                }
             }
         }
         return false
@@ -623,13 +966,13 @@ public struct SafetyManager: Sendable {
     /// Never allows `~/Backups` or arbitrary nested user content.
     static func isReviewableBackupLeaf(_ path: String, home: String) -> Bool {
         let standardized = URL(fileURLWithPath: path).standardizedFileURL
-        let parent = standardized.deletingLastPathComponent().path
+        let parentLower = standardized.deletingLastPathComponent().path.lowercased()
         let allowedParents = [
             "\(home)/Desktop",
             "\(home)/Documents",
             "\(home)/Downloads",
-        ].map { URL(fileURLWithPath: $0).standardizedFileURL.path }
-        guard allowedParents.contains(parent) else { return false }
+        ].map { NormalizedPath.lowercaseKey($0) }
+        guard allowedParents.contains(parentLower) else { return false }
 
         let name = standardized.lastPathComponent.lowercased()
         return name.hasSuffix(".backup")
@@ -668,20 +1011,20 @@ public struct SafetyManager: Sendable {
 
     private static func reviewableDownloadLeafName(_ path: String, home: String) -> String? {
         let standardized = URL(fileURLWithPath: path).standardizedFileURL
-        let parent = standardized.deletingLastPathComponent().path
+        let parentLower = standardized.deletingLastPathComponent().path.lowercased()
         let allowedParents = [
             "\(home)/Desktop",
             "\(home)/Documents",
             "\(home)/Downloads",
-        ].map { URL(fileURLWithPath: $0).standardizedFileURL.path }
-        guard allowedParents.contains(parent) else { return nil }
+        ].map { NormalizedPath.lowercaseKey($0) }
+        guard allowedParents.contains(parentLower) else { return nil }
         return standardized.lastPathComponent.lowercased()
     }
 
     private static func isMessengerOrHomebrewInstallerPath(_ standardizedPath: String, home: String) -> Bool {
         let baseHome = URL(fileURLWithPath: home).standardizedFileURL.path
-        let parent = URL(fileURLWithPath: standardizedPath).deletingLastPathComponent().path
-        let exactDownloadDirs: Set<String> = [
+        let parentLower = URL(fileURLWithPath: standardizedPath).deletingLastPathComponent().path.lowercased()
+        let exactDownloadDirs: Set<String> = Set([
             "\(baseHome)/Library/Caches/Homebrew/downloads",
             "\(baseHome)/Library/Application Support/Slack/Downloads",
             "\(baseHome)/Library/Containers/com.tinyspeck.slackmacgap/Data/Downloads",
@@ -690,14 +1033,23 @@ public struct SafetyManager: Sendable {
             "\(baseHome)/Library/Containers/net.whatsapp.WhatsApp/Data/Downloads",
             "\(baseHome)/Library/Containers/net.whatsapp.WhatsApp/Data/Library/Application Support/WhatsApp/Downloads",
             "\(baseHome)/Library/Group Containers/group.net.whatsapp.WhatsApp.shared/Message/Media",
-        ]
-        if exactDownloadDirs.contains(parent) {
+        ].map { $0.lowercased() })
+        if exactDownloadDirs.contains(parentLower) {
             return true
         }
-        let telegramRoot = "\(baseHome)/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/"
-        if parent.hasPrefix(telegramRoot) && parent.hasSuffix("/postbox/media") {
+        let telegramRoot = "\(baseHome)/Library/Group Containers/6N38VWS5BX.ru.keepcoder.Telegram/".lowercased()
+        if parentLower.hasPrefix(telegramRoot) && parentLower.hasSuffix("/postbox/media") {
             return true
         }
         return false
+    }
+
+    private static func dedupePreservingOrder(_ paths: [String]) -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        for path in paths where seen.insert(path).inserted {
+            result.append(path)
+        }
+        return result
     }
 }

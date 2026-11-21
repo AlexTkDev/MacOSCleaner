@@ -19,18 +19,34 @@ class DashboardViewModel: ObservableObject {
     // Disk Categories (Donut Chart)
     @Published var isCategoriesLoading: Bool = true
     @Published var diskCategories: [DiskCategoryItem] = []
-    
+    @Published var lastUpdatedAt: Date? = nil
+    private var isRefreshing: Bool = false
+
     private let journal: TransactionJournal
-    
+
     init(journal: TransactionJournal) {
         self.journal = journal
     }
-    
+
+    func refreshIfNeeded() async {
+        if lastUpdatedAt == nil && !isRefreshing {
+            await refresh()
+        } else {
+            systemInfo = .current
+            await fetchDiskUsage()
+            await fetchHistory()
+        }
+    }
+
     func refresh() async {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         systemInfo = .current
         await fetchDiskUsage()
         await fetchHistory()
         await fetchCategoryData()
+        lastUpdatedAt = Date()
     }
     
     private func fetchDiskUsage() async {
@@ -163,39 +179,65 @@ class DashboardViewModel: ObservableObject {
     }
     
     nonisolated static func calculatePathSize(_ path: String) async -> Int64 {
-        let fm = FileManager.default
-        let url = URL(fileURLWithPath: path)
-        var isDirectory: ObjCBool = false
-        
-        guard fm.fileExists(atPath: path, isDirectory: &isDirectory) else { return 0 }
-        if !isDirectory.boolValue {
-            let attribs = try? fm.attributesOfItem(atPath: path)
-            return (attribs?[.size] as? Int64) ?? 0
-        }
-        
-        let keys: [URLResourceKey] = [.fileSizeKey, .isDirectoryKey]
-        guard let enumerator = fm.enumerator(
-            at: url,
-            includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles]
-        ) else { return 0 }
-        
-        var totalSize: Int64 = 0
-        var yieldCount = 0
-        
-        while let fileURL = enumerator.nextObject() as? URL {
-            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
-            if let isDir = values.isDirectory, isDir {
-                continue
+        await Task.detached(priority: .utility) {
+            let fm = FileManager.default
+            let url = URL(fileURLWithPath: path)
+            var isDirectory: ObjCBool = false
+
+            guard fm.fileExists(atPath: path, isDirectory: &isDirectory) else { return 0 }
+            if !isDirectory.boolValue {
+                let attribs = try? fm.attributesOfItem(atPath: path)
+                return (attribs?[.size] as? Int64) ?? 0
             }
-            totalSize += Int64(values.fileSize ?? 0)
-            yieldCount += 1
-            if yieldCount % 1000 == 0 {
-                await Task.yield()
+
+            let keys: [URLResourceKey] = [
+                .fileSizeKey,
+                .isDirectoryKey,
+                .isSymbolicLinkKey,
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey,
+            ]
+            guard let enumerator = fm.enumerator(
+                at: url,
+                includingPropertiesForKeys: keys,
+                options: [.skipsHiddenFiles]
+            ) else { return 0 }
+
+            var totalSize: Int64 = 0
+            var yieldCount = 0
+
+            while let fileURL = enumerator.nextObject() as? URL {
+                if FileManager.shouldExclude(url: fileURL) {
+                    if (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                        enumerator.skipDescendants()
+                    }
+                    continue
+                }
+                guard let values = try? fileURL.resourceValues(forKeys: Set(keys)) else { continue }
+                if values.isSymbolicLink == true {
+                    if values.isDirectory == true {
+                        enumerator.skipDescendants()
+                    }
+                    continue
+                }
+                if FileManager.isNotDownloadedUbiquitous(values) {
+                    if values.isDirectory == true {
+                        enumerator.skipDescendants()
+                    }
+                    continue
+                }
+                if values.isDirectory == true {
+                    continue
+                }
+                totalSize += Int64(values.fileSize ?? 0)
+                yieldCount += 1
+                if yieldCount % 2000 == 0 {
+                    await Task.yield()
+                }
             }
-        }
-        
-        return totalSize
+
+            return totalSize
+        }.value
     }
     
     var usedDiskSpace: Int64 {

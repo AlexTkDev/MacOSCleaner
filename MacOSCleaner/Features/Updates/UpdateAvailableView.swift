@@ -176,7 +176,7 @@ struct UpdateAvailableView: View {
             version: "3.0.1",
             dmgURL: URL(string: "https://github.com/AlexTkDev/MacOSCleaner/releases/download/3.0.1/MacOSCleaner.dmg")
         ),
-        currentVersion: "3.0.0",
+        currentVersion: "3.0.1",
         onDismissLater: {},
         onDismissForVersion: {}
     )

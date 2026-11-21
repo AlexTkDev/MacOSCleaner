@@ -3,10 +3,6 @@
 // Licensed under GNU GPLv3 with Commons Clause v1.0 & Non-Commercial Condition (see LICENSE).
 
 import SwiftUI
-import OSLog
-
-
-private let crashLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "input.MacOSCleaner", category: "Crash")
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -45,29 +41,7 @@ struct MacOSCleanerApp: App {
     }
     
     private static func installCrashHandlers() {
-        NSSetUncaughtExceptionHandler { exception in
-            let desc = exception.description
-            crashLogger.fault("Uncaught exception: \(exception.name.rawValue): \(desc)")
-            crashLogger.fault("Stack trace: \(exception.callStackSymbols.joined(separator: "\n"))")
-            fflush(stderr)
-            abort()
-        }
-        
-        signal(SIGABRT) { _ in
-            crashLogger.fault("Received SIGABRT")
-            fflush(stderr)
-            _exit(1)
-        }
-        signal(SIGSEGV) { _ in
-            crashLogger.fault("Received SIGSEGV")
-            fflush(stderr)
-            _exit(1)
-        }
-        signal(SIGBUS) { _ in
-            crashLogger.fault("Received SIGBUS")
-            fflush(stderr)
-            _exit(1)
-        }
+        CrashSignalHandler.install()
     }
 
     var body: some Scene {

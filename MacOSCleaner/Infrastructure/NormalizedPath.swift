@@ -79,4 +79,38 @@ public enum NormalizedPath {
     public static func displayString(_ url: URL) -> String {
         key(url)
     }
+
+    /// Canonical path string with symlinks resolved and redundant slashes collapsed.
+    public static func resolvedString(_ path: String) -> String {
+        string(URL(fileURLWithPath: string(path)).standardizedFileURL.resolvingSymlinksInPath().standardizedFileURL.path)
+    }
+
+    /// Lowercased standardized key for APFS case-insensitive path matching.
+    public static func lowercaseKey(_ path: String) -> String {
+        string(URL(fileURLWithPath: string(path)).standardizedFileURL.path).lowercased()
+    }
+
+    /// Lowercased symlink-resolved key for APFS case-insensitive security checks.
+    public static func resolvedLowercaseKey(_ path: String) -> String {
+        resolvedString(path).lowercased()
+    }
+
+    /// True if `candidate` equals `root` or is a strict descendant of `root`.
+    public static func isEqualOrDescendant(_ candidate: String, of root: String, caseInsensitive: Bool = false) -> Bool {
+        let lhs = caseInsensitive ? candidate.lowercased() : candidate
+        let rhs = caseInsensitive ? root.lowercased() : root
+        if rhs == "/" {
+            return lhs == "/" || lhs.hasPrefix("/")
+        }
+        return lhs == rhs || lhs.hasPrefix(rhs + "/")
+    }
+
+    /// True if `candidate` is a strict ancestor of `root` (never equal).
+    public static func isStrictAncestor(_ candidate: String, of root: String, caseInsensitive: Bool = false) -> Bool {
+        let lhs = caseInsensitive ? candidate.lowercased() : candidate
+        let rhs = caseInsensitive ? root.lowercased() : root
+        guard lhs != rhs else { return false }
+        if lhs == "/" { return rhs.hasPrefix("/") && rhs != "/" }
+        return rhs.hasPrefix(lhs + "/")
+    }
 }

@@ -22,6 +22,7 @@ public actor CandidateCollector {
     private let tmpScanDirectory: URL
     private let fileSystemContext: FileSystemContext
     private let lsRegisterCache: LSRegisterCache
+    private let safetyManager: SafetyManager
 
     private static let homeResidualDenyList: Set<String> = [
         ".ssh", ".gnupg", ".Trash", ".trash", ".CFUserTextEncoding",
@@ -37,13 +38,15 @@ public actor CandidateCollector {
         receiptsDirectory: URL? = nil,
         tmpScanDirectory: URL? = nil,
         fileSystemContext: FileSystemContext = .production,
-        lsRegisterCache: LSRegisterCache = .shared
+        lsRegisterCache: LSRegisterCache = .shared,
+        safetyManager: SafetyManager? = nil
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
         self.homebrewCellarDirectories = homebrewCellarDirectories
         self.fileSystemContext = fileSystemContext
         self.lsRegisterCache = lsRegisterCache
+        self.safetyManager = safetyManager ?? SafetyManager(homeDirectory: fileSystemContext.homePath, fileSystemContext: fileSystemContext)
         if let darwinCacheDirectory {
             self.darwinUserDirectories = [darwinCacheDirectory.resolvingSymlinksInPath()]
         } else {
@@ -305,13 +308,21 @@ public actor CandidateCollector {
         }
 
         candidates = NormalizedPath.urls(
-            Set(candidates.filter { !Self.isForeignDeveloperTree($0, identity: identity) })
+            Set(candidates.filter {
+                !Self.isForeignDeveloperTree($0, identity: identity)
+                    && !safetyManager.isProtectedBrowserTarget($0.path, uninstallingBundleID: identity.bundleID)
+            })
+        )
+        let safeCatalogPaths = NormalizedPath.urls(
+            Set(registry.catalogPaths.filter {
+                !safetyManager.isProtectedBrowserTarget($0.path, uninstallingBundleID: identity.bundleID)
+            })
         )
 
         return CandidateCollection(
             candidates: candidates,
             receiptPaths: NormalizedPath.urls(Set(receiptPaths)),
-            catalogPaths: NormalizedPath.urls(registry.catalogPaths),
+            catalogPaths: safeCatalogPaths,
             sharedPaths: NormalizedPath.urls(registry.sharedPaths),
             informationalPaths: NormalizedPath.urls(registry.informationalPaths)
         )
@@ -691,6 +702,9 @@ public actor CandidateCollector {
         if Self.isForeignAppLibraryTree(url, identity: identity) {
             return false
         }
+        if safetyManager.isProtectedBrowserTarget(url.path, uninstallingBundleID: identity.bundleID) {
+            return false
+        }
         let name = url.lastPathComponent
         let lowerName = name.lowercased()
         let lowerBundleID = identity.bundleID.lowercased()
@@ -883,8 +897,11 @@ public actor CandidateCollector {
             guard looksLikeBundle else { continue }
             // System holders that store per-app children by our bundle ID / name.
             if foreign.hasPrefix("com.apple.") { continue }
+            if BrowserRule.isKnownBrowserBundleID(foreign), foreign != bid {
+                return true
+            }
             if foreign == bid || foreign.hasPrefix(bid + ".") { continue }
-            if bid.hasPrefix(foreign + ".") { continue }
+            if bid.hasPrefix(foreign + "."), !BrowserRule.isBrowserPWAShimBundleID(bid) { continue }
             return true
         }
         return false
@@ -892,39 +909,10 @@ public actor CandidateCollector {
 
     // MARK: - Browser vendor paths
 
-    /// Google Chrome lives under ~/Library/.../Google/Chrome, not a top-level "Google Chrome" folder.
+    /// Collect browser vendor roots owned strictly by the exact browser bundle ID (never PWAs or sibling channels).
     private func collectBrowserVendorPaths(identity: AppIdentity, home: String, maxDepth: Int) async -> Set<URL> {
-        let bid = identity.bundleID.lowercased()
-        let app = identity.appName.lowercased()
-        var vendorRoots: [(vendor: String, product: String?)] = []
-
-        if bid.contains("google") && (bid.contains("chrome") || app.contains("chrome")) {
-            vendorRoots.append(("Google", "Chrome"))
-        } else if bid.contains("mozilla") || app.contains("firefox") {
-            vendorRoots.append(("Mozilla", nil))
-            vendorRoots.append(("Firefox", nil))
-        } else if bid.contains("microsoft.edgemac") || app.contains("edge") {
-            vendorRoots.append(("Microsoft Edge", nil))
-        } else if bid.contains("brave") || app.contains("brave") {
-            vendorRoots.append(("BraveSoftware", nil))
-            vendorRoots.append(("BraveSoftware", "Brave-Browser"))
-        } else if bid.contains("operasoftware") || app.contains("opera") {
-            vendorRoots.append(("com.operasoftware.Opera", nil))
-            vendorRoots.append(("Opera Software", nil))
-            vendorRoots.append(("Opera", nil))
-        } else if bid.contains("vivaldi") || app.contains("vivaldi") {
-            vendorRoots.append(("Vivaldi", nil))
-        } else if bid.contains("thebrowser") || app == "arc" {
-            vendorRoots.append(("Arc", nil))
-        } else if bid.contains("chromium") || app.contains("chromium") {
-            vendorRoots.append(("Chromium", nil))
-        } else if bid.contains("torproject") || app.contains("tor") {
-            vendorRoots.append(("TorBrowser-Data", nil))
-        } else if bid.contains("duckduckgo") {
-            vendorRoots.append(("DuckDuckGo", nil))
-        } else if bid.contains("yandex") {
-            vendorRoots.append(("Yandex", nil))
-        }
+        let vendorRoots = BrowserRule.vendorRoots(forBundleID: identity.bundleID)
+        guard !vendorRoots.isEmpty else { return [] }
 
         var found = Set<URL>()
         let nestedBases = [
@@ -947,14 +935,16 @@ public actor CandidateCollector {
                     found.formUnion(await deepScan(vendorURL, identity: identity, depth: 0, maxDepth: maxDepth, mode: .balanced))
                 }
             }
-            // ~/Library/{Vendor} — e.g. GoogleSoftwareUpdate / Keystone beside Application Support.
-            let libraryVendor = NormalizedPath.url(NormalizedPath.joinHome(home, "Library"), isDirectory: true)
-                .appendingPathComponent(vendor)
-            if fileManager.fileExists(atPath: libraryVendor.path) {
-                found.insert(NormalizedPath.canonicalize(libraryVendor))
-                found.formUnion(
-                    await deepScan(libraryVendor, identity: identity, depth: 0, maxDepth: min(maxDepth, 3), mode: .balanced)
-                )
+            // ~/Library/{Vendor} — only for single-vendor roots, never mega-vendors like Google.
+            if product == nil {
+                let libraryVendor = NormalizedPath.url(NormalizedPath.joinHome(home, "Library"), isDirectory: true)
+                    .appendingPathComponent(vendor)
+                if fileManager.fileExists(atPath: libraryVendor.path) {
+                    found.insert(NormalizedPath.canonicalize(libraryVendor))
+                    found.formUnion(
+                        await deepScan(libraryVendor, identity: identity, depth: 0, maxDepth: min(maxDepth, 3), mode: .balanced)
+                    )
+                }
             }
         }
         return found
@@ -1029,6 +1019,10 @@ public actor CandidateCollector {
     /// Attribute-scoped Spotlight lookup. Raw text queries are forbidden here: they run a
     /// full-content search and match user documents/mail that merely mention the app name.
     private func runMdfind(identity: AppIdentity) async -> Set<URL> {
+        guard SpotlightMetadata.isIndexingAvailable(at: fileSystemContext.homePath) else {
+            return []
+        }
+
         var queries: [(query: String, onlyIn: String?)] = []
 
         if !identity.bundleID.isEmpty, !identity.bundleID.hasPrefix("unknown.") {

@@ -1198,3 +1198,9 @@
 "privacy_uninstaller_show_less" = "Pokaż mniej";
 "privacy_ext_open_in_browser_help" = "Otwiera stronę tego rozszerzenia w przeglądarce za pomocą skryptu (macOS może jednorazowo poprosić o zgodę Automatyzacji).";
 "privacy_ext_automation_denied_hint" = "Odmówiono dostępu Automatyzacji do %1$@. Link do „%2$@” został skopiowany — wklej go na pasku adresu.";
+"uninstaller_browser_data_warning" = "Profile przeglądarki, rozszerzenia i sesje logowania są domyślnie odznaczone. Ich usunięcie wyloguje Cię ze stron i usunie rozszerzenia.";
+"uninstaller_browser_data_badge" = "Dane przeglądarki";
+"uninstaller_browser_data_confirm_warning" = "Uwaga: wybrane dane profilu przeglądarki wylogują Cię ze stron internetowych i trwale usuną rozszerzenia oraz dane aplikacji webowych.";
+"uninstaller_spotlight_disabled" = "Indeksowanie Spotlight jest wyłączone. Daty ostatniego użycia korzystają z metadanych dostępu do pliku, a wyszukiwanie używa tylko heurystyki.";
+"scan_updated_at" = "Zaktualizowano %@";
+"scan_updated_just_now" = "przed chwilą";

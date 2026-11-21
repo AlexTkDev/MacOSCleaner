@@ -980,4 +980,116 @@ final class CandidateCollectorTests: XCTestCase {
             EvidenceProbe.bundleIDSuffixMatch("OfficeWordWidget", bundleID: "com.microsoft.excel")
         )
     }
+
+    func test_collect_googleDriveAndChromePWADoNotCollectChromeProfile() async throws {
+        let chromeExt = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/Chrome/Default/Extensions/ext1/1.0")
+        let driveSupport = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Application Support/Google/DriveFS")
+        let chromeCache = URL(fileURLWithPath: home)
+            .appendingPathComponent("Library/Caches/com.google.Chrome")
+        for dir in [chromeExt, driveSupport, chromeCache] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        defer { try? FileManager.default.removeItem(at: URL(fileURLWithPath: home).appendingPathComponent("Library")) }
+
+        let collector = makeCollector()
+
+        let driveIdentity = AppIdentity(
+            bundleID: "com.google.drivefs",
+            appName: "Google Drive",
+            bundleName: "Google Drive",
+            bundleVersion: nil,
+            executableName: "Google Drive",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Drive.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google", "Drive"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let driveCollection = await collector.collectDetailed(identity: driveIdentity, mode: .balanced)
+        XCTAssertFalse(driveCollection.candidates.contains { $0.path.lowercased().contains("/google/chrome") })
+        XCTAssertFalse(driveCollection.candidates.contains { $0.path.lowercased().contains("com.google.chrome") })
+
+        let pwaIdentity = AppIdentity(
+            bundleID: "com.google.Chrome.app.aghbiahbpaij",
+            appName: "Bank App",
+            bundleName: "Chrome",
+            bundleVersion: nil,
+            executableName: "app_mode_loader",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "\(home)/Applications/Chrome Apps.localized/Bank App.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let pwaCollection = await collector.collectDetailed(identity: pwaIdentity, mode: .balanced)
+        XCTAssertFalse(pwaCollection.candidates.contains { $0.path.lowercased().contains("/google/chrome") })
+        XCTAssertFalse(pwaCollection.candidates.contains { $0.path.lowercased().contains("com.google.chrome") })
+
+        let canaryIdentity = AppIdentity(
+            bundleID: "com.google.Chrome.canary",
+            appName: "Google Chrome Canary",
+            bundleName: "Chrome Canary",
+            bundleVersion: nil,
+            executableName: "Google Chrome Canary",
+            teamID: "EQHXZ8M8AV",
+            signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/Google Chrome Canary.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: ["Google"],
+            helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+        let canaryCollection = await collector.collectDetailed(identity: canaryIdentity, mode: .balanced)
+        XCTAssertFalse(canaryCollection.candidates.contains { $0.path.lowercased().hasSuffix("/google/chrome") || $0.path.lowercased().contains("/google/chrome/") })
+    }
+
+    func test_runMdfind_skipsSubprocessWhenSpotlightDisabled() async {
+        let runner = MockCommandRunner()
+        final class Counter: @unchecked Sendable {
+            let lock = NSLock()
+            var mdfindCalls = 0
+            func inc() { lock.lock(); mdfindCalls += 1; lock.unlock() }
+            func value() -> Int { lock.lock(); defer { lock.unlock() }; return mdfindCalls }
+        }
+        let counter = Counter()
+        runner.runHandler = { cmd, _ in
+            if cmd == "/usr/bin/mdfind" {
+                counter.inc()
+            }
+            return CommandResult(stdout: "", stderr: "", exitCode: 0)
+        }
+
+        SpotlightMetadata.setOverrideForTesting(isIndexingAvailable: { _ in false })
+        defer { SpotlightMetadata.resetForTesting() }
+
+        let collector = makeCollector(commandRunner: runner)
+        let identity = AppIdentity(
+            bundleID: "com.example.spotlighttest",
+            appName: "SpotlightTest",
+            bundleName: nil, bundleVersion: nil,
+            executableName: "SpotlightTest",
+            teamID: nil, signingAuthority: nil,
+            bundleURL: URL(fileURLWithPath: "/Applications/SpotlightTest.app"),
+            isAppStore: false, isSandboxed: false, isAdHocSigned: false,
+            vendorNames: [], helperNames: [], frameworkNames: [], xpcServiceNames: [], plugInNames: [],
+            isElectron: false, isJetBrains: false, isFlutter: false,
+            isJava: false, isQt: false, isDocker: false
+        )
+
+        _ = await collector.collectDetailed(identity: identity, mode: .balanced)
+        XCTAssertEqual(counter.value(), 0, "mdfind must not spawn when Spotlight indexing is off")
+
+        SpotlightMetadata.setOverrideForTesting(isIndexingAvailable: { _ in true })
+        _ = await collector.collectDetailed(identity: identity, mode: .balanced)
+        XCTAssertGreaterThan(counter.value(), 0, "mdfind should run in balanced mode when Spotlight is enabled")
+    }
 }

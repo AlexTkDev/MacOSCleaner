@@ -141,7 +141,13 @@ final class LocalizationCompletenessTests: XCTestCase {
         "risk.user_data",
         "risk.protected",
         "about_transparency_button",
-        "about_limitations_title"
+        "about_limitations_title",
+        "uninstaller_browser_data_warning",
+        "uninstaller_browser_data_badge",
+        "uninstaller_browser_data_confirm_warning",
+        "uninstaller_spotlight_disabled",
+        "scan_updated_at",
+        "scan_updated_just_now"
     ]
 
     func testAllSupportedLanguagesContainRequiredLeftoverKeys() {

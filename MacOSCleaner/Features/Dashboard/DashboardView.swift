@@ -3,17 +3,32 @@ import Charts
 
 struct DashboardView: View {
     @Environment(\.openWindow) private var openWindow
-    @StateObject private var viewModel: DashboardViewModel
-    private let journal: TransactionJournal
-    
-    init(journal: TransactionJournal) {
-        self.journal = journal
-        _viewModel = StateObject(wrappedValue: DashboardViewModel(journal: journal))
+    @ObservedObject private var viewModel: DashboardViewModel
+
+    init(viewModel: DashboardViewModel) {
+        self.viewModel = viewModel
     }
-    
+
+    init(journal: TransactionJournal) {
+        self.viewModel = DashboardViewModel(journal: journal)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                HStack(spacing: 8) {
+                    Spacer()
+                    ScanStatusPill(lastUpdatedAt: viewModel.lastUpdatedAt)
+                    Button {
+                        Task { await viewModel.refresh() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .glassButtonStyle()
+                    .disabled(viewModel.isCategoriesLoading)
+                    .help("uninstaller_reload".localized)
+                }
+
                 HStack(spacing: 20) {
                     diskUsageCard
                     rightColumn
@@ -23,10 +38,10 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
-            .padding(.top, 16)
+            .padding(.top, 12)
         }
         .task {
-            await viewModel.refresh()
+            await viewModel.refreshIfNeeded()
         }
     }
     

@@ -1161,3 +1161,9 @@
 "privacy_uninstaller_show_less" = "收起";
 "privacy_ext_open_in_browser_help" = "透過腳本在瀏覽器中開啟此擴充功能頁面（macOS 可能會請求一次自動化權限）。";
 "privacy_ext_automation_denied_hint" = "未取得 %1$@ 的自動化控制權限。已複製「%2$@」的連結，請貼上至網址列。";
+"uninstaller_browser_data_warning" = "瀏覽器設定檔、擴充功能與網站登入工作階段預設不勾選。刪除它們將登出網站並移除已安裝的擴充功能。";
+"uninstaller_browser_data_badge" = "瀏覽器資料";
+"uninstaller_browser_data_confirm_warning" = "警告：所選瀏覽器設定檔資料將會登出您的網站帳號，並永久移除擴充功能與網頁應用資料。";
+"uninstaller_spotlight_disabled" = "Spotlight 索引已關閉。最後使用日期將改用檔案存取中繼資料，殘留搜尋僅使用啟發式路徑。";
+"scan_updated_at" = "更新於 %@";
+"scan_updated_just_now" = "剛剛";

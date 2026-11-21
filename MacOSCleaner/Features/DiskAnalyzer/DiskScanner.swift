@@ -215,6 +215,7 @@ public actor DiskScanner {
             .isDirectoryKey,
             .isSymbolicLinkKey,
             .linkCountKey,
+            .isUbiquitousItemKey,
             .ubiquitousItemDownloadingStatusKey,
         ]
         

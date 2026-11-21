@@ -1141,6 +1141,33 @@ extension CleanupEngineTests {
         _ = try await engine.run(categories: [.iosSimulators], dryRun: false, options: options)
         #expect(!box.values.contains { $0.contains("simctl delete") || $0.contains("runtime delete") })
     }
+
+    @Test("appCaches discovers third-party caches while preserving system and Google updater trees")
+    func appCachesDiscoversThirdPartyAndSkipsProtected() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let fm = FileManager.default
+
+        let customCache = ctx.homePath + "/Library/Caches/com.example.customapp"
+        let appleCache = ctx.homePath + "/Library/Caches/com.apple.Safari"
+        let cloudKitCache = ctx.homePath + "/Library/Caches/CloudKit"
+        let googleCache = ctx.homePath + "/Library/Caches/Google"
+        let keystoneCache = ctx.homePath + "/Library/Caches/com.google.Keystone"
+
+        for dir in [customCache, appleCache, cloudKitCache, googleCache, keystoneCache] {
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            try Data(repeating: 0xAB, count: 4096).write(to: URL(fileURLWithPath: dir + "/blob.bin"))
+        }
+
+        let engine = CleanupEngine(commandRunner: MockCommandRunner(), fileSystemContext: ctx)
+        _ = try await engine.run(categories: [.appCaches], dryRun: false)
+
+        #expect(!fm.fileExists(atPath: customCache + "/blob.bin"))
+        #expect(fm.fileExists(atPath: appleCache + "/blob.bin"))
+        #expect(fm.fileExists(atPath: cloudKitCache + "/blob.bin"))
+        #expect(fm.fileExists(atPath: googleCache + "/blob.bin"))
+        #expect(fm.fileExists(atPath: keystoneCache + "/blob.bin"))
+    }
 }
 
 private final class CommandLog: @unchecked Sendable {

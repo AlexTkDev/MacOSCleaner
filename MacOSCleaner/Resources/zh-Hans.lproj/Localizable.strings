@@ -1161,3 +1161,9 @@
 "privacy_uninstaller_show_less" = "收起";
 "privacy_ext_open_in_browser_help" = "通过脚本在浏览器中打开此扩展页面（macOS 可能会请求一次自动化权限）。";
 "privacy_ext_automation_denied_hint" = "未能获取 %1$@ 的自动化控制权限。已复制“%2$@”的链接，请粘贴到地址栏。";
+"uninstaller_browser_data_warning" = "浏览器配置文件、扩展程序和网站登录会话默认不勾选。删除它们将退出网站登录并移除已安装的扩展程序。";
+"uninstaller_browser_data_badge" = "浏览器数据";
+"uninstaller_browser_data_confirm_warning" = "警告：所选浏览器配置数据将退出您的网站登录状态，并永久移除扩展程序和 Web 应用数据。";
+"uninstaller_spotlight_disabled" = "Spotlight 索引已关闭。最后使用日期将回退至文件访问元数据，残留搜索仅使用启发式路径。";
+"scan_updated_at" = "更新于 %@";
+"scan_updated_just_now" = "刚刚";

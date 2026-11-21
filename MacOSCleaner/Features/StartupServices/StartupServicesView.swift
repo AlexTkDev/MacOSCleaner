@@ -2,8 +2,13 @@ import SwiftUI
 
 public struct StartupServicesView: View {
     let settings: AppSettings
-    @State private var viewModel = StartupServicesViewModel()
+    @Bindable var viewModel: StartupServicesViewModel
     @State private var serviceToDelete: StartupService? = nil
+
+    public init(settings: AppSettings, viewModel: StartupServicesViewModel = StartupServicesViewModel()) {
+        self.settings = settings
+        self.viewModel = viewModel
+    }
 
     public var body: some View {
         GlassEffectContainer {
@@ -12,6 +17,7 @@ public struct StartupServicesView: View {
                     Spacer()
                     filterPicker
                     Spacer()
+                    ScanStatusPill(lastUpdatedAt: viewModel.lastUpdatedAt)
                     Button(action: { Task { await viewModel.scan() } }) {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -21,7 +27,7 @@ public struct StartupServicesView: View {
 
                 Divider()
 
-                if viewModel.isLoading {
+                if viewModel.isLoading && viewModel.services.isEmpty {
                     AnimatedScanView(
                         title: "startup_scanning".localized,
                         subtitle: "",
@@ -64,7 +70,7 @@ public struct StartupServicesView: View {
             if settings.enableAI {
                 AIExplanationService.shared.prewarm()
             }
-            Task { await viewModel.scan() }
+            Task { await viewModel.scanIfNeeded() }
         }
     }
 

@@ -12,19 +12,41 @@ public actor AppDiscovery {
     private let fileManager: FileManager
     private let commandRunner: CommandRunner
     private let homebrewCellarDirectories: [URL]
+    private let customSearchDirectories: [URL]?
+    private let customExternalVolumesRoot: URL?
 
     public init(
         fileManager: FileManager = .default,
         commandRunner: CommandRunner = CommandRunner(),
-        homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories
+        homebrewCellarDirectories: [URL] = AppDiscovery.defaultHomebrewCellarDirectories,
+        searchDirectories: [URL]? = nil,
+        externalVolumesRoot: URL? = nil
     ) {
         self.fileManager = fileManager
         self.commandRunner = commandRunner
         self.homebrewCellarDirectories = homebrewCellarDirectories
+        self.customSearchDirectories = searchDirectories
+        self.customExternalVolumesRoot = externalVolumesRoot
     }
 
     public func findAll() async -> [URL] {
         var urls: [URL] = []
+
+        if let customSearchDirectories {
+            for dir in customSearchDirectories {
+                urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
+            }
+            if let customExternalVolumesRoot {
+                for dir in Self.externalVolumeApplicationDirectories(fileManager: fileManager, volumesRoot: customExternalVolumesRoot) {
+                    urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
+                }
+            }
+            urls.append(contentsOf: Self.homebrewApplications(
+                in: homebrewCellarDirectories,
+                fileManager: fileManager
+            ))
+            return NormalizedPath.unique(urls).filter { !Self.isUndeletableSystemApp($0) }
+        }
 
         // Standard app directories
         let appDirs = [
@@ -34,6 +56,12 @@ public actor AppDiscovery {
         ].compactMap { $0 }
 
         for dir in appDirs {
+            urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
+        }
+
+        // Mounted local writable external volumes (e.g. macOS App Store external SSD installs
+        // at /Volumes/<SSD>/Applications). Skips network shares, read-only DMGs, and Time Machine.
+        for dir in Self.externalVolumeApplicationDirectories(fileManager: fileManager, volumesRoot: customExternalVolumesRoot) {
             urls.append(contentsOf: Self.applicationBundles(in: dir, fileManager: fileManager))
         }
 
@@ -82,19 +110,73 @@ public actor AppDiscovery {
         return NormalizedPath.unique(urls).filter { !Self.isUndeletableSystemApp($0) }
     }
 
-    /// Top-level `.app` plus one nested level (e.g. `/Applications/Utilities/*.app`).
+    /// Discovers `<ExternalVolume>/Applications` directories on mounted local, writable,
+    /// browsable non-root volumes (skips read-only DMG installers, SMB/NFS shares, Time Machine).
+    static func externalVolumeApplicationDirectories(
+        fileManager: FileManager = .default,
+        volumesRoot: URL? = nil
+    ) -> [URL] {
+        var result: [URL] = []
+
+        if let volumesRoot {
+            guard let volumes = directoryContents(at: volumesRoot, fileManager: fileManager) else {
+                return []
+            }
+            for volume in volumes where isDirectory(volume) {
+                guard SafetyManager.isAllowedExternalVolumeName(volume.lastPathComponent) else { continue }
+                let appsDir = volume.appendingPathComponent("Applications", isDirectory: true)
+                var isDir: ObjCBool = false
+                if fileManager.fileExists(atPath: appsDir.path, isDirectory: &isDir), isDir.boolValue {
+                    result.append(NormalizedPath.url(appsDir.path, isDirectory: true))
+                }
+            }
+            return result
+        }
+
+        let keys: [URLResourceKey] = [
+            .volumeIsLocalKey,
+            .volumeIsReadOnlyKey,
+            .volumeIsBrowsableKey,
+            .volumeIsRootFileSystemKey,
+        ]
+        guard let mountedVolumes = fileManager.mountedVolumeURLs(
+            includingResourceValuesForKeys: keys,
+            options: [.skipHiddenVolumes]
+        ) else {
+            return []
+        }
+
+        for volume in mountedVolumes {
+            guard let values = try? volume.resourceValues(forKeys: Set(keys)) else { continue }
+            guard values.volumeIsRootFileSystem != true else { continue }
+            guard values.volumeIsLocal == true else { continue }
+            guard values.volumeIsReadOnly != true else { continue }
+            guard values.volumeIsBrowsable != false else { continue }
+            guard SafetyManager.isAllowedExternalVolumeName(volume.lastPathComponent) else { continue }
+
+            let appsDir = volume.appendingPathComponent("Applications", isDirectory: true)
+            var isDir: ObjCBool = false
+            if fileManager.fileExists(atPath: appsDir.path, isDirectory: &isDir), isDir.boolValue {
+                result.append(NormalizedPath.url(appsDir.path, isDirectory: true))
+            }
+        }
+        return result
+    }
+
+    /// Top-level `.app` (including valid symlinks to `.app` bundles on external SSDs)
+    /// plus one nested level (e.g. `/Applications/Utilities/*.app`).
     static func applicationBundles(in directory: URL, fileManager: FileManager = .default) -> [URL] {
         guard let contents = directoryContents(at: directory, fileManager: fileManager) else { return [] }
         var apps: [URL] = []
         for item in contents {
-            if item.pathExtension.lowercased() == "app", isDirectory(item) {
+            if item.pathExtension.lowercased() == "app", isAppDirectory(item, fileManager: fileManager) {
                 apps.append(item)
                 continue
             }
             guard isDirectory(item),
                   let nested = directoryContents(at: item, fileManager: fileManager)
             else { continue }
-            for child in nested where child.pathExtension.lowercased() == "app" && isDirectory(child) {
+            for child in nested where child.pathExtension.lowercased() == "app" && isAppDirectory(child, fileManager: fileManager) {
                 apps.append(child)
             }
         }
@@ -205,6 +287,15 @@ public actor AppDiscovery {
 
     private static func isDirectory(_ url: URL) -> Bool {
         (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+    }
+
+    /// True for a real `.app` bundle directory OR a valid symlink resolving to an existing directory
+    /// (e.g. an app offloaded to an external SSD and symlinked into `/Applications`).
+    /// Broken symlinks (unplugged drive) return `false`.
+    private static func isAppDirectory(_ url: URL, fileManager: FileManager) -> Bool {
+        if isDirectory(url) { return true }
+        var isDir: ObjCBool = false
+        return fileManager.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
     }
 
 }

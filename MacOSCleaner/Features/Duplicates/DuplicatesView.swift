@@ -11,12 +11,13 @@ import ImageIO
 
 public struct DuplicatesView: View {
     let settings: AppSettings
-    @State private var viewModel = DuplicatesViewModel()
+    @Bindable var viewModel: DuplicatesViewModel
     @State private var selectedGroupId: UUID?
     @State private var quickLookURL: URL?
 
-    public init(settings: AppSettings) {
+    public init(settings: AppSettings, viewModel: DuplicatesViewModel = DuplicatesViewModel()) {
         self.settings = settings
+        self.viewModel = viewModel
     }
 
     private var selectedGroup: DuplicateGroup? {
@@ -317,11 +318,12 @@ public struct DuplicatesView: View {
                     }
                     .help("disk_analyzer_quick_look".localized)
             } else {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: fileURL.path))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 48, height: 48)
-                    .padding(.top, 4)
+                CachedFileIconView(path: fileURL.path, size: 48) {
+                    Image(systemName: "doc.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 4)
             }
 
             VStack(spacing: 3) {
@@ -358,9 +360,11 @@ public struct DuplicatesView: View {
                     quickLookURL = item.url
                 }
             }) {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: item.path))
-                    .resizable()
-                    .frame(width: 22, height: 22)
+                CachedFileIconView(path: item.path, size: 22) {
+                    Image(systemName: isImage ? "photo" : "doc")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
             }
             .buttonStyle(.plain)
             .help(isImage ? "disk_analyzer_quick_look".localized : "")
@@ -536,9 +540,11 @@ private struct DuplicateThumbnailView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
             } else {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                CachedFileIconView(path: url.path, size: 48) {
+                    Image(systemName: "doc")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .task(id: url) {

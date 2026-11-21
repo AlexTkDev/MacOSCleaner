@@ -153,6 +153,17 @@ final class FileSystemIsolationTests: XCTestCase {
         let allowedPaths = prod.allowedRoots.map(\.path)
         XCTAssertFalse(allowedPaths.contains("/Users"), "Allowed roots must never include wholesale /Users")
         XCTAssertTrue(allowedPaths.contains(FileManager.default.homeDirectoryForCurrentUser.resolvingSymlinksInPath().path))
+        XCTAssertTrue(allowedPaths.contains("/Applications"))
+
+        let prodSafety = SafetyManager(homeDirectory: prod.homePath, fileSystemContext: prod)
+        XCTAssertNoThrow(
+            try prodSafety.validate(url: URL(fileURLWithPath: "/Applications/Sample.app"), policy: .uninstall),
+            "Production uninstaller safety check must allow /Applications/*.app"
+        )
+        XCTAssertThrowsError(
+            try prodSafety.validate(url: URL(fileURLWithPath: "/Applications"), policy: .uninstall),
+            "Wholesale /Applications must stay protected"
+        )
     }
 
     func test_cleanupPathExpanderDoesNotExpandForeignUsers() throws {

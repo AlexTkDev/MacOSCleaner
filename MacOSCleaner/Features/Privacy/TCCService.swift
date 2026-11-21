@@ -439,20 +439,26 @@ public actor TCCService {
         return map
     }
 
+    private struct BundleEntry: Sendable {
+        let bundleID: String
+        let url: URL
+    }
+
+    private struct ResolvedIdentity: Sendable {
+        let bundleID: String
+        let identity: AppIdentity
+    }
+
     private func resolveIdentities(for bundleIndex: [String: URL]) async -> [String: AppIdentity] {
         let runner = (commandRunner as? CommandRunner) ?? CommandRunner()
-        return await withTaskGroup(of: (String, AppIdentity).self) { group in
-            for (bundleID, url) in bundleIndex {
-                group.addTask {
-                    let identity = await AppIdentity.resolve(from: url, commandRunner: runner)
-                    return (bundleID, identity)
-                }
-            }
-            var result: [String: AppIdentity] = [:]
-            for await (bundleID, identity) in group {
-                result[bundleID] = identity
-            }
-            return result
-        }
+        let entries = bundleIndex.map { BundleEntry(bundleID: $0.key, url: $0.value) }
+        let resolved: [ResolvedIdentity] = (try? await UninstallerService.mapWithBoundedConcurrency(
+            items: entries,
+            maxConcurrent: UninstallerService.maxConcurrentDiscoveryTasks
+        ) { entry in
+            let identity = await AppIdentity.resolve(from: entry.url, commandRunner: runner)
+            return ResolvedIdentity(bundleID: entry.bundleID, identity: identity)
+        }) ?? []
+        return Dictionary(uniqueKeysWithValues: resolved.map { ($0.bundleID, $0.identity) })
     }
 }
