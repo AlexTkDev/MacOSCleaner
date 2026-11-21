@@ -2246,6 +2246,56 @@ extension CleanupEngine {
 
     // MARK: 22. Dynamic Cache Discovery
 
+    private func dedicatedCacheDirectoryNames(for planned: Set<CleanupCategory>, home: String) -> Set<String> {
+        // ~/Library/Caches/Google houses updater/Keystone alongside Chrome caches and is
+        // handled via exact sub-paths rather than top-level review/auto-clean.
+        var names: Set<String> = ["google"]
+        let otherPlanned = planned.subtracting([.dynamicCacheDiscovery])
+
+        if otherPlanned.contains(.packageManagers) {
+            names.formUnion(["homebrew", "yarn", "cocoapods"])
+        }
+        if otherPlanned.contains(.languageCaches) {
+            names.insert("go-build")
+        }
+        if otherPlanned.contains(.cloudKitCache) {
+            names.insert("cloudkit")
+        }
+        if otherPlanned.contains(.adobeCaches) {
+            names.insert("adobe")
+        }
+        if otherPlanned.contains(.teamsCache) {
+            names.formUnion(["com.microsoft.teams", "com.microsoft.teams2"])
+        }
+        if otherPlanned.contains(.garminFitbit) {
+            names.formUnion(["com.garmin.connectiq", "com.fitbit.fitbit-os-simulator"])
+        }
+
+        let tildePrefix = "~/library/caches/"
+        let homePrefix = (home.hasSuffix("/") ? home : home + "/").lowercased() + "library/caches/"
+
+        for category in otherPlanned {
+            for entry in EmbeddedCleanupPaths.paths(for: category) {
+                let lower = entry.path.lowercased()
+                let remainder: Substring?
+                if lower.hasPrefix(tildePrefix) {
+                    remainder = lower.dropFirst(tildePrefix.count)
+                } else if lower.hasPrefix(homePrefix) {
+                    remainder = lower.dropFirst(homePrefix.count)
+                } else {
+                    remainder = nil
+                }
+                guard let remainder else { continue }
+                let firstComponent = remainder.split(separator: "/", maxSplits: 1).first.map(String.init) ?? ""
+                if !firstComponent.isEmpty, !firstComponent.contains("*"), !firstComponent.contains("?") {
+                    names.insert(firstComponent)
+                }
+            }
+        }
+
+        return names
+    }
+
     func cleanDynamicCacheDiscovery(dryRun: Bool, progress: (@Sendable (CleanupEngineEvent) -> Void)?) async throws -> [CleanupEngineResult] {
         let home = fileSystemContext.homePath
         let cachesDir = "\(home)/Library/Caches"
@@ -2258,9 +2308,14 @@ extension CleanupEngine {
             return [CleanupEngineResult(label: "Dynamic cache discovery", freedMB: 0)]
         }
 
+        let coveredCaches = dedicatedCacheDirectoryNames(for: CleanupEngine.currentPlannedCategories, home: home)
         let entries = (try? fm.contentsOfDirectory(atPath: cachesDir)) ?? []
         for entry in entries {
             try Task.checkCancellation()
+
+            if coveredCaches.contains(entry.lowercased()) {
+                continue
+            }
 
             // Skip heavy containers (Docker, VMs) — virtual disks cause timeouts
             if Self.isHeavyContainer(entry) {

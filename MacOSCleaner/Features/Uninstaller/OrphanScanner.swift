@@ -149,7 +149,7 @@ public actor OrphanScanner {
             guard (try? safetyManager.validate(url: file, policy: .uninstall)) != nil else { continue }
             
             // Skip Apple system items, system daemons, and developer toolchain containers
-            if isSystemOrProtected(file: file) {
+            if Self.isSystemOrProtected(file: file) {
                 continue
             }
             
@@ -225,27 +225,43 @@ public actor OrphanScanner {
         return orphans.sorted { $0.sizeBytes > $1.sizeBytes }
     }
 
-    private func isSystemOrProtected(file: URL) -> Bool {
+    static func isSystemOrProtected(file: URL) -> Bool {
         let rawFilename = file.lastPathComponent.lowercased()
-        let filename = stripTeamIDPrefix(from: rawFilename)
+        let filename = Self.stripTeamIDPrefix(from: rawFilename)
             .replacingOccurrences(of: "group.", with: "")
             .replacingOccurrences(of: "groups.", with: "")
+
+        let protectedPrefixes = [
+            "com.apple.",
+            "com.mac.",
+            "is.workflow.",
+            "org.swift.",
+            "org.llvm.",
+            "org.gnu.",
+            "org.cups.",
+            "org.sparkle-project.",
+            "org.openldap.",
+            "org.apache.",
+            "tvappservices.",
+            "com.crashlytics.",
+            "io.fabric."
+        ]
+
+        // Shared telemetry/crash SDKs and updaters have no standalone .app bundle.
+        let protectedSharedSDKs = [
+            "io.sentry",
+            "com.plausiblelabs.crashreporter",
+            "com.google.keystone",
+            "sentrycrash"
+        ]
 
         // Apple system containers, groups, daemons and system tools
         if rawFilename.contains("com.apple.") ||
            rawFilename.contains(".apple.") ||
            rawFilename.contains("group.com.apple") ||
            rawFilename.contains("groups.com.apple") ||
-           filename.hasPrefix("com.apple.") ||
-           filename.hasPrefix("com.mac.") ||
-           filename.hasPrefix("is.workflow.") ||
-           filename.hasPrefix("org.swift.") ||
-           filename.hasPrefix("org.llvm.") ||
-           filename.hasPrefix("org.gnu.") ||
-           filename.hasPrefix("org.cups.") ||
-           filename.hasPrefix("org.sparkle-project.") ||
-           filename.hasPrefix("org.openldap.") ||
-           filename.hasPrefix("org.apache.") {
+           protectedPrefixes.contains(where: { filename.hasPrefix($0) }) ||
+           protectedSharedSDKs.contains(where: { filename == $0 || filename.hasPrefix("\($0).") }) {
             return true
         }
 

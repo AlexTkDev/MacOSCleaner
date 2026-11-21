@@ -66,7 +66,7 @@ public final class PermissionsManager {
             guard fm.fileExists(atPath: file) else { continue }
             if let handle = FileHandle(forReadingAtPath: file) {
                 try? handle.close()
-                Logger.permissions.info("Full Disk Access check passed via file: \(file, privacy: .public)")
+                Logger.permissions.debug("Full Disk Access check passed via file: \(file, privacy: .public)")
                 return true
             }
         }
@@ -75,23 +75,27 @@ public final class PermissionsManager {
             guard fm.fileExists(atPath: dir) else { continue }
             do {
                 _ = try fm.contentsOfDirectory(atPath: dir)
-                Logger.permissions.info("Full Disk Access check passed via directory: \(dir, privacy: .public)")
+                Logger.permissions.debug("Full Disk Access check passed via directory: \(dir, privacy: .public)")
                 return true
             } catch {
                 // Throws EPERM if FDA is not granted
             }
         }
 
-        Logger.permissions.warning("Full Disk Access check: not granted")
+        Logger.permissions.debug("Full Disk Access check: not granted")
         return false
     }
     
     /// Refreshes Full Disk Access status.
     public func refresh() {
+        let previous = hasFullDiskAccess
         let liveFDA = fdaCheckClosure()
         hasFullDiskAccess = liveFDA
         if liveFDA {
             persistFDAState()
+        }
+        if liveFDA != previous {
+            Logger.permissions.info("Full Disk Access status changed: granted=\(liveFDA, privacy: .public)")
         }
 
         if hasFullDiskAccess && showGuidance {
@@ -101,6 +105,7 @@ public final class PermissionsManager {
 
     /// Persists the Full Disk Access grant so the app remembers it across launches.
     private func persistFDAState() {
+        guard !fdaEverGranted else { return }
         fdaEverGranted = true
         userDefaults.set(true, forKey: fdaGrantedKey)
         Logger.permissions.info("Full Disk Access persisted as granted")

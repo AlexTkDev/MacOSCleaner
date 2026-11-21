@@ -229,5 +229,34 @@ final class OrphanScannerTests: XCTestCase {
         XCTAssertEqual(OrphanItem.localizedCategoryName(for: "Other"), "Otros")
         XCTAssertEqual(OrphanItem.localizedCategoryName(for: "Launch Agents"), "Agentes de inicio")
     }
+
+    func testScanOrphans_ignoresSystemTVAppServicesAndSharedSentrySDK() async throws {
+        let fm = FileManager.default
+        let payload = Data(repeating: 0xAA, count: 8192)
+
+        let protectedDirs = [
+            testRoot.appendingPathComponent("Library/Group Containers/group.tvappservices.container", isDirectory: true),
+            testRoot.appendingPathComponent("Library/Containers/tvappservices.container", isDirectory: true),
+            testRoot.appendingPathComponent("Library/Caches/io.sentry", isDirectory: true),
+            testRoot.appendingPathComponent("Library/Caches/com.plausiblelabs.crashreporter.data", isDirectory: true),
+        ]
+        for dir in protectedDirs {
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            try payload.write(to: dir.appendingPathComponent("blob.bin"))
+        }
+
+        let realOrphan = testRoot.appendingPathComponent("Library/Containers/com.unknown.deletedtool", isDirectory: true)
+        try fm.createDirectory(at: realOrphan, withIntermediateDirectories: true)
+        try payload.write(to: realOrphan.appendingPathComponent("blob.bin"))
+
+        let orphans = try await scanner.scanOrphans()
+        let paths = Set(orphans.map { $0.url.lastPathComponent.lowercased() })
+
+        XCTAssertFalse(paths.contains("group.tvappservices.container"))
+        XCTAssertFalse(paths.contains("tvappservices.container"))
+        XCTAssertFalse(paths.contains("io.sentry"))
+        XCTAssertFalse(paths.contains("com.plausiblelabs.crashreporter.data"))
+        XCTAssertTrue(paths.contains("com.unknown.deletedtool"))
+    }
 }
 

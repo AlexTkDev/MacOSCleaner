@@ -73,22 +73,15 @@ struct DashboardView: View {
     
     private var diskUsageCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if viewModel.isCategoriesLoading {
-                VStack(spacing: 12) {
-                    LiquidGlassLoaderView(size: 48)
-                    Text("disk_analyzer_scanning".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                DiskRingsChartView(
-                    items: viewModel.diskCategories,
-                    totalUsed: viewModel.usedDiskSpace,
-                    totalDisk: viewModel.totalDiskSpace
-                )
-                .frame(maxHeight: .infinity)
-            }
+            DiskRingsChartView(
+                items: viewModel.diskCategories,
+                totalUsed: viewModel.usedDiskSpace,
+                totalDisk: viewModel.totalDiskSpace,
+                isScanning: viewModel.isCategoriesLoading,
+                completedCategories: viewModel.completedCategoriesCount,
+                totalCategories: viewModel.totalScanCategoriesCount
+            )
+            .frame(maxHeight: .infinity)
         }
         .padding()
         .frame(maxHeight: .infinity)

@@ -1168,6 +1168,37 @@ extension CleanupEngineTests {
         #expect(fm.fileExists(atPath: googleCache + "/blob.bin"))
         #expect(fm.fileExists(atPath: keystoneCache + "/blob.bin"))
     }
+
+    @Test("dynamicCacheDiscovery skips caches owned by dedicated planned categories and Google")
+    func testDynamicCacheDiscovery_skipsDedicatedCategoryCaches() async throws {
+        let ctx = try FileSystemContext.isolatedTestRoot()
+        defer { try? FileManager.default.removeItem(at: ctx.allowedRoots[0]) }
+        let fm = FileManager.default
+
+        let cacheNames = ["Google", "Homebrew", "CloudKit", "UnknownCustomCache"]
+        let payload = Data(repeating: 0xAB, count: 6 * 1024 * 1024)
+        for name in cacheNames {
+            let dir = ctx.homePath + "/Library/Caches/" + name
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            try payload.write(to: URL(fileURLWithPath: dir + "/cache.bin"))
+        }
+
+        let collector = PreviewCollector()
+        let engine = CleanupEngine(commandRunner: MockCommandRunner(), fileSystemContext: ctx)
+        _ = try await engine.scan(
+            categories: [.browserCaches, .packageManagers, .cloudKitCache, .dynamicCacheDiscovery]
+        ) { event in
+            if case .preview(let label, _, _, let parent, _) = event, parent == "Review manually" {
+                collector.append(label)
+            }
+        }
+
+        let reviewLabels = collector.values
+        #expect(reviewLabels.contains { $0.hasPrefix("UnknownCustomCache") })
+        #expect(!reviewLabels.contains { $0.hasPrefix("Google") })
+        #expect(!reviewLabels.contains { $0.hasPrefix("Homebrew") })
+        #expect(!reviewLabels.contains { $0.hasPrefix("CloudKit") })
+    }
 }
 
 private final class CommandLog: @unchecked Sendable {
@@ -1175,4 +1206,11 @@ private final class CommandLog: @unchecked Sendable {
     private var items: [String] = []
     var values: [String] { lock.withLock { items } }
     func append(_ value: String) { lock.withLock { items.append(value) } }
+}
+
+private final class PreviewCollector: @unchecked Sendable {
+    private let lock = NSLock()
+    private var labels: [String] = []
+    var values: [String] { lock.withLock { labels } }
+    func append(_ label: String) { lock.withLock { labels.append(label) } }
 }
