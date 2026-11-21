@@ -57,10 +57,10 @@
 ## 🎬 Demo & Screenshots
 
 <p align="center">
-  <a href="assets/demo_video_v3.mp4">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video__v3.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
+  <a href="assets/demo_video_v3-0-1.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch_Demo_Video-demo__video__v3--0--1.mp4-007AFF?style=for-the-badge&logo=quicktime&logoColor=white" alt="Watch Demo Video">
   </a>
-  <a href="assets/demo_video_v3.mp4">
+  <a href="assets/demo_video_v3-0-1.mp4">
     <img src="assets/screenshots/Dashboard_v3.png" alt="Watch Demo Video" width="90%">
   </a>
 </p>
