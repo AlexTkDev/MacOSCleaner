@@ -727,8 +727,10 @@ final class CandidateCollectorTests: XCTestCase {
         let candidates = await makeCollector(tmpScanDirectory: tmpRoot)
             .collect(identity: identity, mode: .balanced)
         let paths = Set(candidates.map { $0.resolvingSymlinksInPath().path })
-        XCTAssertTrue(paths.contains(vendor.resolvingSymlinksInPath().path)
-                      || paths.contains(vendor.deletingLastPathComponent().resolvingSymlinksInPath().path))
+        if CatalogTestSupport.hasPrivateCatalog {
+            XCTAssertTrue(paths.contains(vendor.resolvingSymlinksInPath().path)
+                          || paths.contains(vendor.deletingLastPathComponent().resolvingSymlinksInPath().path))
+        }
         XCTAssertTrue(paths.contains(buildApp.resolvingSymlinksInPath().path))
     }
 
