@@ -31,7 +31,7 @@
     <a href="#features">✨ Features</a> &nbsp;•&nbsp;
     <a href="#demo">🎬 Demo</a> &nbsp;•&nbsp;
     <a href="#build-from-source">🛠️ Build from Source</a> &nbsp;•&nbsp;
-    <!-- <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp; -->
+    <a href="#community">🗺️ Roadmap</a> &nbsp;•&nbsp;
     <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki">📖 Documentation</a>
   </p>
 </div>
@@ -188,6 +188,7 @@ If you find MacOS Cleaner useful, please consider giving it a ⭐️ on GitHub. 
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/issues"><img src="https://img.shields.io/badge/Issues-Tracker-E5534B?style=flat&logo=instabug&logoColor=white" alt="Issue Tracker" align="absmiddle"></a> — [Report bugs or suggest rule improvements.](https://github.com/AlexTkDev/MacOSCleaner/issues)
 - <a href="https://github.com/AlexTkDev/MacOSCleaner/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-238636?style=flat&logo=gitbook&logoColor=white" alt="Documentation" align="absmiddle"></a> — [Architecture overview and developer guides.](https://github.com/AlexTkDev/MacOSCleaner/wiki)
 - <a href="https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release"><img src="https://img.shields.io/badge/Cursor-Codebase-000000?style=flat&logo=cursor&logoColor=white" alt="Cursor Codebase" align="absmiddle"></a> — [Explore repository online and open in Cursor.](https://cursor.com/codebase/alextkdev/MacOSCleaner/tree/release)
+- <a href="https://github.com/AlexTkDev/MacOSCleaner/discussions/46"><img src="https://img.shields.io/badge/Roadmap-3.1.0_in_development-007AFF?style=flat&logo=github&logoColor=white" alt="MacOS Cleaner 3.1.0 in development" align="absmiddle"></a> — [MacOS Cleaner 3.1.0 in development](https://github.com/AlexTkDev/MacOSCleaner/discussions/46)
 
 ### Our Partners
 <p>
