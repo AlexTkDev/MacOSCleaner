@@ -75,6 +75,8 @@ node_modules/
 # ============================================================
 
 *.log
+*.profraw
+*.profdata
 
 # ============================================================
 # Env files
@@ -119,6 +121,7 @@ GEMINI.md
 .gemini
 .antigravitycli
 build/
+dist/
 PLAN.md
 macos-cache-cleanup.sh
 xcuserdata/
@@ -127,6 +130,7 @@ opencode.json
 .agents
 problematic_apps/
 implementation_plan.md
+**/*.generated.*
 
 # Protected Engine Catalogs (Local only)
 engine_paths.json
@@ -138,3 +142,5 @@ MacOSCleaner/.require-private-catalog
 derived_data/
 # Superdesign temp HTML / local screenshot cache
 .superdesign/tmp/
+
+.cursorignore
